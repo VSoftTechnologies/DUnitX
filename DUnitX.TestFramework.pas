@@ -38,6 +38,7 @@ uses
 {$I DUnitX.inc}
 
 type
+
   ///  A class decorated with this attribute will be tested. The parameters
   ///  allow you to control which methods are treated as tests. By default
   ///  only methods decorated with the Test attribute are run as tests.
@@ -126,9 +127,9 @@ type
 
   TTestMethod = procedure of object;
 
-
   TLogLevel = (ltInformation,ltWarning,ltError);
 
+{$IFDEF DELPHI_XE2_UP}
   ///  This helper class is intended to redirect the writeln
   ///  method to a test runner so that it is logged correctly.
   //
@@ -142,6 +143,9 @@ type
     procedure WriteLn(const msg : string);overload;
     procedure WriteLn;overload;
   end;
+{$ENDIF}
+
+
 
   Assert = class
   public
@@ -211,7 +215,6 @@ type
     class procedure IsMatch(const regexPattern : string; const theString : string; const message : string = '');
     {$ENDIF}
   end;
-
 
   ITestFixtureInfo = interface;
 
@@ -403,6 +406,15 @@ type
     property ExitBehavior : TRunnerExitBehavior read GetExitBehavior write SetExitBehavior;
     property UseCommandLineOptions : boolean read GetUseCommandLineOptions write SetUseCommandLineOptions;
 
+    procedure Log(const logType : TLogLevel; const msg : string);overload;
+    procedure Log(const msg : string);overload;
+    //for backwards compatibilty with DUnit tests.
+    procedure Status(const msg : string);
+    //redirects WriteLn to our loggers.
+    procedure WriteLn(const msg : string);overload;
+    procedure WriteLn;overload;
+
+
     //When true, test fixtures will be found by using RTTI to search for classes decorated as TestFixtures
     //Note for this to work you may need to use {$STRONGLINKTYPES ON} otherwise the classes may not get
     //linked as they are not referenced. When False you will need to register the fixtures using
@@ -438,6 +450,7 @@ type
     class function CreateRunner(const useCommandLineOptions : boolean; const ALogger : ITestLogger) : ITestRunner;overload;
     class procedure RegisterTestFixture(const AClass : TClass;const AName : string = '' );
     class function CommandLine : ICommandLine;
+    class function CurrentRunner : ITestRunner;
   end;
 
   ETestFrameworkException = class(Exception);
@@ -494,6 +507,7 @@ begin
 end;
 
 { Assert }
+
 
 class procedure Assert.AreEqual(const left, right, tolerance: Extended; const message: string);
 begin
@@ -961,7 +975,6 @@ begin
     raise EAssertionFailure.Create(Format('[%s] does Not Start with [%s] %s',[theString,subString,message]));
 end;
 
-
 { Test }
 
 constructor TestAttribute.Create;
@@ -1008,6 +1021,14 @@ begin
   result := TDUnitXTestRunner.Create(useCommandLineOptions,ALogger);
 end;
 
+class function TDUnitX.CurrentRunner: ITestRunner;
+
+begin
+  if not TDUnitXTestRunner.FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId,result) then
+    raise Exception.Create('No Runner found for current thread');
+
+end;
+
 class destructor TDUnitX.Destroy;
 begin
   RegisteredFixtures.Free;
@@ -1045,6 +1066,8 @@ begin
 end;
 
 
+{$IFDEF DELPHI_XE2_UP}
+
 { TTestFixtureHelper }
 
 procedure TTestFixtureHelper.Log(const msg: string);
@@ -1054,7 +1077,7 @@ end;
 
 procedure TTestFixtureHelper.Log(const logType : TLogLevel; const msg: string);
 var
-  runner : TDUnitXTestRunner;
+  runner : ITestRunner;
 begin
   if TDUnitXTestRunner.FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId,runner) then
     runner.Log(logType,msg)
@@ -1067,15 +1090,16 @@ begin
   Self.Log(TLogLevel.ltInformation,msg);
 end;
 
-procedure TTestFixtureHelper.WriteLn;
-begin
-  Self.Log(TLogLevel.ltInformation,'');
-end;
+//procedure TTestFixtureHelper.WriteLn;
+//begin
+//  Self.Log(TLogLevel.ltInformation,'');
+//end;
 
 procedure TTestFixtureHelper.WriteLn(const msg: string);
 begin
   Self.Log(TLogLevel.ltInformation,msg);
 end;
+{$ENDIF}
 
 { RepeatAttribute }
 

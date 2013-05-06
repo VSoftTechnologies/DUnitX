@@ -1,15 +1,10 @@
 ﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 		<PropertyGroup>
-			<ProjectGuid>{D89EB2C7-FDE3-4168-957A-66930CF41F7E}</ProjectGuid>
-			<ProjectVersion>13.4</ProjectVersion>
+			<ProjectGuid>{78AC97F9-EC37-4A68-8525-9C5EC2F94223}</ProjectGuid>
 			<MainSource>DUnitXTest.dpr</MainSource>
 			<Config Condition="'$(Config)'==''">Debug</Config>
 			<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
-			<FrameworkType>FMX</FrameworkType>
-			<Base>True</Base>
-			<Platform Condition="'$(Platform)'==''">Win64</Platform>
-			<TargetedPlatforms>3</TargetedPlatforms>
-			<AppType>Console</AppType>
+			<ProjectVersion>12.0</ProjectVersion>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
 			<Base>true</Base>
@@ -24,16 +19,7 @@
 			<CfgParent>Base</CfgParent>
 			<Base>true</Base>
 		</PropertyGroup>
-		<PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win32)'!=''">
-			<Cfg_2_Win32>true</Cfg_2_Win32>
-			<CfgParent>Cfg_2</CfgParent>
-			<Cfg_2>true</Cfg_2>
-			<Base>true</Base>
-		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
-			<DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;$(DCC_Namespace)</DCC_Namespace>
-			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
-			<VerInfo_Locale>3081</VerInfo_Locale>
 			<DCC_DependencyCheckOutputName>DUnitXTest.exe</DCC_DependencyCheckOutputName>
 			<DCC_ImageBase>00400000</DCC_ImageBase>
 			<DCC_Platform>x86</DCC_Platform>
@@ -47,58 +33,52 @@
 		<PropertyGroup Condition="'$(Cfg_2)'!=''">
 			<DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
 		</PropertyGroup>
-		<PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
-			<Manifest_File>None</Manifest_File>
-			<DCC_Namespace>Windows;$(DCC_Namespace)</DCC_Namespace>
-		</PropertyGroup>
 		<ItemGroup>
-			<DelphiCompile Include="$(MainSource)">
+			<DelphiCompile Include="DUnitXTest.dpr">
 				<MainSource>MainSource</MainSource>
 			</DelphiCompile>
-			<DCCReference Include="DUnitX.TestFramework.pas"/>
-			<DCCReference Include="Tests\DUnitX.Tests.Example.pas"/>
-			<DCCReference Include="Tests\DUnitX.Tests.Assert.pas"/>
-			<DCCReference Include="DUnitX.DUnitCompatibility.pas"/>
 			<DCCReference Include="Tests\DUnitX.Tests.IoC.pas"/>
+			<DCCReference Include="DUnitX.Loggers.Console.pas"/>
+			<DCCReference Include="DUnitX.Loggers.Text.pas"/>
+			<DCCReference Include="DUnitX.MacOS.Console.pas"/>
+			<DCCReference Include="DUnitX.Windows.Console.pas"/>
+			<DCCReference Include="DUnitX.ConsoleWriter.Base.pas"/>
+			<DCCReference Include="DUnitX.Loggers.XML.NUnit.pas"/>
+			<DCCReference Include="DUnitX.Loggers.XML.xUnit.pas"/>
+			<DCCReference Include="DUnitX.Detour.pas"/>
+			<DCCReference Include="DUnitX.Generics.pas"/>
+			<DCCReference Include="DUnitX.Utils.pas"/>
+			<DCCReference Include="DUnitX.WeakReference.pas"/>
+			<DCCReference Include="DUnitX.CommandLine.pas"/>
+			<DCCReference Include="DUnitX.Test.pas"/>
+			<DCCReference Include="DUnitX.TestFixture.pas"/>
+			<DCCReference Include="DUnitX.TestResult.pas"/>
+			<DCCReference Include="DUnitX.TestResults.pas"/>
+			<DCCReference Include="DUnitX.TestRunner.pas"/>
+			<DCCReference Include="DUnitX.InternalInterfaces.pas"/>
+			<DCCReference Include="DUnitX.TestFramework.pas"/>
+			<DCCReference Include="DUnitX.DUnitCompatibility.pas"/>
+			<DCCReference Include="DUnitX.IoC.Internal.pas"/>
+			<DCCReference Include="DUnitX.IoC.pas"/>
+			<DCCReference Include="Tests\DUnitX.Tests.Assert.pas"/>
 			<DCCReference Include="Tests\DUnitX.Tests.DUnitCompatibility.pas"/>
-			<DCCReference Include="Loggers\DUnitX.Loggers.Console.pas"/>
-			<DCCReference Include="Loggers\DUnitX.Loggers.Text.pas"/>
-			<DCCReference Include="Loggers\DUnitX.MacOS.Console.pas"/>
-			<DCCReference Include="Loggers\DUnitX.Windows.Console.pas"/>
-			<DCCReference Include="IoC\DUnitX.IoC.Internal.pas"/>
-			<DCCReference Include="IoC\DUnitX.IoC.pas"/>
-			<DCCReference Include="Loggers\DUnitX.ConsoleWriter.Base.pas"/>
-			<DCCReference Include="Loggers\DUnitX.Loggers.XML.NUnit.pas"/>
-			<DCCReference Include="Loggers\DUnitX.Loggers.XML.xUnit.pas"/>
-			<DCCReference Include="Utils\DUnitX.Detour.pas"/>
-			<DCCReference Include="Utils\DUnitX.Generics.pas"/>
-			<DCCReference Include="Utils\DUnitX.Utils.pas"/>
-			<DCCReference Include="Utils\DUnitX.WeakReference.pas"/>
-			<DCCReference Include="CmdLine\DUnitX.CommandLine.pas"/>
-			<DCCReference Include="Internals\DUnitX.InternalInterfaces.pas"/>
-			<DCCReference Include="Runtime\DUnitX.Test.pas"/>
-			<DCCReference Include="Runtime\DUnitX.TestFixture.pas"/>
-			<DCCReference Include="Runtime\DUnitX.TestResult.pas"/>
-			<DCCReference Include="Runtime\DUnitX.TestResults.pas"/>
-			<DCCReference Include="Runtime\DUnitX.TestRunner.pas"/>
-			<None Include="DUnitX.inc"/>
-			<None Include="ReadMe.txt"/>
+			<DCCReference Include="Tests\DUnitX.Tests.Example.pas"/>
+			<BuildConfiguration Include="Base">
+				<Key>Base</Key>
+			</BuildConfiguration>
 			<BuildConfiguration Include="Debug">
 				<Key>Cfg_2</Key>
 				<CfgParent>Base</CfgParent>
-			</BuildConfiguration>
-			<BuildConfiguration Include="Base">
-				<Key>Base</Key>
 			</BuildConfiguration>
 			<BuildConfiguration Include="Release">
 				<Key>Cfg_1</Key>
 				<CfgParent>Base</CfgParent>
 			</BuildConfiguration>
 		</ItemGroup>
-		<Import Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')" Project="$(BDS)\Bin\CodeGear.Delphi.Targets"/>
+		<Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
 		<ProjectExtensions>
 			<Borland.Personality>Delphi.Personality.12</Borland.Personality>
-			<Borland.ProjectType/>
+			<Borland.ProjectType>VCLApplication</Borland.ProjectType>
 			<BorlandProject>
 				<Delphi.Personality>
 					<Source>
@@ -136,25 +116,8 @@
 						<VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
 						<VersionInfoKeys Name="Comments"/>
 					</VersionInfoKeys>
-					<Excluded_Packages>
-						<Excluded_Packages Name="$(BDSBIN)\bcboffice2k160.bpl">Embarcadero C++Builder Office 2000 Servers Package</Excluded_Packages>
-						<Excluded_Packages Name="$(BDSBIN)\bcbofficexp160.bpl">Embarcadero C++Builder Office XP Servers Package</Excluded_Packages>
-						<Excluded_Packages Name="$(BDSBIN)\dcloffice2k160.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
-						<Excluded_Packages Name="$(BDSBIN)\dclofficexp160.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
-					</Excluded_Packages>
 				</Delphi.Personality>
-				<Platforms>
-					<Platform value="Win64">True</Platform>
-					<Platform value="OSX32">False</Platform>
-					<Platform value="Win32">True</Platform>
-				</Platforms>
 			</BorlandProject>
 			<ProjectFileVersion>12</ProjectFileVersion>
 		</ProjectExtensions>
-		<Import Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')" Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj"/>
 	</Project>
-
-<!-- EurekaLog First Line
-[Exception Log]
-EurekaLog Version=7001
-EurekaLog Last Line -->

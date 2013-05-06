@@ -71,7 +71,7 @@ begin
       end,
       'activator_singleton');
 
-  TDUnitXIoC.RegisterType<IFoo,TFoo>(true,'impl_singleton');
+//  TDUnitXIoC.RegisterType<IFoo,TFoo>(true,'impl_singleton');
 
 end;
 

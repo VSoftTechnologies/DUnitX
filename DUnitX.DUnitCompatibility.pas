@@ -31,8 +31,8 @@ unit DUnitX.DUnitCompatibility;
 interface
 
 uses
-  SysUtils,
-  DUnitX.TestFramework;
+  DUnitX.TestFramework,
+  SysUtils;
 
 type
   TTestCase = class
@@ -108,7 +108,6 @@ begin
       Result[counter+1] := '1';
   end;
 end;
-
 
 procedure TTestCase.Check(condition: Boolean; msg: string);
 begin
@@ -272,12 +271,12 @@ end;
 
 procedure TTestCase.CheckSame(expected, actual: IUnknown; msg: string);
 begin
-   Assert.AreEqual<IInterface>(expected,actual,msg);
+  Assert.AreEqual<IInterface>(expected,actual,msg);
 end;
 
 procedure TTestCase.CheckSame(expected, actual: TObject; msg: string);
 begin
-   Assert.AreEqual<TObject>(expected,actual,msg);
+  Assert.AreEqual<TObject>(expected,actual,msg);
 end;
 
 procedure TTestCase.CheckNotNull(obj: TObject; msg: string);

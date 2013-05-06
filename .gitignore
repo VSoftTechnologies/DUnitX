@@ -3,6 +3,7 @@
 *.dcu
 *.obj
 *.exe
+*.rsm
 
 # Backup files    #
 ###################
