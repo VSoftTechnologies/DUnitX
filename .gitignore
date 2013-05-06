@@ -1,0 +1,23 @@
+# Compiled source #
+###################
+*.dcu
+*.obj
+*.exe
+
+# Backup files    #
+###################
+*.~*
+
+# IDE Files	  #
+###################
+*.dproj.local
+*.groupproj.local
+*.identcache
+*.dsk
+*.tvsconfig
+
+# Output Folders  #
+###################
+/Win32
+/Win64
+/__history
