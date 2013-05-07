@@ -20,6 +20,7 @@ implementation
 
 procedure TMyDUnitTest.ATest;
 begin
+  Status('Testing Status Redirect');
   CheckTrue(true,'true is always true!');
 end;
 
