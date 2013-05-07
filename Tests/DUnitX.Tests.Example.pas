@@ -133,8 +133,8 @@ initialization
 //if we don't touch the class somehow then the linker will remove
 //the class from the resulting exe.
 //We could just do this:
-//TMyExampleTests.ClassName;
-//TExampleFixture2.ClassName;
+TMyExampleTests.ClassName;
+TExampleFixture2.ClassName;
 //which is enough to make the compiler link the classes into the exe, but that seems a
 //bit redundent so I guess we'll just use manual registration. If you use the
 //{$STRONGLINKTYPES ON} compiler directive then it will link the TestFixtures in and you

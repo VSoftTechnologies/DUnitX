@@ -83,7 +83,7 @@ end;
 
 {$IFDEF MACOSX}
 initialization
-  TDUnitXIoC.RegisterType<IDUnitXConsoleWriter,TDUnitXMacOSConsoleWriter>();
+  TDUnitXIoC.DefaultContainer.RegisterType<IDUnitXConsoleWriter,TDUnitXMacOSConsoleWriter>();
 {$ENDIF}
 
 end.
