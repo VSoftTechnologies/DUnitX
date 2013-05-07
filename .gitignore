@@ -4,6 +4,7 @@
 *.obj
 *.exe
 *.rsm
+*.stat
 
 # Backup files    #
 ###################

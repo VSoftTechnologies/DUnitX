@@ -116,6 +116,7 @@ type
   public
     constructor Create(const useCommandLineOptions : boolean; const AListener : ITestLogger);
     destructor Destroy;override;
+    class function GetActiveRunner : ITestRunner;
 
   end;
 
@@ -481,6 +482,12 @@ begin
 
 
 
+end;
+
+class function TDUnitXTestRunner.GetActiveRunner: ITestRunner;
+begin
+  result := nil;
+  FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId,result)
 end;
 
 function TDUnitXTestRunner.GetExitBehavior: TRunnerExitBehavior;

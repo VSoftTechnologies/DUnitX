@@ -81,12 +81,20 @@ type
     procedure CheckEquals(  expected, actual: TClass; msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
     procedure CheckInherits(expected, actual: TClass; msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
     procedure CheckIs(AObject :TObject; AClass: TClass; msg: string = ''); overload;deprecated 'Use DUnitX.Assert class';
+
+    procedure Status(const msg : string);
+    //Redirect WriteLn to our loggers.
+    procedure WriteLn(const msg : string);overload;
+    procedure WriteLn;overload;
   end;
 
 
 
 
 implementation
+
+uses
+  DUnitX.TestRunner;
 
 
 //Borrowed from DUnit.
@@ -117,6 +125,27 @@ end;
 procedure TTestCase.CheckTrue(condition: Boolean; msg: string);
 begin
   Assert.IsTrue(condition,msg);
+end;
+
+procedure TTestCase.Status(const msg: string);
+begin
+  Self.WriteLn(msg);
+end;
+
+procedure TTestCase.WriteLn(const msg: string);
+var
+  runner : ITestRunner;
+begin
+  runner := TDUnitXTestRunner.GetActiveRunner;
+  if runner <> nil then
+    runner.Log(TLogLevel.ltInformation,msg)
+  else
+    System.Writeln(msg);
+end;
+
+procedure TTestCase.WriteLn;
+begin
+  Self.WriteLn('');
 end;
 
 procedure TTestCase.CheckFalse(condition: Boolean; msg: string);
