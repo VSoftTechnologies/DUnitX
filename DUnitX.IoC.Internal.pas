@@ -41,14 +41,6 @@ uses
   DUnitX.IoC;
 
 type
-  TIoCRegistration<T : IInterface> = class
-  public
-    IInterface        : PTypeInfo;
-    ImplClass         : TInterfacedClass;
-    ActivatorDelegate : TActivatorDelegate<T>;
-    IsSingleton       : boolean;
-    Instance          : IInterface;
-  end;
 
   //Makes sure virtual constructors are called correctly. Just using a class reference will not call the overriden constructor!
   //See http://stackoverflow.com/questions/791069/how-can-i-create-an-delphi-object-from-a-class-reference-and-ensure-constructor
@@ -63,14 +55,12 @@ type
 
 
 
-function IocContainerInfo : TDictionary<string,TObject>;
+//function IocContainerInfo : TDictionary<string,TObject>;
 
 
 
 implementation
 
-var
-  _container : TDictionary<string,TObject>;
 
 //Borrowed from XE2 - in earlier versions of delphi these were from the windows unit.
 
@@ -105,29 +95,6 @@ asm
 end;
 {$ENDIF}
 
-function IocContainerInfo : TDictionary<string,TObject>;
-var
-  lcontainer : TDictionary<string,TObject>;
-begin
-  if _container = nil then
-  begin
-    lcontainer := TDictionary<string,TObject>.Create;
-    if InterlockedCompareExchangePointer(Pointer(_container), lcontainer, nil) <> nil then
-        lcontainer.Free;
-  end;
-  result := _container;
-end;
-
-procedure Cleanup;
-var
-  o : TObject;
-begin
-  for o in _container.Values do
-    o.Free;
-  _container.Free;
-end;
-
-
 { TActivator }
 
 class constructor TClassActivator.Create;
@@ -157,10 +124,4 @@ begin
 
 end;
 
-
-initialization
-
-
-finalization
-  Cleanup;
 end.

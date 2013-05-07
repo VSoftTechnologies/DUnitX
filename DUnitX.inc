@@ -25,6 +25,7 @@
 {***************************************************************************}
 
 {$DEFINE UNSUPPORTED_COMPILER_VERSION}
+
 {$IFDEF VER210} // RAD Studio 2010
   {$DEFINE DELPHI_2010}
   {$DEFINE DELPHI_2010_UP}

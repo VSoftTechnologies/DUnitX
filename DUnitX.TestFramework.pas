@@ -1090,10 +1090,10 @@ begin
   Self.Log(TLogLevel.ltInformation,msg);
 end;
 
-//procedure TTestFixtureHelper.WriteLn;
-//begin
-//  Self.Log(TLogLevel.ltInformation,'');
-//end;
+procedure TTestFixtureHelper.WriteLn;
+begin
+  Self.Log(TLogLevel.ltInformation,'');
+end;
 
 procedure TTestFixtureHelper.WriteLn(const msg: string);
 begin

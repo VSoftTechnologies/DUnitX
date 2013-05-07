@@ -47,7 +47,7 @@ begin
     //runner.AddLogger(TDUnitXTextFileLogger.Create('c:\temp\log.txt'));
     //run the tests
 //    TDUnitX.CommandLine.HideBanner := true;
-  //  results := runner.Execute;
+    results := runner.Execute;
     //    if not results.AllPassed then
     //      System.ExitCode := 1;
     //todo : results really should have some stats already available.

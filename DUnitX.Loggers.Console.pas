@@ -93,7 +93,7 @@ uses
 
 constructor TDUnitXConsoleLogger.Create;
 begin
-  FConsoleWriter := TDUnitXIoC.Resolve<IDUnitXConsoleWriter>();
+  FConsoleWriter := TDUnitXIoC.DefaultContainer.Resolve<IDUnitXConsoleWriter>();
   if FConsoleWriter = nil then
     raise Exception.Create('No ConsoleWriter Class is registered.' + #13#10 +
                            'You will need to include DUnitX.Windows.Console or DUnitX.MACOS.Console in you application');
@@ -261,5 +261,5 @@ begin
 
 end;
 
-
 end.
+

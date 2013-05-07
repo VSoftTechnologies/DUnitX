@@ -24,20 +24,19 @@ type
     [SetupFixture]
      procedure Setup;
 
+    {$IFDEF DELPHI_XE_UP}
     [Test]
     procedure Test_Implementation_Non_Singleton;
 
     [Test]
     procedure Test_Implementation_Singleton;
-
+    {$ENDIF}
 
     [Test]
     procedure Test_Activator_Non_Singleton;
 
     [Test]
     procedure Test_Activator_Singleton;
-
-
   end;
 
 implementation
@@ -48,31 +47,33 @@ type
     procedure Bar;
   end;
 
-
-
-
 { TDUnitX_IoCTests }
 
 procedure TDUnitX_IoCTests.Setup;
 begin
-  TDUnitXIoC.RegisterType<IFoo>(
+  TDUnitXIoC.DefaultContainer.RegisterType<IFoo>(
       function : IFoo
       begin
         result := TFoo.Create;
       end);
 
-  TDUnitXIoC.RegisterType<IFoo,TFoo>('test');
+  {$IFDEF DELPHI_XE_UP}
+  //NOTE: DUnitX.IoC has details on why this is only available for XE up.
+  TDUnitXIoC.DefaultContainer.RegisterType<IFoo,TFoo>('test');
+  {$ENDIF}
 
-//singletons
-  TDUnitXIoC.RegisterType<IFoo>(true,
+  //singletons
+  TDUnitXIoC.DefaultContainer.RegisterType<IFoo>(true,
       function : IFoo
       begin
         result := TFoo.Create;
       end,
       'activator_singleton');
 
-//  TDUnitXIoC.RegisterType<IFoo,TFoo>(true,'impl_singleton');
-
+  {$IFDEF DELPHI_XE_UP}
+  //NOTE: DUnitX.IoC has details on why this is only available for XE up.
+  TDUnitXIoC.DefaultContainer.RegisterType<IFoo,TFoo>(true,'impl_singleton');
+  {$ENDIF}
 end;
 
 procedure TDUnitX_IoCTests.Test_Activator_Non_Singleton;
@@ -80,10 +81,10 @@ var
   foo1 : IFoo;
   foo2 : IFoo;
 begin
-  foo1 := TDUnitXIoC.Resolve<IFoo>();
-  foo2 := TDUnitXIoC.Resolve<IFoo>();
-  Assert.AreNotSame(foo1,foo2);
+  foo1 := TDUnitXIoC.DefaultContainer.Resolve<IFoo>();
+  foo2 := TDUnitXIoC.DefaultContainer.Resolve<IFoo>();
 
+  Assert.AreNotSame(foo1,foo2);
 end;
 
 procedure TDUnitX_IoCTests.Test_Activator_Singleton;
@@ -91,23 +92,27 @@ var
   foo1 : IFoo;
   foo2 : IFoo;
 begin
-  foo1 := TDUnitXIoC.Resolve<IFoo>('activator_singleton');
-  foo2 := TDUnitXIoC.Resolve<IFoo>('activator_singleton');
+  foo1 := TDUnitXIoC.DefaultContainer.Resolve<IFoo>('activator_singleton');
+  foo2 := TDUnitXIoC.DefaultContainer.Resolve<IFoo>('activator_singleton');
   Assert.AreSame(foo1,foo2);
-  foo1 := TDUnitXIoC.Resolve<IFoo>('impl_singleton');
-  Assert.AreNotSame(foo1,foo2);
 
+  {$IFDEF DELPHI_XE_UP}
+  //NOTE: DUnitX.IoC has details on why this is only available for XE up.
+  foo1 := TDUnitXIoC.DefaultContainer.Resolve<IFoo>('impl_singleton');
+  Assert.AreNotSame(foo1,foo2);
+  {$ENDIF}
 end;
 
+{$IFDEF DELPHI_XE_UP}
+//NOTE: DUnitX.IoC has details on why this is only available for XE up.
 procedure TDUnitX_IoCTests.Test_Implementation_Non_Singleton;
 var
   foo1 : IFoo;
   foo2 : IFoo;
 begin
-  foo1 := TDUnitXIoC.Resolve<IFoo>('test');
-  foo2 := TDUnitXIoC.Resolve<IFoo>('test');
+  foo1 := TDUnitXIoC.DefaultContainer.Resolve<IFoo>('test');
+  foo2 := TDUnitXIoC.DefaultContainer.Resolve<IFoo>('test');
   Assert.AreNotSame(foo1,foo2);
-
 end;
 
 procedure TDUnitX_IoCTests.Test_Implementation_Singleton;
@@ -115,10 +120,11 @@ var
   foo1 : IFoo;
   foo2 : IFoo;
 begin
-  foo1 := TDUnitXIoC.Resolve<IFoo>('impl_singleton');
-  foo2 := TDUnitXIoC.Resolve<IFoo>('impl_singleton');
+  foo1 := TDUnitXIoC.DefaultContainer.Resolve<IFoo>('impl_singleton');
+  foo2 := TDUnitXIoC.DefaultContainer.Resolve<IFoo>('impl_singleton');
   Assert.AreSame(foo1,foo2);
 end;
+{$ENDIF}
 
 { TFoo }
 
@@ -129,5 +135,4 @@ end;
 
 initialization
   TDUnitX.RegisterTestFixture(TDUnitX_IoCTests);
-//TDUnitX_IoCTests.ClassName;
 end.

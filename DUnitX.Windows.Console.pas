@@ -176,8 +176,16 @@ begin
 end;
 
 
-{.$IFDEF MSWINDOWS}
+{$IFDEF MSWINDOWS}
 initialization
-   TDUnitXIoC.RegisterType<IDUnitXConsoleWriter,TDUnitXWindowsConsoleWriter>();
-{.$ENDIF}
+    //Refer to IoC.pas for why the double generic class function isn't being used.
+//    TDUnitXIoC.DefaultContainer.RegisterType<IDUnitXConsoleWriter,TDUnitXWindowsConsoleWriter>();
+
+    TDUnitXIoC.DefaultContainer.RegisterType<IDUnitXConsoleWriter>(
+        function : IDUnitXConsoleWriter
+        begin
+          Result := TDUnitXWindowsConsoleWriter.Create;
+        end
+    );
+{$ENDIF}
 end.
