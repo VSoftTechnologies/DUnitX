@@ -39,9 +39,12 @@ uses
 
 type
 
-  ///  A class decorated with this attribute will be tested. The parameters
-  ///  allow you to control which methods are treated as tests. By default
-  ///  only methods decorated with the Test attribute are run as tests.
+
+  ///	<summary>
+  ///	  A class decorated with this attribute will be tested. The parameters
+  ///	  allow you to control which methods are treated as tests. By default 
+  ///	  only methods decorated with the Test attribute are run as tests.
+  ///	</summary>
   TestFixtureAttribute = class(TCustomAttribute)
   private
     FName : string;
@@ -54,42 +57,61 @@ type
     property Name : string read FName;
   end;
 
-  ///  A TestFixture decorated with this attribute will be tested using it's own thread
-  ///  This can speed up unit testing when fixtures do not compete for resources and the
-  ///  test machine has enough cores to service the tests.
-  ///  NOTE - CURRENTLY PLANNED BUT NOT IMPLEMENTED!!!
+
+  ///	<summary>
+  ///	  A TestFixture decorated with this attribute will be tested using it's
+  ///	  own thread.  This can speed up unit testing when fixtures do not
+  ///	  compete for resources and the test machine has enough cores to service
+  ///	  the tests.
+  ///	</summary>
+  ///	<remarks>
+  ///	  NOTE - CURRENTLY PLANNED BUT NOT IMPLEMENTED!!!
+  ///	</remarks>
   TestInOwnThreadAttribute = class(TCustomAttribute);
 
-  ///  A method marked with this attribute will run before any tests in.
-  ///  Note that if more than one method is decorated with this attribute
-  ///  the first method found will be executed (notrecommended!).
+  ///	<summary>
+  ///	  A method marked with this attribute will run before any tests in.  Note
+  ///	  that if more than one method is decorated with this attribute the first
+  ///	  method found will be executed (not recommended!).
+  ///	</summary>
   SetupFixtureAttribute = class(TCustomAttribute)
   end;
 
 
-  ///  A method on a test fixture decorated with this attribute will
-  ///  run before each test method is run. Note that if more than one method
-  ///  is decorated with this attribute the first method found will be executed (not
-  ///  recommended!).
+  ///	<summary>
+  ///	  A method on a test fixture decorated with this attribute will run
+  ///	  before each test method is run. Note that if more than one method is
+  ///	  decorated with this attribute the first method found will be executed
+  ///	  (not recommended!).
+  ///	</summary>
   SetupAttribute = class(TCustomAttribute)
   end;
 
-  ///  A method on a test fixture class decorated with this attribute will be
-  ///  run after each test method is run. Note that if more than one method
-  ///  is decorated with this attribute the first method found will be executed (not
-  ///  recommended!).
+
+  ///	<summary>
+  ///	  A method on a test fixture class decorated with this attribute will be
+  ///	  run after each test method is run. Note that if more than one method is
+  ///	  decorated with this attribute the first method found will be executed
+  ///	  (not recommended!).
+  ///	</summary>
   TearDownAttribute = class(TCustomAttribute)
   end;
 
-  ///  A method marked with this attribute can contain a teardown method that
-  ///  will be run after each all tests in the fixture have executed.
-  ///  Note that if more than one method is decorated with this attribute the
-  //   first method found will be executed (not recommended!).
+
+  ///	<summary>
+  ///	  A method marked with this attribute can contain a teardown method that
+  ///	  will be run after each all tests in the fixture have executed.  Note
+  ///	  that if more than one method is decorated with this attribute the first
+  ///	  method found will be executed (not recommended!).
+  ///	</summary>
   TearDownFixtureAttribute = class(TCustomAttribute)
   end;
 
 
-  //Marks a method as a test method
+
+  ///	<summary>
+  ///	  This attribute marks a method as a test method
+  ///	</summary>
   TestAttribute = class(TCustomAttribute)
   private
     FEnabled : boolean;
@@ -99,8 +121,13 @@ type
     property Enabled : boolean read FEnabled;
   end;
 
-  //Marks a test method to be repeated count times.
-  //NOT IMPLEMENTED
+
+  ///	<summary>
+  ///	  Marks a test method to be repeated count times.
+  ///	</summary>
+  ///	<remarks>
+  ///	  NOT IMPLEMENTED
+  ///	</remarks>
   RepeatAttribute = class(TCustomAttribute)
   private
     FCount : Cardinal;
@@ -111,10 +138,17 @@ type
 
   TValueArray = array of TValue;
 
-  ///  The TestCaseAttribute allows you to specify the name of a function that returns a
-  ///  TValueArray which will be passed into a function that takes parameters. This is really only
-  ///  needed to work around the problens with the TestCaseAttribute
-  ///  Note that the types in the TConstArray should match the parameters of the method we are testing.
+
+  ///	<summary>
+  ///	  The TestCaseAttribute allows you to specify the name of a function that
+  ///	  returns a TValueArray which will be passed into a function that takes
+  ///	  parameters. This is really only needed to work around the problens with
+  ///	  the TestCaseAttribute. 
+  ///	</summary>
+  ///	<remarks>
+  ///	  Note that the types in the TConstArray should match the parameters of
+  ///	  the method we are testing.
+  ///	</remarks>
   TestCaseAttribute = class(TCustomAttribute)
   private
     FCaseName : string;
@@ -130,9 +164,10 @@ type
   TLogLevel = (ltInformation,ltWarning,ltError);
 
 {$IFDEF DELPHI_XE2_UP}
-  ///  This helper class is intended to redirect the writeln
-  ///  method to a test runner so that it is logged correctly.
-  //
+  ///	<summary>
+  ///	  This helper class is intended to redirect the writeln method to a test
+  ///	  runner so that it is logged correctly.
+  ///	</summary>
   TTestFixtureHelper = class helper for TObject
   public
     procedure Log(const logType : TLogLevel; const msg : string);overload;
@@ -144,6 +179,7 @@ type
     procedure WriteLn;overload;
   end;
 {$ENDIF}
+
 
 
 
@@ -332,57 +368,116 @@ type
 
   ITestLogger = interface
     ['{AADCA392-421C-4060-8D47-79D7CAAB0EEF}']
-    //Called at the start of testing. The default console logger prints the DUnitX banner.
+
+    ///	<summary>
+    ///	  Called at the start of testing. The default console logger prints the
+    ///	  DUnitX banner.
+    ///	</summary>
     procedure OnTestingStarts(const threadId : Cardinal);
 
-    //Called before a Fixture is run.
+
+    ///	<summary>
+    ///	  //Called before a Fixture is run.
+    ///	</summary>
     procedure OnStartTestFixture(const threadId : Cardinal; const fixture : ITestFixtureInfo);
 
-    //Called before a fixture Setup method is run.
+    ///	<summary>
+    ///	  //Called before a fixture Setup method is run
+    ///	</summary>
     procedure OnSetupFixture(const threadId : Cardinal; const fixture : ITestFixtureInfo);
-    //Called afgter a ficture setup method is run.
+
+    ///	<summary>
+    ///	  Called after a fixture setup method is run.
+    ///	</summary>
     procedure OnEndSetupFixture(const threadId : Cardinal; const fixture : ITestFixtureInfo);
 
-    //called before a Test method is run.
+
+    ///	<summary>
+    ///	  Called before a Test method is run.
+    ///	</summary>
     procedure OnBeginTest(const threadId : Cardinal; Test: ITestInfo);
 
-    //called before a test setup method is run.
+
+    ///	<summary>
+    ///	  Called before a test setup method is run.
+    ///	</summary>
     procedure OnSetupTest(const threadId : Cardinal; Test: ITestInfo);
-    //called after a test setup method is run.
+
+    ///	<summary>
+    ///	  Called after a test setup method is run.
+    ///	</summary>
     procedure OnEndSetupTest(const threadId : Cardinal; Test: ITestInfo);
 
-    //called before a Test method is run.
+
+    ///	<summary>
+    ///	  Called before a Test method is run.
+    ///	</summary>
     procedure OnExecuteTest(const threadId : Cardinal; Test: ITestInfo);
 
 
-    //called when a test succeeds.
+    ///	<summary>
+    ///	  Called when a test succeeds
+    ///	</summary>
     procedure OnTestSuccess(const threadId : Cardinal; Test: ITestResult);
-    //called when a test errors.
+
+    ///	<summary>
+    ///	  Called when a test errors.
+    ///	</summary>
     procedure OnTestError(const threadId : Cardinal; Error: ITestError);
-    //called when a test fails.
+
+    ///	<summary>
+    ///	  Called when a test fails.
+    ///	</summary>
     procedure OnTestFailure(const threadId : Cardinal; Failure: ITestResult);
-    //called when a test results in a warning.
+
+    ///	<summary>
+    ///	  //called when a test results in a warning.
+    ///	</summary>
     procedure OnTestWarning(const threadId : Cardinal; AWarning: ITestResult);
 
-    //allows tests to write to the log.
+
+    ///	<summary>
+    ///	  //allows tests to write to the log.
+    ///	</summary>
     procedure OnLog(const logType : TLogLevel; const msg : string);
 
-    //called before a Test Teardown method is run.
+
+    ///	<summary>
+    ///	  //called before a Test Teardown method is run.
+    ///	</summary>
     procedure OnTeardownTest(const threadId : Cardinal; Test: ITestInfo);
-    //called after a test teardown method is run.
+
+    ///	<summary>
+    ///	  //called after a test teardown method is run.
+    ///	</summary>
     procedure OnEndTeardownTest(const threadId : Cardinal; Test: ITestInfo);
-    //called after a test method and teardown is run.
+
+    ///	<summary>
+    ///	  //called after a test method and teardown is run.
+    ///	</summary>
     procedure OnEndTest(const threadId : Cardinal; Test: ITestResult);
 
-    //called before a Fixture Teardown method is called.
+
+    ///	<summary>
+    ///	  //called before a Fixture Teardown method is called.
+    ///	</summary>
     procedure OnTearDownFixture(const threadId : Cardinal; const fixture : ITestFixtureInfo);
-    //called after a Fixture Teardown method is called.
+
+    ///	<summary>
+    ///	  //called after a Fixture Teardown method is called.
+    ///	</summary>
     procedure OnEndTearDownFixture(const threadId : Cardinal; const fixture : ITestFixtureInfo);
 
-    //called after a Fixture has run.
+
+    ///	<summary>
+    ///	  //called after a Fixture has run.
+    ///	</summary>
     procedure OnEndTestFixture(const threadId : Cardinal; const results : IFixtureResult);
 
-    //called after all fixtures have run.
+
+    ///	<summary>
+    ///	  //called after all fixtures have run.
+    ///	</summary>
     procedure OnTestingEnds(const TestResult: ITestResults);
   end;
 
@@ -415,10 +510,13 @@ type
     procedure WriteLn;overload;
 
 
-    //When true, test fixtures will be found by using RTTI to search for classes decorated as TestFixtures
-    //Note for this to work you may need to use {$STRONGLINKTYPES ON} otherwise the classes may not get
-    //linked as they are not referenced. When False you will need to register the fixtures using
-    //TDUnitX.RegisterTestFixture
+    ///	<summary>
+    ///	  When true, test fixtures will be found by using RTTI to search for
+    ///	  classes decorated as TestFixtures.  Note for this to work you may
+    ///	  need to use {$STRONGLINKTYPES ON} otherwise the classes may not get
+    ///	  linked as they are not referenced. When False you will need to
+    ///	  register the fixtures using TDUnitX.RegisterTestFixture
+    ///	</summary>
     property UseRTTI : boolean read GetUseRTTI write SetUseRTTI;
   end;
 
@@ -1090,10 +1188,10 @@ begin
   Self.Log(TLogLevel.ltInformation,msg);
 end;
 
-//procedure TTestFixtureHelper.WriteLn;
-//begin
-//  Self.Log(TLogLevel.ltInformation,'');
-//end;
+procedure TTestFixtureHelper.WriteLn;
+begin
+  Self.Log(TLogLevel.ltInformation,'');
+end;
 
 procedure TTestFixtureHelper.WriteLn(const msg: string);
 begin
