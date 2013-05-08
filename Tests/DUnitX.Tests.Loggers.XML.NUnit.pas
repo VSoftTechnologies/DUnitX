@@ -112,9 +112,7 @@ end;
 
 procedure TDUnitX_LoggerXMLNUnitTests.OnTestingStarts_Fills_The_Start_Of_The_Stream_With_Header_Info;
 var
-{$IFDEF UNICODE}
   sUnicodePreamble: string;
-{$ENDIF}
   logger : IDUnitXXMLNUnitLogger;
   mockStream : TStringStream;
   sOnTestingStartsText : string;
@@ -125,21 +123,12 @@ var
   sExpectedAppName : string;
   iPrevLastChar: Integer;
 const
-{$IFDEF UNICODE}
   EXPECTED_HEADER = '<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>';
-{$ELSE}
-  EXPECTED_HEADER = '<?xml version="1.0" encoding="ISO-8859-1" standalone="yes" ?>';
-{$ENDIF}
   EXPECTED_RESULTS_FORMAT_STR = '<test-results total="%d" notrun="%d" date="%s" time="%s" >';
   EXPECTED_APP_NAME_FORMAT_STR = '<application name="%s" />';
 begin
   //TODO: Break this unit tests into three seperate specific tests for each of the header sections.
-  //TODO: Break unicode specific test out into its own test, and compile in/out the whole test.
-{$IFDEF UNICODE}
   mockStream := TStringStream.Create('', TEncoding.UTF8);
-{$ELSE}
-  mockStream := TStringStream.Create('', TEncoding.ANSI);
-{$ENDIF}
   logger := TDUnitXXMLNUnitLogger.Create(mockStream);
   logger.OnTestingStarts(0, 40, 30);
 
@@ -154,7 +143,6 @@ begin
                          [ExtractFileName(ParamStr(0))]);
 
   iPrevLastChar := 0;
-{$IFDEF UNICODE}
   //Check the preamble
   sUnicodePreamble := TEncoding.UTF8.GetString(TEncoding.UTF8.GetPreamble);
 
@@ -169,15 +157,6 @@ begin
   iPrevLastChar := iPrevLastChar + Length(sExpectedResults);
 
   sAppName := Copy(sOnTestingStartsText, Succ(iPrevLastChar), Length(sExpectedAppName));
-{$ELSE}
-  sHeader := Copy(sOnTestingStartsText, Succ(iPrevLastChar), Length(EXPECTED_HEADER));
-  iPrevLastChar := iPrevLastChar + Length(EXPECTED_HEADER);
-
-  sResults := Copy(sOnTestingStartsText, Succ(iPrevLastChar), Length(sExpectedResults));
-  iPrevLastChar := iPrevLastChar + Length(sExpectedResults);
-
-  sAppName := Copy(sOnTestingStartsText, Succ(iPrevLastChar), Length(sExpectedAppName));
-{$ENDIF}
 
   Assert.AreEqual<string>(sHeader, EXPECTED_HEADER);
 

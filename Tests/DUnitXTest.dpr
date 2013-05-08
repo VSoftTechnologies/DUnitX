@@ -30,7 +30,9 @@ uses
   DUnitX.Tests.Assert in 'DUnitX.Tests.Assert.pas',
   DUnitX.Tests.DUnitCompatibility in 'DUnitX.Tests.DUnitCompatibility.pas',
   DUnitX.Tests.Example in 'DUnitX.Tests.Example.pas',
-  DUnitX.Tests.Loggers.XML.NUnit in 'DUnitX.Tests.Loggers.XML.NUnit.pas';
+  DUnitX.Tests.Loggers.XML.NUnit in 'DUnitX.Tests.Loggers.XML.NUnit.pas',
+  DUnitX.Utils.XML in '..\DUnitX.Utils.XML.pas',
+  DUnitX.Tests.Utils.XML in 'DUnitX.Tests.Utils.XML.pas';
 
 var
   runner : ITestRunner;

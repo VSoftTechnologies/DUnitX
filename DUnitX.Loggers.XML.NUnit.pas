@@ -256,22 +256,16 @@ begin
 end;
 
 procedure TDUnitXXMLNUnitLogger.OnTestingStarts(const threadId, testCount, testActiveCount: Cardinal);
-{$IFDEF UNICODE}
 var
   unicodePreamble: TBytes;
   dtNow: TDateTime;
-{$ENDIF}
 begin
-{$IFDEF UNICODE}
    //write the byte order mark
    unicodePreamble := TEncoding.UTF8.GetPreamble;
    if Length(unicodePreamble) > 0 then
       FOutputStream.WriteBuffer(unicodePreamble[0], Length(unicodePreamble));
 
    WriteXMLLine('<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>');
-{$ELSE}
-   WriteXMLLine('<?xml version="1.0" encoding="ISO-8859-1" standalone="yes" ?>');
-{$ENDIF}
 
    dtNow := Now;
    WriteXMLLine(Format('<test-results total="%d" notrun="%d" date="%s" time="%s" >',
@@ -295,15 +289,11 @@ end;
 
 
 procedure TDUnitXXMLNUnitLogger.WriteXMLLine(const AXMLLine: string);
-{$IFDEF UNICODE}
 var
   btUTF8Buffer : TBytes;
-{$ENDIF}
   sLine: string;
 begin
   sLine := AXMLLine + NUNIT_LOGGER_CRLF;
-  {$IFDEF UNICODE}
-
   if FOutputStream <> nil then
   begin
     btUTF8Buffer := TEncoding.UTF8.GetBytes(AXMLLine);
@@ -311,14 +301,6 @@ begin
   end
   else
     WriteLn(AXMLLine);
- 
-  {$ELSE}
-  if FOutputStream <> nil then
-    FOutputStream.Write(PChar(sLine)^,Length(sLine))
-  else
-    Writeln(AXMLLine);
-  {$ENDIF}
-
 end;
 
 end.
