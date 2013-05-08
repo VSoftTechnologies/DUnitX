@@ -36,11 +36,11 @@ uses
 
 type
   // Simple text file logger.
-  TDUnitXTextFileLogger = class(TInterfacedObject,ITestLogger)
+  TDUnitXTextFileLogger = class(TInterfacedObject, ITestLogger)
   private
     //FFileName : string;
   protected
-    procedure OnTestingStarts(const threadId : Cardinal);
+    procedure OnTestingStarts(const threadId: Cardinal);
 
     procedure OnStartTestFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
 
@@ -60,7 +60,7 @@ type
     procedure OnTestError(const threadId: Cardinal; Error: ITestError);
     procedure OnTestFailure(const threadId: Cardinal; Failure: ITestResult);
 
-    procedure OnLog(const logType : TLogLevel; const msg : string);
+    procedure OnLog(const logType: TLogLevel; const msg : string);
 
     procedure OnTeardownTest(const threadId: Cardinal; Test: ITestInfo);
     procedure OnEndTeardownTest(const threadId: Cardinal; Test: ITestInfo);
@@ -74,9 +74,8 @@ type
     procedure OnEndTestFixture(const threadId: Cardinal; const results: IFixtureResult);
 
     procedure OnTestingEnds(const TestResult: ITestResults);
-
   public
-    constructor Create(const AFileName : string; const overwrite : boolean = true);
+    constructor Create(const AFileName: string; const overwrite : boolean = true);
   end;
 
 implementation

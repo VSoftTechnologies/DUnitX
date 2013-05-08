@@ -38,7 +38,7 @@ type
   ///
   ///  Writes nicely formatted and colored messages to the console window.
   ///
-  TDUnitXConsoleLogger = class(TInterfacedObject,ITestLogger)
+  TDUnitXConsoleLogger = class(TInterfacedObject, ITestLogger)
   private
     FConsoleWriter : IDUnitXConsoleWriter;
   protected
@@ -244,6 +244,7 @@ procedure TDUnitXConsoleLogger.OnTestingStarts(const threadId : Cardinal);
 begin
   if TDUnitX.CommandLine.HideBanner then
     exit;
+
   FConsoleWriter.SetColour(ccBrightWhite);
   FConsoleWriter.WriteLn('**********************************************************************');
   FConsoleWriter.WriteLn('               DUnitX - (c) 2013 Vincent Parrett                      ');

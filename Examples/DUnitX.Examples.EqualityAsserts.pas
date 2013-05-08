@@ -24,32 +24,45 @@
 {                                                                           }
 {***************************************************************************}
 
-unit DUnitX.Tests.DUnitCompatibility;
+unit DUnitX.Examples.EqualityAsserts;
 
 interface
 
 uses
-  DUnitX.TestFramework,
-  DUnitX.DUnitCompatibility;
+   DUnitX.TestFramework;
 
 type
-  // a typical DUnit like class
-  {$M+}
-  TMyDUnitTest = class(TTestCase)
-  published
-    procedure ATest;
-  end;
+   [TestFixture]
+   TDUnitXExamplesEqualityAsserts = class
+   public
+     [Test]
+     procedure Assert_AreNotEqual;
+   end;
 
 implementation
 
-{ TMyDUnitTest }
+{ TDUnitXExamplesEqualityAsserts }
 
-procedure TMyDUnitTest.ATest;
+procedure TDUnitXExamplesEqualityAsserts.Assert_AreNotEqual;
+var
+  valueToTest : boolean;
 begin
-  Status('Testing Status Redirect');
-  CheckTrue(true,'true is always true!');
+  //String
+  Assert.AreNotEqual('Not', 'Equal');
+
+  //TClass
+  Assert.AreNotEqual(TObject, TInterfacedObject);
+
+  //Extended
+  Assert.AreNotEqual(1.18E4932, 1.19E4932);
+  //Extended with tolerance
+  Assert.AreNotEqual(1.18E4932, 1.19E4932, 0.001E4932);
+
+  //Generic
+  valueToTest := false;
+  Assert.AreNotEqual<boolean>(valueToTest, true);
 end;
 
 initialization
-  TDUnitX.RegisterTestFixture(TMyDUnitTest);
+  TDUnitX.RegisterTestFixture(TDUnitXExamplesEqualityAsserts);
 end.

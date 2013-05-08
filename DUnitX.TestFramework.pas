@@ -266,7 +266,6 @@ type
     property TestStartTime : TDateTime read GetTestStartTime;
     property TestEndTime : TDateTime read GetTestEndTime;
     property TestDuration : TTimeSpan read GetTestDuration;
-
   end;
 
 
@@ -375,7 +374,6 @@ type
     ///	</summary>
     procedure OnTestingStarts(const threadId : Cardinal);
 
-
     ///	<summary>
     ///	  //Called before a Fixture is run.
     ///	</summary>
@@ -391,12 +389,10 @@ type
     ///	</summary>
     procedure OnEndSetupFixture(const threadId : Cardinal; const fixture : ITestFixtureInfo);
 
-
     ///	<summary>
     ///	  Called before a Test method is run.
     ///	</summary>
     procedure OnBeginTest(const threadId : Cardinal; Test: ITestInfo);
-
 
     ///	<summary>
     ///	  Called before a test setup method is run.
@@ -408,12 +404,10 @@ type
     ///	</summary>
     procedure OnEndSetupTest(const threadId : Cardinal; Test: ITestInfo);
 
-
     ///	<summary>
     ///	  Called before a Test method is run.
     ///	</summary>
     procedure OnExecuteTest(const threadId : Cardinal; Test: ITestInfo);
-
 
     ///	<summary>
     ///	  Called when a test succeeds
@@ -435,12 +429,10 @@ type
     ///	</summary>
     procedure OnTestWarning(const threadId : Cardinal; AWarning: ITestResult);
 
-
     ///	<summary>
     ///	  //allows tests to write to the log.
     ///	</summary>
     procedure OnLog(const logType : TLogLevel; const msg : string);
-
 
     ///	<summary>
     ///	  //called before a Test Teardown method is run.
@@ -457,7 +449,6 @@ type
     ///	</summary>
     procedure OnEndTest(const threadId : Cardinal; Test: ITestResult);
 
-
     ///	<summary>
     ///	  //called before a Fixture Teardown method is called.
     ///	</summary>
@@ -468,12 +459,10 @@ type
     ///	</summary>
     procedure OnEndTearDownFixture(const threadId : Cardinal; const fixture : ITestFixtureInfo);
 
-
     ///	<summary>
     ///	  //called after a Fixture has run.
     ///	</summary>
     procedure OnEndTestFixture(const threadId : Cardinal; const results : IFixtureResult);
-
 
     ///	<summary>
     ///	  //called after all fixtures have run.

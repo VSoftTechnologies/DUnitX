@@ -24,32 +24,58 @@
 {                                                                           }
 {***************************************************************************}
 
-unit DUnitX.Tests.DUnitCompatibility;
+unit DUnitX.Tests.Loggers.XML.NUnit;
+
 
 interface
 
 uses
+  Classes,
   DUnitX.TestFramework,
-  DUnitX.DUnitCompatibility;
+  DUnitX.Loggers.XML.NUnit;
 
 type
-  // a typical DUnit like class
   {$M+}
-  TMyDUnitTest = class(TTestCase)
-  published
-    procedure ATest;
+  TMockFileStream = class(TFileStream)
+  private
+    FFileName : string;
+  public
+    constructor Create(const AFileName: string);
+    property Filename : string read FFilename;
+  end;
+
+  [TestFixture]
+  TDUnitX_LoggerXMLNUnitTests = class
+  public
+    [Test]
+    procedure CreateTest;
   end;
 
 implementation
 
-{ TMyDUnitTest }
 
-procedure TMyDUnitTest.ATest;
+{ TDUnitX_LoggerXMLNUnit }
+
+procedure TDUnitX_LoggerXMLNUnitTests.CreateTest;
+var
+  sut : IDUnitXXMLNUnitLogger;
+  mockStream : TMockFileStream;
+const
+  TEST_FILE_NAME = 'DUnitX_TestFile';
 begin
-  Status('Testing Status Redirect');
-  CheckTrue(true,'true is always true!');
+  mockStream := TMockFileStream.Create(TEST_FILE_NAME);
+  sut := TDUnitXXMLNUnitLogger.Create(mockStream);
+
+  Assert.IsNotNull(sut);
+end;
+
+{ TMockFileStream }
+
+constructor TMockFileStream.Create(const AFileName: string);
+begin
+  FFileName := AFileName;
 end;
 
 initialization
-  TDUnitX.RegisterTestFixture(TMyDUnitTest);
+  TDUnitX.RegisterTestFixture(TDUnitX_LoggerXMLNUnitTests);
 end.

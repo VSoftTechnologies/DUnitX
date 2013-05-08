@@ -1,0 +1,48 @@
+﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+		<PropertyGroup>
+			<ProjectGuid>{578B7A11-D6C6-468D-8C4F-BC822BA313A8}</ProjectGuid>
+		</PropertyGroup>
+		<ItemGroup>
+			<Projects Include="Examples\DUnitXExamples.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="Tests\DUnitXTest.dproj">
+				<Dependencies/>
+			</Projects>
+		</ItemGroup>
+		<ProjectExtensions>
+			<Borland.Personality>Default.Personality.12</Borland.Personality>
+			<Borland.ProjectType/>
+			<BorlandProject>
+				<Default.Personality/>
+			</BorlandProject>
+		</ProjectExtensions>
+		<Target Name="DUnitXExamples">
+			<MSBuild Projects="Examples\DUnitXExamples.dproj"/>
+		</Target>
+		<Target Name="DUnitXExamples:Clean">
+			<MSBuild Targets="Clean" Projects="Examples\DUnitXExamples.dproj"/>
+		</Target>
+		<Target Name="DUnitXExamples:Make">
+			<MSBuild Targets="Make" Projects="Examples\DUnitXExamples.dproj"/>
+		</Target>
+		<Target Name="DUnitXTest">
+			<MSBuild Projects="Tests\DUnitXTest.dproj"/>
+		</Target>
+		<Target Name="DUnitXTest:Clean">
+			<MSBuild Targets="Clean" Projects="Tests\DUnitXTest.dproj"/>
+		</Target>
+		<Target Name="DUnitXTest:Make">
+			<MSBuild Targets="Make" Projects="Tests\DUnitXTest.dproj"/>
+		</Target>
+		<Target Name="Build">
+			<CallTarget Targets="DUnitXExamples;DUnitXTest"/>
+		</Target>
+		<Target Name="Clean">
+			<CallTarget Targets="DUnitXExamples:Clean;DUnitXTest:Clean"/>
+		</Target>
+		<Target Name="Make">
+			<CallTarget Targets="DUnitXExamples:Make;DUnitXTest:Make"/>
+		</Target>
+		<Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+	</Project>
