@@ -42,7 +42,7 @@ type
   private
     FConsoleWriter : IDUnitXConsoleWriter;
   protected
-    procedure OnTestingStarts(const threadId : Cardinal);
+    procedure OnTestingStarts(const threadId, testCount, testActiveCount : Cardinal);
 
     procedure OnStartTestFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
 
@@ -240,7 +240,7 @@ begin
   FConsoleWriter.WriteLn('Done testing.');
 end;
 
-procedure TDUnitXConsoleLogger.OnTestingStarts(const threadId : Cardinal);
+procedure TDUnitXConsoleLogger.OnTestingStarts(const threadId, testCount, testActiveCount : Cardinal);
 begin
   if TDUnitX.CommandLine.HideBanner then
     exit;

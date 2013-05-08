@@ -24,48 +24,10 @@
 {                                                                           }
 {***************************************************************************}
 
-unit DUnitX.Tests.Assert;
-
+unit DUnitX.Tests.Utils.XML;
 
 interface
 
-uses
-  DUnitX.TestFramework;
-
-
-type
-  {$M+}
-  [TestFixture('Testing the Assert Class')]
-  TTestAssert = class
-  published
-    procedure Test_Assert_AreEqual_Double;
-    procedure Test_Assert_AreEqual_String;
-  end;
-
 implementation
 
-uses
-  SysUtils;
-
-{ TTestAssert }
-
-procedure TTestAssert.Test_Assert_AreEqual_Double;
-var
-  expected,
-  actual,tolerance : Extended;
-begin
-  expected := 1.1;
-  actual := 1.1;
-  tolerance := 0;
-  //should pass
-  Assert.AreEqual(expected,actual,tolerance);
-end;
-
-procedure TTestAssert.Test_Assert_AreEqual_String;
-begin
-
-end;
-
-initialization
-  TDUnitX.RegisterTestFixture(TTestAssert);
 end.

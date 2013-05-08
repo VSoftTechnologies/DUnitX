@@ -54,7 +54,7 @@ type
     FExitBehavior   : TRunnerExitBehavior;
     FFixtureClasses : TDictionary<string,TClass>;
   protected
-    procedure Loggers_TestingStarts(const threadId : Cardinal);
+    procedure Loggers_TestingStarts(const threadId, testCount, testActiveCount : Cardinal);
 
     procedure Loggers_StartTestFixture(const threadId : Cardinal; const fixture : ITestFixtureInfo);
 
@@ -359,15 +359,26 @@ var
   threadId : Cardinal;
   testResult : ITestResult;
   testError : ITestError;
+
+  testCount : Cardinal;
+  testActiveCount : Cardinal;
 begin
   result := nil;
   fixtures := BuildFixtures;
   if fixtures.Count = 0 then
     raise ENoTestsRegistered.Create('No Test Fixtures found');
 
-  //TODO : Record Test metrics.. runtime etc.
+  testCount := 0;
+  //TODO: Count the active tests that we have.
+  testActiveCount := 0;
+
+  for fixture in fixtures do
+    for test in fixture.Tests do
+      Inc(testCount);
+
+  //TODO: Record Test metrics.. runtime etc.
   threadId := TThread.CurrentThread.ThreadID;
-  Self.Loggers_TestingStarts(threadId);
+  Self.Loggers_TestingStarts(threadId, testCount, testActiveCount);
   try
     for fixture in fixtures do
     begin
@@ -437,9 +448,9 @@ begin
                 end;
                 on e : Exception do
                 begin
-                  Log(TLogLevel.ltError,'Test Error : ' + test.Name + ' : ' + e.Message);
-                  testResult := TDUnitXTestError.Create(test as ITestInfo,TTestResultType.Error,e.Message,ExceptClass(e.ClassType));
-                  Self.Loggers_AddError(threadId,testError);
+                  Log(TLogLevel.ltError, 'Test Error : ' + test.Name + ' : ' + e.Message);
+                  testResult := TDUnitXTestError.Create(test as ITestInfo, TTestResultType.Error, e.Message, ExceptClass(e.ClassType));
+                  Self.Loggers_AddError(threadId, testError);
                 end;
               end;
               if Assigned(fixture.TearDownMethod)  then
@@ -594,12 +605,12 @@ begin
     logger.OnTestingEnds(TestResult);
 end;
 
-procedure TDUnitXTestRunner.Loggers_TestingStarts(const threadId : Cardinal);
+procedure TDUnitXTestRunner.Loggers_TestingStarts(const threadId, testCount, testActiveCount : Cardinal);
 var
   logger : ITestLogger;
 begin
   for logger in FLoggers do
-    logger.OnTestingStarts(threadId);
+    logger.OnTestingStarts(threadId, testCount, testActiveCount);
 end;
 
 procedure TDUnitXTestRunner.Log(const logType: TLogLevel; const msg: string);

@@ -39,7 +39,7 @@ uses
 
 
 type
-  TDUnitXTest = class(TWeakReferencedObject,ITest,ITestInfo,ISetTestResult,ITestExecute)
+  TDUnitXTest = class(TWeakReferencedObject, ITest, ITestInfo, ISetTestResult, ITestExecute)
   private
     FName : string;
     FMethod : TTestMethod;
@@ -49,7 +49,8 @@ type
     FDuration  : TTimeSpan;
   protected
     procedure SetResult(const value: ITestResult);
-    function GetName: string;virtual;
+    function GetName: string; virtual;
+    function GetActive: boolean; virtual;
     function GetTestFixture: ITestFixture;
     function ITestInfo.GetTestFixture = ITestInfo_GetTestFixture;
     function ITestInfo_GetTestFixture : ITestFixtureInfo;
@@ -62,15 +63,15 @@ type
     constructor Create(const AFixture : ITestFixture; const AName : string; const AMethod : TTestMethod);
   end;
 
-  TDUnitXTestCase = class(TDUnitXTest,ITestExecute)
+  TDUnitXTestCase = class(TDUnitXTest, ITestExecute)
   private
     FCaseName : string;
     FArgs : TValueArray;
     FRttiMethod : TRttiMethod;
     FInstance : TObject;
   protected
-    function GetName: string;override;
-    procedure Execute(const context : ITestExecuteContext);override;
+    function GetName: string; override;
+    procedure Execute(const context : ITestExecuteContext); override;
   public
     constructor Create(const AInstance : TObject; const AFixture : ITestFixture; const ACaseName : string; const AName : string; const AMethod : TRttiMethod; const AArgs : TValueArray);reintroduce;
   end;
@@ -101,6 +102,12 @@ begin
 
     FDuration := TTimeSpan.Subtract(FEndTime,FStartTime);
     end;
+end;
+
+function TDUnitXTest.GetActive: boolean;
+begin
+  //TODO: Need to set the internal active state
+  result := True;
 end;
 
 function TDUnitXTest.GetName: string;

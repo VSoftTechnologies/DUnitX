@@ -40,7 +40,7 @@ type
   private
     //FFileName : string;
   protected
-    procedure OnTestingStarts(const threadId: Cardinal);
+    procedure OnTestingStarts(const threadId, testCount, testActiveCount: Cardinal);
 
     procedure OnStartTestFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
 
@@ -179,7 +179,7 @@ begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnTestingStarts(const threadId : Cardinal);
+procedure TDUnitXTextFileLogger.OnTestingStarts(const threadId, testCount, testActiveCount : Cardinal);
 begin
 
 end;

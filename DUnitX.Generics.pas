@@ -36,9 +36,6 @@ uses
 
 
 type
-  //BUG: Due to compiler issue with generics we get a "[DCC Fatal Error] DUnitX.Generics.pas(434): F2084 Internal Error: O647" because
-  //     of this unit. Refer to http://qc.embarcadero.com/wc/qcmain.aspx?d=77575 for more details.
-
   //Delphi does not have reference counted collection types.. so we created one here.
   //TODO: need unit tests!!!
   IList<T> = interface(IEnumerable<T>)

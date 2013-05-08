@@ -33,6 +33,7 @@ uses
   SysUtils,
   Rtti,
   TimeSpan,
+  DUnitX.Generics,
   Generics.Collections;
 
 {$I DUnitX.inc}
@@ -161,8 +162,12 @@ type
 
   TTestMethod = procedure of object;
 
-  TLogLevel = (ltInformation,ltWarning,ltError);
+  TLogLevel = (ltInformation, ltWarning, ltError);
 
+const
+  TLogLevelDesc : array[TLogLevel] of string = ('Info', 'Warn', 'Err');
+
+type
 {$IFDEF DELPHI_XE2_UP}
   ///	<summary>
   ///	  This helper class is intended to redirect the writeln method to a test
@@ -179,9 +184,6 @@ type
     procedure WriteLn;overload;
   end;
 {$ENDIF}
-
-
-
 
   Assert = class
   public
@@ -257,23 +259,24 @@ type
   ITestInfo = interface
     ['{FF61A6EB-A76B-4BE7-887A-598EBBAE5611}']
     function GetName : string;
+    function GetActive : boolean;
     function GetTestFixture : ITestFixtureInfo;
     function GetTestStartTime : TDateTime;
     function GetTestEndTime : TDateTime;
     function GetTestDuration : TTimeSpan;
+
     property Name : string read GetName;
+    property Active : boolean read GetActive;
     property Fixture : ITestFixtureInfo read GetTestFixture;
     property TestStartTime : TDateTime read GetTestStartTime;
     property TestEndTime : TDateTime read GetTestEndTime;
     property TestDuration : TTimeSpan read GetTestDuration;
   end;
 
-
-
   ITestFixtureInfo = interface
     ['{9E98B1E8-583A-49FC-B409-9B6937E22E81}']
     function GetName  : string;
-    function GetTests : IEnumerable<ITestInfo>;
+    function GetTests : IList<ITestInfo>;
     function GetTestClass : TClass;
     function GetSetupMethodName : string;
     function GetSetupFixtureMethodName : string;
@@ -281,19 +284,21 @@ type
     function GetTearDownFixtureMethodName : string;
     function GetTestInOwnThread : boolean;
 
+    function GetTestCount : cardinal;
+    function GetActiveTestCount : cardinal;
+
     property Name                       : string read GetName;
     property TestClass                  : TClass read GetTestClass;
-    property Tests                      : IEnumerable<ITestInfo> read GetTests;
+    property Tests                      : IList<ITestInfo> read GetTests;
     property SetupMethodName            : string read GetSetupMethodName;
     property SetupFixtureMethodName     : string read GetSetupFixtureMethodName;
     property TearDownMethodName         : string read GetTearDownMethodName;
     property TearDownFixtureMethodName  : string read GetTearDownFixtureMethodName;
     property TestInOwnThread            : boolean read GetTestInOwnThread;
+
+    property TestCount                  : cardinal read GetTestCount;
+    property ActiveTestCount            : cardinal read GetActiveTestCount;
   end;
-
-
-
-
 
   TTestResultType = (Success,Failure,Warning,Error);
   ITestResult = interface
@@ -312,7 +317,6 @@ type
     function GetExceptionClass : ExceptClass;
     property ExceptionClass : ExceptClass read GetExceptionClass;
   end;
-
 
   IFixtureResult = interface(IEnumerable<ITestResult>)
   ['{2ED7CD6D-AF17-4A56-9ECF-7528A1583B30}']
@@ -347,7 +351,7 @@ type
     property Successes    : IEnumerable<ITestResult> read GetWarnings;
   end;
 
-
+  {$M+}
   ITestResults = interface
   ['{4A335B76-33E3-48FD-87DF-9462428C60DA}']
     function GetCount : integer;
@@ -356,14 +360,28 @@ type
     function GetErrorCount : integer;
     function GetWarningCount : integer;
     function GetSuccessCount : integer;
+    function GetSuccessRate : integer;
+    function GetStartTime: TDateTime;
+    function GetFinishTime: TDateTime;
+    function GetRunTime: double;
 
     function GetFixtures : IEnumerable<ITestFixtureInfo>;
     function GetResults  : IEnumerable<ITestResult>;
 
     property Count : integer read GetCount;
+    property FailureCount : integer read GetFailureCount;
+    property ErrorCount : integer read GetErrorCount;
+    property WarningCount : integer read GetWarningCount;
+    property SuccesssCount : integer read GetSuccessCount;
 
+    property StartTime : TDateTime read GetStartTime;
+    property FinishTime: TDateTime read GetFinishTime;
+    property RunTime: double read GetRunTime;
+
+    property SuccessRate : integer read GetSuccessRate;
     property AllPassed : boolean read GetAllPassed;
   end;
+  {$M-}
 
   ITestLogger = interface
     ['{AADCA392-421C-4060-8D47-79D7CAAB0EEF}']
@@ -372,7 +390,7 @@ type
     ///	  Called at the start of testing. The default console logger prints the
     ///	  DUnitX banner.
     ///	</summary>
-    procedure OnTestingStarts(const threadId : Cardinal);
+    procedure OnTestingStarts(const threadId, testCount, testActiveCount : Cardinal);
 
     ///	<summary>
     ///	  //Called before a Fixture is run.

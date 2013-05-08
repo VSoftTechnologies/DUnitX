@@ -37,12 +37,11 @@ uses
 {$I DUnitX.inc}
 
 type
-  TDUnitXTestResult = class(TInterfacedObject,ITestResult)
+  TDUnitXTestResult = class(TInterfacedObject, ITestResult)
   private
     FMessage : string;
     FResultType : TTestResultType;
     FTest : IWeakReference<ITestInfo>;
-
   protected
     function GetMessage: string;
     function GetResult: Boolean;
@@ -52,7 +51,7 @@ type
     constructor Create(const ATest : ITestInfo; const AType : TTestResultType; const AMessage : string = '');
   end;
 
-  TDUnitXTestError = class(TDUnitXTestResult,ITestError)
+  TDUnitXTestError = class(TDUnitXTestResult, ITestError)
   private
     FExceptionClass : ExceptClass;
   protected

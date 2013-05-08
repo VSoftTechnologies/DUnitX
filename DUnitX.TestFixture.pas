@@ -38,13 +38,14 @@ uses
 {$I DUnitX.inc}
 
 type
-  TDUnitXTestFixture = class(TWeakReferencedObject,ITestFixture,ITestFixtureInfo)
+  TDUnitXTestFixture = class(TWeakReferencedObject, ITestFixture, ITestFixtureInfo)
   class var
     FRttiContext : TRttiContext;
   private
     FTestClass : TClass;
     FName : string;
     FTests : IList<ITest>;
+    FTestInfos : IList<ITestInfo>;
     FSetupMethod            : TTestMethod;
     FSetupFixtureMethod     : TTestMethod;
     FTearDownMethod         : TTestMethod;
@@ -62,7 +63,7 @@ type
     function GetName: string;
     function GetTests: IEnumerable<ITest>;
     function ITestFixtureInfo.GetTests = ITestFixtureInfo_GetTests;
-    function ITestFixtureInfo_GetTests : IEnumerable<ITestInfo>;
+    function ITestFixtureInfo_GetTests : IList<ITestInfo>;
     function GetTestClass : TClass;
     function GetSetupMethod : TTestMethod;
     function GetSetupFixtureMethod : TTestMethod;
@@ -74,8 +75,10 @@ type
     function GetTearDownMethodName: string;
     function GetTearDownFixtureMethodName: string;
 
+    function GetTestCount : cardinal;
+    function GetActiveTestCount : cardinal;
   public
-    constructor Create(const AName : string;const AClass : TClass);
+    constructor Create(const AName : string; const AClass : TClass);
     destructor Destroy;override;
     class constructor Create;
 
@@ -98,7 +101,7 @@ uses
 
 { TDUnitXTestFixture }
 
-constructor TDUnitXTestFixture.Create(const AName : string;const AClass : TClass);
+constructor TDUnitXTestFixture.Create(const AName : string; const AClass : TClass);
 begin
   FTestClass := AClass;
   FTests := TDUnitXList<ITest>.Create;
@@ -110,6 +113,7 @@ destructor TDUnitXTestFixture.Destroy;
 begin
   if FFixtureInstance <> nil then
     FFixtureInstance.Free;
+
   FTests := nil;
   inherited;
 end;
@@ -189,21 +193,22 @@ begin
           FTestInOwnThread := true
         else
         begin
+          //TODO: Should add tests to the list even though they aren't enabled.
           if (((attribute.ClassType = TestAttribute) and TestAttribute(attribute).Enabled) or ((attribute.ClassType <> TestAttribute) and  (method.Visibility = TMemberVisibility.mvPublished))) then
           begin
-            testcases := TAttributeUtils.FindAttributes(attributes,TestCaseAttribute);
+            testcases := TAttributeUtils.FindAttributes(attributes, TestCaseAttribute);
             if length(testCases) > 0 then
             begin
               for testCase in testcases do
               begin
-                newTest := TDUnitXTestCase.Create(FFixtureInstance,Self,TestCaseAttribute(testCase).Name, method.Name,method,TestCaseAttribute(testcase).Values);
+                newTest := TDUnitXTestCase.Create(FFixtureInstance, Self, TestCaseAttribute(testCase).Name, method.Name, method, TestCaseAttribute(testcase).Values);
                 FTests.Add(newTest);
               end;
             end
             else
             begin
-            //Create a Test              
-              newTest := TDUnitXTest.Create(Self,method.Name,TTestMethod(meth));
+              //Create a Test
+              newTest := TDUnitXTest.Create(Self, method.Name, TTestMethod(meth));
               FTests.Add(newTest);
             end;
           end;
@@ -216,7 +221,12 @@ begin
       FTests.Add(newTest);
     end;
   end;
+end;
 
+function TDUnitXTestFixture.GetActiveTestCount: cardinal;
+begin
+  //TODO: Return the active count, currently fudged to be the count.
+  Result := GetTestCount;
 end;
 
 function TDUnitXTestFixture.GetName: string;
@@ -269,6 +279,11 @@ begin
   result := FTestClass;
 end;
 
+function TDUnitXTestFixture.GetTestCount: cardinal;
+begin
+  FTests.Count;
+end;
+
 function TDUnitXTestFixture.GetTestInOwnThread: boolean;
 begin
   result := FTestInOwnThread;
@@ -279,9 +294,18 @@ begin
   result := FTests;
 end;
 
-function TDUnitXTestFixture.ITestFixtureInfo_GetTests: IEnumerable<ITestInfo>;
+function TDUnitXTestFixture.ITestFixtureInfo_GetTests: IList<ITestInfo>;
+var
+  test : ITest;
 begin
-
+  //TODO: Need to test that this isn't accessed between updates to FTests.
+  if FTestInfos = nil then
+  begin
+    FTestInfos := TDUnitXList<ITestInfo>.Create;
+    for test in FTests do
+      FTestInfos.Add(test as ITestInfo);
+  end;
+  result := FTestInfos;
 end;
 
 class constructor TDUnitXTestFixture.Create;
