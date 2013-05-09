@@ -35,11 +35,7 @@ uses
 {$I DUnitX.inc}
 
 type
-  IDUnitXXMLNUnitLogger = interface(ITestLogger)
-    ['{18886A0C-1937-4ADA-A926-396019E570AE}']
-  end;
-
-  TDUnitXXMLNUnitLogger = class(TInterfacedObject, IDUnitXXMLNUnitLogger)
+  TDUnitXXMLNUnitLogger = class(TInterfacedObject, ITestLogger)
   private
     FOutputStream : TStream;
 
@@ -49,7 +45,8 @@ type
     procedure WriteXMLLine(const AXMLLine: string);
     procedure WriteInfoAndWarningsXML;
 
-    procedure BeforeDestruction; override;
+    function HasInfoOrWarnings: Boolean;
+
   protected
     procedure OnTestingStarts(const threadId, testCount, testActiveCount: Cardinal);
 
@@ -65,10 +62,10 @@ type
 
     procedure OnExecuteTest(const threadId: Cardinal; Test: ITestInfo);
 
-    procedure OnTestSuccess(const threadId: Cardinal; Test: ITestResult);
-    procedure OnTestWarning(const threadId: Cardinal; AWarning: ITestResult);
+    procedure OnTestSuccess(const threadId: Cardinal; Success: ITestResult);
+    procedure OnTestWarning(const threadId: Cardinal; Warning: ITestResult);
     procedure OnTestError(const threadId: Cardinal; Error: ITestError);
-    procedure OnTestFailure(const threadId: Cardinal; Failure: ITestResult);
+    procedure OnTestFailure(const threadId: Cardinal; Failure: ITestError);
 
     procedure OnLog(const logType: TLogLevel; const msg: string);
 
@@ -85,6 +82,14 @@ type
     procedure OnTestingEnds(const TestResult: ITestResults);
   public
     constructor Create(const AOutputStream : TStream);
+    procedure BeforeDestruction; override;
+  end;
+
+  TDUnitXXMLNUnitLogger_File = class(TDUnitXXMLNUnitLogger)
+  private
+    FXMLFileStream : TFileStream;
+  public
+    constructor Create(const AFilename: string = '');
   end;
 
 implementation
@@ -140,6 +145,11 @@ begin
   FWarningList := TStringList.Create;
 end;
 
+function TDUnitXXMLNUnitLogger.HasInfoOrWarnings: Boolean;
+begin
+  Result := (FLogList.Count > 0) or (FWarningList.Count > 0);
+end;
+
 procedure TDUnitXXMLNUnitLogger.OnBeginTest(const threadId: Cardinal; Test: ITestInfo);
 begin
   FLogList.Clear;
@@ -173,7 +183,8 @@ end;
 
 procedure TDUnitXXMLNUnitLogger.OnEndTestFixture(const threadId: Cardinal; const results: IFixtureResult);
 begin
-
+   WriteXMLLine('</results>');
+   WriteXMLLine('</test-suite>');
 end;
 
 procedure TDUnitXXMLNUnitLogger.OnExecuteTest(const threadId: Cardinal; Test: ITestInfo);
@@ -198,10 +209,6 @@ end;
 
 procedure TDUnitXXMLNUnitLogger.OnStartTestFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
 begin
-  //TODO: Do we really require a sanity check here?
-  //  if CompareText(fixture.Name, ExtractFileName(Application.ExeName)) = 0 then
-  //    Exit;
-
   WriteXMLLine(Format('<test-suite name="%s" total="%d" notrun="%d">', [fixture.Name, fixture.TestCount, fixture.TestCount - fixture.ActiveTestCount]));
   WriteXMLLine('<results>');
 end;
@@ -218,28 +225,32 @@ end;
 
 procedure TDUnitXXMLNUnitLogger.OnTestError(const threadId: Cardinal; Error: ITestError);
 begin
-   WriteXMLLine(Format('<test-case name="%s%s" executed="%s" success="False" time="%1.3f" result="Error">',
-                      [EscapeForXML(Error.Test.Fixture.Name), EscapeForXML(Error.Test.Name),  BoolToStr(error.Test.Active),
-                        error.Test.TestDuration.TotalMilliseconds / 1000]));
+  //TODO: Getting Test, and Fixture from Error is painful for testing. Therefore its painful for setup, and use?
 
-   WriteXMLLine(Format('<failure name="%s" location="%s">', [EscapeForXML(error.ExceptionClass.ClassName)]));
-   WriteXMLLine(Format('<message>%s</message>', [EscapeForXML(error.Message, false)]));
-   WriteXMLLine('</failure>');
-   WriteInfoAndWarningsXML;
-   WriteXMLLine('</test-case>');
+  WriteXMLLine(Format('<test-case name="%s" executed="%s" success="False" time="%1.3f" result="Error">',
+                    [EscapeForXML(Error.Test.Name), BoolToStr(Error.Test.Active, True),
+                      Error.TestDuration.TotalMilliseconds / 1000]));
+
+  WriteXMLLine(Format('<failure name="%s" location="%s">', [EscapeForXML(error.ExceptionClass.ClassName), EscapeForXML(error.ExceptionLocationInfo)]));
+  WriteXMLLine(Format('<message>%s</message>', [EscapeForXML(error.ExceptionMessage, false)]));
+  WriteXMLLine('</failure>');
+  WriteInfoAndWarningsXML;
+  WriteXMLLine('</test-case>');
 end;
 
-procedure TDUnitXXMLNUnitLogger.OnTestFailure(const threadId: Cardinal; Failure: ITestResult);
+procedure TDUnitXXMLNUnitLogger.OnTestFailure(const threadId: Cardinal; Failure: ITestError);
 begin
-
+  WriteXMLLine(Format('<test-case name="%s%s" executed="%s" success="False" time="%1.3f" result="Failure">',
+                    [EscapeForXML(Failure.Test.Fixture.Name), EscapeForXML(Failure.Test.Name), BoolToStr(Failure.Test.Active, True),
+                    Failure.TestDuration.Milliseconds / 1000]));
+  WriteXMLLine(Format('<failure name="%s" location="%s">', [EscapeForXML(Failure.ExceptionClass.ClassName), EscapeForXML(Failure.ExceptionLocationInfo)]));
+  WriteXMLLine(Format('<message>%s</message>', [EscapeForXML(Failure.ExceptionMessage, false)]));
+  WriteXMLLine('</failure>');
+  WriteInfoAndWarningsXML;
+  WriteXMLLine('</test-case>');
 end;
 
 procedure TDUnitXXMLNUnitLogger.OnTestingEnds(const TestResult: ITestResults);
-var
-  runTime : Double;
-  dtRunTime : TDateTime;
-  successRate : Integer;
-  h, m, s, l :Word;
 begin
   WriteXMLLine('<statistics>' + NUNIT_LOGGER_CRLF +
                   Format('<stat name="tests" value="%d" />', [TestResult.Count]) + NUNIT_LOGGER_CRLF +
@@ -248,7 +259,7 @@ begin
                   Format('<stat name="success-rate" value="%d%%" />', [TestResult.SuccessRate]) + NUNIT_LOGGER_CRLF +
                   Format('<stat name="started-at" value="%s" />', [DateTimeToStr(TestResult.StartTime)]) + NUNIT_LOGGER_CRLF +
                   Format('<stat name="finished-at" value="%s" />', [DateTimeToStr(TestResult.FinishTime)]) + NUNIT_LOGGER_CRLF +
-                  Format('<stat name="runtime" value="%1.3f"/>', [TestResult.RunTime]) + NUNIT_LOGGER_CRLF +
+                  Format('<stat name="runtime" value="%1.3f"/>', [TestResult.TestDuration.TotalMilliseconds / 1000]) + NUNIT_LOGGER_CRLF +
                   '</statistics>' + NUNIT_LOGGER_CRLF +
               '</test-results>');
 
@@ -277,14 +288,32 @@ begin
    WriteXMLLine(Format('<application name="%s" />',[ExtractFileName(ParamStr(0))]));
 end;
 
-procedure TDUnitXXMLNUnitLogger.OnTestSuccess(const threadId: Cardinal; Test: ITestResult);
+procedure TDUnitXXMLNUnitLogger.OnTestSuccess(const threadId: Cardinal; Success: ITestResult);
+var
+  endTag : string;
+  fixture: ITestFixtureInfo;
 begin
+  if HasInfoOrWarnings then
+    endTag := '>'
+  else
+    endTag := '/>';
 
+  fixture := Success.Test.Fixture;
+
+  WriteXMLLine(Format('<test-case name="%s%s" executed="%s" success="True" time="%1.3f" result="Pass" %s',
+                     [EscapeForXML(Success.Test.Fixture.Name), EscapeForXML(Success.Test.Name),
+                      BoolToStr(Success.Test.Active, True), Success.TestDuration.TotalMilliseconds / 1000, endTag]));
+
+  if HasInfoOrWarnings then
+  begin
+    WriteInfoAndWarningsXML;
+    WriteXMLLine('</test-case>');
+  end;
 end;
 
-procedure TDUnitXXMLNUnitLogger.OnTestWarning(const threadId: Cardinal; AWarning: ITestResult);
+procedure TDUnitXXMLNUnitLogger.OnTestWarning(const threadId: Cardinal; Warning: ITestResult);
 begin
-  FWarningList.Add(Format('WARNING: %s: %s', [AWarning.Test.Name, AWarning.Message]));
+  FWarningList.Add(Format('WARNING: %s: %s', [Warning.Test.Name, Warning.Message]));
 end;
 
 
@@ -301,6 +330,25 @@ begin
   end
   else
     WriteLn(AXMLLine);
+end;
+
+{ TDUnitXXMLNUnitLoggerFile }
+
+constructor TDUnitXXMLNUnitLogger_File.Create(const AFilename: string = '');
+var
+  sXmlFilename: string;
+const
+  DEFAULT_NUNIT_FILE_NAME = 'dunit-report.xml';
+begin
+  sXmlFilename := AFilename;
+
+  if sXmlFilename = '' then
+    sXmlFilename := DEFAULT_NUNIT_FILE_NAME;
+
+  FXMLFileStream := TFileStream.Create(sXmlFilename, fmCreate);
+
+  //The stream class will take care of cleaning this up for us.
+  inherited Create(FXMLFileStream);
 end;
 
 end.

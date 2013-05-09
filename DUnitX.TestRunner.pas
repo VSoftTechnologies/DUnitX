@@ -30,8 +30,8 @@ interface
 
 uses
   DUnitX.TestFramework,
-  DUnitX.InternalInterfaces,
   Generics.Collections,
+  DUnitX.InternalInterfaces,
   DUnitX.Generics,
   DUnitX.WeakReference,
   Rtti;
@@ -42,7 +42,7 @@ uses
 type
   ///  Note - we rely on the fact that there will only ever be 1 testrunner
   ///  per thread, if this changes then handling of WriteLn will need to change
-  TDUnitXTestRunner = class(TWeakReferencedObject,ITestRunner)
+  TDUnitXTestRunner = class(TWeakReferencedObject, ITestRunner)
   private class var
     FRttiContext : TRttiContext;
   public class var
@@ -72,7 +72,7 @@ type
 
     procedure Loggers_AddSuccess(const threadId : Cardinal; const Test: ITestResult);
     procedure Loggers_AddError(const threadId : Cardinal; const Error: ITestError);
-    procedure Loggers_AddFailure(const threadId : Cardinal; const Failure: ITestResult);
+    procedure Loggers_AddFailure(const threadId : Cardinal; const Failure: ITestError);
     procedure Loggers_AddWarning(const threadId : Cardinal; const AWarning: ITestResult);
 
     procedure Loggers_EndTest(const threadId : Cardinal; const Test: ITestResult);
@@ -146,13 +146,13 @@ begin
   end;
 end;
 
-procedure TDUnitXTestRunner.Loggers_AddFailure(const threadId : Cardinal; const Failure: ITestResult);
+procedure TDUnitXTestRunner.Loggers_AddFailure(const threadId : Cardinal; const Failure: ITestError);
 var
   logger : ITestLogger;
 begin
   for logger in FLoggers do
   begin
-    logger.OnTestFailure(threadId,Failure);
+    logger.OnTestFailure(threadId, Failure);
   end;
 end;
 
@@ -193,20 +193,19 @@ var
   pair : TPair<string,TClass>;
 begin
   result := TDUnitXList<ITestFixture>.Create;
+
   if FUseRTTI then
     RTTIDiscoverFixtureClasses;
 
   for pair in TDUnitX.RegisteredFixtures do
   begin
     if not FFixtureClasses.ContainsValue(pair.Value) then
-      FFixtureClasses.AddOrSetValue(pair.Key,pair.Value);
+      FFixtureClasses.AddOrSetValue(pair.Key, pair.Value);
   end;
-
-
 
   for pair in FFixtureClasses do
   begin
-    fixture := TDUnitXTestFixture.Create(pair.Key,pair.Value);
+    fixture := TDUnitXTestFixture.Create(pair.Key, pair.Value);
     result.Add(fixture);
   end;
 end;
@@ -372,6 +371,7 @@ begin
   //TODO: Count the active tests that we have.
   testActiveCount := 0;
 
+  //TODO: Move to the fixtures class
   for fixture in fixtures do
     for test in fixture.Tests do
       Inc(testCount);
@@ -387,9 +387,9 @@ begin
         if Assigned(fixture.SetupFixtureMethod)  then
         begin
           try
-            Self.Loggers_SetupFixture(threadid,fixture as ITestFixtureInfo);
+            Self.Loggers_SetupFixture(threadid, fixture as ITestFixtureInfo);
             fixture.SetupFixtureMethod;
-            Self.Loggers_EndSetupFixture(threadid,fixture as ITestFixtureInfo);
+            Self.Loggers_EndSetupFixture(threadid, fixture as ITestFixtureInfo);
           except
             on e : Exception do
             begin
@@ -405,6 +405,8 @@ begin
           for test in tests do
           begin
             testResult := nil;
+            testError := nil;
+
             Self.Loggers_BeginTest(threadId,test as ITestInfo);
             //Setup method is called before each test method.
             if Assigned(fixture.SetupMethod)  then
@@ -416,7 +418,7 @@ begin
               except
                 on e : Exception do
                 begin
-                  testResult := TDUnitXTestResult.Create(test as ITestInfo,TTestResultType.Error,e.Message);
+                  testResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Error, e.Message);
                   Log(TLogLevel.ltError,'Error running test Setup method : ' + e.Message);
                   Log(TLogLevel.ltError,'Skipping test.');
                   System.Continue;
@@ -426,40 +428,43 @@ begin
 
             try
               try
-                if Supports(test,ITestExecute,testExecute) then
+                if Supports(test, ITestExecute, testExecute) then
                 begin
-                  Self.Loggers_ExecuteTest(threadId,test as ITestInfo);
+                  Self.Loggers_ExecuteTest(threadId, test as ITestInfo);
                   testExecute.Execute(context);
-                  testResult := TDUnitXTestResult.Create(test as ITestInfo,TTestResultType.Success);
-                  Self.Loggers_AddSuccess(threadId,testResult);
+                  testResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Success);
+                  Self.Loggers_AddSuccess(threadId, testResult);
                 end;
               except
                 on e : ETestFailure do
                 begin
-                  Log(TLogLevel.ltError,'Test failed : ' + test.Name + ' : ' + e.Message);
-                  testResult := TDUnitXTestResult.Create(test as ITestInfo,TTestResultType.Failure,e.Message);
-                  Self.Loggers_AddFailure(threadId,testResult);
+                  //TODO: Does test failure require its own results interface and class?
+                  Log(TLogLevel.ltError, 'Test failed : ' + test.Name + ' : ' + e.Message);
+                  testError := TDUnitXTestError.Create(test as ITestInfo, TTestResultType.Failure, e, ExceptAddr);
+                  Self.Loggers_AddFailure(threadId, testError);
                 end;
                 on e : ETestWarning do
                 begin
-                  Log(TLogLevel.ltWarning,'Test warning : ' + test.Name + ' : ' + e.Message);
-                  testResult := TDUnitXTestResult.Create(test as ITestInfo,TTestResultType.Warning,e.Message);
-                  Self.Loggers_AddWarning(threadId,testResult);
+                  //TODO: Does test warning require its own results interface and class?
+                  Log(TLogLevel.ltWarning, 'Test warning : ' + test.Name + ' : ' + e.Message);
+                  testResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Warning, e.Message);
+                  Self.Loggers_AddWarning(threadId, testResult);
                 end;
                 on e : Exception do
                 begin
                   Log(TLogLevel.ltError, 'Test Error : ' + test.Name + ' : ' + e.Message);
-                  testResult := TDUnitXTestError.Create(test as ITestInfo, TTestResultType.Error, e.Message, ExceptClass(e.ClassType));
+                  testError := TDUnitXTestError.Create(test as ITestInfo, TTestResultType.Error, e, ExceptAddr);
                   Self.Loggers_AddError(threadId, testError);
                 end;
               end;
+
               if Assigned(fixture.TearDownMethod)  then
               begin
                 try
-                  Self.Loggers_TeardownTest(threadId,test as ITestInfo);
+                  Self.Loggers_TeardownTest(threadId, test as ITestInfo);
                   fixture.TearDownMethod;
                 except
-
+                  //TODO: Report test tear down exceptions to the user
                 end;
               end;
             finally
@@ -468,8 +473,11 @@ begin
           end;
 
         except
+          //TODO: Report system failures to user
+          //TODO: Remove raise, however for the moment while testing I need to see these.
 
         end;
+
         if Assigned(fixture.TearDownFixtureMethod)  then
         begin
           try
@@ -478,21 +486,21 @@ begin
           except
             on e : Exception do
             begin
+               //TODO: Report fixture tear down exceptions to the user
+               //TODO: Remove raise, however for the moment while testing I need to see these.
 
             end;
           end;
         end;
+
       finally
         Self.Loggers_EndTestFixture(threadId,nil);
       end;
     end;
   finally
-    //TODO : need test results.
+    //TODO: need test results.
     Self.Loggers_TestingEnds(nil);
   end;
-
-
-
 end;
 
 class function TDUnitXTestRunner.GetActiveRunner: ITestRunner;

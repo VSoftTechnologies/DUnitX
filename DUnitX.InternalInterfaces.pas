@@ -57,9 +57,6 @@ type
     property Name : string read GetName;
     property Fixture : ITestFixture read GetTestFixture;
     property TestMethod : TTestMethod read GetTestMethod;
-    property TestStartTime : TDateTime read GetTestStartTime;
-    property TestEndTime : TDateTime read GetTestEndTime;
-    property TestDuration : TTimeSpan read GetTestDuration;
   end;
 
 

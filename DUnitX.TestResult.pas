@@ -29,9 +29,10 @@ unit DUnitX.TestResult;
 interface
 
 uses
+  System.Timespan,
   DUnitX.TestFramework,
-  DUnitX.InternalInterfaces,
   DUnitX.WeakReference,
+  DUnitX.InternalInterfaces,
   SysUtils;
 
 {$I DUnitX.inc}
@@ -39,6 +40,7 @@ uses
 type
   TDUnitXTestResult = class(TInterfacedObject, ITestResult)
   private
+    //Keeping message as the user passed message. Not used for internal functionality like exception messages.
     FMessage : string;
     FResultType : TTestResultType;
     FTest : IWeakReference<ITestInfo>;
@@ -47,26 +49,64 @@ type
     function GetResult: Boolean;
     function GetResultType: TTestResultType;
     function GetTest: ITestInfo;
+    function GetTestStartTime : TDateTime;
+    function GetTestEndTime : TDateTime;
+    function GetTestDuration : TTimeSpan;
   public
-    constructor Create(const ATest : ITestInfo; const AType : TTestResultType; const AMessage : string = '');
+    constructor Create(const ATestInfo : ITestInfo; const AType : TTestResultType; const AMessage : string = '');
   end;
 
   TDUnitXTestError = class(TDUnitXTestResult, ITestError)
   private
+    FStackTrace : string;
     FExceptionClass : ExceptClass;
+    FExceptionMessage : string;
+    FExceptionAddress : Pointer;
   protected
-    function GetExceptionClass: ExceptClass;
+    function GetExceptionClass : ExceptClass;
+    function GetExceptionLocationInfo : string;
+    function GetExceptionAddressInfo : string;
+    function GetExceptionMessage : string;
   public
-    constructor Create(const ATest : ITestInfo; const AType : TTestResultType; const AMessage : string; const AExceptClass : ExceptClass);reintroduce;
+    constructor Create(const ATestInfo : ITestInfo; const AType : TTestResultType; const AThrownException: Exception; const Addrs: Pointer; const AMessage : string = '');reintroduce;
   end;
 
 implementation
 
+uses
+  Winapi.Windows;
+
 { TDUnitXTestResult }
 
-constructor TDUnitXTestResult.Create(const ATest: ITestInfo;const AType: TTestResultType; const AMessage: string);
+function PtrToStr(p: Pointer): string;
 begin
-  FTest := TWeakReference<ITestInfo>.Create(ATest);
+   Result := Format('%p', [p])
+end;
+
+function PointerToLocationInfo(Addrs: Pointer): string;
+begin
+  //TODO: Expand out to support JEDI JCL and MADSHI if they are present.
+  Result := ''
+end;
+
+function PointerToAddressInfo(Addrs: Pointer): string;
+begin
+  //TODO: Expand out to support JEDI JCL and MADSHI if they are present.
+  if Assigned(Addrs) then
+    Result := '$' + PtrToStr(Addrs)
+  else
+    Result := 'n/a';
+end;
+
+constructor TDUnitXTestResult.Create(const ATestInfo : ITestInfo; const AType: TTestResultType; const AMessage: string);
+begin
+  OutputDebugString(PWideChar(ATestInfo.Name));
+
+  FTest := TWeakReference<ITestInfo>.Create(ATestInfo);
+
+  OutputDebugString(PWideChar(FTest.Data.Name));
+  OutputDebugString(PWideChar(ATestInfo.Name));
+
   FResultType := AType;
   FMessage := AMessage;
 end;
@@ -94,12 +134,52 @@ begin
     result := nil;
 end;
 
+function TDUnitXTestResult.GetTestDuration: TTimeSpan;
+begin
+  if FTest.IsAlive then
+    Result := FTest.Data.GetTestDuration2
+  else
+    Result := TTimeSpan.Zero;
+end;
+
+function TDUnitXTestResult.GetTestEndTime: TDateTime;
+begin
+  if FTest.IsAlive then
+    Result := FTest.Data.GetTestEndTime2
+  else
+    Result := 0;
+end;
+
+function TDUnitXTestResult.GetTestStartTime: TDateTime;
+begin
+  if FTest.IsAlive then
+    Result := FTest.Data.GetTestStartTime2
+  else
+    Result := 0;
+end;
+
 { TDUnitXTestError }
 
-constructor TDUnitXTestError.Create(const ATest: ITestInfo;const AType: TTestResultType; const AMessage: string;const AExceptClass: ExceptClass);
+constructor TDUnitXTestError.Create(const ATestInfo : ITestInfo; const AType: TTestResultType; const AThrownException: Exception; const Addrs: Pointer; const AMessage: string = '');
 begin
-  inherited Create(ATest,AType,AMessage);
-  FExceptionClass := AExceptClass;
+   OutputDebugString(PWideChar(ATestInfo.Name));
+
+  inherited Create(ATestInfo, AType, AMessage);
+
+  OutputDebugString(PWideChar(ATestInfo.Name));
+
+  FExceptionClass := ExceptClass(AThrownException.ClassType);
+
+  FExceptionMessage := AMessage + AThrownException.Message;
+  FExceptionAddress := Addrs;
+
+  //TODO: Expand out to support JEDI JCL and MADSHI if they are present.
+  FStackTrace := AThrownException.StackTrace;
+end;
+
+function TDUnitXTestError.GetExceptionAddressInfo: string;
+begin
+  Result := PointerToAddressInfo(FExceptionAddress);
 end;
 
 function TDUnitXTestError.GetExceptionClass: ExceptClass;
@@ -107,5 +187,14 @@ begin
   result := FExceptionClass;
 end;
 
+function TDUnitXTestError.GetExceptionLocationInfo: string;
+begin
+  Result := PointerToLocationInfo(FExceptionAddress);
+end;
+
+function TDUnitXTestError.GetExceptionMessage: string;
+begin
+  Result := FExceptionMessage;
+end;
 
 end.

@@ -59,7 +59,7 @@ type
   ///  This is our base class for any object that can have a weak reference to
   ///  it. It implements IInterface so the object can also be used just like
   ///  any normal reference counted objects in Delphi.
-  TWeakReferencedObject = class(TObject,IInterface,IWeakReferenceableObject)
+  TWeakReferencedObject = class(TObject, IInterface, IWeakReferenceableObject)
   protected
     FWeakReferences : Array of Pointer;
     FRefCount: Integer;

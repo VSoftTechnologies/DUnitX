@@ -40,19 +40,24 @@ type
   TDUnitX_LoggerXMLNUnitTests = class
   public
     [Test]
-    procedure CreateTest;
-    [Test]
     procedure After_Creation_Filename_Is_Set;
     [Test]
     procedure OnTestingStarts_Fills_The_Start_Of_The_Stream_With_Header_Info;
     [Test]
     procedure OnTestingEnds_Fills_The_End_Of_The_Stream_With_Testing_Result_Info;
+    [Test]
+    procedure OnTestWarning_Adds_Warnings_To_Be_Written_Out_On_Next_Error;
+    procedure OnTestWarning_Adds_Warnings_To_Be_Written_Out_On_Next_Success;
+    [Test]
+    procedure Failure;
   end;
 
 implementation
 
 uses
+  Rtti,
   SysUtils,
+  System.TimeSpan,
   DUnitX.Generics,
   DUnitX.TestResults,
   Delphi.Mocks;
@@ -62,21 +67,14 @@ const
 
 { TDUnitX_LoggerXMLNUnit }
 
-procedure TDUnitX_LoggerXMLNUnitTests.CreateTest;
-var
-  logger : IDUnitXXMLNUnitLogger;
-  mockStream : TMock<TFileStream>;
+procedure TDUnitX_LoggerXMLNUnitTests.Failure;
 begin
-  mockStream := TMock<TFileStream>.Create;
-
-  logger := TDUnitXXMLNUnitLogger.Create(mockStream);
-
-  Assert.IsNotNull(mockStream);
+  Assert.Fail('My Message!');
 end;
 
 procedure TDUnitX_LoggerXMLNUnitTests.OnTestingEnds_Fills_The_End_Of_The_Stream_With_Testing_Result_Info;
 var
-  logger : IDUnitXXMLNUnitLogger;
+  logger : ITestLogger;
   mockStream : TStringStream;
   mockResults : TMock<ITestResults>;
 
@@ -91,7 +89,7 @@ begin
   mockResults.Setup.WillReturn(50).When.SuccessRate;
   mockResults.Setup.WillReturn(StrToDateTime('1/02/2000 11:32:50 AM')).When.StartTime;
   mockResults.Setup.WillReturn(StrToDateTime('28/02/2000 12:34:55 PM')).When.FinishTime;
-  mockResults.Setup.WillReturn(80129.120).When.RunTime;
+  mockResults.Setup.WillReturn(TValue.From<TTimeSpan>(TTimeSpan.FromMilliseconds(80129120))).When.TestDuration;
 
   logger := TDUnitXXMLNUnitLogger.Create(mockStream);
   logger.OnTestingEnds(mockResults);
@@ -113,7 +111,7 @@ end;
 procedure TDUnitX_LoggerXMLNUnitTests.OnTestingStarts_Fills_The_Start_Of_The_Stream_With_Header_Info;
 var
   sUnicodePreamble: string;
-  logger : IDUnitXXMLNUnitLogger;
+  logger : ITestLogger;
   mockStream : TStringStream;
   sOnTestingStartsText : string;
   sHeader: string;
@@ -165,9 +163,96 @@ begin
   Assert.AreEqual<string>(sAppName, sExpectedAppName);
 end;
 
+procedure TDUnitX_LoggerXMLNUnitTests.OnTestWarning_Adds_Warnings_To_Be_Written_Out_On_Next_Error;
+var
+  logger : ITestLogger;
+  mockStream : TStringStream;
+  mockWarning : TMock<ITestResult>;
+  mockFixture : TMock<ITestFixtureInfo>;
+  mockTest : TMock<ITestInfo>;
+  mockError: TMock<ITestError>;
+
+  sExceptedWarning : string;
+  iPositionOfWarning: Integer;
+begin
+  //Mocks
+  mockStream := TStringStream.Create('', TEncoding.UTF8);
+  mockWarning := TMock<ITestResult>.Create;
+  mockFixture := TMock<ITestFixtureInfo>.Create;
+  mockTest := TMock<ITestInfo>.Create;
+  mockError := TMock<ITestError>.Create;
+
+  //System under test
+  logger := TDUnitXXMLNUnitLogger.Create(mockStream);
+
+  //Setup
+  //TODO: Would be nice in Delphi.Mocks to have a auto mock of interface and object properties.
+  mockFixture.Setup.WillReturn('WarningFixture').When.Name;
+  mockTest.Setup.WillReturn('WarningTest').When.Name;
+  mockTest.Setup.WillReturn(True).When.Active;
+  mockTest.Setup.WillReturn(mockFixture.InstanceAsValue).When.Fixture;
+  mockWarning.Setup.WillReturn('!!WarningMessage!!').When.Message;
+  mockWarning.Setup.WillReturn(mockTest.InstanceAsValue).When.Test;
+  mockError.Setup.WillReturn(mockTest.InstanceAsValue).When.Test;
+  mockError.Setup.WillReturn(TValue.From<TTimeSpan>(TTimeSpan.FromMilliseconds(0))).When.TestDuration;
+  mockError.Setup.WillReturn(Exception).When.ExceptionClass;
+  mockError.Setup.WillReturn('').When.ExceptionLocationInfo;
+  mockError.Setup.WillReturn('').When.ExceptionMessage;
+
+  sExceptedWarning := Format('WARNING: %s: %s', [mockTest.Instance.Name, mockWarning.Instance.Message]);
+
+  //Call
+  logger.OnTestWarning(0, mockWarning);
+  logger.OnTestError(0, mockError);
+
+  //Verify
+  iPositionOfWarning := Pos(sExceptedWarning, mockStream.DataString);
+  Assert.IsTrue(iPositionOfWarning > 0);
+  Assert.AreEqual(Copy(mockStream.DataString, iPositionOfWarning, Length(sExceptedWarning)), sExceptedWarning);
+end;
+
+procedure TDUnitX_LoggerXMLNUnitTests.OnTestWarning_Adds_Warnings_To_Be_Written_Out_On_Next_Success;
+var
+  logger : ITestLogger;
+  mockStream : TStringStream;
+  mockWarning : TMock<ITestResult>;
+  mockTest : TMock<ITestInfo>;
+  mockSuccess: TMock<ITestError>;
+
+  sExceptedWarning : string;
+  iPositionOfWarning: Integer;
+begin
+  //Mocks
+  mockStream := TStringStream.Create('', TEncoding.UTF8);
+  mockWarning := TMock<ITestResult>.Create;
+  mockTest := TMock<ITestInfo>.Create;
+  mockSuccess := TMock<ITestError>.Create;
+
+  //System under test
+  logger := TDUnitXXMLNUnitLogger.Create(mockStream);
+
+  //Setup
+  mockTest.Setup.WillReturn('SuccessfulTest').When.Name;
+  mockWarning.Setup.WillReturn('Warning').When.Message;
+
+  //TODO: Would be nice in Delphi.Mocks to have a auto mock of interface and object properties.
+  mockWarning.Setup.WillReturn(mockTest.InstanceAsValue).When.Test;
+
+  sExceptedWarning := Format('WARNING: %s: %s', [mockTest.Instance.Name, mockWarning.Instance.Message]);
+
+  //Call
+  logger.OnTestWarning(0, mockWarning);
+  logger.OnTestSuccess(0, mockSuccess);
+
+  //Verify
+  iPositionOfWarning := Pos(sExceptedWarning, mockStream.DataString);
+  Assert.IsTrue(iPositionOfWarning > 0);
+  Assert.AreEqual(Copy(mockStream.DataString, iPositionOfWarning, Length(sExceptedWarning)), sExceptedWarning);
+end;
+
 procedure TDUnitX_LoggerXMLNUnitTests.After_Creation_Filename_Is_Set;
 var
-  logger : IDUnitXXMLNUnitLogger;
+  logger : ITestLogger;
   mockStream : TMock<TFileStream>;
 const
   TEST_FILE_NAME = 'DUnitX_TestFile';

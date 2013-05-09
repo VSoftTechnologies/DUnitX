@@ -1,6 +1,6 @@
 program DUnitXTest;
 
-{$APPTYPE CONSOLE}
+{//$APPTYPE CONSOLE}
 {\\$STRONGLINKTYPES ON}
 uses
   SysUtils,

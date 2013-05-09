@@ -51,5 +51,5 @@ begin
 end;
 
 initialization
-  TDUnitX.RegisterTestFixture(TMyDUnitTest);
+  //TDUnitX.RegisterTestFixture(TMyDUnitTest);
 end.

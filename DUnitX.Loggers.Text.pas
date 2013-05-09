@@ -58,7 +58,7 @@ type
     procedure OnTestSuccess(const threadId: Cardinal; Test: ITestResult);
     procedure OnTestWarning(const threadId: Cardinal; AWarning: ITestResult);
     procedure OnTestError(const threadId: Cardinal; Error: ITestError);
-    procedure OnTestFailure(const threadId: Cardinal; Failure: ITestResult);
+    procedure OnTestFailure(const threadId: Cardinal; Failure: ITestError);
 
     procedure OnLog(const logType: TLogLevel; const msg : string);
 
@@ -128,7 +128,7 @@ begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnTestFailure(const threadId: Cardinal; Failure: ITestResult);
+procedure TDUnitXTextFileLogger.OnTestFailure(const threadId: Cardinal; Failure: ITestError);
 begin
 
 end;

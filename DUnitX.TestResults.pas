@@ -29,6 +29,7 @@ unit DUnitX.TestResults;
 interface
 
 uses
+  System.TimeSpan,
   DUnitX.TestFramework,
   DUnitX.InternalInterfaces,
   Generics.Collections,
@@ -51,9 +52,7 @@ type
 
     FStartTime: TDateTime;
     FFinishTime: TDateTime;
-
-    FStartTickCount : Cardinal;
-    FFinishTickCount : Cardinal;
+    FDuration: TTimeSpan;
   protected
     function GetAllPassed: Boolean;
     function GetCount: Integer;
@@ -67,7 +66,7 @@ type
     function GetSuccessRate : integer;
     function GetStartTime: TDateTime;
     function GetFinishTime: TDateTime;
-    function GetRunTime: double;
+    function GetTestDuration: TTimeSpan;
 
     //ITestExecuteContext
     procedure RecordResult(const testResult: ITestResult);
@@ -98,9 +97,7 @@ begin
 
   FStartTime := Now;
   FFinishTime := FStartTime;
-
-  FStartTickCount := GetTickCount;
-  FFinishTickCount := FStartTickCount;
+  FDuration := TTimeSpan.Zero;
 end;
 
 destructor TDUnitXTestResults.Destroy;
@@ -144,9 +141,9 @@ begin
   result := nil;
 end;
 
-function TDUnitXTestResults.GetRunTime: double;
+function TDUnitXTestResults.GetTestDuration: TTimeSpan;
 begin
-  result := (FFinishTickCount - FStartTickCount) / 1000;
+  result := FDuration;
 end;
 
 function TDUnitXTestResults.GetStartTime: TDateTime;

@@ -188,8 +188,10 @@ type
   Assert = class
   public
     class procedure Pass(const message : string = '');
-    class procedure Fail(const message : string = '');
-    class procedure Warn(const message : string = '');
+    class procedure Fail(const message : string = ''; const errorAddrs : pointer = nil);
+
+    //TODO: Make more use of warnings. Currently none in use.
+    class procedure Warn(const message : string = ''; const errorAddrs : pointer = nil);
 
 
     class procedure AreEqual(const left : string; const right : string; const ignoreCase : boolean = true; const message : string = '');overload;
@@ -254,25 +256,28 @@ type
     {$ENDIF}
   end;
 
+  {$M+}
   ITestFixtureInfo = interface;
+  {$M-}
 
+  {$M+}
   ITestInfo = interface
     ['{FF61A6EB-A76B-4BE7-887A-598EBBAE5611}']
-    function GetName : string;
-    function GetActive : boolean;
-    function GetTestFixture : ITestFixtureInfo;
-    function GetTestStartTime : TDateTime;
-    function GetTestEndTime : TDateTime;
-    function GetTestDuration : TTimeSpan;
+    function GetName2 : string;
+    function GetActive2 : boolean;
+    function GetTestFixture2 : ITestFixtureInfo;
 
-    property Name : string read GetName;
-    property Active : boolean read GetActive;
-    property Fixture : ITestFixtureInfo read GetTestFixture;
-    property TestStartTime : TDateTime read GetTestStartTime;
-    property TestEndTime : TDateTime read GetTestEndTime;
-    property TestDuration : TTimeSpan read GetTestDuration;
+    function GetTestStartTime2 : TDateTime;
+    function GetTestEndTime2 : TDateTime;
+    function GetTestDuration2 : TTimeSpan;
+
+    property Name : string read GetName2;
+    property Active : boolean read GetActive2;
+    property Fixture : ITestFixtureInfo read GetTestFixture2;
   end;
+  {$M-}
 
+  {$M+}
   ITestFixtureInfo = interface
     ['{9E98B1E8-583A-49FC-B409-9B6937E22E81}']
     function GetName  : string;
@@ -299,23 +304,46 @@ type
     property TestCount                  : cardinal read GetTestCount;
     property ActiveTestCount            : cardinal read GetActiveTestCount;
   end;
+  {$M-}
 
   TTestResultType = (Success,Failure,Warning,Error);
+
+  {$M+}
   ITestResult = interface
   ['{EFD44ABA-4F3E-435C-B8FC-1F8EB4B35A3B}']
     function GetTest : ITestInfo;
     function GetResult : boolean;
     function GetResultType : TTestResultType;
     function GetMessage : string;
+    function GetTestStartTime : TDateTime;
+    function GetTestEndTime : TDateTime;
+    function GetTestDuration : TTimeSpan;
+
+    //Test
     property Test : ITestInfo read GetTest;
+
+    //Results
     property Result : boolean read GetResult;
     property ResultType : TTestResultType read GetResultType;
     property Message : string read GetMessage;
+
+    //Timing
+    property TestStartTime : TDateTime read GetTestStartTime;
+    property TestEndTime : TDateTime read GetTestEndTime;
+    property TestDuration : TTimeSpan read GetTestDuration;
   end;
+  {$M-}
 
   ITestError = interface(ITestResult)
     function GetExceptionClass : ExceptClass;
+    function GetExceptionMessage : string;
+    function GetExceptionLocationInfo : string;
+    function GetExceptionAddressInfo : string;
+
     property ExceptionClass : ExceptClass read GetExceptionClass;
+    property ExceptionMessage : string read GetExceptionMessage;
+    property ExceptionLocationInfo : string read GetExceptionLocationInfo;
+    property ExceptionAddressInfo : string read GetExceptionAddressInfo;
   end;
 
   IFixtureResult = interface(IEnumerable<ITestResult>)
@@ -363,7 +391,7 @@ type
     function GetSuccessRate : integer;
     function GetStartTime: TDateTime;
     function GetFinishTime: TDateTime;
-    function GetRunTime: double;
+    function GetTestDuration: TTimeSpan;
 
     function GetFixtures : IEnumerable<ITestFixtureInfo>;
     function GetResults  : IEnumerable<ITestResult>;
@@ -376,7 +404,7 @@ type
 
     property StartTime : TDateTime read GetStartTime;
     property FinishTime: TDateTime read GetFinishTime;
-    property RunTime: double read GetRunTime;
+    property TestDuration : TTimeSpan read GetTestDuration;
 
     property SuccessRate : integer read GetSuccessRate;
     property AllPassed : boolean read GetAllPassed;
@@ -440,7 +468,7 @@ type
     ///	<summary>
     ///	  Called when a test fails.
     ///	</summary>
-    procedure OnTestFailure(const threadId : Cardinal; Failure: ITestResult);
+    procedure OnTestFailure(const threadId : Cardinal; Failure: ITestError);
 
     ///	<summary>
     ///	  //called when a test results in a warning.
@@ -561,10 +589,13 @@ type
   ETestFrameworkException = class(Exception);
 
   ENotImplemented = class(ETestFrameworkException);
-  EAssertionFailure = class(ETestFrameworkException);
 
   //base exception for any internal exceptions which cause the test to stop
   EAbort = class(ETestFrameworkException);
+
+  //  //All assert failures throw this exception error.
+  //  EAssertionFailure = class(EAbort);
+
   ETestFailure = class(EAbort);
   ETestPass = class(EAbort);
   ETestWarning = class(EABort);
@@ -617,7 +648,7 @@ end;
 class procedure Assert.AreEqual(const left, right, tolerance: Extended; const message: string);
 begin
   if not Math.SameValue(left,right,tolerance) then
-    raise EAssertionFailure.Create(Format('left %g but got %g - %s' ,[left,right,message]));
+    Fail(Format('left %g but got %g - %s' ,[left,right,message]), ReturnAddress);
 end;
 
 
@@ -637,9 +668,11 @@ begin
       msg := msg +  'nil'
     else
       msg := msg + right.ClassName;
+
     if message <> '' then
       msg := msg + '. ' + message;
-    raise EAssertionFailure.Create(msg);
+
+    Fail(msg, ReturnAddress);
   end;
 end;
 
@@ -653,32 +686,37 @@ begin
   begin
     leftValue := TValue.From<T>(left);
     rightValue := TValue.From<T>(right);
-    raise EAssertionFailure.Create(Format('left %s but got %s',[leftValue.AsString,rightValue.AsString]));
+
+    Fail(Format('left %s but got %s',[leftValue.AsString,rightValue.AsString]), ReturnAddress);
   end;
 end;
 
 class procedure Assert.AreEqualMemory(const left : Pointer; const right : Pointer; const size : Cardinal; message : string);
 begin
   if not CompareMem(left,right, size) then
-    raise EAssertionFailure.Create('Memory values are not equal. ' + message);
+    Fail('Memory values are not equal. ' + message, ReturnAddress);
 end;
 
 class procedure Assert.AreNotEqual(const left, right, tolerance: Extended; const message: string);
 begin
   if Math.SameValue(left,right,tolerance) then
-    raise EAssertionFailure.Create(Format('%g equals right %g %s' ,[left,right,message]));
+    Fail(Format('%g equals right %g %s' ,[left,right,message]), ReturnAddress);
 end;
 
 
 class procedure Assert.AreNotEqual(const left, right: string;const ignoreCase: boolean; const message: string);
-begin
-  if ignoreCase then
+
+  function AreNotEqualText(const left, right: string; const ignoreCase: boolean): boolean;
   begin
-    if SameText(left,right) then
-      raise EAssertionFailure.Create(Format('[%s] is Equal to [%s] %s',[left,right,message]));
-  end
-  else if SameStr(left,right) then
-      raise EAssertionFailure.Create(Format('[%s] is Equal to [%s] %s',[left,right,message]));
+    if ignoreCase then
+      Result := SameText(left, right)
+    else
+      Result := SameStr(left, right);
+
+  end;
+begin
+  if AreNotEqualText(left, right, ignoreCase) then
+     Fail(Format('[%s] is Equal to [%s] %s', [left, right, message]), ReturnAddress);
 end;
 
 class procedure Assert.AreNotEqual(const left, right: TClass; const message: string);
@@ -699,9 +737,9 @@ begin
       msg := msg + right.ClassName;
     if message <> '' then
       msg := msg + '. ' + message;
-    raise EAssertionFailure.Create(msg);
-  end;
 
+    Fail(msg, ReturnAddress);
+  end;
 end;
 
 class procedure Assert.AreNotEqual<T>(const left, right: T; const message: string);
@@ -714,38 +752,39 @@ begin
   begin
     leftValue := TValue.From<T>(left);
     rightValue := TValue.From<T>(right);
-    raise EAssertionFailure.Create(Format('left %s Not Equal To %s',[leftValue.AsString,rightValue.AsString]));
+
+    Fail(Format('left %s Not Equal To %s',[leftValue.AsString,rightValue.AsString]), ReturnAddress);
   end;
 end;
 
 class procedure Assert.AreNotEqualMemory(const left, right: Pointer; const size: Cardinal; message: string);
 begin
   if CompareMem(left,right, size) then
-    raise EAssertionFailure.Create('Memory values are equal. ' + message);
+    Fail('Memory values are equal. ' + message, ReturnAddress);
 end;
 
 class procedure Assert.AreNotSame(const left, right: TObject; const message: string);
 begin
   if left.Equals(right) then
-    raise EAssertionFailure.Create(Format('Object [%s] Equals Object [%s] %s',[left.ToString,right.ToString,message]));
+    Fail(Format('Object [%s] Equals Object [%s] %s',[left.ToString,right.ToString,message]), ReturnAddress);
 end;
 
 class procedure Assert.AreNotSame(const left, right: IInterface; const message: string);
 begin
   if left = right then
-    raise EAssertionFailure.Create(Format('references are the same. %s',[message]));
+    Fail(Format('references are the same. %s',[message]), ReturnAddress);
 end;
 
 class procedure Assert.AreSame(const left, right: IInterface; const message: string);
 begin
   if left <> right then
-    raise EAssertionFailure.Create(Format('references are Not the same. %s',[message]));
+    Fail(Format('references are Not the same. %s',[message]), ReturnAddress);
 end;
 
 class procedure Assert.AreSame(const left, right: TObject; const message: string);
 begin
   if not left.Equals(right) then
-    raise EAssertionFailure.Create(Format('Object [%s] Not Object [%s] %s',[left.ToString,right.ToString,message]));
+    Fail(Format('Object [%s] Not Object [%s] %s',[left.ToString,right.ToString,message]), ReturnAddress);
 end;
 
 
@@ -760,7 +799,8 @@ begin
     if comparer.Compare(o,value) = 0 then
       exit;
   end;
-  raise EAssertionFailure.Create(Format('List does not contain value. %s',[message]));
+
+  Fail(Format('List does not contain value. %s',[message]), ReturnAddress);
 end;
 
 
@@ -774,13 +814,20 @@ begin
   for o in list do
   begin
     if comparer.Compare(o,value) = 0 then
-      raise EAssertionFailure.Create(Format('List contains value. %s',[message]));
+      Fail(Format('List contains value. %s',[message]), ReturnAddress);
   end;
 end;
 
-class procedure Assert.Fail(const message: string);
+class procedure Assert.Fail(const message : string; const errorAddrs : pointer);
 begin
-  raise ETestFailure.Create(Format('Fail. %s',[message]));
+  //If we have been given a return then use it. (makes the exception appear on level above in the stack)
+  if errorAddrs <> nil then
+    raise ETestFailure.Create(message) at errorAddrs
+  else
+    //Otherwise use the return address we can currently get to for where to raise the exception
+    raise ETestFailure.Create(message) at ReturnAddress;
+
+  // raise ETestFailure.Create(Format('Fail. %s',[message]));
 end;
 
 
@@ -809,7 +856,8 @@ begin
     if True then
     if message <> '' then
       msg := msg + ' ' + message;
-    raise EAssertionFailure.Create(msg);
+
+    Fail(msg, ReturnAddress);
   end;
 
 end;
@@ -817,33 +865,32 @@ end;
 class procedure Assert.IsEmpty(const value: IInterfaceList; const message: string);
 begin
   if value.Count > 0 then
-    raise EAssertionFailure.Create(Format('List is Not empty. %s',[message]));
+    Fail(Format('List is Not empty. %s',[message]), ReturnAddress);
 end;
 
 class procedure Assert.IsEmpty(const value: TList; const message: string);
 begin
   if value.Count > 0 then
-    raise EAssertionFailure.Create(Format('List is Not empty. %s',[message]));
+    Fail(Format('List is Not empty. %s',[message]), ReturnAddress);
 end;
 
 class procedure Assert.IsEmpty(const value, message: string);
 begin
   if Length(value) > 0 then
-    raise EAssertionFailure.Create(Format('String is Not empty. %s',[message]));
+    Fail(Format('String is Not empty. %s',[message]), ReturnAddress);
 end;
 
 class procedure Assert.IsEmpty(const value: Variant; const message: string);
 begin
   if VarIsEmpty(value) or VarIsNull(value) then
-    raise EAssertionFailure.Create(Format('Variant is Not empty. %s',[message]));
+    Fail(Format('Variant is Not empty. %s',[message]), ReturnAddress);
 end;
 
 class procedure Assert.IsEmpty(const value: TStrings; const message: string);
 begin
   if value.Count > 0 then
-    raise EAssertionFailure.Create(Format('List is Not empty. %s',[message]));
+    Fail(Format('List is Not empty. %s',[message]), ReturnAddress);
 end;
-
 
 class procedure Assert.IsEmpty<T>(const value: IEnumerable<T>; const message: string);
 var
@@ -853,44 +900,45 @@ begin
   count := 0;
   for o in value do
     Inc(count);
+
   if count > 0 then
-   raise EAssertionFailure.Create(Format('List is Not empty. %s',[message]));
+    Fail(Format('List is Not empty. %s',[message]), ReturnAddress);
 end;
 
 class procedure Assert.IsFalse(const condition: boolean; const message: string);
 begin
   if condition then
-   raise EAssertionFailure.Create(Format('Condition is True when False expected. %s',[message]));
+   Fail(Format('Condition is True when False expected. %s',[message]), ReturnAddress);
 end;
 
 class procedure Assert.IsNotEmpty(const value: TList; const message: string);
 begin
   if value.Count = 0 then
-   raise EAssertionFailure.Create(Format('List is Empty. %s',[message]));
+   Fail(Format('List is Empty. %s',[message]), ReturnAddress);
 end;
 
 class procedure Assert.IsNotEmpty(const value: IInterfaceList; const message: string);
 begin
   if value.Count = 0 then
-   raise EAssertionFailure.Create(Format('List is Empty. %s',[message]));
+   Fail(Format('List is Empty. %s',[message]), ReturnAddress);
 end;
 
 class procedure Assert.IsNotEmpty(const value: TStrings; const message: string);
 begin
   if value.Count = 0 then
-   raise EAssertionFailure.Create(Format('List is Empty. %s',[message]));
+   Fail(Format('List is Empty. %s',[message]), ReturnAddress);
 end;
 
 class procedure Assert.IsNotEmpty(const value, message: string);
 begin
   if value = '' then
-   raise EAssertionFailure.Create(Format('Variant is Empty. %s',[message]));
+   Fail(Format('Variant is Empty. %s',[message]), ReturnAddress);
 end;
 
 class procedure Assert.IsNotEmpty(const value: Variant; const message: string);
 begin
   if VarIsEmpty(value) then
-    raise EAssertionFailure.Create(Format('Variant is Empty. %s',[message]));
+    Fail(Format('Variant is Empty. %s',[message]), ReturnAddress);
 end;
 
 
@@ -902,62 +950,63 @@ begin
   count := 0;
   for x in value do
     Inc(count);
+
   if count = 0 then
-    raise EAssertionFailure.Create(Format('List is Empty when Not empty expected. %s',[message]));
+    Fail(Format('List is Empty when Not empty expected. %s',[message]), ReturnAddress);
 end;
 
 class procedure Assert.IsNotNull(const condition: IInterface; const message: string);
 begin
   if condition = nil then
-    raise EAssertionFailure.Create(Format('Interface is Nil when not nil expected. %s',[message]));
+    Fail(Format('Interface is Nil when not nil expected. %s',[message]), ReturnAddress);
 end;
 
 class procedure Assert.IsNotNull(const condition: Pointer; const message: string);
 begin
   if condition = nil then
-    raise EAssertionFailure.Create(Format('Pointer is Nil when not Nil expected. %s',[message]));
+    Fail(Format('Pointer is Nil when not Nil expected. %s',[message]), ReturnAddress);
 end;
 
 class procedure Assert.IsNotNull(const condition: TObject; const message: string);
 begin
   if condition = nil then
-    raise EAssertionFailure.Create(Format('Object is Nil when Not Nil expected. %s',[message]));
+    Fail(Format('Object is Nil when Not Nil expected. %s',[message]), ReturnAddress);
 end;
 
 class procedure Assert.IsNotNull(const condition: Variant; const message: string);
 begin
   if VarIsNull(condition) then
-    raise EAssertionFailure.Create(Format('Variant is Null when Not Null expcted. %s',[message]));
+    Fail(Format('Variant is Null when Not Null expcted. %s',[message]), ReturnAddress);
 end;
 
 class procedure Assert.IsNull(const condition: Variant; const message: string);
 begin
   if not VarIsNull(condition) then
-    raise EAssertionFailure.Create(Format('Variant is Not Null when Null expected. [%s]',[message]));
+    Fail(Format('Variant is Not Null when Null expected. [%s]',[message]), ReturnAddress);
 end;
 
 class procedure Assert.IsNull(const condition: IInterface; const message: string);
 begin
   if condition <> nil then
-    raise EAssertionFailure.Create(Format('Interface is not Nil when nil expected. [%s]',[message]));
+    Fail(Format('Interface is not Nil when nil expected. [%s]',[message]), ReturnAddress);
 end;
 
 class procedure Assert.IsNull(const condition: TObject; const message: string);
 begin
   if condition <> nil then
-    raise EAssertionFailure.Create(Format('Object is not nil when nil expected. [%s]',[message]));
+    Fail(Format('Object is not nil when nil expected. [%s]',[message]), ReturnAddress);
 end;
 
 class procedure Assert.IsNull(const condition: Pointer; const message: string);
 begin
   if condition <> nil then
-    raise EAssertionFailure.Create(Format('Pointer is not Nil when nil expected. [%s]',[message]));
+    Fail(Format('Pointer is not Nil when nil expected. [%s]',[message]), ReturnAddress);
 end;
 
 class procedure Assert.IsTrue(const condition: boolean;const message : string);
 begin
   if not condition then
-    raise EAssertionFailure.Create(Format('Condition is False when True expected. [%s]',[message]));
+    Fail(Format('Condition is False when True expected. [%s]',[message]), ReturnAddress);
 end;
 
 
@@ -968,7 +1017,7 @@ begin
   begin
     val := TValue.From<T>(value);
     if not val.IsType<T> then
-      raise EAssertionFailure.Create('value is not of type T');
+      Fail('value is not of type T', ReturnAddress);
   end;
 end;
 
@@ -990,18 +1039,21 @@ begin
       if exceptionClass <> nil then
       begin
         if e.ClassType <> exceptionClass then
-          raise EAssertionFailure.Create('Method did not throw exception of type : ' + exceptionClass.ClassName + GetMsg );
+          Fail('Method did not throw exception of type : ' + exceptionClass.ClassName + GetMsg, ReturnAddress);
       end
       else
         exit;
     end;
   end;
-  raise EAssertionFailure.Create('Method did not throw any excpetions.' + GetMsg);
+  Fail('Method did not throw any excpetions.' + GetMsg, ReturnAddress);
 end;
 
-class procedure Assert.Warn(const message: string);
+class procedure Assert.Warn(const message : string; const errorAddrs : pointer);
 begin
-  raise ETestWarning.Create(Format('Warning. %s',[message]));
+  if errorAddrs = nil then
+    raise ETestWarning.Create(message) at ReturnAddress
+  else
+    raise ETestWarning.Create(message) at errorAddrs;
 end;
 
 class procedure Assert.WillNotRaise(const AMethod : TTestMethod; const exceptionClass : ExceptClass; const msg : string);
@@ -1021,10 +1073,10 @@ begin
       if exceptionClass <> nil then
       begin
         if e.ClassType = exceptionClass then
-          raise EAssertionFailure.Create('Method raised an exception of type : ' + exceptionClass.ClassName + #13#10 + e.Message + GetMsg);
+          Fail('Method raised an exception of type : ' + exceptionClass.ClassName + #13#10 + e.Message + GetMsg, ReturnAddress);
       end
       else
-        raise EAssertionFailure.Create('Method raised and exception of type : ' + e.ClassName + #13#10 + e.Message + GetMsg);
+        Fail('Method raised and exception of type : ' + e.ClassName + #13#10 + e.Message + GetMsg, ReturnAddress);
     end;
   end;
 end;
@@ -1034,10 +1086,10 @@ begin
   if ignoreCase then
   begin
     if not SameText(left,right) then
-      raise EAssertionFailure.Create(Format('[%s] is Not Equal to [%s] %s',[left,right,message]));
+      Fail(Format('[%s] is Not Equal to [%s] %s',[left,right,message]), ReturnAddress);
   end
   else if not SameStr(left,right) then
-      raise EAssertionFailure.Create(Format('[%s] is Not Equal to [%s] %s',[left,right,message]));
+      Fail(Format('[%s] is Not Equal to [%s] %s',[left,right,message]), ReturnAddress);
 end;
 
 class procedure Assert.Contains(const theString : string; const subString : string; const ignoreCase : boolean; const message : string);
@@ -1045,10 +1097,10 @@ begin
   if ignoreCase then
   begin
     if not StrUtils.ContainsText(theString,subString) then
-      raise EAssertionFailure.Create(Format('[%s] does not contain [%s] %s',[theString,subString,message]));
+      Fail(Format('[%s] does not contain [%s] %s',[theString,subString,message]), ReturnAddress);
   end
   else if not StrUtils.ContainsStr(theString,subString) then
-    raise EAssertionFailure.Create(Format('[%s] does not contain [%s] %s',[theString,subString,message]));
+    Fail(Format('[%s] does not contain [%s] %s',[theString,subString,message]), ReturnAddress);
 end;
 
 class procedure Assert.EndsWith(const theString : string; const subString : string; const ignoreCase : boolean; const message : string);
@@ -1056,16 +1108,16 @@ begin
   if ignoreCase then
   begin
     if not StrUtils.EndsText(theString,subString) then
-      raise EAssertionFailure.Create(Format('[%s] does not end with [%s] %s',[theString,subString,message]));
+      Fail(Format('[%s] does not end with [%s] %s',[theString,subString,message]), ReturnAddress);
   end
   else if not StrUtils.EndsStr(theString,subString) then
-    raise EAssertionFailure.Create(Format('[%s] does not end with [%s] %s',[theString,subString,message]));
+    Fail(Format('[%s] does not end with [%s] %s',[theString,subString,message]), ReturnAddress);
 end;
 {$IFDEF SUPPORTS_REGEX}
 class procedure Assert.IsMatch(const regexPattern, theString, message: string);
 begin
   if not TRegEx.IsMatch(theString,regexPattern) then
-    raise EAssertionFailure.Create(Format('[%s] does not match [%s] %s',[theString,regexPattern,message]));
+    Fail(Format('[%s] does not match [%s] %s',[theString,regexPattern,message]), ReturnAddress);
 end;
 {$ENDIF}
 
@@ -1074,10 +1126,10 @@ begin
   if ignoreCase then
   begin
     if not StrUtils.StartsText(theString,subString) then
-      raise EAssertionFailure.Create(Format('[%s] does Not Start with [%s] %s',[theString,subString,message]));
+      Fail(Format('[%s] does Not Start with [%s] %s',[theString,subString,message]), ReturnAddress);
   end
   else if not StrUtils.StartsStr(theString,subString) then
-    raise EAssertionFailure.Create(Format('[%s] does Not Start with [%s] %s',[theString,subString,message]));
+    Fail(Format('[%s] does Not Start with [%s] %s',[theString,subString,message]), ReturnAddress);
 end;
 
 { Test }

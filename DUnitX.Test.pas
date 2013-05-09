@@ -48,16 +48,33 @@ type
     FEndTime   : TDateTime;
     FDuration  : TTimeSpan;
   protected
-    procedure SetResult(const value: ITestResult);
+    //ITest
     function GetName: string; virtual;
-    function GetActive: boolean; virtual;
     function GetTestFixture: ITestFixture;
-    function ITestInfo.GetTestFixture = ITestInfo_GetTestFixture;
-    function ITestInfo_GetTestFixture : ITestFixtureInfo;
     function GetTestMethod: TTestMethod;
     function GetTestStartTime : TDateTime;
     function GetTestEndTime : TDateTime;
     function GetTestDuration: TTimeSpan;
+
+    //ITestInfo
+    function GetActive2 : boolean;
+
+    function ITestInfo.GetName2 = ITestInfo_GetName;
+    function ITestInfo.GetTestFixture2 = ITestInfo_GetTestFixture;
+    function ITestInfo.GetTestStartTime2 = ITestInfo_GetTestStartTime;
+    function ITestInfo.GetTestEndTime2 = ITestInfo_GetTestEndTime;
+    function ITestInfo.GetTestDuration2 =  ITestInfo_GetTestDuration;
+
+    function ITestInfo_GetName: string; virtual;
+    function ITestInfo_GetTestFixture: ITestFixtureInfo;
+    function ITestInfo_GetTestStartTime : TDateTime;
+    function ITestInfo_GetTestEndTime : TDateTime;
+    function ITestInfo_GetTestDuration: TTimeSpan;
+
+    //ISetTestResult
+    procedure SetResult(const value: ITestResult);
+
+    //ITestExecute
     procedure Execute(const context : ITestExecuteContext);virtual;
   public
     constructor Create(const AFixture : ITestFixture; const AName : string; const AMethod : TTestMethod);
@@ -71,6 +88,7 @@ type
     FInstance : TObject;
   protected
     function GetName: string; override;
+    function ITestInfo_GetName: string; virtual;
     procedure Execute(const context : ITestExecuteContext); override;
   public
     constructor Create(const AInstance : TObject; const AFixture : ITestFixture; const ACaseName : string; const AName : string; const AMethod : TRttiMethod; const AArgs : TValueArray);reintroduce;
@@ -104,7 +122,7 @@ begin
     end;
 end;
 
-function TDUnitXTest.GetActive: boolean;
+function TDUnitXTest.GetActive2: boolean;
 begin
   //TODO: Need to set the internal active state
   result := True;
@@ -143,6 +161,21 @@ begin
   result := FStartTime;
 end;
 
+function TDUnitXTest.ITestInfo_GetName: string;
+begin
+  result := FName;
+end;
+
+function TDUnitXTest.ITestInfo_GetTestDuration: TTimeSpan;
+begin
+  Result := FDuration;
+end;
+
+function TDUnitXTest.ITestInfo_GetTestEndTime: TDateTime;
+begin
+  Result := FEndTime;
+end;
+
 function TDUnitXTest.ITestInfo_GetTestFixture: ITestFixtureInfo;
 begin
   if FFixture.IsAlive then
@@ -150,6 +183,11 @@ begin
   else
     result := nil;
 
+end;
+
+function TDUnitXTest.ITestInfo_GetTestStartTime: TDateTime;
+begin
+  Result := FStartTime;
 end;
 
 procedure TDUnitXTest.SetResult(const value: ITestResult);
@@ -167,7 +205,7 @@ var
   parameters : TArray<TRttiParameter>;
   tmp : TValue;
 begin
-  inherited Create(AFixture,AName,nil);
+  inherited Create(AFixture, AName, nil);
   FInstance := AInstance;
   FRttiMethod := AMethod;
   FCaseName := ACaseName;
@@ -203,4 +241,10 @@ begin
   result := FName + ' (Test Case : ' + FCaseName +')';
 end;
 
+function TDUnitXTestCase.ITestInfo_GetName: string;
+begin
+  result := FName + ' (Test Case : ' + FCaseName +')';
+end;
+
 end.
+

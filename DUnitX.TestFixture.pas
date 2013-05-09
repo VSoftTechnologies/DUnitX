@@ -156,8 +156,10 @@ begin
   rType := FRttiContext.GetType(FTestClass);
   System.Assert(rType <> nil);
   FFixtureInstance := FTestClass.Create;
-//  PatchCodeDWORD(PDWORD(Integer(FFixtureInstance.ClassType) + vmtRunnerIndex),0);//ARunnerIndex);
-// lets try using the current thread to id the runner!
+
+  //  PatchCodeDWORD(PDWORD(Integer(FFixtureInstance.ClassType) + vmtRunnerIndex),0);//ARunnerIndex);
+  // lets try using the current thread to id the runner!
+
   methods := rType.GetMethods;
   for method in methods do
   begin
@@ -281,7 +283,7 @@ end;
 
 function TDUnitXTestFixture.GetTestCount: cardinal;
 begin
-  FTests.Count;
+  Result := FTests.Count;
 end;
 
 function TDUnitXTestFixture.GetTestInOwnThread: boolean;
@@ -314,3 +316,4 @@ begin
 end;
 
 end.
+
