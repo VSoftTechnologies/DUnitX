@@ -12,14 +12,18 @@
 #define System_RTLConsts_sObserverNoInterface 65345
 #define System_RTLConsts_sObserverNoSinglecastFound 65346
 #define System_RTLConsts_sObserverNoMulticastFound 65347
-#define System_RegularExpressionsConsts_SRegExMissingExpression 65348
-#define System_RegularExpressionsConsts_SRegExExpressionError 65349
-#define System_RegularExpressionsConsts_SRegExStudyError 65350
-#define System_RegularExpressionsConsts_SRegExMatchRequired 65351
-#define System_RegularExpressionsConsts_SRegExStringsRequired 65352
-#define System_RegularExpressionsConsts_SRegExInvalidIndexType 65353
-#define System_RegularExpressionsConsts_SRegExIndexOutOfBounds 65354
-#define System_RegularExpressionsConsts_SRegExInvalidGroupName 65355
+#define System_Win_ComConst_SOleError 65348
+#define System_Win_ComConst_SNoMethod 65349
+#define System_Win_ComConst_SVarNotObject 65350
+#define System_Win_ComConst_STooManyParams 65351
+#define System_RegularExpressionsConsts_SRegExMissingExpression 65352
+#define System_RegularExpressionsConsts_SRegExExpressionError 65353
+#define System_RegularExpressionsConsts_SRegExStudyError 65354
+#define System_RegularExpressionsConsts_SRegExMatchRequired 65355
+#define System_RegularExpressionsConsts_SRegExStringsRequired 65356
+#define System_RegularExpressionsConsts_SRegExInvalidIndexType 65357
+#define System_RegularExpressionsConsts_SRegExIndexOutOfBounds 65358
+#define System_RegularExpressionsConsts_SRegExInvalidGroupName 65359
 #define System_RTLConsts_SNonPublicType 65360
 #define System_RTLConsts_SByRefArgMismatch 65361
 #define System_RTLConsts_SVersionStr 65362
@@ -202,6 +206,10 @@ BEGIN
 	System_RTLConsts_sObserverNoInterface,	L"The object does not implement the observer interface"
 	System_RTLConsts_sObserverNoSinglecastFound,	L"No single cast observer with ID %s was added to the observer collection"
 	System_RTLConsts_sObserverNoMulticastFound,	L"No multi cast observer with ID %s was added to the observer collection"
+	System_Win_ComConst_SOleError,	L"OLE error %.8x"
+	System_Win_ComConst_SNoMethod,	L"Method '%s' not supported by automation object"
+	System_Win_ComConst_SVarNotObject,	L"Variant does not reference an automation object"
+	System_Win_ComConst_STooManyParams,	L"Dispatch methods do not support more than 64 parameters"
 	System_RegularExpressionsConsts_SRegExMissingExpression,	L"A regular expression specified in RegEx is required"
 	System_RegularExpressionsConsts_SRegExExpressionError,	L"Error in regular expression at offset %d: %s"
 	System_RegularExpressionsConsts_SRegExStudyError,	L"Error studying the regex: %s"

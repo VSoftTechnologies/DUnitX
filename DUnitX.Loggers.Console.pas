@@ -144,10 +144,10 @@ end;
 procedure TDUnitXConsoleLogger.OnExecuteTest(const threadId: Cardinal; Test: ITestInfo);
 begin
   //FConsoleWriter.SetColour(ccBrightAqua);
-//  FConsoleWriter.Indent(1);
+  //FConsoleWriter.Indent(1);
   FConsoleWriter.WriteLn('Executing Test : ' + Test.Name);
   FConsoleWriter.WriteLn;
-//  FConsoleWriter.SetColour(ccDefault);
+  //FConsoleWriter.SetColour(ccDefault);
 end;
 
 procedure TDUnitXConsoleLogger.OnTestError(const threadId: Cardinal; Error: ITestError);

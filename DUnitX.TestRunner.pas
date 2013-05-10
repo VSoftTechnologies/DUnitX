@@ -124,6 +124,7 @@ implementation
 
 uses
   DUnitX.TestFixture,
+  DUnitX.TestResults,
   DUnitX.TestResult,
   TypInfo,
   SysUtils,
@@ -361,6 +362,8 @@ var
 
   testCount : Cardinal;
   testActiveCount : Cardinal;
+
+  testResults : ITestResults;
 begin
   result := nil;
   fixtures := BuildFixtures;
@@ -375,6 +378,9 @@ begin
   for fixture in fixtures do
     for test in fixture.Tests do
       Inc(testCount);
+
+  //TODO: Need a simple way of converting one list to another list of a supported interface
+  // testResults := TDUnitXTestResults.Create(fixtures);
 
   //TODO: Record Test metrics.. runtime etc.
   threadId := TThread.CurrentThread.ThreadID;
@@ -468,37 +474,37 @@ begin
                 end;
               end;
             finally
-              Self.Loggers_EndTest(threadId,nil);
+              //TODO: Actully pass the results for the test here.
+              Self.Loggers_EndTest(threadId, nil);
             end;
           end;
 
         except
           //TODO: Report system failures to user
-          //TODO: Remove raise, however for the moment while testing I need to see these.
 
         end;
 
         if Assigned(fixture.TearDownFixtureMethod)  then
         begin
           try
-            Self.Loggers_TeardownFixture(threadId,fixture as ITestFixtureInfo);
+            Self.Loggers_TeardownFixture(threadId, fixture as ITestFixtureInfo);
             fixture.TearDownFixtureMethod;
           except
             on e : Exception do
             begin
                //TODO: Report fixture tear down exceptions to the user
-               //TODO: Remove raise, however for the moment while testing I need to see these.
-
+          
             end;
           end;
         end;
 
       finally
-        Self.Loggers_EndTestFixture(threadId,nil);
+        //TODO: Actully pass the results for the fixture here
+        Self.Loggers_EndTestFixture(threadId, nil);
       end;
     end;
   finally
-    //TODO: need test results.
+    //TODO: Actully pass the results for all fixtures and tests here.
     Self.Loggers_TestingEnds(nil);
   end;
 end;

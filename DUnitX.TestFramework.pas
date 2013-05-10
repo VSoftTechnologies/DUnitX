@@ -263,17 +263,17 @@ type
   {$M+}
   ITestInfo = interface
     ['{FF61A6EB-A76B-4BE7-887A-598EBBAE5611}']
-    function GetName2 : string;
-    function GetActive2 : boolean;
-    function GetTestFixture2 : ITestFixtureInfo;
+    function GetName : string;
+    function GetActive : boolean;
+    function GetTestFixture : ITestFixtureInfo;
 
-    function GetTestStartTime2 : TDateTime;
-    function GetTestEndTime2 : TDateTime;
-    function GetTestDuration2 : TTimeSpan;
+    function GetTestStartTime : TDateTime;
+    function GetTestEndTime : TDateTime;
+    function GetTestDuration : TTimeSpan;
 
-    property Name : string read GetName2;
-    property Active : boolean read GetActive2;
-    property Fixture : ITestFixtureInfo read GetTestFixture2;
+    property Name : string read GetName;
+    property Active : boolean read GetActive;
+    property Fixture : ITestFixtureInfo read GetTestFixture;
   end;
   {$M-}
 

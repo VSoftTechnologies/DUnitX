@@ -100,12 +100,7 @@ end;
 
 constructor TDUnitXTestResult.Create(const ATestInfo : ITestInfo; const AType: TTestResultType; const AMessage: string);
 begin
-  OutputDebugString(PWideChar(ATestInfo.Name));
-
   FTest := TWeakReference<ITestInfo>.Create(ATestInfo);
-
-  OutputDebugString(PWideChar(FTest.Data.Name));
-  OutputDebugString(PWideChar(ATestInfo.Name));
 
   FResultType := AType;
   FMessage := AMessage;
@@ -137,7 +132,7 @@ end;
 function TDUnitXTestResult.GetTestDuration: TTimeSpan;
 begin
   if FTest.IsAlive then
-    Result := FTest.Data.GetTestDuration2
+    Result := FTest.Data.GetTestDuration
   else
     Result := TTimeSpan.Zero;
 end;
@@ -145,7 +140,7 @@ end;
 function TDUnitXTestResult.GetTestEndTime: TDateTime;
 begin
   if FTest.IsAlive then
-    Result := FTest.Data.GetTestEndTime2
+    Result := FTest.Data.GetTestEndTime
   else
     Result := 0;
 end;
@@ -153,7 +148,7 @@ end;
 function TDUnitXTestResult.GetTestStartTime: TDateTime;
 begin
   if FTest.IsAlive then
-    Result := FTest.Data.GetTestStartTime2
+    Result := FTest.Data.GetTestStartTime
   else
     Result := 0;
 end;
@@ -162,11 +157,7 @@ end;
 
 constructor TDUnitXTestError.Create(const ATestInfo : ITestInfo; const AType: TTestResultType; const AThrownException: Exception; const Addrs: Pointer; const AMessage: string = '');
 begin
-   OutputDebugString(PWideChar(ATestInfo.Name));
-
   inherited Create(ATestInfo, AType, AMessage);
-
-  OutputDebugString(PWideChar(ATestInfo.Name));
 
   FExceptionClass := ExceptClass(AThrownException.ClassType);
 

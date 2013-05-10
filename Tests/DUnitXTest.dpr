@@ -1,8 +1,13 @@
 program DUnitXTest;
 
-{//$APPTYPE CONSOLE}
+{$APPTYPE CONSOLE}
 {\\$STRONGLINKTYPES ON}
 uses
+  madExcept,
+  madLinkDisAsm,
+  madListHardware,
+  madListProcesses,
+  madListModules,
   SysUtils,
   DUnitX.Tests.IoC in 'DUnitX.Tests.IoC.pas',
   DUnitX.Loggers.Console in '..\DUnitX.Loggers.Console.pas',
@@ -32,12 +37,14 @@ uses
   DUnitX.Tests.Example in 'DUnitX.Tests.Example.pas',
   DUnitX.Tests.Loggers.XML.NUnit in 'DUnitX.Tests.Loggers.XML.NUnit.pas',
   DUnitX.Utils.XML in '..\DUnitX.Utils.XML.pas',
-  DUnitX.Tests.Utils.XML in 'DUnitX.Tests.Utils.XML.pas';
+  DUnitX.Tests.Utils.XML in 'DUnitX.Tests.Utils.XML.pas',
+  DUnitX.Tests.WeakReference in 'DUnitX.Tests.WeakReference.pas';
 
 var
   runner : ITestRunner;
   results : ITestResults;
   logger : ITestLogger;
+  nunitLogger : ITestLogger;
 begin
   try
     //Create the runner
@@ -45,7 +52,9 @@ begin
     runner.UseRTTI := True;
     //tell the runner how we will log things
     logger := TDUnitXConsoleLogger.Create;
+    nunitLogger := TDUnitXXMLNUnitLogger_File.Create;
     runner.AddLogger(logger);
+    runner.AddLogger(nunitLogger);
 
     //Run tests
     results := runner.Execute;

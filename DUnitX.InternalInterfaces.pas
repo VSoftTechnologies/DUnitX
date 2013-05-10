@@ -54,11 +54,11 @@ type
     function GetTestStartTime : TDateTime;
     function GetTestEndTime : TDateTime;
     function GetTestDuration : TTimeSpan;
+
     property Name : string read GetName;
     property Fixture : ITestFixture read GetTestFixture;
     property TestMethod : TTestMethod read GetTestMethod;
   end;
-
 
   ///
   ///  Describes the Test Fixture at runtime.
@@ -93,7 +93,7 @@ type
   end;
 
   ISetTestResult = interface
-  ['{B50D50E9-3609-40BF-847D-53B5BF19B5C7}']
+    ['{B50D50E9-3609-40BF-847D-53B5BF19B5C7}']
     procedure SetResult(const value : ITestResult);
   end;
 
@@ -110,7 +110,7 @@ type
 
 
   ITestExecute = interface
-  ['{C59443A9-8C7D-46CE-83A1-E40309A1B384}']
+    ['{C59443A9-8C7D-46CE-83A1-E40309A1B384}']
     procedure Execute(const context : ITestExecuteContext);
   end;
 

@@ -84,7 +84,7 @@ type
   end;
 
   //The actual WeakReference implementation.
-  TWeakReference<T: IInterface> = class(TInterfacedObject,IWeakReference<T>)
+  TWeakReference<T: IInterface> = class(TInterfacedObject, IWeakReference<T>)
   private
     FData : TObject;
   protected
@@ -99,6 +99,7 @@ type
 implementation
 
 uses
+  TypInfo,
   classes,
   sysutils;
 
@@ -165,7 +166,10 @@ begin
   result := Default(T); /// can't assign nil to T
   if FData <> nil then
   begin
-    if Supports(FData,IInterface,result) then
+    //Make sure that the object supports the interface which is our generic type if we
+    //simply pass in the interface base type, the method table doesn't work correctly
+    if Supports(FData, GetTypeData(TypeInfo(T))^.Guid, result) then
+    //if Supports(FData, IInterface, result) then
       result := T(result);
   end;
 end;
@@ -243,7 +247,7 @@ end;
 
 procedure TWeakReferencedObject.AfterConstruction;
 begin
-// Release the constructor's implicit refcount
+  // Release the constructor's implicit refcount
   InterlockedDecrement(FRefCount);
 end;
 
@@ -270,8 +274,8 @@ end;
 
 class function TWeakReferencedObject.NewInstance: TObject;
 begin
-// Set an implicit refcount so that refcounting
-// during construction won't destroy the object.
+  // Set an implicit refcount so that refcounting
+  // during construction won't destroy the object.
   Result := inherited NewInstance;
   TWeakReferencedObject(Result).FRefCount := 1;
 end;
