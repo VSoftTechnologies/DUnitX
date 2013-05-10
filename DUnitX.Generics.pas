@@ -98,13 +98,13 @@ type
   //seem to be possible in delphi.. it's and excercise in extreme frustration!
 
   //Simple base IEnumerable Base implementation
-  TDUnitXEnumerable = class(TInterfacedObject,IEnumerable)
+  TDUnitXEnumerable = class(TInterfacedObject, IEnumerable)
   protected
     function IEnumerable.GetEnumerator = GetNonGenEnumerator;
-    function GetNonGenEnumerator: IEnumerator;virtual;abstract;
+    function GetNonGenEnumerator: IEnumerator; virtual; abstract;
   end;
 
-  TDUnitXList<T> = class(TDUnitXEnumerable,IList<T>)
+  TDUnitXList<T> = class(TDUnitXEnumerable, IList<T>)
   private
     FList : TList<T>;
   protected
@@ -161,7 +161,6 @@ type
     procedure TrimExcess;
 
     function ToArray: TArray<T>;
-
   public
     constructor Create; overload;
     constructor Create(const AComparer: IComparer<T>); overload;
@@ -182,7 +181,6 @@ type
   public
     constructor Create(const AList : IList<T>);
   end;
-
 
 implementation
 

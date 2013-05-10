@@ -61,18 +61,6 @@ type
     function ITestInfo.GetTestFixture = ITestInfo_GetTestFixture;
     function ITestInfo_GetTestFixture: ITestFixtureInfo;
 
-    //    function ITestInfo.GetName2 = ITestInfo_GetName;
-    //    function ITestInfo.GetTestStartTime2 = ITestInfo_GetTestStartTime;
-    //    function ITestInfo.GetTestFixture2 = ITestInfo_GetTestFixture;
-    //    function ITestInfo.GetTestEndTime2 = ITestInfo_GetTestEndTime;
-    //    function ITestInfo.GetTestDuration2 =  ITestInfo_GetTestDuration;
-    //
-    //    function ITestInfo_GetName: string; virtual;
-    //    function ITestInfo_GetTestFixture: ITestFixtureInfo;
-    //    function ITestInfo_GetTestStartTime : TDateTime;
-    //    function ITestInfo_GetTestEndTime : TDateTime;
-    //    function ITestInfo_GetTestDuration: TTimeSpan;
-
     //ISetTestResult
     procedure SetResult(const value: ITestResult);
 

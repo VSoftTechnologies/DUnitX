@@ -160,7 +160,7 @@ function TDUnitXTestResults.GetSuccessRate: integer;
 var
   successRate : integer;
 begin
-  if FResults.Count = 0 then
+  if FResults.Count <> 0 then
     successRate :=  Trunc((FResults.Count - FFailureCount - FErrorCount) / FResults.Count) * 100
   else
     successRate := 100;

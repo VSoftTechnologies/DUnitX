@@ -252,9 +252,6 @@ end;
 
 procedure TDUnitXXMLNUnitLogger.OnTestingEnds(const TestResult: ITestResults);
 begin
-  //TODO: Fix the call of this to not pass nil
-  Exit;
-
   WriteXMLLine('<statistics>' + NUNIT_LOGGER_CRLF +
                   Format('<stat name="tests" value="%d" />', [TestResult.Count]) + NUNIT_LOGGER_CRLF +
                   Format('<stat name="failures" value="%d" />', [TestResult.FailureCount]) + NUNIT_LOGGER_CRLF +

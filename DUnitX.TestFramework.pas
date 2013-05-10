@@ -39,8 +39,6 @@ uses
 {$I DUnitX.inc}
 
 type
-
-
   ///	<summary>
   ///	  A class decorated with this attribute will be tested. The parameters
   ///	  allow you to control which methods are treated as tests. By default 
@@ -275,6 +273,12 @@ type
     property Active : boolean read GetActive;
     property Fixture : ITestFixtureInfo read GetTestFixture;
   end;
+
+  ITestInfoList = interface(IList<ITestInfo>)
+    ['{1C614DC2-537F-4229-863D-669E4211074E}']
+  end;
+
+  TTestInfoList = class(TDUnitXList<ITestInfo>, ITestInfoList);
   {$M-}
 
   {$M+}
@@ -304,6 +308,12 @@ type
     property TestCount                  : cardinal read GetTestCount;
     property ActiveTestCount            : cardinal read GetActiveTestCount;
   end;
+
+  ITestFixtureInfoList = interface(IList<ITestFixtureInfo>)
+    ['{DEE229E7-1450-4DC1-BEEA-562461439084}']
+  end;
+
+  TTestFixtureInfoList = class(TDUnitXList<ITestFixtureInfo>, ITestFixtureInfoList);
   {$M-}
 
   TTestResultType = (Success,Failure,Warning,Error);

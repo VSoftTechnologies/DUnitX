@@ -54,6 +54,7 @@ type
     FExitBehavior   : TRunnerExitBehavior;
     FFixtureClasses : TDictionary<string,TClass>;
   protected
+    //Logger calls - sequence ordered
     procedure Loggers_TestingStarts(const threadId, testCount, testActiveCount : Cardinal);
 
     procedure Loggers_StartTestFixture(const threadId : Cardinal; const fixture : ITestFixtureInfo);
@@ -61,14 +62,12 @@ type
     procedure Loggers_SetupFixture(const threadId : Cardinal; const fixture : ITestFixtureInfo);
     procedure Loggers_EndSetupFixture(const threadId : Cardinal; const fixture : ITestFixtureInfo);
 
-
     procedure Loggers_BeginTest(const threadId : Cardinal; const Test: ITestInfo);
 
     procedure Loggers_SetupTest(const threadId : Cardinal; const Test: ITestInfo);
     procedure Loggers_EndSetupTest(const threadId : Cardinal; const Test: ITestInfo);
 
     procedure Loggers_ExecuteTest(const threadId : Cardinal; const Test: ITestInfo);
-
 
     procedure Loggers_AddSuccess(const threadId : Cardinal; const Test: ITestResult);
     procedure Loggers_AddError(const threadId : Cardinal; const Error: ITestError);
@@ -82,10 +81,9 @@ type
 
     procedure Loggers_EndTestFixture(const threadId : Cardinal; const results : IFixtureResult);
 
-
     procedure Loggers_TestingEnds(const TestResult: ITestResults);
 
-    //ITestRunner;
+    //ITestRunner
     procedure AddLogger(const value: ITestLogger);
     function Execute: ITestResults;
     function GetExitBehavior: TRunnerExitBehavior;
@@ -96,20 +94,18 @@ type
     procedure SetUseRTTI(const value: Boolean);
     procedure Log(const logType : TLogLevel; const msg : string);overload;
     procedure Log(const msg : string);overload;
+
     //for backwards compatibilty with DUnit tests.
     procedure Status(const msg : string);overload;
+
     //redirects WriteLn to our loggers.
     procedure WriteLn(const msg : string);overload;
     procedure WriteLn;overload;
 
-
-
     //internals
     procedure RTTIDiscoverFixtureClasses;
-    function BuildFixtures : IList<ITestFixture>;
+    function BuildFixtures : ITestFixtureList;
     procedure AddStatus(const threadId; const msg : string);
-
-
 
     class constructor Create;
     class destructor Destroy;
@@ -117,7 +113,6 @@ type
     constructor Create(const useCommandLineOptions : boolean; const AListener : ITestLogger);
     destructor Destroy;override;
     class function GetActiveRunner : ITestRunner;
-
   end;
 
 implementation
@@ -188,12 +183,12 @@ begin
 
 end;
 
-function TDUnitXTestRunner.BuildFixtures  : IList<ITestFixture>;
+function TDUnitXTestRunner.BuildFixtures  : ITestFixtureList;
 var
   fixture : ITestFixture;
   pair : TPair<string,TClass>;
 begin
-  result := TDUnitXList<ITestFixture>.Create;
+  result := TTestFixtureList.Create;
 
   if FUseRTTI then
     RTTIDiscoverFixtureClasses;
@@ -349,7 +344,8 @@ end;
 //TODO - this needs to be thread aware so we can run tests in threads.
 function TDUnitXTestRunner.Execute: ITestResults;
 var
-  fixtures : IList<ITestFixture>;
+  fixtures : ITestFixtureList;
+  fixtureInfoList : IList<ITestFixtureInfo>;
   fixture  : ITestFixture;
   tests    : IEnumerable<ITest>;
   test     : ITest;
@@ -379,8 +375,8 @@ begin
     for test in fixture.Tests do
       Inc(testCount);
 
-  //TODO: Need a simple way of converting one list to another list of a supported interface
-  // testResults := TDUnitXTestResults.Create(fixtures);
+  //TODO: Need a simple way of converting one list to another list of a supported interface. Generics should help here.
+  testResults := TDUnitXTestResults.Create(fixtures.AsFixtureInfoList);
 
   //TODO: Record Test metrics.. runtime etc.
   threadId := TThread.CurrentThread.ThreadID;
@@ -388,7 +384,7 @@ begin
   try
     for fixture in fixtures do
     begin
-      Self.Loggers_StartTestFixture(threadId,fixture as ITestFixtureInfo);
+      Self.Loggers_StartTestFixture(threadId, fixture as ITestFixtureInfo);
       try
         if Assigned(fixture.SetupFixtureMethod)  then
         begin
@@ -413,14 +409,14 @@ begin
             testResult := nil;
             testError := nil;
 
-            Self.Loggers_BeginTest(threadId,test as ITestInfo);
+            Self.Loggers_BeginTest(threadId, test as ITestInfo);
             //Setup method is called before each test method.
             if Assigned(fixture.SetupMethod)  then
             begin
               try
-                Self.Loggers_SetupTest(threadId,test as ITestInfo);
+                Self.Loggers_SetupTest(threadId, test as ITestInfo);
                 fixture.SetupMethod;
-                Self.Loggers_EndSetupTest(threadId,test as ITestInfo);
+                Self.Loggers_EndSetupTest(threadId, test as ITestInfo);
               except
                 on e : Exception do
                 begin
@@ -505,7 +501,7 @@ begin
     end;
   finally
     //TODO: Actully pass the results for all fixtures and tests here.
-    Self.Loggers_TestingEnds(nil);
+    Self.Loggers_TestingEnds(testResults);
   end;
 end;
 

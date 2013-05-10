@@ -30,17 +30,15 @@ interface
 
 uses
   TimeSpan,
+  DUnitX.Generics,
   DUnitX.TestFrameWork;
 
 {$I DUnitX.inc}
 
 type
-  //NOTE : Do not use interface inheritence here, will cause problems
-  //with GetTestFixture;
+  //NOTE : Do not use interface inheritence here, will cause problems with GetTestFixture;
 
-  //These interfaces mirror the Info classes in the framework but
-  //expose stuff we need for runtime.
-
+  //These interfaces mirror the Info classes in the framework but expose stuff we need for runtime.
   ITestFixture = interface;
 
   ///
@@ -58,6 +56,16 @@ type
     property Name : string read GetName;
     property Fixture : ITestFixture read GetTestFixture;
     property TestMethod : TTestMethod read GetTestMethod;
+  end;
+
+  ITestList = interface(IList<ITest>)
+    ['{83ABC05F-5762-4FD2-9791-E32F5A9A4D06}']
+    function AsTestInfoList : ITestInfoList;
+  end;
+
+  TTestList = class(TDUnitXList<ITest>, ITestList)
+  protected
+    function AsTestInfoList : ITestInfoList;
   end;
 
   ///
@@ -92,6 +100,16 @@ type
     property TestInOwnThread            : boolean read GetTestInOwnThread;
   end;
 
+  ITestFixtureList = interface(IList<ITestFixture>)
+    ['{BB78BD03-4818-4CF4-B40C-AD037DF2EFB9}']
+    function AsFixtureInfoList: ITestFixtureInfoList;
+  end;
+
+  TTestFixtureList = class(TDUnitXList<ITestFixture>, ITestFixtureList)
+  protected
+    function AsFixtureInfoList: ITestFixtureInfoList;
+  end;
+
   ISetTestResult = interface
     ['{B50D50E9-3609-40BF-847D-53B5BF19B5C7}']
     procedure SetResult(const value : ITestResult);
@@ -103,11 +121,9 @@ type
     procedure RecordResult(const testResult : ITestResult);
   end;
 
-
   ITestFixtureContext = interface
     ['{C3B85C73-1FE8-4558-8AB0-7E8075821D35}']
   end;
-
 
   ITestExecute = interface
     ['{C59443A9-8C7D-46CE-83A1-E40309A1B384}']
@@ -119,6 +135,44 @@ type
     function GetCaseName : string;
   end;
 
+
+
 implementation
+
+{ TTestList }
+
+uses
+  TypInfo,
+  SysUtils;
+
+function TTestList.AsTestInfoList: ITestInfoList;
+var
+  test : ITest;
+  testInfo : ITestInfo;
+begin
+  result := TTestInfoList.Create;
+
+  for test in Self.ToArray do
+  begin
+    if Supports(test, GetTypeData(TypeInfo(ITestInfo))^.Guid, testInfo) then
+      result.Add(testInfo);
+  end;
+end;
+
+{ TTestFixtureList }
+
+function TTestFixtureList.AsFixtureInfoList: ITestFixtureInfoList;
+var
+  fixture : ITestFixture;
+  fixtureInfo : ITestFixtureInfo;
+begin
+  result := TTestFixtureInfoList.Create;
+
+  for fixture in Self.ToArray do
+  begin
+    if Supports(fixture, GetTypeData(TypeInfo(ITestInfo))^.Guid, fixtureInfo) then
+      result.Add(fixtureInfo);
+  end;
+end;
 
 end.
