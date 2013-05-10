@@ -191,17 +191,26 @@ type
     //TODO: Make more use of warnings. Currently none in use.
     class procedure Warn(const message : string = ''; const errorAddrs : pointer = nil);
 
-
     class procedure AreEqual(const left : string; const right : string; const ignoreCase : boolean = true; const message : string = '');overload;
     class procedure AreEqual(const left, right : Extended; const tolerance : Extended; const message : string = '');overload;
     class procedure AreEqual(const left, right : TClass; const message : string = '');overload;
+{$IFDEF DELPHI_XE_UP}
+    //Delphi 2010 compiler bug breaks this
     class procedure AreEqual<T>(const left, right : T; const message : string = '');overload;
+{$ELSE}
+    class procedure AreEqual(const left, right : Integer; const message : string = '');overload;
+{$ENDIF}
     class procedure AreEqualMemory(const left : Pointer; const right : Pointer; const size : Cardinal; message : string = '');
 
     class procedure AreNotEqual(const left : string; const right : string; const ignoreCase : boolean = true; const message : string = '');overload;
     class procedure AreNotEqual(const left, right : Extended; const tolerance : Extended; const message : string = '');overload;
     class procedure AreNotEqual(const left, right : TClass; const message : string = '');overload;
+{$IFDEF DELPHI_XE_UP}
+    //Delphi 2010 compiler bug breaks this
     class procedure AreNotEqual<T>(const left, right : T; const message : string = '');overload;
+{$ELSE}
+    class procedure AreNotEqual(const left, right : Integer; const message : string = '');overload;
+{$ENDIF}
     class procedure AreNotEqualMemory(const left : Pointer; const right : Pointer; const size : Cardinal; message : string = '');
 
     class procedure AreSame(const left, right : TObject; const message : string = '');overload;
@@ -210,9 +219,11 @@ type
     class procedure AreNotSame(const left, right : TObject; const message : string = '');overload;
     class procedure AreNotSame(const left, right : IInterface; const message : string = '');overload;
 
-
+{$IFDEF DELPHI_XE_UP}
+    //Delphi 2010 compiler bug breaks this
     class procedure Contains<T>(const list : IEnumerable<T>; const value : T; const message : string = '');overload;
     class procedure DoesNotContain<T>(const list : IEnumerable<T>; const value : T; const message : string = '');overload;
+{$ENDIF}
 
     class procedure IsTrue(const condition : boolean; const message : string = '');
     class procedure IsFalse(const condition : boolean; const message : string = '');
@@ -232,14 +243,20 @@ type
     class procedure IsEmpty(const value : TStrings; const message : string = '');overload;
     class procedure IsEmpty(const value : TList; const message : string = '');overload;
     class procedure IsEmpty(const value : IInterfaceList; const message : string = '');overload;
+{$IFDEF DELPHI_XE_UP}
+    //Delphi 2010 compiler bug breaks this
     class procedure IsEmpty<T>(const value : IEnumerable<T>; const message : string = '');overload;
+{$ENDIF}
 
     class procedure IsNotEmpty(const value : string; const message : string = '');overload;
     class procedure IsNotEmpty(const value : Variant; const message : string = '');overload;
     class procedure IsNotEmpty(const value : TStrings; const message : string = '');overload;
     class procedure IsNotEmpty(const value : TList; const message : string = '');overload;
     class procedure IsNotEmpty(const value : IInterfaceList; const message : string = '');overload;
+{$IFDEF DELPHI_XE_UP}
+    //Delphi 2010 compiler bug breaks this
     class procedure IsNotEmpty<T>(const value : IEnumerable<T>; const message : string = '');overload;
+{$ENDIF}
 
     class procedure WillRaise(const AMethod : TTestMethod; const exceptionClass : ExceptClass = nil; const msg : string = '');
     class procedure WillNotRaise(const AMethod : TTestMethod; const exceptionClass : ExceptClass = nil; const msg : string = '');
@@ -248,7 +265,11 @@ type
     class procedure StartsWith(const theString : string; const subString : string;const ignoreCase : boolean = true; const message : string = '');
     class procedure EndsWith(const theString : string; const subString : string;const ignoreCase : boolean = true; const message : string = '');
     class procedure InheritsFrom(const descendant : TClass; const parent : TClass; const message : string = '');
+{$IFDEF DELPHI_XE_UP}
+    //Delphi 2010 compiler bug breaks this
     class procedure IsType<T>(const value : T; const message : string = '');overload;
+{$ENDIF}
+
     {$IFDEF SUPPORTS_REGEX}
     class procedure IsMatch(const regexPattern : string; const theString : string; const message : string = '');
     {$ENDIF}
@@ -526,7 +547,6 @@ type
     procedure OnTestingEnds(const TestResult: ITestResults);
   end;
 
-
   TRunnerExitBehavior = (Continue, //The runner will exit normally
                          Pause, //The runner will pause after displaying it's results
                          HaltOnFailures //??
@@ -565,13 +585,11 @@ type
     property UseRTTI : boolean read GetUseRTTI write SetUseRTTI;
   end;
 
-
   ICommandLine = interface
     ['{A86D66B3-2CD3-4E11-B0A8-9602EB5790CB}']
     function GetHideBanner : boolean;
     procedure SetHideBanner(const value : boolean);
     function GetLogLevel : TLogLevel;
-
 
     function HasOption(const optionName : string) : boolean;
     function GetOptionValue(const optionName : string) : string;
@@ -591,7 +609,7 @@ type
     class function CreateRunner(const useCommandLineOptions : boolean) : ITestRunner;overload;
     class function CreateRunner(const ALogger : ITestLogger) : ITestRunner;overload;
     class function CreateRunner(const useCommandLineOptions : boolean; const ALogger : ITestLogger) : ITestRunner;overload;
-    class procedure RegisterTestFixture(const AClass : TClass;const AName : string = '' );
+    class procedure RegisterTestFixture(const AClass : TClass; const AName : string = '' );
     class function CommandLine : ICommandLine;
     class function CurrentRunner : ITestRunner;
   end;
@@ -603,14 +621,14 @@ type
   //base exception for any internal exceptions which cause the test to stop
   EAbort = class(ETestFrameworkException);
 
-  //  //All assert failures throw this exception error.
-  //  EAssertionFailure = class(EAbort);
-
   ETestFailure = class(EAbort);
   ETestPass = class(EAbort);
   ETestWarning = class(EABort);
   ENoTestsRegistered = class(ETestFrameworkException);
 
+{$IFDEF DELPHI_2010_DOWN}
+  function ReturnAddress: Pointer; {$IFNDEF CLR} assembler; {$ENDIF}
+{$ENDIF}
 
 implementation
 
@@ -627,6 +645,48 @@ uses
   {$ENDIF}
   Generics.Defaults;
 
+function IsBadPointer(P: Pointer):Boolean; {$IFNDEF CLR} register; {$ENDIF}
+begin
+  try
+    Result  := (p = nil)
+{$IFNDEF CLR}
+              or ((Pointer(P^) <> P) and (Pointer(P^) = P));
+{$ENDIF}
+  except
+    Result := true;
+  end
+end;
+
+{$IFDEF DELPHI_2010_DOWN}
+function ReturnAddress: Pointer; {$IFNDEF CLR} assembler; {$ENDIF}
+{$IFDEF CLR}
+begin
+  Result := nil;
+end;
+{$ELSE}
+const
+  CallerIP = $4;
+asm
+   mov   eax, ebp
+   call  IsBadPointer
+   test  eax,eax
+   jne   @@Error
+
+   mov   eax, [ebp].CallerIP
+   sub   eax, 5   // 5 bytes for call
+
+   push  eax
+   call  IsBadPointer
+   test  eax,eax
+   pop   eax
+   je    @@Finish
+
+@@Error:
+   xor eax, eax
+@@Finish:
+end;
+{$ENDIF}
+{$ENDIF}
 
 { TestFixture }
 
@@ -653,7 +713,6 @@ begin
 end;
 
 { Assert }
-
 
 class procedure Assert.AreEqual(const left, right, tolerance: Extended; const message: string);
 begin
@@ -686,6 +745,8 @@ begin
   end;
 end;
 
+{$IFDEF DELPHI_XE_UP}
+    //Delphi 2010 compiler bug breaks this
 class procedure Assert.AreEqual<T>(const left, right: T; const message: string);
 var
   comparer : IComparer<T>;
@@ -700,6 +761,13 @@ begin
     Fail(Format('left %s but got %s',[leftValue.AsString,rightValue.AsString]), ReturnAddress);
   end;
 end;
+{$ELSE}
+class procedure Assert.AreEqual(const left, right: Integer; const message: string);
+begin
+  if left <> right then
+    Fail(Format('left %g but got %g - %s' ,[left, right, message]), ReturnAddress);
+end;
+{$ENDIF}
 
 class procedure Assert.AreEqualMemory(const left : Pointer; const right : Pointer; const size : Cardinal; message : string);
 begin
@@ -752,6 +820,8 @@ begin
   end;
 end;
 
+{$IFDEF DELPHI_XE_UP}
+//Delphi 2010 compiler bug breaks this
 class procedure Assert.AreNotEqual<T>(const left, right: T; const message: string);
 var
   comparer : IComparer<T>;
@@ -766,6 +836,13 @@ begin
     Fail(Format('left %s Not Equal To %s',[leftValue.AsString,rightValue.AsString]), ReturnAddress);
   end;
 end;
+{$ELSE}
+class procedure Assert.AreNotEqual(const left, right: Integer; const message: string);
+begin
+  if left = right then
+    Fail(Format('%g equals right %g %s' ,[left, right, message]), ReturnAddress);
+end;
+{$ENDIF}
 
 class procedure Assert.AreNotEqualMemory(const left, right: Pointer; const size: Cardinal; message: string);
 begin
@@ -797,7 +874,8 @@ begin
     Fail(Format('Object [%s] Not Object [%s] %s',[left.ToString,right.ToString,message]), ReturnAddress);
 end;
 
-
+{$IFDEF DELPHI_XE_UP}
+//Delphi 2010 compiler bug breaks this
 class procedure Assert.Contains<T>(const list: IEnumerable<T>; const value: T; const message: string);
 var
   o : T;
@@ -812,9 +890,10 @@ begin
 
   Fail(Format('List does not contain value. %s',[message]), ReturnAddress);
 end;
+{$ENDIF}
 
-
-
+{$IFDEF DELPHI_XE_UP}
+//Delphi 2010 compiler bug breaks this
 class procedure Assert.DoesNotContain<T>(const list: IEnumerable<T>; const value: T; const message: string);
 var
   o : T;
@@ -827,6 +906,7 @@ begin
       Fail(Format('List contains value. %s',[message]), ReturnAddress);
   end;
 end;
+{$ENDIF}
 
 class procedure Assert.Fail(const message : string; const errorAddrs : pointer);
 begin
@@ -902,6 +982,8 @@ begin
     Fail(Format('List is Not empty. %s',[message]), ReturnAddress);
 end;
 
+{$IFDEF DELPHI_XE_UP}
+//Delphi 2010 compiler bug breaks this
 class procedure Assert.IsEmpty<T>(const value: IEnumerable<T>; const message: string);
 var
   o : T;
@@ -914,6 +996,7 @@ begin
   if count > 0 then
     Fail(Format('List is Not empty. %s',[message]), ReturnAddress);
 end;
+{$ENDIF}
 
 class procedure Assert.IsFalse(const condition: boolean; const message: string);
 begin
@@ -951,7 +1034,8 @@ begin
     Fail(Format('Variant is Empty. %s',[message]), ReturnAddress);
 end;
 
-
+{$IFDEF DELPHI_XE_UP}
+//Delphi 2010 compiler bug breaks this
 class procedure Assert.IsNotEmpty<T>(const value: IEnumerable<T>; const message: string);
 var
   x : T;
@@ -964,6 +1048,7 @@ begin
   if count = 0 then
     Fail(Format('List is Empty when Not empty expected. %s',[message]), ReturnAddress);
 end;
+{$ENDIF}
 
 class procedure Assert.IsNotNull(const condition: IInterface; const message: string);
 begin
@@ -1019,7 +1104,8 @@ begin
     Fail(Format('Condition is False when True expected. [%s]',[message]), ReturnAddress);
 end;
 
-
+{$IFDEF DELPHI_XE_UP}
+//Delphi 2010 compiler bug breaks this
 class procedure Assert.IsType<T>(const value: T; const message : string);
 var
   val : TValue;
@@ -1030,6 +1116,7 @@ begin
       Fail('value is not of type T', ReturnAddress);
   end;
 end;
+{$ENDIF}
 
 class procedure Assert.WillRaise(const AMethod : TTestMethod; const exceptionClass : ExceptClass; const msg : string);
   function GetMsg : string;
@@ -1201,7 +1288,7 @@ begin
   RegisteredFixtures.Free;
 end;
 
-class procedure TDUnitX.RegisterTestFixture(const AClass: TClass;const AName : string);
+class procedure TDUnitX.RegisterTestFixture(const AClass: TClass; const AName : string);
 var
   sName : string;
 begin
@@ -1209,11 +1296,10 @@ begin
     sName := AName
   else
     sName := AClass.ClassName;
+
   if not RegisteredFixtures.ContainsValue(AClass) then
-    RegisteredFixtures.Add(sName,AClass);
+    RegisteredFixtures.Add(sName, AClass);
 end;
-
-
 
 { TestCaseAttribute }
 

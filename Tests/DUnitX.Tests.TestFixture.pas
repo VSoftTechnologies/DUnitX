@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2011 Vincent Parrett                              }
+{           Copyright (C) 2012 Vincent Parrett                              }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -24,70 +24,74 @@
 {                                                                           }
 {***************************************************************************}
 
-{$DEFINE UNSUPPORTED_COMPILER_VERSION}
-{$DEFINE DELPHI_XE4_DOWN}
-{$DEFINE DELPHI_XE3_DOWN}
-{$DEFINE DELPHI_XE2_DOWN}
-{$DEFINE DELPHI_XE_DOWN}
-{$DEFINE DELPHI_2010_DOWN}
+unit DUnitX.Tests.TestFixture;
 
-{$IFDEF VER210} // RAD Studio 2010
-  {$DEFINE DELPHI_2010}
-  {$DEFINE DELPHI_2010_UP}
-  {$DEFINE CPUX86}
-  {$UNDEF UNSUPPORTED_COMPILER_VERSION}
-{$ENDIF VER210}
+interface
 
-{$IFDEF VER220} // RAD Studio XE
-  {$DEFINE DELPHI_2010_UP}
-  {$DEFINE DELPHI_XE}
-  {$DEFINE DELPHI_XE_UP}
-  {$DEFINE SUPPORTS_REGEX}
-  {$DEFINE CPUX86}
-  {$UNDEF UNSUPPORTED_COMPILER_VERSION}
-  {$UNDEF DELPHI_2010_DOWN}
-{$ENDIF VER220}
+uses
+  DUnitX.TestFramework,
+  DUnitX.TestFixture;
 
-{$IFDEF VER230} // RAD Studio XE2
-  {$DEFINE DELPHI_2010_UP}
-  {$DEFINE DELPHI_XE_UP}
-  {$DEFINE DELPHI_XE2}
-  {$DEFINE DELPHI_XE2_UP}
-  {$DEFINE SUPPORTS_REGEX}
-  {$UNDEF UNSUPPORTED_COMPILER_VERSION}
-  {$UNDEF DELPHI_2010_DOWN}
-  {$UNDEF DELPHI_XE_DOWN}
-{$ENDIF VER230}
+type
+  {$M+}
+  [TestFixture]
+  TTestClassWithNonPublicSetup = class
+  private
+    FSetupRun : Boolean;
+  protected
+    [Setup]
+    procedure Setup;
+  public
+    constructor Create;
+    property SetupRun : Boolean read FSetupRun;
+  end;
+  {$M-}
 
-{$IFDEF VER240} // RAD Studio XE3
-  {$DEFINE DELPHI_2010_UP}
-  {$DEFINE DELPHI_XE_UP}
-  {$DEFINE DELPHI_XE2_UP}
-  {$DEFINE DELPHI_XE3}
-  {$DEFINE DELPHI_XE3_UP}
-  {$DEFINE SUPPORTS_REGEX}
-  {$UNDEF UNSUPPORTED_COMPILER_VERSION}
-  {$UNDEF DELPHI_2010_DOWN}
-  {$UNDEF DELPHI_XE_DOWN}
-  {$UNDEF DELPHI_XE2_DOWN}
-{$ENDIF VER240}
+  {$M+}
+  [TestFixture]
+  TDUnitXTestFixtureTests = class
+  protected
+    procedure Create_TDUnitXTestFixtureTests_Fixture;
+  public
+    [Test]
+    procedure Setup_Attribute_On_Compiled_Out_Procedure_Raises_Exception;
+  end;
+  {$M-}
+implementation
 
-{$IFDEF VER250} // RAD Studio XE3
-  {$DEFINE DELPHI_2010_UP}
-  {$DEFINE DELPHI_XE_UP}
-  {$DEFINE DELPHI_XE2_UP}
-  {$DEFINE DELPHI_XE3_UP}
-  {$DEFINE DELPHI_XE4}
-  {$DEFINE DELPHI_XE4_UP}
-  {$DEFINE SUPPORTS_REGEX}
-  {$UNDEF UNSUPPORTED_COMPILER_VERSION}
-  {$UNDEF DELPHI_2010_DOWN}
-  {$UNDEF DELPHI_XE_DOWN}
-  {$UNDEF DELPHI_XE2_DOWN}
-  {$UNDEF DELPHI_XE3_DOWN}
-{$ENDIF VER240}
+uses
+  SysUtils;
+{ TDUnitXTestFixtureTests }
 
+procedure TDUnitXTestFixtureTests.Create_TDUnitXTestFixtureTests_Fixture;
+var
+  testFixture : ITestFixtureInfo;
+begin
+  testFixture := TDUnitXTestFixture.Create(TDUnitXTestFixtureTests.ClassName, TDUnitXTestFixtureTests);
+end;
 
-{$IFDEF UNSUPPORTED_COMPILER_VERSION}
-  Unsupported Compiler Version (Delphi 2010 or later required!)
-{$ENDIF}
+procedure TDUnitXTestFixtureTests.Setup_Attribute_On_Compiled_Out_Procedure_Raises_Exception;
+var
+  testFixture : ITestFixtureInfo;
+begin
+  //TODO: Make this raise an exception of sort.
+  Assert.WillRaise(Create_TDUnitXTestFixtureTests_Fixture, Exception);
+end;
+
+{ TTestClassWithNonPublicSetup }
+
+constructor TTestClassWithNonPublicSetup.Create;
+begin
+  inherited Create;
+  FSetupRun := False;
+end;
+
+procedure TTestClassWithNonPublicSetup.Setup;
+begin
+  //Optimised out as the method is not used internally;
+  FSetupRun := True;
+end;
+
+initialization
+  TDUnitX.RegisterTestFixture(TDUnitXTestFixtureTests);
+end.

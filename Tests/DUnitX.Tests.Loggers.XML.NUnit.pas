@@ -40,16 +40,12 @@ type
   TDUnitX_LoggerXMLNUnitTests = class
   public
     [Test]
-    procedure After_Creation_Filename_Is_Set;
-    [Test]
     procedure OnTestingStarts_Fills_The_Start_Of_The_Stream_With_Header_Info;
     [Test]
     procedure OnTestingEnds_Fills_The_End_Of_The_Stream_With_Testing_Result_Info;
     [Test]
     procedure OnTestWarning_Adds_Warnings_To_Be_Written_Out_On_Next_Error;
     procedure OnTestWarning_Adds_Warnings_To_Be_Written_Out_On_Next_Success;
-    [Test]
-    procedure Failure;
   end;
 
 implementation
@@ -57,7 +53,7 @@ implementation
 uses
   Rtti,
   SysUtils,
-  System.TimeSpan,
+  TimeSpan,
   DUnitX.Generics,
   DUnitX.TestResults,
   Delphi.Mocks;
@@ -66,11 +62,6 @@ const
   CRLF = #13#10;
 
 { TDUnitX_LoggerXMLNUnit }
-
-procedure TDUnitX_LoggerXMLNUnitTests.Failure;
-begin
-  Assert.Fail('My Message!');
-end;
 
 procedure TDUnitX_LoggerXMLNUnitTests.OnTestingEnds_Fills_The_End_Of_The_Stream_With_Testing_Result_Info;
 var
@@ -250,26 +241,8 @@ begin
   Assert.AreEqual(Copy(mockStream.DataString, iPositionOfWarning, Length(sExceptedWarning)), sExceptedWarning);
 end;
 
-procedure TDUnitX_LoggerXMLNUnitTests.After_Creation_Filename_Is_Set;
-var
-  logger : ITestLogger;
-  mockStream : TMock<TFileStream>;
-const
-  TEST_FILE_NAME = 'DUnitX_TestFile';
-begin
-  mockStream := TMock<TFileStream>.Create;
-
-  //TODO: Delphi Mocks needs to handle property overrides.
-  // mockStream.Setup.WillReturn(TEST_FILE_NAME).When.FileName;
-
-  logger := TDUnitXXMLNUnitLogger.Create(mockStream);
-
-  //TODO: Create decendant of TDUnitXXMLNUnitLogger which is a filestream version
-  // Assert.AreEqual(logger.Filename, TEST_FILE_NAME);
-end;
-
-
 
 initialization
   TDUnitX.RegisterTestFixture(TDUnitX_LoggerXMLNUnitTests);
 end.
+

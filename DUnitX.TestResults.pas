@@ -29,7 +29,7 @@ unit DUnitX.TestResults;
 interface
 
 uses
-  System.TimeSpan,
+  TimeSpan,
   DUnitX.TestFramework,
   DUnitX.InternalInterfaces,
   Generics.Collections,

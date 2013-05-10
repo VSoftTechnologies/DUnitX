@@ -165,32 +165,56 @@ end;
 
 procedure TTestCase.CheckEquals(expected, actual: integer; msg: string);
 begin
+{$IFDEF DELPHI_XE_UP}
   Assert.AreEqual<integer>(expected,actual,msg);
+{$ELSE}
+  Assert.IsTrue(expected = actual, msg);
+{$ENDIF}
 end;
 
 procedure TTestCase.CheckEquals(expected, actual: Cardinal; msg: string);
 begin
+{$IFDEF DELPHI_XE_UP}
   Assert.AreEqual<Cardinal>(expected,actual,msg);
+{$ELSE}
+  Assert.IsTrue(expected = actual, msg);
+{$ENDIF}
 end;
 
 procedure TTestCase.CheckEquals(expected, actual: int64; msg: string);
 begin
+{$IFDEF DELPHI_XE_UP}
   Assert.AreEqual<Int64>(expected,actual,msg);
+{$ELSE}
+  Assert.IsTrue(expected = actual, msg);
+{$ENDIF}
 end;
 
 procedure TTestCase.CheckEquals(expected, actual: UnicodeString; msg: string);
 begin
-  Assert.AreEqual(expected,actual,msg);
+{$IFDEF DELPHI_XE_UP}
+  Assert.AreEqual(expected, actual, msg);
+{$ELSE}
+  Assert.IsTrue(expected = actual, msg);
+{$ENDIF}
 end;
 
 procedure TTestCase.CheckEquals(expected, actual: AnsiString; msg: string);
 begin
+{$IFDEF DELPHI_XE_UP}
   Assert.AreEqual<AnsiString>(expected,actual,msg);
+{$ELSE}
+  Assert.IsTrue(expected = actual, msg);
+{$ENDIF}
 end;
 
 procedure TTestCase.CheckEquals(expected, actual: ShortString; msg: string);
 begin
+{$IFDEF DELPHI_XE_UP}
   Assert.AreEqual<ShortString>(expected,actual,msg);
+{$ELSE}
+  Assert.IsTrue(expected = actual, msg);
+{$ENDIF}
 end;
 
 procedure TTestCase.CheckEqualsString(expected, actual: string; msg: string);
@@ -215,12 +239,20 @@ end;
 
 procedure TTestCase.CheckEquals(expected, actual: Boolean; msg: string);
 begin
+{$IFDEF DELPHI_XE_UP}
   Assert.AreEqual<Boolean>(expected,actual,msg);
+{$ELSE}
+  Assert.IsTrue(expected = actual, msg);
+{$ENDIF}
 end;
 
 procedure TTestCase.CheckEqualsBin(expected, actual: longword; msg: string; digits: integer);
 begin
+{$IFDEF DELPHI_XE_UP}
   Assert.AreEqual(IntToBin(expected, digits), IntToBin(actual, digits),msg);
+{$ELSE}
+  Assert.IsTrue(IntToBin(expected, digits) = IntToBin(actual, digits), msg);
+{$ENDIF}
 end;
 
 procedure TTestCase.CheckEqualsHex(expected, actual: longword; msg: string; digits: integer);
@@ -230,17 +262,29 @@ end;
 
 procedure TTestCase.CheckNotEquals(expected, actual: integer; msg: string);
 begin
+{$IFDEF DELPHI_XE_UP}
   Assert.AreNotEqual<integer>(expected,actual,msg);
+{$ELSE}
+  Assert.IsTrue(expected = actual, msg);
+{$ENDIF}
 end;
 
 procedure TTestCase.CheckNotEquals(expected, actual: Cardinal; msg: string);
 begin
+{$IFDEF DELPHI_XE_UP}
   Assert.AreNotEqual<Cardinal>(expected,actual,msg);
+{$ELSE}
+  Assert.IsTrue(expected = actual, msg);
+{$ENDIF}
 end;
 
 procedure TTestCase.CheckNotEquals(expected, actual: int64; msg: string);
 begin
+{$IFDEF DELPHI_XE_UP}
   Assert.AreNotEqual<int64>(expected,actual,msg);
+{$ELSE}
+  Assert.IsTrue(expected = actual, msg);
+{$ENDIF}
 end;
 
 procedure TTestCase.CheckNotEquals(expected: extended; actual: extended; delta: extended; msg: string);
@@ -275,12 +319,20 @@ end;
 
 procedure TTestCase.CheckNotEquals(expected, actual: Boolean; msg: string);
 begin
+{$IFDEF DELPHI_XE_UP}
   Assert.AreNotEqual<boolean>(expected,actual,msg);
+{$ELSE}
+  Assert.IsTrue(expected = actual, msg);
+{$ENDIF}
 end;
 
 procedure TTestCase.CheckNotEqualsBin(expected, actual: longword; msg: string; digits: integer);
 begin
+{$IFDEF DELPHI_XE_UP}
   Assert.AreNotEqual<longword>(expected,actual,msg);
+{$ELSE}
+  Assert.IsTrue(expected = actual, msg);
+{$ENDIF}
 end;
 
 procedure TTestCase.CheckNotEqualsHex(expected, actual: longword; msg: string; digits: integer);
@@ -300,12 +352,20 @@ end;
 
 procedure TTestCase.CheckSame(expected, actual: IUnknown; msg: string);
 begin
+{$IFDEF DELPHI_XE_UP}
   Assert.AreEqual<IInterface>(expected,actual,msg);
+{$ELSE}
+  Assert.IsTrue(expected = actual, msg);
+{$ENDIF}
 end;
 
 procedure TTestCase.CheckSame(expected, actual: TObject; msg: string);
 begin
+{$IFDEF DELPHI_XE_UP}
   Assert.AreEqual<TObject>(expected,actual,msg);
+{$ELSE}
+  Assert.IsTrue(expected = actual, msg);
+{$ENDIF}
 end;
 
 procedure TTestCase.CheckNotNull(obj: TObject; msg: string);

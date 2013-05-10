@@ -29,7 +29,7 @@ unit DUnitX.TestResult;
 interface
 
 uses
-  System.Timespan,
+  Timespan,
   DUnitX.TestFramework,
   DUnitX.WeakReference,
   DUnitX.InternalInterfaces,
@@ -74,7 +74,7 @@ type
 implementation
 
 uses
-  Winapi.Windows;
+  Windows;
 
 { TDUnitXTestResult }
 

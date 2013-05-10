@@ -53,14 +53,12 @@ begin
   //TClass
   Assert.AreNotEqual(TObject, TInterfacedObject);
 
-  //Extended
-  Assert.AreNotEqual(1.18E4932, 1.19E4932);
   //Extended with tolerance
   Assert.AreNotEqual(1.18E4932, 1.19E4932, 0.001E4932);
 
   //Generic
   valueToTest := false;
-  Assert.AreNotEqual<boolean>(valueToTest, true);
+  Assert.IsFalse(valueToTest = true);
 end;
 
 initialization

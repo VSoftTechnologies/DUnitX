@@ -489,7 +489,7 @@ begin
             on e : Exception do
             begin
                //TODO: Report fixture tear down exceptions to the user
-          
+
             end;
           end;
         end;
