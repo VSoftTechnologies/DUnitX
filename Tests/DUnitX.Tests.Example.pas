@@ -134,7 +134,7 @@ begin
   x := TMyExampleTests.Create;
   //CheckIs(x,TObject); //DUnit compatibility.
   TDUnitX.CurrentRunner.Status('hello world');
-  Assert.IsType<TObject>(x); /// a bit pointless since it's strongly typed.
+  Assert.IsTrue(x is TObject); /// a bit pointless since it's strongly typed.
 end;
 
 { TExampleFixture2 }

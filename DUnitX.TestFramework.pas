@@ -159,6 +159,7 @@ type
   end;
 
   TTestMethod = procedure of object;
+  TTestLocalMethod = reference to procedure;
 
   TLogLevel = (ltInformation, ltWarning, ltError);
 
@@ -258,8 +259,10 @@ type
     class procedure IsNotEmpty<T>(const value : IEnumerable<T>; const message : string = '');overload;
 {$ENDIF}
 
-    class procedure WillRaise(const AMethod : TTestMethod; const exceptionClass : ExceptClass = nil; const msg : string = '');
-    class procedure WillNotRaise(const AMethod : TTestMethod; const exceptionClass : ExceptClass = nil; const msg : string = '');
+    class procedure WillRaise(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass = nil; const msg : string = ''); overload;
+    class procedure WillRaise(const AMethod : TTestMethod; const exceptionClass : ExceptClass = nil; const msg : string = ''); overload;
+    class procedure WillNotRaise(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass = nil; const msg : string = ''); overload;
+    class procedure WillNotRaise(const AMethod : TTestMethod; const exceptionClass : ExceptClass = nil; const msg : string = ''); overload;
 
     class procedure Contains(const theString : string; const subString : string; const ignoreCase : boolean = true; const message : string = '');overload;
     class procedure StartsWith(const theString : string; const subString : string;const ignoreCase : boolean = true; const message : string = '');
@@ -765,7 +768,7 @@ end;
 class procedure Assert.AreEqual(const left, right: Integer; const message: string);
 begin
   if left <> right then
-    Fail(Format('left %g but got %g - %s' ,[left, right, message]), ReturnAddress);
+    Fail(Format('left %d but got %d - %s' ,[left, right, message]), ReturnAddress);
 end;
 {$ENDIF}
 
@@ -840,7 +843,7 @@ end;
 class procedure Assert.AreNotEqual(const left, right: Integer; const message: string);
 begin
   if left = right then
-    Fail(Format('%g equals right %g %s' ,[left, right, message]), ReturnAddress);
+    Fail(Format('%d equals right %d %s' ,[left, right, message]), ReturnAddress);
 end;
 {$ENDIF}
 
@@ -1118,7 +1121,17 @@ begin
 end;
 {$ENDIF}
 
-class procedure Assert.WillRaise(const AMethod : TTestMethod; const exceptionClass : ExceptClass; const msg : string);
+class procedure Assert.WillNotRaise(const AMethod: TTestMethod; const exceptionClass: ExceptClass; const msg: string);
+begin
+  Assert.WillNotRaise(
+    procedure
+    begin
+      AMethod;
+    end,
+    exceptionClass, msg);
+end;
+
+class procedure Assert.WillRaise(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass; const msg : string);
   function GetMsg : string;
   begin
     if msg <> '' then
@@ -1136,10 +1149,10 @@ begin
       if exceptionClass <> nil then
       begin
         if e.ClassType <> exceptionClass then
-          Fail('Method did not throw exception of type : ' + exceptionClass.ClassName + GetMsg, ReturnAddress);
-      end
-      else
-        exit;
+          Fail('Method did not throw exception of type : ' + exceptionClass.ClassName + GetMsg, ReturnAddress)
+        else
+          exit;
+      end;
     end;
   end;
   Fail('Method did not throw any excpetions.' + GetMsg, ReturnAddress);
@@ -1153,7 +1166,7 @@ begin
     raise ETestWarning.Create(message) at errorAddrs;
 end;
 
-class procedure Assert.WillNotRaise(const AMethod : TTestMethod; const exceptionClass : ExceptClass; const msg : string);
+class procedure Assert.WillNotRaise(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass; const msg : string);
   function GetMsg : string;
   begin
     if msg <> '' then
@@ -1176,6 +1189,16 @@ begin
         Fail('Method raised and exception of type : ' + e.ClassName + #13#10 + e.Message + GetMsg, ReturnAddress);
     end;
   end;
+end;
+
+class procedure Assert.WillRaise(const AMethod: TTestMethod; const exceptionClass: ExceptClass; const msg: string);
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      AMethod;
+    end,
+    exceptionClass, msg);
 end;
 
 class procedure Assert.AreEqual(const left, right : string;  const ignoreCase : boolean; const message: string);
