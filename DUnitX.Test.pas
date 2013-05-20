@@ -222,6 +222,8 @@ function TDUnitXTestCase.GetName: string;
 var
   printableArgsList : string;
   index: Integer;
+const
+  TESTCASE_NAME_FORMAT = '%s ( %s ) [%s]';
 begin
   for index := low(FArgs) to high(FArgs) do
   begin
@@ -231,8 +233,7 @@ begin
       printableArgsList := printableArgsList + ', ';
   end;
 
-  Result := FName + ' (' + printableArgsList + ')';
-  // result := FName + ' (Test Case : ' + FCaseName +')';
+  Result := Format(TESTCASE_NAME_FORMAT, [FName, printableArgsList, FCaseName]);
 end;
 
 end.

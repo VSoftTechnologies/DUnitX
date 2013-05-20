@@ -195,27 +195,16 @@ begin
         end
         else if attribute.ClassType = TestInOwnThreadAttribute then
           FTestInOwnThread := true
-        else
+        //TODO: Should add tests to the list even though they aren't enabled.
+        else if ((attribute.ClassType = TestAttribute) and (TestAttribute(attribute).Enabled)) or
+                ((attribute.ClassType <> TestAttribute) and (method.Visibility = TMemberVisibility.mvPublished)) then
         begin
-          //TODO: Should add tests to the list even though they aren't enabled.
-          if (((attribute.ClassType = TestAttribute) and TestAttribute(attribute).Enabled) or ((attribute.ClassType <> TestAttribute) and  (method.Visibility = TMemberVisibility.mvPublished))) then
-          begin
-            testcases := TAttributeUtils.FindAttributes(attributes, TestCaseAttribute);
-            if length(testCases) > 0 then
-            begin
-              for testCase in testcases do
-              begin
-                newTest := TDUnitXTestCase.Create(FFixtureInstance, Self, TestCaseAttribute(testCase).Name, method.Name, method, TestCaseAttribute(testcase).Values);
-                FTests.Add(newTest);
-              end;
-            end
-            else
-            begin
-              //Create a Test
-              newTest := TDUnitXTest.Create(Self, method.Name, TTestMethod(meth));
-              FTests.Add(newTest);
-            end;
-          end;
+          if attribute.ClassType = TestCaseAttribute then
+            newTest := TDUnitXTestCase.Create(FFixtureInstance, Self, TestCaseAttribute(attribute).Name, method.Name, method, TestCaseAttribute(attribute).Values)
+          else
+            newTest := TDUnitXTest.Create(Self, method.Name, TTestMethod(meth));
+
+          FTests.Add(newTest);
         end;
       end;
     end
