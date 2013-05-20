@@ -47,6 +47,9 @@ type
     //and attempt to convert the values to the parameters of the
     //test method.
 
+    //TODO: Add named params so that certain params can be passed and others are defaulted.
+    //TODO: Add TestCase where the params are over and under the actually name to pass.
+    //TODO: Make sure that each test case is passed and run only once, currently run multiple times. Actually its X*X times where X is the number of test cases in the fixture.
     [TestCase('Case 1','1,2')]
     [TestCase('Case 2','3,4')]
     [TestCase('Case 3','5,6')]

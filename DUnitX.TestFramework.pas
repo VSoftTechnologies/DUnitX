@@ -36,6 +36,8 @@ uses
   DUnitX.Generics,
   Generics.Collections;
 
+//TODO: Automatic support for https://code.google.com/p/delphi-code-coverage/ would be cool
+
 {$I DUnitX.inc}
 
 type

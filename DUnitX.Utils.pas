@@ -669,7 +669,7 @@ function SameValue(const Left, Right: TValue): Boolean;
 function StripUnitName(const s: string): string;
 
 {$IFDEF DELPHI_2010}
-function SplitString(const S: string; const Delimiter: Char): TStringDynArray;
+function SplitString(const S: string; const Delimiters: string): TStringDynArray;
 {$ENDIF}
 
 function Supports(const Instance: TValue; const IID: TGUID; out Intf): Boolean; overload;
@@ -1352,23 +1352,38 @@ begin
 end;
 
 {$IFDEF DELPHI_2010}
-function SplitString(const S: string; const Delimiter: Char): TStringDynArray;
+function SplitString(const S: string; const Delimiters: string): TStringDynArray;
 var
-  list: TStrings;
+  StartIdx: Integer;
+  FoundIdx: Integer;
+  SplitPoints: Integer;
+  CurrentSplit: Integer;
   i: Integer;
 begin
-  list := TStringList.Create();
-  try
-    list.StrictDelimiter := True;
-    list.Delimiter := Delimiter;
-    list.DelimitedText := s;
-    SetLength(Result, list.Count);
-    for i := Low(Result) to High(Result) do
-    begin
-      Result[i] := list[i];
-    end;
-  finally
-    list.Free();
+  Result := nil;
+
+  if S <> '' then
+  begin
+    SplitPoints := 0;
+    for i := 1 to Length(S) do
+      if IsDelimiter(Delimiters, S, i) then
+        Inc(SplitPoints);
+
+    SetLength(Result, SplitPoints + 1);
+
+    StartIdx := 1;
+    CurrentSplit := 0;
+    repeat
+      FoundIdx := FindDelimiter(Delimiters, S, StartIdx);
+      if FoundIdx <> 0 then
+      begin
+        Result[CurrentSplit] := Copy(S, StartIdx, FoundIdx - StartIdx);
+        Inc(CurrentSplit);
+        StartIdx := FoundIdx + 1;
+      end;
+    until CurrentSplit = SplitPoints;
+
+    Result[SplitPoints] := Copy(S, StartIdx, Length(S) - StartIdx + 1);
   end;
 end;
 {$ENDIF}

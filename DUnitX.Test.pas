@@ -178,7 +178,7 @@ constructor TDUnitXTestCase.Create(const AInstance : TObject; const AFixture: IT
                                    const AName: string; const AMethod: TRttiMethod; const AArgs : TValueArray);
 var
   len : integer;
-  i   : integer;
+  index   : integer;
   parameters : TArray<TRttiParameter>;
   tmp : TValue;
 begin
@@ -189,14 +189,19 @@ begin
 
   parameters := FRttiMethod.GetParameters();
 
-  len := Length(AArgs);
+  //Work with the params as the limiter.
+  len := Length(parameters);
+
   if len > 0 then
   begin
-    SetLength(FArgs,len);
-    for i := 0 to len-1 do
+    //Only keep as many arguements as there are params
+    SetLength(FArgs, len);
+    for index := 0 to Pred(len) do
     begin
-      if AArgs[i].TryConvert(parameters[i].ParamType.Handle, tmp) then
-        FArgs[i] := tmp;
+      if index <= high(AArgs) then
+        if AArgs[index].TryConvert(parameters[index].ParamType.Handle, tmp) then
+          FArgs[index] := tmp;
+
     end;
   end;
 end;
@@ -214,8 +219,20 @@ begin
 end;
 
 function TDUnitXTestCase.GetName: string;
+var
+  printableArgsList : string;
+  index: Integer;
 begin
-  result := FName + ' (Test Case : ' + FCaseName +')';
+  for index := low(FArgs) to high(FArgs) do
+  begin
+    printableArgsList := printableArgsList + FArgs[index].ToString;
+
+    if index <> high(FArgs) then
+      printableArgsList := printableArgsList + ', ';
+  end;
+
+  Result := FName + ' (' + printableArgsList + ')';
+  // result := FName + ' (Test Case : ' + FCaseName +')';
 end;
 
 end.
