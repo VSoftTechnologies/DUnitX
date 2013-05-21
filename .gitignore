@@ -5,6 +5,7 @@
 *.exe
 *.rsm
 *.stat
+*.map
 
 # Backup files    #
 ###################
@@ -24,3 +25,8 @@
 /Win32
 /Win64
 /__history
+
+
+# Testing Output  #
+###################
+Tests\dunit-report.xml
