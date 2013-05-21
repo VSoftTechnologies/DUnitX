@@ -160,5 +160,5 @@ begin
 end;
 
 initialization
-  //TDUnitX.RegisterTestFixture(TDUnitX_IoCTests);
+  TDUnitX.RegisterTestFixture(TDUnitX_IoCTests);
 end.

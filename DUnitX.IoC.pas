@@ -49,7 +49,7 @@ type
     type
       TIoCRegistration<T : IInterface> = class
       IInterface        : PTypeInfo;
-      ImplClass         : TInterfacedClass;
+      ImplClass         : TClass;
       ActivatorDelegate : TActivatorDelegate<T>;
       IsSingleton       : boolean;
       Instance          : IInterface;
@@ -153,31 +153,18 @@ end;
 {$ENDIF}
 
 procedure TDUnitXIoC.RegisterType<TInterface>(const delegate: TActivatorDelegate<TInterface>);
-var
-  newDelegate : TActivatorDelegate<TInterface>;
 begin
-  newDelegate := delegate;
-
-  Self.RegisterType<TInterface>(false, newDelegate, '');
+  Self.RegisterType<TInterface>(false, delegate, '');
 end;
 
 
 procedure TDUnitXIoC.RegisterType<TInterface>(const delegate: TActivatorDelegate<TInterface>; const name: string);
-var
-  newDelegate : TActivatorDelegate<TInterface>;
-  newName : string;
 begin
-  Self.RegisterType<TInterface>(false, newDelegate, newName);
+  Self.RegisterType<TInterface>(false, delegate, name);
 end;
 
 procedure TDUnitXIoC.RegisterType<TInterface>(const singleton: boolean; const delegate: TActivatorDelegate<TInterface>);
-var
-  newDelegate : TActivatorDelegate<TInterface>;
-  newSingleton : boolean;
 begin
-  newDelegate := delegate;
-  newSingleton := singleton;
-
   Self.RegisterType<TInterface>(false,delegate,'');
 end;
 
@@ -190,6 +177,7 @@ class function TDUnitXIoC.DefaultContainer: TDUnitXIoC;
 begin
   if FDefault = nil then
     FDefault := TDUnitXIoC.Create;
+
   result := FDefault;
 end;
 
@@ -199,6 +187,7 @@ var
 begin
   for o in FContainerInfo.Values do
     o.Free;
+
   FContainerInfo.Free;
   inherited;
 end;
