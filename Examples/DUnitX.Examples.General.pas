@@ -133,7 +133,11 @@ begin
   x := TMyExampleTests.Create;
   //CheckIs(x,TObject); //DUnit compatibility.
   TDUnitX.CurrentRunner.Status('hello world');
+
+  //No longer compatible for Delphi2010
+{$IFDEF DELPHI_XE_UP}
   Assert.IsType<TObject>(x); /// a bit pointless since it's strongly typed.
+{$ENDIF}
 end;
 
 { TExampleFixture2 }
