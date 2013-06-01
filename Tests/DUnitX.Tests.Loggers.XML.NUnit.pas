@@ -54,6 +54,7 @@ uses
   Rtti,
   SysUtils,
   TimeSpan,
+  DateUtils,
   DUnitX.Generics,
   DUnitX.TestResults,
   Delphi.Mocks;
@@ -70,6 +71,12 @@ var
   mockResults : TMock<ITestResults>;
 
   sExpectedEnding : string;
+
+  TempStartTime: TDateTime;
+  TempFinishTime: TDateTime;
+  StartTimeStr: string;
+  FinishTimeStr: string;
+
 begin
   mockStream := TStringStream.Create('', TEncoding.UTF8);
 
@@ -78,8 +85,15 @@ begin
   mockResults.Setup.WillReturn(3).When.FailureCount;
   mockResults.Setup.WillReturn(1).When.ErrorCount;
   mockResults.Setup.WillReturn(50).When.SuccessRate;
-  mockResults.Setup.WillReturn(StrToDateTime('1/02/2000 11:32:50 AM')).When.StartTime;
-  mockResults.Setup.WillReturn(StrToDateTime('28/02/2000 12:34:55 PM')).When.FinishTime;
+
+  TempStartTime := EncodeDateTime(2000, 2, 1, 11, 32, 50, 0);
+  TempFinishTime := EncodeDateTime(2000, 2, 28, 12, 34, 56, 0);
+  StartTimeStr := DateTimeToStr(TempStartTime);
+  FinishTimeStr := DateTimeToSTr(TempFinishTime);
+
+
+  mockResults.Setup.WillReturn(TempStartTime).When.StartTime;
+  mockResults.Setup.WillReturn(TempFinishTime).When.FinishTime;
   mockResults.Setup.WillReturn(TValue.From<TTimeSpan>(TTimeSpan.FromMilliseconds(80129120))).When.TestDuration;
 
   logger := TDUnitXXMLNUnitLogger.Create(mockStream);
@@ -90,8 +104,8 @@ begin
                   Format('<stat name="failures" value="%d" />', [3]) + CRLF +
                   Format('<stat name="errors" value="%d" />', [1]) + CRLF +
                   Format('<stat name="success-rate" value="%d%%" />', [50]) + CRLF +
-                  Format('<stat name="started-at" value="%s" />', ['1/02/2000 11:32:50 AM']) + CRLF +
-                  Format('<stat name="finished-at" value="%s" />', ['28/02/2000 12:34:55 PM']) + CRLF +
+                  Format('<stat name="started-at" value="%s" />', [StartTimeStr]) + CRLF +
+                  Format('<stat name="finished-at" value="%s" />', [FinishTimeStr]) + CRLF +
                   Format('<stat name="runtime" value="%1.3f"/>', [80129.120]) + CRLF +
                   '</statistics>' + CRLF +
               '</test-results>';
