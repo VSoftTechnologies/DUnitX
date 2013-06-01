@@ -125,15 +125,9 @@ end;
 procedure TDUnitXXMLNUnitLogger.BeforeDestruction;
 begin
   inherited;
-
-  if FOutputStream <> nil then
-    FreeAndNil(FOutputStream);
-
-  if FLogList <> nil then
-    FreeAndNil(FLogList);
-
-  if FWarningList <> nil then
-    FreeAndNil(FWarningList);
+  FreeAndNil(FOutputStream);
+  FreeAndNil(FLogList);
+  FreeAndNil(FWarningList);
 end;
 
 constructor TDUnitXXMLNUnitLogger.Create(const AOutputStream: TStream);
