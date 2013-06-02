@@ -3,6 +3,11 @@ program DUnitXTest;
 {$APPTYPE CONSOLE}
 {\\$STRONGLINKTYPES ON}
 uses
+  madExcept,
+  madLinkDisAsm,
+  madListHardware,
+  madListProcesses,
+  madListModules,
   SysUtils,
   DUnitX.Tests.IoC in 'DUnitX.Tests.IoC.pas',
   DUnitX.Loggers.Console in '..\DUnitX.Loggers.Console.pas',
@@ -33,7 +38,9 @@ uses
   DUnitX.Tests.Loggers.XML.NUnit in 'DUnitX.Tests.Loggers.XML.NUnit.pas',
   DUnitX.Utils.XML in '..\DUnitX.Utils.XML.pas',
   DUnitX.Tests.Utils.XML in 'DUnitX.Tests.Utils.XML.pas',
-  DUnitX.Tests.WeakReference in 'DUnitX.Tests.WeakReference.pas';
+  DUnitX.Tests.WeakReference in 'DUnitX.Tests.WeakReference.pas',
+  DUnitX.StackTrace.JCL in '..\DUnitX.StackTrace.JCL.pas',
+  DUnitX.StackTrace.MadExcept in '..\DUnitX.StackTrace.MadExcept.pas';
 
 var
   runner : ITestRunner;

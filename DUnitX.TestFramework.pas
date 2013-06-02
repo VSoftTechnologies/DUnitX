@@ -619,6 +619,13 @@ type
     class function CurrentRunner : ITestRunner;
   end;
 
+  // Register an implementation via TDUnitXIoC.DefaultContainer
+  IStacktraceProvider = interface
+  ['{382288B7-932C-4B6E-8417-660FFCA849EB}']
+    function GetStackTrace(const ex: Exception; const exAddressAddress: Pointer) : string;
+  end;
+
+
   ETestFrameworkException = class(Exception);
 
   ENotImplemented = class(ETestFrameworkException);

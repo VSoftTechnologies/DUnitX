@@ -74,7 +74,8 @@ type
 implementation
 
 uses
-  Windows;
+  Windows,
+  DUnitX.IoC;
 
 { TDUnitXTestResult }
 
@@ -156,6 +157,8 @@ end;
 { TDUnitXTestError }
 
 constructor TDUnitXTestError.Create(const ATestInfo : ITestInfo; const AType: TTestResultType; const AThrownException: Exception; const Addrs: Pointer; const AMessage: string = '');
+var
+  stackTraceProvider : IStacktraceProvider;
 begin
   inherited Create(ATestInfo, AType, AMessage);
 
@@ -164,8 +167,10 @@ begin
   FExceptionMessage := AMessage + AThrownException.Message;
   FExceptionAddress := Addrs;
 
-  //TODO: Expand out to support JEDI JCL and MADSHI if they are present.
-  FStackTrace := AThrownException.StackTrace;
+  stackTraceProvider := TDUnitXIoC.DefaultContainer.Resolve<IStacktraceProvider>();
+
+  if stackTraceProvider <> nil then
+    FStackTrace := stackTraceProvider.GetStackTrace(AThrownException,Addrs);
 end;
 
 function TDUnitXTestError.GetExceptionAddressInfo: string;
