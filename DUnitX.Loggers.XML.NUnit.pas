@@ -82,7 +82,7 @@ type
     procedure OnTestingEnds(const TestResult: ITestResults);
   public
     constructor Create(const AOutputStream : TStream);
-    procedure BeforeDestruction; override;
+    destructor Destroy;override;
   end;
 
   TDUnitXXMLNUnitLogger_File = class(TDUnitXXMLNUnitLogger)
@@ -122,27 +122,21 @@ begin
   end;
 end;
 
-procedure TDUnitXXMLNUnitLogger.BeforeDestruction;
-begin
-  inherited;
-
-  if FOutputStream <> nil then
-    FreeAndNil(FOutputStream);
-
-  if FLogList <> nil then
-    FreeAndNil(FLogList);
-
-  if FWarningList <> nil then
-    FreeAndNil(FWarningList);
-end;
-
 constructor TDUnitXXMLNUnitLogger.Create(const AOutputStream: TStream);
 begin
   //We are given this stream to use as we see fit, would pass in an interface but there is none for streams.
   FOutputStream := AOutputStream;
-
   FLogList := TStringList.Create;
   FWarningList := TStringList.Create;
+end;
+
+destructor TDUnitXXMLNUnitLogger.Destroy;
+begin
+  FOutputStream.Free;
+  FLogList.Free;
+  FWarningList.Free;
+
+  inherited;
 end;
 
 function TDUnitXXMLNUnitLogger.HasInfoOrWarnings: Boolean;
