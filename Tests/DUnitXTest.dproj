@@ -88,7 +88,7 @@
 			<DCCReference Include="DUnitX.Tests.Utils.XML.pas"/>
 			<DCCReference Include="DUnitX.Tests.WeakReference.pas"/>
 			<DCCReference Include="..\DUnitX.StackTrace.JCL.pas"/>
-			<DCCReference Include="..\DUnitX.StackTrace.MadExcept.pas"/>
+			<DCCReference Include="..\DUnitX.StackTrace.MadExcept3.pas"/>
 			<None Include="..\DUnitX.inc"/>
 			<None Include="..\DUnitX.Stacktrace.inc"/>
 			<BuildConfiguration Include="Debug">

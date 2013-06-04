@@ -14,8 +14,10 @@ uses
 
 type
   TJCLStackTraceProvider = class(TInterfacedObject,IStacktraceProvider)
-  public
+  protected
     function GetStackTrace(const ex: Exception; const exAddressAddress: Pointer): string;
+    function PointerToLocationInfo(const Addrs: Pointer): string;
+    function PointerToAddressInfo(Addrs: Pointer): string;
   end;
 
 
@@ -43,6 +45,43 @@ begin
     traceList.Free;
   end;
   {$ENDIF}
+end;
+
+function TJCLStackTraceProvider.PointerToAddressInfo(Addrs: Pointer): string;
+{$IFDEF USE_JCL}
+var
+  _file,
+  _module,
+  _proc: string;
+  _line: integer;
+{$ENDIF}
+begin
+  Result := '';
+{$IFDEF USE_JCL}
+  JclDebug.MapOfAddr(Addrs, _file, _module, _proc, _line);
+  Result := Format('%s$%p', [_proc, Addrs]);
+{$ENDIF}
+end;
+
+//Borrowed from DUnit.
+function TJCLStackTraceProvider.PointerToLocationInfo(const Addrs: Pointer): string;
+{$IFDEF USE_JCL}
+var
+  _file,
+  _module,
+  _proc: string;
+  _line: integer;
+{$ENDIF}
+begin
+  Result := '';
+{$IFDEF USE_JCL}
+  JclDebug.MapOfAddr(Addrs, _file, _module, _proc, _line);
+
+  if _file <> '' then
+    Result   := Format('%s:%d', [_file, _line])
+  else
+    Result   := _module;
+{$ENDIF}
 end;
 
 initialization
