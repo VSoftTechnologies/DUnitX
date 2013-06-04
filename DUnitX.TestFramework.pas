@@ -186,6 +186,8 @@ type
   end;
 {$ENDIF}
 
+
+
   Assert = class
   public
     class procedure Pass(const message : string = '');
@@ -619,6 +621,16 @@ type
     class function CurrentRunner : ITestRunner;
   end;
 
+  // Register an implementation via TDUnitXIoC.DefaultContainer
+  IStacktraceProvider = interface
+  ['{382288B7-932C-4B6E-8417-660FFCA849EB}']
+    function GetStackTrace(const ex: Exception; const exAddressAddress: Pointer) : string;
+    function PointerToLocationInfo(const Addrs: Pointer): string;
+    function PointerToAddressInfo(Addrs: Pointer): string;
+
+  end;
+
+
   ETestFrameworkException = class(Exception);
 
   ENotImplemented = class(ETestFrameworkException);
@@ -631,8 +643,8 @@ type
   ETestWarning = class(EABort);
   ENoTestsRegistered = class(ETestFrameworkException);
 
-{$IFDEF DELPHI_2010_DOWN}
-  function ReturnAddress: Pointer; {$IFNDEF CLR} assembler; {$ENDIF}
+{$IFDEF DELPHI_XE_DOWN}
+  function ReturnAddress: Pointer; assembler;
 {$ENDIF}
 
 implementation
@@ -650,25 +662,17 @@ uses
   {$ENDIF}
   Generics.Defaults;
 
-function IsBadPointer(P: Pointer):Boolean; {$IFNDEF CLR} register; {$ENDIF}
+function IsBadPointer(P: Pointer):Boolean;register;
 begin
   try
-    Result  := (p = nil)
-{$IFNDEF CLR}
-              or ((Pointer(P^) <> P) and (Pointer(P^) = P));
-{$ENDIF}
+    Result  := (p = nil) or ((Pointer(P^) <> P) and (Pointer(P^) = P));
   except
     Result := true;
   end
 end;
 
-{$IFDEF DELPHI_2010_DOWN}
-function ReturnAddress: Pointer; {$IFNDEF CLR} assembler; {$ENDIF}
-{$IFDEF CLR}
-begin
-  Result := nil;
-end;
-{$ELSE}
+{$IFDEF DELPHI_XE_DOWN}
+function ReturnAddress: Pointer; assembler;
 const
   CallerIP = $4;
 asm
@@ -690,7 +694,6 @@ asm
    xor eax, eax
 @@Finish:
 end;
-{$ENDIF}
 {$ENDIF}
 
 { TestFixture }

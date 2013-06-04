@@ -91,3 +91,5 @@
 {$IFDEF UNSUPPORTED_COMPILER_VERSION}
   Unsupported Compiler Version (Delphi 2010 or later required!)
 {$ENDIF}
+
+{$I DUnitX.Stacktrace.inc}

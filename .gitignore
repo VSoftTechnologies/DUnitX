@@ -19,6 +19,7 @@
 *.dsk
 *.tvsconfig
 *.otares
+*.drc
 
 # Output Folders  #
 ###################
@@ -29,4 +30,4 @@
 
 # Testing Output  #
 ###################
-Tests\dunit-report.xml
+Tests/dunit-report.xml

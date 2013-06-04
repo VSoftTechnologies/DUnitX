@@ -74,29 +74,10 @@ type
 implementation
 
 uses
-  Windows;
+  Windows,
+  DUnitX.IoC;
 
 { TDUnitXTestResult }
-
-function PtrToStr(p: Pointer): string;
-begin
-   Result := Format('%p', [p])
-end;
-
-function PointerToLocationInfo(Addrs: Pointer): string;
-begin
-  //TODO: Expand out to support JEDI JCL and MADSHI if they are present.
-  Result := ''
-end;
-
-function PointerToAddressInfo(Addrs: Pointer): string;
-begin
-  //TODO: Expand out to support JEDI JCL and MADSHI if they are present.
-  if Assigned(Addrs) then
-    Result := '$' + PtrToStr(Addrs)
-  else
-    Result := 'n/a';
-end;
 
 constructor TDUnitXTestResult.Create(const ATestInfo : ITestInfo; const AType: TTestResultType; const AMessage: string);
 begin
@@ -156,6 +137,8 @@ end;
 { TDUnitXTestError }
 
 constructor TDUnitXTestError.Create(const ATestInfo : ITestInfo; const AType: TTestResultType; const AThrownException: Exception; const Addrs: Pointer; const AMessage: string = '');
+var
+  stackTraceProvider : IStacktraceProvider;
 begin
   inherited Create(ATestInfo, AType, AMessage);
 
@@ -164,13 +147,21 @@ begin
   FExceptionMessage := AMessage + AThrownException.Message;
   FExceptionAddress := Addrs;
 
-  //TODO: Expand out to support JEDI JCL and MADSHI if they are present.
-  FStackTrace := AThrownException.StackTrace;
+  stackTraceProvider := TDUnitXIoC.DefaultContainer.Resolve<IStacktraceProvider>();
+
+  if stackTraceProvider <> nil then
+    FStackTrace := stackTraceProvider.GetStackTrace(AThrownException,Addrs);
 end;
 
 function TDUnitXTestError.GetExceptionAddressInfo: string;
+var
+  stackTraceProvider : IStacktraceProvider;
 begin
-  Result := PointerToAddressInfo(FExceptionAddress);
+  stackTraceProvider := TDUnitXIoc.DefaultContainer.Resolve<IStacktraceProvider>();
+  if stackTraceProvider <> nil then
+    Result := stackTraceProvider.PointerToAddressInfo(FExceptionAddress)
+  else
+    Result := '';
 end;
 
 function TDUnitXTestError.GetExceptionClass: ExceptClass;
@@ -179,8 +170,14 @@ begin
 end;
 
 function TDUnitXTestError.GetExceptionLocationInfo: string;
+var
+  stackTraceProvider : IStacktraceProvider;
 begin
-  Result := PointerToLocationInfo(FExceptionAddress);
+  stackTraceProvider := TDUnitXIoc.DefaultContainer.Resolve<IStacktraceProvider>();
+  if stackTraceProvider <> nil then
+    Result := stackTraceProvider.PointerToLocationInfo(FExceptionAddress)
+  else
+    Result := '';
 end;
 
 function TDUnitXTestError.GetExceptionMessage: string;
