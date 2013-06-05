@@ -1,4 +1,4 @@
-unit DUnitX.StackTrace.MadExcept3;
+unit DUnitX.StackTrace.MadExcept4;
 
 interface
 
@@ -7,13 +7,13 @@ interface
 uses
   SysUtils,
   classes,
-{$IFDEF USE_MADEXCEPT3}
+{$IFDEF USE_MADEXCEPT4}
   madStackTrace,
 {$ENDIF}
   DUnitX.TestFramework;
 
 type
-  TMadExcept3StackTraceProvider = class(TInterfacedObject,IStacktraceProvider)
+  TMadExcept4StackTraceProvider = class(TInterfacedObject,IStacktraceProvider)
   public
     function GetStackTrace(const ex: Exception; const exAddressAddress: Pointer): string;
     function PointerToLocationInfo(const Addrs: Pointer): string;
@@ -27,32 +27,32 @@ implementation
 uses
   DUnitX.IoC;
 
-{ TJCLStackTraceProvider }
+{ TMadExcept4StackTraceProvider }
 
-function TMadExcept3StackTraceProvider.GetStackTrace(const ex: Exception; const exAddressAddress: Pointer): string;
+function TMadExcept4StackTraceProvider.GetStackTrace(const ex: Exception; const exAddressAddress: Pointer): string;
 begin
   result := '';
-  {$IFDEF USE_MADEXCEPT3}
-  Result := string(madStackTrace.StackTrace( false, false, false, nil,
+  {$IFDEF USE_MADEXCEPT4}
+  Result := madStackTrace.StackTrace( false, false, false, nil, nil,
                                            exAddressAddress, false,
                                            false, 0, 0, nil,
-                                           @exAddressAddress));
+                                           @exAddressAddress);
 
   {$ENDIF}
 end;
 
-function TMadExcept3StackTraceProvider.PointerToAddressInfo(Addrs: Pointer): string;
+function TMadExcept4StackTraceProvider.PointerToAddressInfo(Addrs: Pointer): string;
 begin
-  {$IFDEF USE_MADEXCEPT3}
+  {$IFDEF USE_MADEXCEPT4}
   Result := String(StackAddrToStr(Addrs));
   {$ELSE}
   Result := '';
   {$ENDIF}
 end;
 
-function TMadExcept3StackTraceProvider.PointerToLocationInfo(const Addrs: Pointer): string;
+function TMadExcept4StackTraceProvider.PointerToLocationInfo(const Addrs: Pointer): string;
 begin
-  {$IFDEF USE_MADEXCEPT3}
+  {$IFDEF USE_MADEXCEPT4}
   Result := String(StackAddrToStr(Addrs));
   {$ELSE}
   Result := '';
@@ -60,16 +60,16 @@ begin
 end;
 
 initialization
-{$IFDEF USE_MADEXCEPT3}
+{$IFDEF USE_MADEXCEPT4}
 
   {$IFDEF DELPHI_XE_UP}
-    TDUnitXIoC.DefaultContainer.RegisterType<IStacktraceProvider,TMadExcept3StackTraceProvider>(true);
+    TDUnitXIoC.DefaultContainer.RegisterType<IStacktraceProvider,TMadExcept4StackTraceProvider>(true);
   {$ELSE}
     //D2010 bug prevents using above method.
     TDUnitXIoC.DefaultContainer.RegisterType<IStacktraceProvider>(true,
      function : IStacktraceProvider
         begin
-          result := TMadExcept3StackTraceProvider.Create;
+          result := TMadExcept4StackTraceProvider.Create;
         end
      );
   {$ENDIF}

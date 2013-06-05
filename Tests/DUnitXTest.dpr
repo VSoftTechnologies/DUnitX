@@ -40,7 +40,8 @@ uses
   DUnitX.Tests.Utils.XML in 'DUnitX.Tests.Utils.XML.pas',
   DUnitX.Tests.WeakReference in 'DUnitX.Tests.WeakReference.pas',
   DUnitX.StackTrace.JCL in '..\DUnitX.StackTrace.JCL.pas',
-  DUnitX.StackTrace.MadExcept3 in '..\DUnitX.StackTrace.MadExcept3.pas';
+  DUnitX.StackTrace.MadExcept3 in '..\DUnitX.StackTrace.MadExcept3.pas',
+  DUnitX.StackTrace.MadExcept4 in '..\DUnitX.StackTrace.MadExcept4.pas';
 
 var
   runner : ITestRunner;
