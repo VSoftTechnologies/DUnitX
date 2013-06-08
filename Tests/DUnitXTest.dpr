@@ -41,7 +41,8 @@ uses
   DUnitX.Tests.WeakReference in 'DUnitX.Tests.WeakReference.pas',
   DUnitX.StackTrace.JCL in '..\DUnitX.StackTrace.JCL.pas',
   DUnitX.StackTrace.MadExcept3 in '..\DUnitX.StackTrace.MadExcept3.pas',
-  DUnitX.StackTrace.MadExcept4 in '..\DUnitX.StackTrace.MadExcept4.pas';
+  DUnitX.StackTrace.MadExcept4 in '..\DUnitX.StackTrace.MadExcept4.pas',
+  DUnitX.Loggers.GUI in '..\DUnitX.Loggers.GUI.pas' {Form1};
 
 var
   runner : ITestRunner;
