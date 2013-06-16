@@ -7,6 +7,10 @@
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
 {                                                                           }
+{ Contributors : Vincent Parrett                                            }
+{                Jason Smith                                                }
+{                Nick Hodges                                                }
+{                Nicholas Ring                                              }
 {                                                                           }
 {***************************************************************************}
 
@@ -39,9 +43,3 @@ Planned Features
 
 * Multi-threaded tests - the ability to have test fixtures run in their own
   threads.
-
-
-
-
-
-

@@ -28,7 +28,8 @@ uses
   DUnitX.Utils in '..\DUnitX.Utils.pas',
   DUnitX.Utils.XML in '..\DUnitX.Utils.XML.pas',
   DUnitX.WeakReference in '..\DUnitX.WeakReference.pas',
-  DUnitX.Windows.Console in '..\DUnitX.Windows.Console.pas';
+  DUnitX.Windows.Console in '..\DUnitX.Windows.Console.pas',
+  DUnitX.StackTrace.EurekaLog7 in '..\DUnitX.StackTrace.EurekaLog7.pas';
 
 begin
   try

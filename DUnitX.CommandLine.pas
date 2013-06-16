@@ -107,7 +107,7 @@ end;
 
 destructor TCommandLine.Destroy;
 begin
-
+  FParamList.Free;
   inherited;
 end;
 

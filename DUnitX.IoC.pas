@@ -60,6 +60,8 @@ type
 
     FContainerInfo : TDictionary<string,TObject>;
 
+    private class destructor ClassDestroy;
+
   public
     constructor Create;
     destructor Destroy;override;
@@ -166,6 +168,11 @@ end;
 procedure TDUnitXIoC.RegisterType<TInterface>(const singleton: boolean; const delegate: TActivatorDelegate<TInterface>);
 begin
   Self.RegisterType<TInterface>(false,delegate,'');
+end;
+
+class destructor TDUnitXIoC.ClassDestroy;
+begin
+  FDefault.Free;
 end;
 
 constructor TDUnitXIoC.Create;
