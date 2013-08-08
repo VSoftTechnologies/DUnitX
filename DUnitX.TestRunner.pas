@@ -438,6 +438,11 @@ begin
                   Self.Loggers_AddSuccess(threadId, testResult);
                 end;
               except
+                on e : ETestPass do
+                begin
+                  testResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Success);
+                  Self.Loggers_AddSuccess(threadId, testResult);
+                end;
                 on e : ETestFailure do
                 begin
                   //TODO: Does test failure require its own results interface and class?
