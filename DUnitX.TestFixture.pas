@@ -149,11 +149,8 @@ var
   method : TRttiMethod;
   attributes : TArray<TCustomAttribute>;
   attribute : TCustomAttribute;
-  testcases : TArray<TCustomAttribute>;
-  testcase : TCustomAttribute;
   meth : TMethod;
   newTest : ITest;
-//  sourceMethod : TRttiMethod;
 begin
   rType := FRttiContext.GetType(FTestClass);
   System.Assert(rType <> nil);

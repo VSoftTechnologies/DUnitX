@@ -47,7 +47,9 @@ implementation
 procedure TMyDUnitTest.ATest;
 begin
   Status('Testing Status Redirect');
+{$WARN SYMBOL_DEPRECATED OFF}
   CheckTrue(true,'true is always true!');
+{$WARN SYMBOL_DEPRECATED ON}
 end;
 
 initialization

@@ -345,7 +345,6 @@ end;
 function TDUnitXTestRunner.Execute: ITestResults;
 var
   fixtures : ITestFixtureList;
-  fixtureInfoList : IList<ITestFixtureInfo>;
   fixture  : ITestFixture;
   tests    : IEnumerable<ITest>;
   test     : ITest;

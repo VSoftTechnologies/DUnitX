@@ -3,6 +3,11 @@ program DUnitXTest;
 {$APPTYPE CONSOLE}
 {\\$STRONGLINKTYPES ON}
 uses
+  madExcept,
+  madLinkDisAsm,
+  madListHardware,
+  madListProcesses,
+  madListModules,
   SysUtils,
   DUnitX.Tests.IoC in 'DUnitX.Tests.IoC.pas',
   DUnitX.Loggers.Console in '..\DUnitX.Loggers.Console.pas',
