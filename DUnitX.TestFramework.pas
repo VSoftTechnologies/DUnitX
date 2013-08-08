@@ -627,9 +627,7 @@ type
     function GetStackTrace(const ex: Exception; const exAddressAddress: Pointer) : string;
     function PointerToLocationInfo(const Addrs: Pointer): string;
     function PointerToAddressInfo(Addrs: Pointer): string;
-
   end;
-
 
   ETestFrameworkException = class(Exception);
 

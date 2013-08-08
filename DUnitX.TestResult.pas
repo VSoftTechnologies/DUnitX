@@ -147,20 +147,24 @@ begin
   FExceptionMessage := AMessage + AThrownException.Message;
   FExceptionAddress := Addrs;
 
+  {$IFDEF DELPHI_XE_UP}
   stackTraceProvider := TDUnitXIoC.DefaultContainer.Resolve<IStacktraceProvider>();
 
   if stackTraceProvider <> nil then
     FStackTrace := stackTraceProvider.GetStackTrace(AThrownException,Addrs);
+  {$ENDIF}
 end;
 
 function TDUnitXTestError.GetExceptionAddressInfo: string;
 var
   stackTraceProvider : IStacktraceProvider;
 begin
+  {$IFDEF DELPHI_XE_UP}
   stackTraceProvider := TDUnitXIoc.DefaultContainer.Resolve<IStacktraceProvider>();
   if stackTraceProvider <> nil then
     Result := stackTraceProvider.PointerToAddressInfo(FExceptionAddress)
   else
+  {$ENDIF}
     Result := '';
 end;
 
@@ -173,10 +177,12 @@ function TDUnitXTestError.GetExceptionLocationInfo: string;
 var
   stackTraceProvider : IStacktraceProvider;
 begin
+  {$IFDEF DELPHI_XE_UP}
   stackTraceProvider := TDUnitXIoc.DefaultContainer.Resolve<IStacktraceProvider>();
   if stackTraceProvider <> nil then
     Result := stackTraceProvider.PointerToLocationInfo(FExceptionAddress)
   else
+  {$ENDIF}
     Result := '';
 end;
 
