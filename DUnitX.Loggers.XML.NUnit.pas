@@ -97,6 +97,7 @@ implementation
 uses
   DUnitX.Utils.XML,
   SysUtils,
+  Forms,
   Windows;
 
 const
@@ -267,6 +268,7 @@ var
 begin
    //write the byte order mark
    unicodePreamble := TEncoding.UTF8.GetPreamble;
+
    if Length(unicodePreamble) > 0 then
       FOutputStream.WriteBuffer(unicodePreamble[0], Length(unicodePreamble));
 
@@ -337,7 +339,7 @@ begin
   sXmlFilename := AFilename;
 
   if sXmlFilename = '' then
-    sXmlFilename := DEFAULT_NUNIT_FILE_NAME;
+    sXmlFilename := ExtractFilePath(Application.ExeName) + DEFAULT_NUNIT_FILE_NAME;
 
   FXMLFileStream := TFileStream.Create(sXmlFilename, fmCreate);
 
