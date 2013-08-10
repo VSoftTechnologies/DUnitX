@@ -25,7 +25,7 @@ Planned Features
 
 * Extensive Assert class.
 
-* Limited backwards compatibility with DNUnit test classes (not the
+* Limited backwards compatibility with DUnit test classes (not the
   framework). Use DUnitX.DUnitCompatibility
 
 * Data driven test cases - the ability to provide a test method with a data
