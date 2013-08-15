@@ -94,7 +94,7 @@ end;
 
 function TDUnitXTestResult.GetResult: Boolean;
 begin
-   result := GetResultType = TTestResultType.Success;
+   result := GetResultType = TTestResultType.Pass;
 end;
 
 function TDUnitXTestResult.GetResultType: TTestResultType;

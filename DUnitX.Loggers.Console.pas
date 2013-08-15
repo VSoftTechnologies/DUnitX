@@ -41,6 +41,7 @@ type
   TDUnitXConsoleLogger = class(TInterfacedObject, ITestLogger)
   private
     FConsoleWriter : IDUnitXConsoleWriter;
+    FQuietMode : boolean;
   protected
     procedure OnTestingStarts(const threadId, testCount, testActiveCount : Cardinal);
 
@@ -71,13 +72,12 @@ type
     procedure OnTearDownFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
     procedure OnEndTearDownFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
 
-
     procedure OnEndTestFixture(const threadId: Cardinal; const results: IFixtureResult);
 
-    procedure OnTestingEnds(const TestResult: ITestResults);
+    procedure OnTestingEnds(const TestResults: ITestResults);
 
   public
-    constructor Create;
+    constructor Create(const quietMode : boolean = false);
     destructor Destroy;override;
   end;
 
@@ -91,8 +91,9 @@ uses
 
 { TDUnitXConsoleLogger }
 
-constructor TDUnitXConsoleLogger.Create;
+constructor TDUnitXConsoleLogger.Create(const quietMode : boolean = false);
 begin
+  FQuietMode := quietMode;
   FConsoleWriter := TDUnitXIoC.DefaultContainer.Resolve<IDUnitXConsoleWriter>();
   if FConsoleWriter = nil then
     raise Exception.Create('No ConsoleWriter Class is registered.' + #13#10 +
@@ -107,12 +108,18 @@ end;
 
 procedure TDUnitXConsoleLogger.OnEndSetupFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
 begin
+  if FQuietMode then
+    exit;
+
   FConsoleWriter.Outdent(1);
   FConsoleWriter.WriteLn;
 end;
 
 procedure TDUnitXConsoleLogger.OnEndSetupTest(const threadId: Cardinal; Test: ITestInfo);
 begin
+  if FQuietMode then
+    exit;
+
 //  FConsoleWriter.WriteLn;
 //  FConsoleWriter.Outdent(1);
   FConsoleWriter.WriteLn;
@@ -131,18 +138,31 @@ end;
 
 procedure TDUnitXConsoleLogger.OnEndTest(const threadId: Cardinal; Test: ITestResult);
 begin
+  if FQuietMode then
+    exit;
+
   FConsoleWriter.Outdent(1);
   FConsoleWriter.WriteLn;
 end;
 
 procedure TDUnitXConsoleLogger.OnEndTestFixture(const threadId: Cardinal; const results: IFixtureResult);
 begin
+  if FQuietMode then
+    exit;
+
   FConsoleWriter.Outdent(3);
   FConsoleWriter.WriteLn;
 end;
 
 procedure TDUnitXConsoleLogger.OnExecuteTest(const threadId: Cardinal; Test: ITestInfo);
 begin
+  if FQuietMode then
+  begin
+    FConsoleWriter.Write('.');
+    exit;
+  end;
+
+
   //FConsoleWriter.SetColour(ccBrightAqua);
   //FConsoleWriter.Indent(1);
   FConsoleWriter.WriteLn('Executing Test : ' + Test.Name);
@@ -152,16 +172,29 @@ end;
 
 procedure TDUnitXConsoleLogger.OnTestError(const threadId: Cardinal; Error: ITestError);
 begin
+  if FQuietMode then
+  begin
+    FConsoleWriter.Write('E');
+    exit;
+  end;
 
 end;
 
 procedure TDUnitXConsoleLogger.OnTestFailure(const threadId: Cardinal; Failure: ITestError);
 begin
+  if FQuietMode then
+  begin
+    FConsoleWriter.Write('F');
+    exit;
+  end;
 
 end;
 
 procedure TDUnitXConsoleLogger.OnLog(const logType: TLogLevel; const msg: string);
 begin
+  if FQuietMode then
+    exit;
+
   FConsoleWriter.Indent(2);
   try
 
@@ -180,6 +213,9 @@ end;
 
 procedure TDUnitXConsoleLogger.OnSetupFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
 begin
+  if FQuietMode then
+    exit;
+
   FConsoleWriter.Indent(1);
   FConsoleWriter.WriteLn('Running Fixture Setup Method : ' + fixture.SetupFixtureMethodName);
 
@@ -187,6 +223,8 @@ end;
 
 procedure TDUnitXConsoleLogger.OnSetupTest(const threadId: Cardinal; Test: ITestInfo);
 begin
+  if FQuietMode then
+    exit;
 //  FConsoleWriter.Indent(1);
   FConsoleWriter.SetColour(ccBrightPurple);
   FConsoleWriter.WriteLn('Running Setup for : ' + Test.Name);
@@ -194,6 +232,10 @@ end;
 
 procedure TDUnitXConsoleLogger.OnBeginTest(const threadId: Cardinal; Test: ITestInfo);
 begin
+  if FQuietMode then
+    exit;
+
+
   FConsoleWriter.SetColour(ccBrightAqua);
   FConsoleWriter.Indent(1);
   FConsoleWriter.WriteLn('Test : ' + Test.Name);
@@ -203,6 +245,9 @@ end;
 
 procedure TDUnitXConsoleLogger.OnStartTestFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
 begin
+  if FQuietMode then
+    exit;
+
   FConsoleWriter.SetColour(ccBrightYellow);
   FConsoleWriter.Indent(2);
   FConsoleWriter.WriteLn('Fixture : ' + fixture.Name);
@@ -214,6 +259,11 @@ end;
 
 procedure TDUnitXConsoleLogger.OnTestSuccess(const threadId: Cardinal; Test: ITestResult);
 begin
+  if FQuietMode then
+  begin
+    FConsoleWriter.Write('.');
+    exit;
+  end;
   FConsoleWriter.Indent(2);
   FConsoleWriter.WriteLn('Success.');
   FConsoleWriter.Outdent(2);
@@ -221,12 +271,18 @@ end;
 
 procedure TDUnitXConsoleLogger.OnTearDownFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
 begin
+  if FQuietMode then
+    exit;
+
   FConsoleWriter.WriteLn('Running Fixture Teardown Method : ' + fixture.TearDownFixtureMethodName);
   FConsoleWriter.WriteLn;
 end;
 
 procedure TDUnitXConsoleLogger.OnTeardownTest(const threadId: Cardinal; Test: ITestInfo);
 begin
+  if FQuietMode then
+    exit;
+
   FConsoleWriter.WriteLn;
   FConsoleWriter.Indent(1);
   FConsoleWriter.WriteLn('Running Teardown for Test : ' + test.Name);
@@ -234,14 +290,75 @@ begin
   FConsoleWriter.Outdent(1);
 end;
 
-procedure TDUnitXConsoleLogger.OnTestingEnds(const TestResult: ITestResults);
+procedure TDUnitXConsoleLogger.OnTestingEnds(const TestResults: ITestResults);
+var
+  testResult: ITestResult;
 begin
-  FConsoleWriter.OutDent(1);
-  FConsoleWriter.WriteLn('Done testing.');
+  if FQuietMode then
+  begin
+      FConsoleWriter.WriteLn;
+      FConsoleWriter.WriteLn;
+  end
+  else
+  begin
+    FConsoleWriter.OutDent(1);
+    FConsoleWriter.WriteLn('Done testing.');
+  end;
+
+
+  FConsoleWriter.SetColour(ccBrightWhite);
+  FConsoleWriter.WriteLn(Format('Tests Run     : %d',[TestResults.Count]));
+
+  if TestResults.PassCount > 0 then
+    FConsoleWriter.SetColour(ccBrightGreen)
+  else
+    FConsoleWriter.SetColour(ccDefault );
+  FConsoleWriter.WriteLn(Format('Tests Passed  : %d',[TestResults.PassCount]));
+
+  if TestResults.FailureCount > 0 then
+    FConsoleWriter.SetColour(ccBrightRed)
+  else
+    FConsoleWriter.SetColour(ccDefault );
+  FConsoleWriter.WriteLn(Format('Tests Failed  : %d',[TestResults.FailureCount]));
+
+  if TestResults.ErrorCount > 0 then
+    FConsoleWriter.SetColour(ccBrightRed)
+  else
+    FConsoleWriter.SetColour(ccDefault );
+  FConsoleWriter.WriteLn(Format('Tests Errored : %d',[TestResults.ErrorCount]));
+
+
+  if TestResults.FailureCount > 0  then
+  begin
+    FConsoleWriter.SetColour(ccBrightRed);
+    FConsoleWriter.WriteLn;
+    FConsoleWriter.WriteLn('Failing Tests');
+    FConsoleWriter.WriteLn;
+    FConsoleWriter.SetColour(ccDefault );
+
+    for testResult in TestResults.GetResults do
+    begin
+      if testResult.ResultType = TTestResultType.Failure then
+      begin
+        FConsoleWriter.WriteLn(testResult.Test.Name);
+      end;
+      
+    end;
+
+  end;
+  FConsoleWriter.SetColour(ccDefault );
+
 end;
 
 procedure TDUnitXConsoleLogger.OnTestingStarts(const threadId, testCount, testActiveCount : Cardinal);
 begin
+  if FQuietMode then
+  begin
+    FConsoleWriter.WriteLn(Format('DUnitX - [%s] - Starting Tests.',[ExtractFileName(ParamStr(0))]));
+    FConsoleWriter.WriteLn;
+    exit;
+  end;
+
   if TDUnitX.CommandLine.HideBanner then
     exit;
 
@@ -259,7 +376,8 @@ end;
 
 procedure TDUnitXConsoleLogger.OnTestWarning(const threadId: Cardinal; AWarning: ITestResult);
 begin
-
+  if FQuietMode then
+    FConsoleWriter.Write('W');
 end;
 
 end.

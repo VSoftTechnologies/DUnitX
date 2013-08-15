@@ -47,6 +47,7 @@ type
     function GetConsoleWidth : Integer;
   protected
     procedure InternalWriteLn(const s : String); override;
+    procedure InternalWrite(const s : String); override;
   public
     procedure SetColour(const foreground: TConsoleColour; const background: TConsoleColour = ccDefault); override;
     constructor Create;override;
@@ -123,6 +124,18 @@ begin
   end;
 end;
 
+
+procedure TDUnitXWindowsConsoleWriter.InternalWrite(const s: String);
+var
+  output : string;
+  dummy : Cardinal;
+begin
+  output := TStrUtils.PadString(s, length(s)+ Self.CurrentIndentLevel, True, ' ');
+  if Self.RedirectedStdOut then
+    System.Write(output)
+  else
+    WriteConsoleW(FStdOut, PWideChar(output), Length(output), dummy, nil);
+end;
 
 procedure TDUnitXWindowsConsoleWriter.InternalWriteLn(const s: String);
 var

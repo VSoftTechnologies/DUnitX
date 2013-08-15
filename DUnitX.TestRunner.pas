@@ -321,6 +321,7 @@ var
 begin
   for logger in FLoggers do
     logger.OnEndTest(threadId,Test);
+
 end;
 
 procedure TDUnitXTestRunner.Loggers_EndTestFixture(const threadId : Cardinal; const results: IFixtureResult);
@@ -358,7 +359,7 @@ var
   testCount : Cardinal;
   testActiveCount : Cardinal;
 
-  testResults : ITestResults;
+  //testResults : ITestResults;
 begin
   result := nil;
   fixtures := BuildFixtures;
@@ -375,7 +376,8 @@ begin
       Inc(testCount);
 
   //TODO: Need a simple way of converting one list to another list of a supported interface. Generics should help here.
-  testResults := TDUnitXTestResults.Create(fixtures.AsFixtureInfoList);
+  result := TDUnitXTestResults.Create(fixtures.AsFixtureInfoList);
+  context := result as ITestExecuteContext;
 
   //TODO: Record Test metrics.. runtime etc.
   threadId := TThread.CurrentThread.ThreadID;
@@ -433,13 +435,15 @@ begin
                 begin
                   Self.Loggers_ExecuteTest(threadId, test as ITestInfo);
                   testExecute.Execute(context);
-                  testResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Success);
+                  testResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Pass);
+                  context.RecordResult(testResult);
                   Self.Loggers_AddSuccess(threadId, testResult);
                 end;
               except
                 on e : ETestPass do
                 begin
-                  testResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Success);
+                  testResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Pass);
+                  context.RecordResult(testResult);
                   Self.Loggers_AddSuccess(threadId, testResult);
                 end;
                 on e : ETestFailure do
@@ -447,6 +451,7 @@ begin
                   //TODO: Does test failure require its own results interface and class?
                   Log(TLogLevel.ltError, 'Test failed : ' + test.Name + ' : ' + e.Message);
                   testError := TDUnitXTestError.Create(test as ITestInfo, TTestResultType.Failure, e, ExceptAddr);
+                  context.RecordResult(testError);
                   Self.Loggers_AddFailure(threadId, testError);
                 end;
                 on e : ETestWarning do
@@ -454,12 +459,14 @@ begin
                   //TODO: Does test warning require its own results interface and class?
                   Log(TLogLevel.ltWarning, 'Test warning : ' + test.Name + ' : ' + e.Message);
                   testResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Warning, e.Message);
+                  context.RecordResult(testResult);
                   Self.Loggers_AddWarning(threadId, testResult);
                 end;
                 on e : Exception do
                 begin
                   Log(TLogLevel.ltError, 'Test Error : ' + test.Name + ' : ' + e.Message);
                   testError := TDUnitXTestError.Create(test as ITestInfo, TTestResultType.Error, e, ExceptAddr);
+                  context.RecordResult(testError);
                   Self.Loggers_AddError(threadId, testError);
                 end;
               end;
@@ -505,7 +512,7 @@ begin
     end;
   finally
     //TODO: Actully pass the results for all fixtures and tests here.
-    Self.Loggers_TestingEnds(testResults);
+    Self.Loggers_TestingEnds(result);
   end;
 end;
 

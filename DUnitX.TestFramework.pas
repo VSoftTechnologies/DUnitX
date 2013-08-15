@@ -344,7 +344,7 @@ type
   TTestFixtureInfoList = class(TDUnitXList<ITestFixtureInfo>, ITestFixtureInfoList);
   {$M-}
 
-  TTestResultType = (Success,Failure,Warning,Error);
+  TTestResultType = (Pass,Failure,Warning,Error);
 
   {$M+}
   ITestResult = interface
@@ -425,7 +425,7 @@ type
     function GetFailureCount : integer;
     function GetErrorCount : integer;
     function GetWarningCount : integer;
-    function GetSuccessCount : integer;
+    function GetPassCount : integer;
     function GetSuccessRate : integer;
     function GetStartTime: TDateTime;
     function GetFinishTime: TDateTime;
@@ -434,11 +434,13 @@ type
     function GetFixtures : IEnumerable<ITestFixtureInfo>;
     function GetResults  : IEnumerable<ITestResult>;
 
+    function ToString : string;
+
     property Count : integer read GetCount;
     property FailureCount : integer read GetFailureCount;
     property ErrorCount : integer read GetErrorCount;
     property WarningCount : integer read GetWarningCount;
-    property SuccesssCount : integer read GetSuccessCount;
+    property PassCount : integer read GetPassCount;
 
     property StartTime : TDateTime read GetStartTime;
     property FinishTime: TDateTime read GetFinishTime;
@@ -551,7 +553,7 @@ type
     ///	<summary>
     ///	  //called after all fixtures have run.
     ///	</summary>
-    procedure OnTestingEnds(const TestResult: ITestResults);
+    procedure OnTestingEnds(const TestResults: ITestResults);
   end;
 
   TRunnerExitBehavior = (Continue, //The runner will exit normally

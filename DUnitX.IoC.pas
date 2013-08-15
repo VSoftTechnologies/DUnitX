@@ -258,7 +258,10 @@ begin
   lcontainer := FContainerInfo;
 
   if not lcontainer.TryGetValue(key,o) then
-    raise EIoCResolutionException.Create(Format('No implementation registered for type %s',[pInfo.Name]));
+  begin
+    exit(nil);
+  end;
+//    raise EIoCResolutionException.Create(Format('No implementation registered for type %s',[pInfo.Name]));
 
   rego := TIoCRegistration<TInterface>(o);
 

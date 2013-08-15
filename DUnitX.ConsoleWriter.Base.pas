@@ -52,6 +52,7 @@ type
     procedure SetColour(const foreground: TConsoleColour; const background: TConsoleColour = ccDefault);
     procedure WriteLn(const s: String);overload;
     procedure WriteLn;overload;
+    procedure Write(const s : string);
     procedure Indent(const value : integer = 1);
     procedure Outdent(const value : integer = 1);
     property CurrentIndentLevel : Integer read GetIndent write SetIndent;
@@ -66,7 +67,8 @@ type
   protected
     function GetIndent : Integer;
     procedure SetIndent(const count: Integer);virtual;
-    procedure InternalWriteLn(const s : String); virtual;abstract;
+    procedure InternalWriteLn(const s : string); virtual;abstract;
+    procedure InternalWrite(const s : string);virtual;abstract;
     procedure Indent(const value : integer = 1);
     procedure Outdent(const value : integer = 1);
     property ConsoleWidth : integer read FConsoleWidth write FConsoleWidth;
@@ -76,6 +78,7 @@ type
     procedure SetColour(const foreground: TConsoleColour; const background: TConsoleColour = ccDefault); virtual;abstract;
     procedure WriteLn(const s: String);overload;virtual;
     procedure WriteLn;overload;virtual;
+    procedure Write(const s : string);virtual;
     property CurrentIndentLevel : Integer read GetIndent write SetIndent;
   end;
 
@@ -121,6 +124,25 @@ begin
   end;
 end;
 
+
+procedure TDUnitXConsoleWriterBase.Write(const s: string);
+var
+  offset, width, len : Integer;
+begin
+  width := FConsoleWidth - FIndent - 1;
+  len := Length(s);
+  if (width > 0) and (len > width) then // Need to break into multiple lines
+  begin
+    offset := 1;
+    while offset < len do
+    begin
+      InternalWrite(Copy(s, offset, width));
+      Inc(offset, width);
+    end;
+  end
+  else // Can write out on a single line
+    InternalWrite(s);
+end;
 
 procedure TDUnitXConsoleWriterBase.WriteLn;
 begin

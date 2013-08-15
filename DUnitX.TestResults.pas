@@ -42,12 +42,12 @@ uses
 type
   TDUnitXTestResults = class(TInterfacedObject, ITestResults, ITestExecuteContext)
   private
-    FResults : TList<ITestResult>;
+    FResults : IList<ITestResult>;
     FFixtures : IList<ITestFixtureInfo>;
     FAllPassed : boolean;
     FErrorCount : integer;
     FFailureCount : integer;
-    FSuccessCount : integer;
+    FPassCount : integer;
     FWarningCount : integer;
 
     FStartTime: TDateTime;
@@ -60,7 +60,7 @@ type
     function GetFailureCount: Integer;
     function GetFixtures: IEnumerable<DUnitX.TestFramework.ITestFixtureInfo>;
     function GetResults: IEnumerable<DUnitX.TestFramework.ITestResult>;
-    function GetSuccessCount: Integer;
+    function GetPassCount: Integer;
     function GetWarningCount: Integer;
 
     function GetSuccessRate : integer;
@@ -68,6 +68,7 @@ type
     function GetFinishTime: TDateTime;
     function GetTestDuration: TTimeSpan;
 
+    function ToString : string;override;
     //ITestExecuteContext
     procedure RecordResult(const testResult: ITestResult);
   public
@@ -87,11 +88,11 @@ uses
 
 constructor TDUnitXTestResults.Create(const fixtures : IList<ITestFixtureInfo>);
 begin
-  FResults := TList<ITestResult>.Create;
+  FResults := TDUnitXList<ITestResult>.Create;
   FFixtures := fixtures;
   FAllPassed := True;
   FErrorCount := 0;
-  FSuccessCount := 0;
+  FPassCount := 0;
   FFailureCount := 0;
   FWarningCount := 0;
 
@@ -102,7 +103,8 @@ end;
 
 destructor TDUnitXTestResults.Destroy;
 begin
-  FResults.Free;
+  FResults := nil;
+  FFixtures := nil;
   inherited;
 end;
 
@@ -138,7 +140,7 @@ end;
 
 function TDUnitXTestResults.GetResults: System.IEnumerable<DUnitX.TestFramework.ITestResult>;
 begin
-  result := nil;
+  result := FResults;
 end;
 
 function TDUnitXTestResults.GetTestDuration: TTimeSpan;
@@ -151,9 +153,9 @@ begin
   result := FStartTime;
 end;
 
-function TDUnitXTestResults.GetSuccessCount: Integer;
+function TDUnitXTestResults.GetPassCount: Integer;
 begin
-  result := 0;
+  result := FPassCount;
 end;
 
 function TDUnitXTestResults.GetSuccessRate: integer;
@@ -170,22 +172,27 @@ end;
 
 function TDUnitXTestResults.GetWarningCount: Integer;
 begin
-  result := 0;
+  result := FWarningCount;
 end;
 
 procedure TDUnitXTestResults.RecordResult(const testResult: ITestResult);
 begin
   case testResult.ResultType of
-    TTestResultType.Success : Inc(FSuccessCount);
+    TTestResultType.Pass    : Inc(FPassCount);
     TTestResultType.Failure : Inc(FFailureCount);
     TTestResultType.Warning : Inc(FWarningCount);
     TTestResultType.Error   : Inc(FErrorCount);
   end;
 
-  if testResult.ResultType <> Success then
+  if testResult.ResultType <> Pass then
     FAllPassed := False;
 
   FResults.Add(testResult);
+end;
+
+function TDUnitXTestResults.ToString: string;
+begin
+  result := Format('Test Passed : %d' +#13#10,[FPassCount]);
 end;
 
 end.

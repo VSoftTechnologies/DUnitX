@@ -79,7 +79,7 @@ type
 
     procedure OnEndTestFixture(const threadId: Cardinal; const results: IFixtureResult);
 
-    procedure OnTestingEnds(const TestResult: ITestResults);
+    procedure OnTestingEnds(const TestResults: ITestResults);
   public
     constructor Create(const AOutputStream : TStream);
     destructor Destroy;override;
@@ -245,16 +245,16 @@ begin
   WriteXMLLine('</test-case>');
 end;
 
-procedure TDUnitXXMLNUnitLogger.OnTestingEnds(const TestResult: ITestResults);
+procedure TDUnitXXMLNUnitLogger.OnTestingEnds(const TestResults: ITestResults);
 begin
   WriteXMLLine('<statistics>' + NUNIT_LOGGER_CRLF +
-                  Format('<stat name="tests" value="%d" />', [TestResult.Count]) + NUNIT_LOGGER_CRLF +
-                  Format('<stat name="failures" value="%d" />', [TestResult.FailureCount]) + NUNIT_LOGGER_CRLF +
-                  Format('<stat name="errors" value="%d" />', [TestResult.ErrorCount]) + NUNIT_LOGGER_CRLF +
-                  Format('<stat name="success-rate" value="%d%%" />', [TestResult.SuccessRate]) + NUNIT_LOGGER_CRLF +
-                  Format('<stat name="started-at" value="%s" />', [DateTimeToStr(TestResult.StartTime)]) + NUNIT_LOGGER_CRLF +
-                  Format('<stat name="finished-at" value="%s" />', [DateTimeToStr(TestResult.FinishTime)]) + NUNIT_LOGGER_CRLF +
-                  Format('<stat name="runtime" value="%1.3f"/>', [TestResult.TestDuration.TotalMilliseconds / 1000]) + NUNIT_LOGGER_CRLF +
+                  Format('<stat name="tests" value="%d" />', [TestResults.Count]) + NUNIT_LOGGER_CRLF +
+                  Format('<stat name="failures" value="%d" />', [TestResults.FailureCount]) + NUNIT_LOGGER_CRLF +
+                  Format('<stat name="errors" value="%d" />', [TestResults.ErrorCount]) + NUNIT_LOGGER_CRLF +
+                  Format('<stat name="success-rate" value="%d%%" />', [TestResults.SuccessRate]) + NUNIT_LOGGER_CRLF +
+                  Format('<stat name="started-at" value="%s" />', [DateTimeToStr(TestResults.StartTime)]) + NUNIT_LOGGER_CRLF +
+                  Format('<stat name="finished-at" value="%s" />', [DateTimeToStr(TestResults.FinishTime)]) + NUNIT_LOGGER_CRLF +
+                  Format('<stat name="runtime" value="%1.3f"/>', [TestResults.TestDuration.TotalMilliseconds / 1000]) + NUNIT_LOGGER_CRLF +
                   '</statistics>' + NUNIT_LOGGER_CRLF +
               '</test-results>');
 
