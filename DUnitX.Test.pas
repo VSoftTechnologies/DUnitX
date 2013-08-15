@@ -41,12 +41,13 @@ uses
 type
   TDUnitXTest = class(TWeakReferencedObject, ITest, ITestInfo, ISetTestResult, ITestExecute)
   private
-    FName : string;
-    FMethod : TTestMethod;
-    FFixture : IWeakReference<ITestFixture>;
+    FName      : string;
+    FMethod    : TTestMethod;
+    FFixture   : IWeakReference<ITestFixture>;
     FStartTime : TDateTime;
     FEndTime   : TDateTime;
     FDuration  : TTimeSpan;
+    FEnabled   : boolean;
   protected
     //ITest
     function GetName: string; virtual;
@@ -60,6 +61,9 @@ type
     function GetActive : boolean;
     function ITestInfo.GetTestFixture = ITestInfo_GetTestFixture;
     function ITestInfo_GetTestFixture: ITestFixtureInfo;
+    function GetEnabled: Boolean;
+    procedure SetEnabled(const value: Boolean);
+
 
     //ISetTestResult
     procedure SetResult(const value: ITestResult);
@@ -125,6 +129,11 @@ begin
   result := True;
 end;
 
+function TDUnitXTest.GetEnabled: Boolean;
+begin
+  result := FEnabled;
+end;
+
 function TDUnitXTest.GetName: string;
 begin
   result := FName;
@@ -165,6 +174,11 @@ begin
   else
     result := nil;
 
+end;
+
+procedure TDUnitXTest.SetEnabled(const value: Boolean);
+begin
+  FEnabled := value;
 end;
 
 procedure TDUnitXTest.SetResult(const value: ITestResult);

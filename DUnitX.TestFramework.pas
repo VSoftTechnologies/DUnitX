@@ -297,7 +297,12 @@ type
     function GetTestEndTime : TDateTime;
     function GetTestDuration : TTimeSpan;
 
+    function GetEnabled : boolean;
+    procedure SetEnabled(const value : boolean);
+
     property Name : string read GetName;
+    property Enabled : boolean read GetEnabled write SetEnabled;
+
     property Active : boolean read GetActive;
     property Fixture : ITestFixtureInfo read GetTestFixture;
   end;
@@ -570,6 +575,10 @@ type
     procedure SetExitBehavior(const value : TRunnerExitBehavior);
     function GetUseRTTI : boolean;
     procedure SetUseRTTI(const value : boolean);
+
+    //This is exposed for the GUI Runner cast as ITestFixtureList.
+    function BuildFixtures : IInterface;
+
     function Execute : ITestResults;
 
     property ExitBehavior : TRunnerExitBehavior read GetExitBehavior write SetExitBehavior;

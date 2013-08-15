@@ -53,6 +53,9 @@ type
     FUseRTTI        : boolean;
     FExitBehavior   : TRunnerExitBehavior;
     FFixtureClasses : TDictionary<string,TClass>;
+
+    FFixtureList    : ITestFixtureList;
+
   protected
     //Logger calls - sequence ordered
     procedure Loggers_TestingStarts(const threadId, testCount, testActiveCount : Cardinal);
@@ -104,7 +107,7 @@ type
 
     //internals
     procedure RTTIDiscoverFixtureClasses;
-    function BuildFixtures : ITestFixtureList;
+    function BuildFixtures : IInterface;
     procedure AddStatus(const threadId; const msg : string);
 
     class constructor Create;
@@ -183,12 +186,19 @@ begin
 
 end;
 
-function TDUnitXTestRunner.BuildFixtures  : ITestFixtureList;
+function TDUnitXTestRunner.BuildFixtures  : IInterface;
 var
   fixture : ITestFixture;
   pair : TPair<string,TClass>;
+
 begin
-  result := TTestFixtureList.Create;
+  if FFixtureList <> nil then
+  begin
+    result := FFixtureList;
+    exit;
+  end;
+
+  FFixtureList := TTestFixtureList.Create;
 
   if FUseRTTI then
     RTTIDiscoverFixtureClasses;
@@ -202,8 +212,9 @@ begin
   for pair in FFixtureClasses do
   begin
     fixture := TDUnitXTestFixture.Create(pair.Key, pair.Value);
-    result.Add(fixture);
+    FFixtureList.Add(fixture);
   end;
+  result := FFixtureList;
 end;
 
 class constructor TDUnitXTestRunner.Create;
@@ -359,10 +370,9 @@ var
   testCount : Cardinal;
   testActiveCount : Cardinal;
 
-  //testResults : ITestResults;
 begin
   result := nil;
-  fixtures := BuildFixtures;
+  fixtures := BuildFixtures as ITestFixtureList;
   if fixtures.Count = 0 then
     raise ENoTestsRegistered.Create('No Test Fixtures found');
 

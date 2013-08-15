@@ -52,8 +52,11 @@ type
     function GetTestStartTime : TDateTime;
     function GetTestEndTime : TDateTime;
     function GetTestDuration : TTimeSpan;
+    function GetEnabled : boolean;
+    procedure SetEnabled(const value : boolean);
 
     property Name : string read GetName;
+    property Enabled : boolean read GetEnabled write SetEnabled;
     property Fixture : ITestFixture read GetTestFixture;
     property TestMethod : TTestMethod read GetTestMethod;
   end;
@@ -85,8 +88,11 @@ type
     function GetTearDownFixtureMethod : TTestMethod;
     function GetTearDownFixtureMethodName : string;
     function GetTestInOwnThread : boolean;
+    function GetEnabled : boolean;
+    procedure SetEnabled(const value : boolean);
 
     property Name                       : string read GetName;
+    property Enabled                    : boolean read GetEnabled write SetEnabled;
     property TestClass                  : TClass read GetTestClass;
     property Tests                      : IEnumerable<ITest> read GetTests;
     property SetupMethod                : TTestMethod read GetSetupMethod;

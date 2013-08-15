@@ -44,6 +44,7 @@ type
   private
     FTestClass : TClass;
     FName : string;
+    FEnabled : boolean;
     FTests : IList<ITest>;
     FTestInfos : IList<ITestInfo>;
     FSetupMethod            : TTestMethod;
@@ -59,6 +60,8 @@ type
   protected
     //uses RTTI to buid the fixture & tests
     procedure GenerateFixtureFromClass;
+    function GetEnabled: Boolean;
+    procedure SetEnabled(const value: Boolean);
 
     function GetName: string;
     function GetTests: IEnumerable<ITest>;
@@ -219,6 +222,11 @@ begin
   Result := GetTestCount;
 end;
 
+function TDUnitXTestFixture.GetEnabled: Boolean;
+begin
+  result := FEnabled;
+end;
+
 function TDUnitXTestFixture.GetName: string;
 begin
   result := FName;
@@ -296,6 +304,11 @@ begin
       FTestInfos.Add(test as ITestInfo);
   end;
   result := FTestInfos;
+end;
+
+procedure TDUnitXTestFixture.SetEnabled(const value: Boolean);
+begin
+  FEnabled := value;
 end;
 
 class constructor TDUnitXTestFixture.Create;
