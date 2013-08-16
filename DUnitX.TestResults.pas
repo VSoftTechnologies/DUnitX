@@ -68,12 +68,12 @@ type
     function GetFinishTime: TDateTime;
     function GetTestDuration: TTimeSpan;
 
-    function ToString : string;override;
     //ITestExecuteContext
     procedure RecordResult(const testResult: ITestResult);
   public
     constructor Create(const fixtures : IList<ITestFixtureInfo>);
     destructor Destroy;override;
+    function ToString : string;override;
   end;
 
 

@@ -395,6 +395,9 @@ begin
   try
     for fixture in fixtures do
     begin
+      if not fixture.Enabled then
+        System.continue;
+
       Self.Loggers_StartTestFixture(threadId, fixture as ITestFixtureInfo);
       try
         if Assigned(fixture.SetupFixtureMethod)  then
@@ -417,6 +420,9 @@ begin
           tests := fixture.Tests;
           for test in tests do
           begin
+            if not test.Enabled then
+              System.Continue;
+
             testResult := nil;
             testError := nil;
 

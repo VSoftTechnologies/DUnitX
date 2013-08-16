@@ -109,6 +109,7 @@ begin
   FFixture := TWeakReference<ITestFixture>.Create(AFixture);
   FName := AFixture.Name + '.' + AName;
   FMethod := AMethod;
+  FEnabled := True;
 end;
 
 procedure TDUnitXTest.Execute(const context : ITestExecuteContext);

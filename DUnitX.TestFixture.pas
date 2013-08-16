@@ -109,6 +109,7 @@ begin
   FTestClass := AClass;
   FTests := TDUnitXList<ITest>.Create;
   FName := AName;
+  FEnabled := True;
 
   //TODO: Constructor doing "work" makes this harder to test and handle errors if the class isn't of the correct structure
   GenerateFixtureFromClass;
