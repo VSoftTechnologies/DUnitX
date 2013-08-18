@@ -79,7 +79,7 @@ uses
       Windows,
     {$else}
       WinAPI.Windows, // Delphi XE2 (CompilerVersion 23) added scopes in front of unit names
-    {$endif}
+    {$ifend}
   {$ENDIF}
   DUnitX.IoC;
 
