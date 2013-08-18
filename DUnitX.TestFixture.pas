@@ -92,11 +92,11 @@ implementation
 uses
   TypInfo,
   {$IFDEF MSWINDOWS}
-    {$IFDEF VER230}
-    WinAPI.Windows,
-    {$ELSE}
-    Windows,
-    {$ENDIF}
+    {$if CompilerVersion < 23 }
+      Windows,
+    {$else}
+      WinAPI.Windows, // Delphi XE2 (CompilerVersion 23) added scopes in front of unit names
+    {$ifend}
   {$ENDIF}
   SysUtils,
   DUnitX.Test,
