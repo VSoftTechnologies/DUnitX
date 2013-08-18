@@ -80,9 +80,15 @@ type
 implementation
 
 uses
-  SysUtils,
-  //TODO: Need to to remove by getting a system independant performance counter.
-  Windows;
+  {$IFDEF MSWINDOWS}
+    //TODO: Need to to remove Windows by getting a system independant performance counter.
+    {$if CompilerVersion < 23 }
+      Windows,
+    {$else}
+      WinAPI.Windows, // Delphi XE2 (CompilerVersion 23) added scopes in front of unit names
+    {$endif}
+  {$ENDIF}
+  SysUtils;
 
 { TDUnitXTestResults }
 
