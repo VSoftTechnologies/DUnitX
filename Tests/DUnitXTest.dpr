@@ -59,10 +59,10 @@ begin
     //Run tests
     results := runner.Execute;
 
-    System.Writeln('Done.. press any key to quit.');
-    ReadLn;
+    System.Write('Done.. press <Enter> key to quit.');
+    System.Readln;
   except
     on E: Exception do
-      Writeln(E.ClassName, ': ', E.Message);
+      System.Writeln(E.ClassName, ': ', E.Message);
   end;
 end.

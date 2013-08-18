@@ -95,10 +95,17 @@ type
 implementation
 
 uses
+  {$IFDEF MSWINDOWS}
+    {$if CompilerVersion < 23 }
+      Forms,
+      Windows,
+    {$else}
+      Vcl.Forms,
+      WinAPI.Windows, // Delphi XE2 (CompilerVersion 23) added scopes in front of unit names
+    {$ifend}
+  {$ENDIF}
   DUnitX.Utils.XML,
-  SysUtils,
-  Forms,
-  Windows;
+  SysUtils;
 
 const
   NUNIT_LOGGER_CRLF = #13#10;
