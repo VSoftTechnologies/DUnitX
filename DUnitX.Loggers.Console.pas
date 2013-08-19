@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2012 Vincent Parrett                              }
+{           Copyright (C) 2013 Vincent Parrett                              }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -238,7 +238,7 @@ begin
 
   FConsoleWriter.SetColour(ccBrightAqua);
   FConsoleWriter.Indent(1);
-  FConsoleWriter.WriteLn('Test : ' + Test.Name);
+  FConsoleWriter.WriteLn('Test : ' +  Test.FullName);
   FConsoleWriter.WriteLn('-------------------------------------------------');
   FConsoleWriter.SetColour(ccDefault);
 end;
@@ -250,7 +250,7 @@ begin
 
   FConsoleWriter.SetColour(ccBrightYellow);
   FConsoleWriter.Indent(2);
-  FConsoleWriter.WriteLn('Fixture : ' + fixture.Name);
+  FConsoleWriter.WriteLn('Fixture : ' + fixture.FullName);
   FConsoleWriter.WriteLn('-------------------------------------------------');
   FConsoleWriter.Indent(1);
   FConsoleWriter.SetColour(ccDefault);
@@ -340,7 +340,7 @@ begin
     begin
       if testResult.ResultType = TTestResultType.Failure then
       begin
-        FConsoleWriter.WriteLn(testResult.Test.Name);
+        FConsoleWriter.WriteLn(testResult.Test.Fixture.Name + '.' + testResult.Test.Name);
       end;
       
     end;

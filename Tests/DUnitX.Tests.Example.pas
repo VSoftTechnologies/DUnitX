@@ -158,6 +158,7 @@ begin
 end;
 
 initialization
+
 //I was hoping to use RTTI to discover the TestFixture classes, however unlike .NET
 //if we don't touch the class somehow then the linker will remove
 //the class from the resulting exe.
@@ -172,7 +173,7 @@ initialization
 //manual registration for now.
 
 //Register the test fixtures
-  //TDUnitX.RegisterTestFixture(TMyExampleTests);
-  //TDUnitX.RegisterTestFixture(TExampleFixture2);
+  TDUnitX.RegisterTestFixture(TMyExampleTests);
+  TDUnitX.RegisterTestFixture(TExampleFixture2);
 
 end.

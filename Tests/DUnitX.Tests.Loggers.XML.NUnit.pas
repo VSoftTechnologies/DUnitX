@@ -194,6 +194,7 @@ begin
   //TODO: Would be nice in Delphi.Mocks to have a auto mock of interface and object properties.
   mockFixture.Setup.WillReturn('WarningFixture').When.Name;
   mockTest.Setup.WillReturn('WarningTest').When.Name;
+  mockTest.Setup.WillReturn('WarningTest').When.FullName;
   mockTest.Setup.WillReturn(True).When.Active;
   mockTest.Setup.WillReturn(mockFixture.InstanceAsValue).When.Fixture;
   mockWarning.Setup.WillReturn('!!WarningMessage!!').When.Message;

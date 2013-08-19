@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2012 Vincent Parrett                              }
+{           Copyright (C) 2013 Vincent Parrett                              }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -259,7 +259,8 @@ begin
 
   if not lcontainer.TryGetValue(key,o) then
   begin
-    exit(nil);
+    result := Default(TInterface);
+    exit;
   end;
 //    raise EIoCResolutionException.Create(Format('No implementation registered for type %s',[pInfo.Name]));
 

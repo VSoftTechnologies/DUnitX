@@ -1,10 +1,8 @@
-program DUnitXTest;
+program DUnitXGuiTest;
 
-{$APPTYPE CONSOLE}
-{\\$STRONGLINKTYPES ON}
 uses
   SysUtils,
-  DUnitX.Tests.IoC in 'DUnitX.Tests.IoC.pas',
+  Forms,
   DUnitX.Loggers.Console in '..\DUnitX.Loggers.Console.pas',
   DUnitX.Loggers.Text in '..\DUnitX.Loggers.Text.pas',
   DUnitX.MacOS.Console in '..\DUnitX.MacOS.Console.pas',
@@ -27,42 +25,19 @@ uses
   DUnitX.DUnitCompatibility in '..\DUnitX.DUnitCompatibility.pas',
   DUnitX.IoC.Internal in '..\DUnitX.IoC.Internal.pas',
   DUnitX.IoC in '..\DUnitX.IoC.pas',
-  DUnitX.Tests.Assert in 'DUnitX.Tests.Assert.pas',
-  DUnitX.Tests.DUnitCompatibility in 'DUnitX.Tests.DUnitCompatibility.pas',
-  DUnitX.Tests.Example in 'DUnitX.Tests.Example.pas',
-  DUnitX.Tests.Loggers.XML.NUnit in 'DUnitX.Tests.Loggers.XML.NUnit.pas',
   DUnitX.Utils.XML in '..\DUnitX.Utils.XML.pas',
-  DUnitX.Tests.Utils.XML in 'DUnitX.Tests.Utils.XML.pas',
-  DUnitX.Tests.WeakReference in 'DUnitX.Tests.WeakReference.pas',
   DUnitX.StackTrace.JCL in '..\DUnitX.StackTrace.JCL.pas',
   DUnitX.StackTrace.MadExcept3 in '..\DUnitX.StackTrace.MadExcept3.pas',
   DUnitX.StackTrace.MadExcept4 in '..\DUnitX.StackTrace.MadExcept4.pas',
-  DUnitX.Loggers.GUI in '..\DUnitX.Loggers.GUI.pas' {Form1},
-  DUnitX.StackTrace.EurekaLog7 in '..\DUnitX.StackTrace.EurekaLog7.pas';
+  DUnitX.Loggers.GUI in '..\DUnitX.Loggers.GUI.pas' {DUnitXGuiLoggerForm},
+  DUnitX.StackTrace.EurekaLog7 in '..\DUnitX.StackTrace.EurekaLog7.pas',
+  DUnitX.Examples.EqualityAsserts in '..\Examples\DUnitX.Examples.EqualityAsserts.pas',
+  DUnitX.Examples.General in '..\Examples\DUnitX.Examples.General.pas';
 
-var
-  runner : ITestRunner;
-  results : ITestResults;
-  logger : ITestLogger;
-  nunitLogger : ITestLogger;
 begin
-  try
-    //Create the runner
-    runner := TDUnitX.CreateRunner;
-    runner.UseRTTI := True;
-    //tell the runner how we will log things
-    logger := TDUnitXConsoleLogger.Create;
-    nunitLogger := TDUnitXXMLNUnitFileLogger.Create;
-    runner.AddLogger(logger);
-    runner.AddLogger(nunitLogger);
+  Application.Initialize;
+  Application.MainFormOnTaskbar := True;
+  Application.CreateForm(TDUnitXGuiLoggerForm, DUnitXGuiLoggerForm);
+  Application.Run;
 
-    //Run tests
-    results := runner.Execute;
-
-    System.Writeln('Done.. press any key to quit.');
-    ReadLn;
-  except
-    on E: Exception do
-      Writeln(E.ClassName, ': ', E.Message);
-  end;
 end.

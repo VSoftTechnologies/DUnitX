@@ -67,5 +67,5 @@ begin
 end;
 
 initialization
-  //TDUnitX.RegisterTestFixture(TTestAssert);
+  TDUnitX.RegisterTestFixture(TTestAssert);
 end.
