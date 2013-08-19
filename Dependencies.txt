@@ -1,0 +1,6 @@
+#, :: or rem comment; for documentation, see Dependencies.md in <https://bitbucket.org/jeroenp/besharp.net/src>
+
+::git DUnitX https://github.com/VSoftTechnologies/DUnitX.git
+::svn FastMM svn://svn.code.sf.net/p/fastmm/code/
+::svn Spring http://delphi-spring-framework.googlecode.com/svn/trunk/
+git DelphiMocks https://github.com/VSoftTechnologies/Delphi-Mocks.git
