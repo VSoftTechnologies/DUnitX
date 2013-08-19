@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2012 Vincent Parrett                              }
+{           Copyright (C) 2013 Vincent Parrett                              }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -85,7 +85,7 @@ type
     destructor Destroy;override;
   end;
 
-  TDUnitXXMLNUnitLogger_File = class(TDUnitXXMLNUnitLogger)
+  TDUnitXXMLNUnitFileLogger = class(TDUnitXXMLNUnitLogger)
   private
     FXMLFileStream : TFileStream;
   public
@@ -210,8 +210,15 @@ begin
 end;
 
 procedure TDUnitXXMLNUnitLogger.OnStartTestFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
+var
+  sType : string;
 begin
-  WriteXMLLine(Format('<test-suite name="%s" total="%d" notrun="%d">', [fixture.Name, fixture.TestCount, fixture.TestCount - fixture.ActiveTestCount]));
+  if fixture.Tests.Count > 0 then
+    sType := 'TestFixture'
+  else
+    sType := 'Namespace';
+
+  WriteXMLLine(Format('<test-suite type="%s" name="%s" total="%d" notrun="%d">', [sType,fixture.Name, fixture.TestCount, fixture.TestCount - fixture.ActiveTestCount]));
   WriteXMLLine('<results>');
 end;
 
@@ -230,7 +237,7 @@ begin
   //TODO: Getting Test, and Fixture from Error is painful for testing. Therefore its painful for setup, and use?
 
   WriteXMLLine(Format('<test-case name="%s" executed="%s" success="False" time="%1.3f" result="Error">',
-                    [EscapeForXML(Error.Test.Name), BoolToStr(Error.Test.Active, True),
+                    [EscapeForXML(Error.Test.FullName), BoolToStr(Error.Test.Active, True),
                       Error.TestDuration.TotalMilliseconds / 1000]));
 
   WriteXMLLine(Format('<failure name="%s" location="%s">', [EscapeForXML(error.ExceptionClass.ClassName), EscapeForXML(error.ExceptionLocationInfo)]));
@@ -242,8 +249,8 @@ end;
 
 procedure TDUnitXXMLNUnitLogger.OnTestFailure(const threadId: Cardinal; Failure: ITestError);
 begin
-  WriteXMLLine(Format('<test-case name="%s%s" executed="%s" success="False" time="%1.3f" result="Failure">',
-                    [EscapeForXML(Failure.Test.Fixture.Name), EscapeForXML(Failure.Test.Name), BoolToStr(Failure.Test.Active, True),
+  WriteXMLLine(Format('<test-case name="%s" executed="%s" success="False" time="%1.3f" result="Failure">',
+                    [EscapeForXML(Failure.Test.FullName), BoolToStr(Failure.Test.Active, True),
                     Failure.TestDuration.Milliseconds / 1000]));
   WriteXMLLine(Format('<failure name="%s" location="%s">', [EscapeForXML(Failure.ExceptionClass.ClassName), EscapeForXML(Failure.ExceptionLocationInfo)]));
   WriteXMLLine(Format('<message>%s</message>', [EscapeForXML(Failure.ExceptionMessage, false)]));
@@ -303,9 +310,9 @@ begin
 
   fixture := Success.Test.Fixture;
 
-  WriteXMLLine(Format('<test-case name="%s%s" executed="%s" success="True" time="%1.3f" result="Pass" %s',
-                     [EscapeForXML(Success.Test.Fixture.Name), EscapeForXML(Success.Test.Name),
-                      BoolToStr(Success.Test.Active, True), Success.TestDuration.TotalMilliseconds / 1000, endTag]));
+  WriteXMLLine(Format('<test-case name="%s" executed="%s" success="True" time="%1.3f" result="Pass" %s',
+                     [EscapeForXML(Success.Test.FullName),  BoolToStr(Success.Test.Active, True),
+                     Success.TestDuration.TotalMilliseconds / 1000, endTag]));
 
   if HasInfoOrWarnings then
   begin
@@ -337,7 +344,7 @@ end;
 
 { TDUnitXXMLNUnitLoggerFile }
 
-constructor TDUnitXXMLNUnitLogger_File.Create(const AFilename: string = '');
+constructor TDUnitXXMLNUnitFileLogger.Create(const AFilename: string = '');
 var
   sXmlFilename: string;
 const

@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2012 Vincent Parrett                              }
+{           Copyright (C) 2013 Vincent Parrett                              }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -44,6 +44,8 @@ type
   private
     FTestClass : TClass;
     FName : string;
+    FNameSpace : string;
+    FDescription : string;
     FEnabled : boolean;
     FTests : IList<ITest>;
     FTestInfos : IList<ITestInfo>;
@@ -57,6 +59,7 @@ type
     FSetupMethodName: string;
     FTearDownMethodName: string;
     FTearDownFixtureMethodName: string;
+    FChildren : ITestFixtureList;
   protected
     //uses RTTI to buid the fixture & tests
     procedure GenerateFixtureFromClass;
@@ -64,6 +67,9 @@ type
     procedure SetEnabled(const value: Boolean);
 
     function GetName: string;
+    function GetNameSpace : string;
+    function GetFullName : string;
+    function GetDescription : string;
     function GetTests: IEnumerable<ITest>;
     function ITestFixtureInfo.GetTests = ITestFixtureInfo_GetTests;
     function ITestFixtureInfo_GetTests : IList<ITestInfo>;
@@ -80,10 +86,14 @@ type
 
     function GetTestCount : cardinal;
     function GetActiveTestCount : cardinal;
+
+    function GetChildren: ITestFixtureList;
+    function GetHasChildren : boolean;
   public
     constructor Create(const AName : string; const AClass : TClass);
     destructor Destroy;override;
     class constructor Create;
+
 
   end;
 
@@ -105,10 +115,25 @@ uses
 { TDUnitXTestFixture }
 
 constructor TDUnitXTestFixture.Create(const AName : string; const AClass : TClass);
+var
+  i : integer;
 begin
   FTestClass := AClass;
   FTests := TDUnitXList<ITest>.Create;
-  FName := AName;
+
+  i := LastDelimiter('.',AName);
+  if i <> 0 then
+  begin
+    FNameSpace := Copy(AName,1,i -1);
+    FName := Copy(AName,i+1,Length(AName));
+  end
+  else
+  begin
+    FName := AName;
+    FNameSpace := AName;
+  end;
+
+
   FEnabled := True;
 
   //TODO: Constructor doing "work" makes this harder to test and handle errors if the class isn't of the correct structure
@@ -155,19 +180,29 @@ var
   attribute : TCustomAttribute;
   meth : TMethod;
   newTest : ITest;
+
+  fixtureAttrib : TestFixtureAttribute;
+  testCases : TArray<TestCaseAttribute>;
+  testCaseAttrib : TestCaseAttribute;
+  testEnabled : boolean;
+
 begin
   rType := FRttiContext.GetType(FTestClass);
   System.Assert(rType <> nil);
   FFixtureInstance := FTestClass.Create;
 
-  //  PatchCodeDWORD(PDWORD(Integer(FFixtureInstance.ClassType) + vmtRunnerIndex),0);//ARunnerIndex);
-  // lets try using the current thread to id the runner!
+  //If the fixture class was decorated with [TestFixture] then use it for the description.
+  fixtureAttrib := nil;
+  if rType.TryGetAttributeOfType<TestFixtureAttribute>(fixtureAttrib) then
+    FDescription := fixtureAttrib.Description;
+
 
   methods := rType.GetMethods;
   for method in methods do
   begin
     meth.Code := method.CodeAddress;
     meth.Data := FFixtureInstance;
+
     attributes := method.GetAttributes;
     if Length(attributes) > 0 then
     begin
@@ -197,21 +232,45 @@ begin
         else if attribute.ClassType = TestInOwnThreadAttribute then
           FTestInOwnThread := true
         //TODO: Should add tests to the list even though they aren't enabled.
-        else if ((attribute.ClassType = TestAttribute) and (TestAttribute(attribute).Enabled)) or
-                ((attribute.ClassType <> TestAttribute) and (method.Visibility = TMemberVisibility.mvPublished)) then
+        else if ((attribute.ClassType = TestAttribute)) or
+                ((attribute.ClassType <> TestAttribute) and (method.Visibility = TMemberVisibility.mvPublished) and (not method.HasAttributeOfType<TestAttribute>)) then
         begin
-          if attribute.ClassType = TestCaseAttribute then
-            newTest := TDUnitXTestCase.Create(FFixtureInstance, Self, TestCaseAttribute(attribute).Name, method.Name, method, TestCaseAttribute(attribute).Values)
-          else
-            newTest := TDUnitXTest.Create(Self, method.Name, TTestMethod(meth));
 
-          FTests.Add(newTest);
+          if attribute.ClassType = TestAttribute then
+          begin
+            testEnabled := TestAttribute(attribute).Enabled;
+            //find out if the test fixture has test cases.
+            testCases := method.GetAttributesOfType<TestCaseAttribute>;
+
+            if Length(testCases) > 0 then
+            begin
+              for testCaseAttrib in testCases do
+              begin
+                newTest := TDUnitXTestCase.Create(FFixtureInstance, Self, testCaseAttrib.Name, method.Name, method, testEnabled, testCaseAttrib.Values);
+                newTest.Enabled := testEnabled;
+                FTests.Add(newTest);
+              end;
+            end
+            else
+            begin
+              newTest := TDUnitXTest.Create(Self, method.Name, TTestMethod(meth),testEnabled);
+              FTests.Add(newTest);
+            end;
+          end
+          else
+          begin
+            newTest := TDUnitXTest.Create(Self, method.Name, TTestMethod(meth),True);
+            FTests.Add(newTest);
+          end;
+
+
+
         end;
       end;
     end
     else if method.Visibility = TMemberVisibility.mvPublished then
     begin
-      newTest := TDUnitXTest.Create(Self,method.Name,TTestMethod(meth));
+      newTest := TDUnitXTest.Create(Self,method.Name,TTestMethod(meth),true);
       FTests.Add(newTest);
     end;
   end;
@@ -223,14 +282,44 @@ begin
   Result := GetTestCount;
 end;
 
+function TDUnitXTestFixture.GetChildren: ITestFixtureList;
+begin
+  if FChildren = nil then
+    FChildren := TTestFixtureList.Create;
+  result := FChildren;
+end;
+
+function TDUnitXTestFixture.GetDescription: string;
+begin
+  result := FDescription;
+end;
+
 function TDUnitXTestFixture.GetEnabled: Boolean;
 begin
   result := FEnabled;
 end;
 
+function TDUnitXTestFixture.GetFullName: string;
+begin
+  if FName <> FNameSpace then
+    result := FNameSpace + '.' + FName
+  else
+    Result := FName;
+end;
+
+function TDUnitXTestFixture.GetHasChildren: boolean;
+begin
+  result := (FChildren <> nil) and (FChildren.Count > 0);
+end;
+
 function TDUnitXTestFixture.GetName: string;
 begin
   result := FName;
+end;
+
+function TDUnitXTestFixture.GetNameSpace: string;
+begin
+  result := FNameSpace;
 end;
 
 function TDUnitXTestFixture.GetSetupFixtureMethod: TTestMethod;
@@ -306,6 +395,7 @@ begin
   end;
   result := FTestInfos;
 end;
+
 
 procedure TDUnitXTestFixture.SetEnabled(const value: Boolean);
 begin

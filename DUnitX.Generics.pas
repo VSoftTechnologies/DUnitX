@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2011 Vincent Parrett                              }
+{           Copyright (C) 2013 Vincent Parrett                              }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -390,8 +390,7 @@ end;
 
 function TDUnitXList<T>.ToArray: TArray<T>;
 begin
-result := nil;
-//  result := FList.ToArray;
+  result := nil; //FList.ToArray<T>;
 end;
 
 procedure TDUnitXList<T>.TrimExcess;

@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2012 Vincent Parrett                              }
+{           Copyright (C) 2013 Vincent Parrett                              }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -41,16 +41,17 @@ uses
 type
   TDUnitXTest = class(TWeakReferencedObject, ITest, ITestInfo, ISetTestResult, ITestExecute)
   private
-    FName      : string;
-    FMethod    : TTestMethod;
-    FFixture   : IWeakReference<ITestFixture>;
-    FStartTime : TDateTime;
-    FEndTime   : TDateTime;
-    FDuration  : TTimeSpan;
-    FEnabled   : boolean;
+    FName        : string;
+    FMethod      : TTestMethod;
+    FFixture     : IWeakReference<ITestFixture>;
+    FStartTime   : TDateTime;
+    FEndTime     : TDateTime;
+    FDuration    : TTimeSpan;
+    FEnabled     : boolean;
   protected
     //ITest
     function GetName: string; virtual;
+    function GetFullName : string;
     function GetTestFixture: ITestFixture;
     function GetTestMethod: TTestMethod;
     function GetTestStartTime : TDateTime;
@@ -71,7 +72,7 @@ type
     //ITestExecute
     procedure Execute(const context : ITestExecuteContext);virtual;
   public
-    constructor Create(const AFixture : ITestFixture; const AName : string; const AMethod : TTestMethod);
+    constructor Create(const AFixture : ITestFixture; const AName : string; const AMethod : TTestMethod; const AEnabled : boolean);
 
     property Name : string read GetName;
     property Fixture : ITestFixture read GetTestFixture;
@@ -88,7 +89,8 @@ type
     function GetName: string; override;
     procedure Execute(const context : ITestExecuteContext); override;
   public
-    constructor Create(const AInstance : TObject; const AFixture : ITestFixture; const ACaseName : string; const AName : string; const AMethod : TRttiMethod; const AArgs : TValueArray);reintroduce;
+    constructor Create(const AInstance : TObject; const AFixture : ITestFixture; const ACaseName : string; const AName : string; const AMethod : TRttiMethod;
+                       const AEnabled : boolean; const AArgs : TValueArray);reintroduce;
 
     property Name : string read GetName;
     property Fixture : ITestFixture read GetTestFixture;
@@ -104,12 +106,12 @@ uses
 
 { TDUnitXTest }
 
-constructor TDUnitXTest.Create(const AFixture: ITestFixture; const AName: string; const AMethod: TTestMethod);
+constructor TDUnitXTest.Create(const AFixture: ITestFixture; const AName: string; const AMethod: TTestMethod; const AEnabled : boolean);
 begin
   FFixture := TWeakReference<ITestFixture>.Create(AFixture);
-  FName := AFixture.Name + '.' + AName;
+  FName := AName;
   FMethod := AMethod;
-  FEnabled := True;
+  FEnabled := AEnabled;
 end;
 
 procedure TDUnitXTest.Execute(const context : ITestExecuteContext);
@@ -133,6 +135,11 @@ end;
 function TDUnitXTest.GetEnabled: Boolean;
 begin
   result := FEnabled;
+end;
+
+function TDUnitXTest.GetFullName: string;
+begin
+  result := FFixture.Data.FullName + '.' + FName;
 end;
 
 function TDUnitXTest.GetName: string;
@@ -189,15 +196,16 @@ end;
 
 { TDUnitXTestCase }
 
-constructor TDUnitXTestCase.Create(const AInstance : TObject; const AFixture: ITestFixture; const ACaseName : string;
-                                   const AName: string; const AMethod: TRttiMethod; const AArgs : TValueArray);
+constructor TDUnitXTestCase.Create(const AInstance : TObject; const AFixture : ITestFixture; const ACaseName : string;
+                                   const AName : string; const AMethod : TRttiMethod; const AEnabled : boolean;
+                                   const AArgs : TValueArray);
 var
   len : integer;
   index   : integer;
   parameters : TArray<TRttiParameter>;
   tmp : TValue;
 begin
-  inherited Create(AFixture, AName, nil);
+  inherited Create(AFixture, AName, nil,AEnabled);
   FInstance := AInstance;
   FRttiMethod := AMethod;
   FCaseName := ACaseName;

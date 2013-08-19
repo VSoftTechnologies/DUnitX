@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2012 Vincent Parrett                              }
+{           Copyright (C) 2013 Vincent Parrett                              }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -71,12 +71,15 @@ type
     function AsTestInfoList : ITestInfoList;
   end;
 
+  ITestFixtureList = interface;
   ///
   ///  Describes the Test Fixture at runtime.
   ///
   ITestFixture = interface
     ['{B2F140C3-1D6A-4C09-B4C6-0D6AFC99BC87}']
     function GetName  : string;
+    function GetFullName : string;
+    function GetDescription : string;
     function GetTests : IEnumerable<ITest>;
     function GetTestClass : TClass;
     function GetSetupMethod : TTestMethod;
@@ -90,9 +93,17 @@ type
     function GetTestInOwnThread : boolean;
     function GetEnabled : boolean;
     procedure SetEnabled(const value : boolean);
+    function GetChildren : ITestFixtureList;
+    function GetHasChildren : boolean;
+    function GetNameSpace : string;
 
     property Name                       : string read GetName;
+    property NameSpace                  : string read GetNameSpace;
+    property FullName                   : string read GetFullName;
+    property Children                   : ITestFixtureList read GetChildren;
+    property Description                : string read GetDescription;
     property Enabled                    : boolean read GetEnabled write SetEnabled;
+    property HasChildFixtures           : boolean read GetHasChildren;
     property TestClass                  : TClass read GetTestClass;
     property Tests                      : IEnumerable<ITest> read GetTests;
     property SetupMethod                : TTestMethod read GetSetupMethod;

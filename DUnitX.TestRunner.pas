@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2012 Vincent Parrett                              }
+{           Copyright (C) 2013 Vincent Parrett                              }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -89,6 +89,8 @@ type
     //ITestRunner
     procedure AddLogger(const value: ITestLogger);
     function Execute: ITestResults;
+    procedure ExecuteFixtures(const context: ITestExecuteContext; const threadId: Cardinal; const fixtures: ITestFixtureList);
+
     function GetExitBehavior: TRunnerExitBehavior;
     function GetUseCommandLineOptions: Boolean;
     function GetUseRTTI: Boolean;
@@ -108,6 +110,7 @@ type
     //internals
     procedure RTTIDiscoverFixtureClasses;
     function BuildFixtures : IInterface;
+
     procedure AddStatus(const threadId; const msg : string);
 
     class constructor Create;
@@ -126,6 +129,8 @@ uses
   DUnitX.TestResult,
   TypInfo,
   SysUtils,
+  StrUtils,
+  Types,
   classes;
 
 { TDUnitXTestRunner }
@@ -189,8 +194,14 @@ end;
 function TDUnitXTestRunner.BuildFixtures  : IInterface;
 var
   fixture : ITestFixture;
+  parentFixture : ITestFixture;
   pair : TPair<string,TClass>;
-
+  uName : string;
+  namespaces : TStringDynArray;
+  namespace : string;
+  parentNamespace : string;
+  fixtureNamespace : string;
+  tmpFixtures : TDictionary<string,ITestFixture>;
 begin
   if FFixtureList <> nil then
   begin
@@ -199,6 +210,7 @@ begin
   end;
 
   FFixtureList := TTestFixtureList.Create;
+
 
   if FUseRTTI then
     RTTIDiscoverFixtureClasses;
@@ -209,10 +221,53 @@ begin
       FFixtureClasses.AddOrSetValue(pair.Key, pair.Value);
   end;
 
-  for pair in FFixtureClasses do
-  begin
-    fixture := TDUnitXTestFixture.Create(pair.Key, pair.Value);
-    FFixtureList.Add(fixture);
+  //Build up a fixture heriachy based on unit names.
+  tmpFixtures := TDictionary<string,ITestFixture>.Create;
+  try
+    for pair in FFixtureClasses do
+    begin
+      uName := pair.Value.UnitName;
+      namespaces := SplitString(uName,'.');
+      //if the unit name has no namespaces the just add the tests.
+      fixtureNamespace := '';
+      parentNameSpace := '';
+      parentFixture := nil;
+      fixture := nil;
+        
+      for namespace in namespaces do
+      begin
+        if fixtureNamespace <> '' then
+          fixtureNamespace := fixtureNamespace + '.' + namespace
+        else
+          fixtureNamespace := namespace;
+
+        //first time through the loop it will be empty.
+        if parentNamespace = '' then
+          parentNamespace := fixtureNamespace
+        else
+        begin
+          if not tmpFixtures.TryGetValue(parentNamespace,parentFixture) then
+          begin
+            parentFixture := TDUnitXTestFixture.Create(parentNamespace, TObject);
+            FFixtureList.Add(parentFixture);
+            tmpFixtures.Add(parentNamespace,parentFixture);
+          end;
+          if not tmpFixtures.TryGetValue(fixtureNamespace,fixture) then
+          begin
+            fixture := TDUnitXTestFixture.Create(fixtureNamespace, TObject);
+            parentFixture.Children.Add(fixture);
+            tmpFixtures.Add(fixtureNamespace,fixture);
+          end;
+          parentFixture := fixture;
+          parentNamespace := fixtureNamespace;
+        end;
+      end;
+      fixtureNamespace := fixtureNamespace + '.' + pair.Key;
+      fixture := TDUnitXTestFixture.Create(fixtureNamespace, pair.Value);
+      parentFixture.Children.Add(fixture);
+    end;
+  finally
+    tmpFixtures.Free;
   end;
   result := FFixtureList;
 end;
@@ -231,7 +286,7 @@ begin
     FLoggers.Add(AListener);
   FFixtureClasses := TDictionary<string,TClass>.Create;
   FUseCommandLine := useCommandLineOptions;
-  FUseRTTI := True;
+  FUseRTTI := False;
   MonitorEnter(TDUnitXTestRunner.FActiveRunners);
   try
     TDUnitXTestRunner.FActiveRunners.Add(TThread.CurrentThread.ThreadID, Self);
@@ -287,7 +342,7 @@ begin
             if sName = '' then
               sName := TRttiInstanceType(rType).MetaclassType.ClassName;
             if not FFixtureClasses.ContainsValue(TRttiInstanceType(rType).MetaclassType) then
-              FFixtureClasses.Add(TRttiInstanceType(rType).MetaclassType.ClassName,TRttiInstanceType(rType).MetaclassType);
+              FFixtureClasses.Add(sName,TRttiInstanceType(rType).MetaclassType);
           end;
         end;
     end;
@@ -358,14 +413,10 @@ function TDUnitXTestRunner.Execute: ITestResults;
 var
   fixtures : ITestFixtureList;
   fixture  : ITestFixture;
-  tests    : IEnumerable<ITest>;
   test     : ITest;
-  testExecute : ITestExecute;
   context : ITestExecuteContext;
 
   threadId : Cardinal;
-  testResult : ITestResult;
-  testError : ITestError;
 
   testCount : Cardinal;
   testActiveCount : Cardinal;
@@ -393,139 +444,7 @@ begin
   threadId := TThread.CurrentThread.ThreadID;
   Self.Loggers_TestingStarts(threadId, testCount, testActiveCount);
   try
-    for fixture in fixtures do
-    begin
-      if not fixture.Enabled then
-        System.continue;
-
-      Self.Loggers_StartTestFixture(threadId, fixture as ITestFixtureInfo);
-      try
-        if Assigned(fixture.SetupFixtureMethod)  then
-        begin
-          try
-            Self.Loggers_SetupFixture(threadid, fixture as ITestFixtureInfo);
-            fixture.SetupFixtureMethod;
-            Self.Loggers_EndSetupFixture(threadid, fixture as ITestFixtureInfo);
-          except
-            on e : Exception do
-            begin
-              Log(TLogLevel.ltError,'Error in Fixture SetupError : ' + fixture.Name + ' : ' + e.Message);
-              Log(TLogLevel.ltError,'Skipping Fixture.');
-              System.Continue;
-            end;
-          end;
-        end;
-
-        try
-          tests := fixture.Tests;
-          for test in tests do
-          begin
-            if not test.Enabled then
-              System.Continue;
-
-            testResult := nil;
-            testError := nil;
-
-            Self.Loggers_BeginTest(threadId, test as ITestInfo);
-            //Setup method is called before each test method.
-            if Assigned(fixture.SetupMethod)  then
-            begin
-              try
-                Self.Loggers_SetupTest(threadId, test as ITestInfo);
-                fixture.SetupMethod;
-                Self.Loggers_EndSetupTest(threadId, test as ITestInfo);
-              except
-                on e : Exception do
-                begin
-                  testResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Error, e.Message);
-                  Log(TLogLevel.ltError,'Error running test Setup method : ' + e.Message);
-                  Log(TLogLevel.ltError,'Skipping test.');
-                  System.Continue;
-                end;
-              end;
-            end;
-
-            try
-              try
-                if Supports(test, ITestExecute, testExecute) then
-                begin
-                  Self.Loggers_ExecuteTest(threadId, test as ITestInfo);
-                  testExecute.Execute(context);
-                  testResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Pass);
-                  context.RecordResult(testResult);
-                  Self.Loggers_AddSuccess(threadId, testResult);
-                end;
-              except
-                on e : ETestPass do
-                begin
-                  testResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Pass);
-                  context.RecordResult(testResult);
-                  Self.Loggers_AddSuccess(threadId, testResult);
-                end;
-                on e : ETestFailure do
-                begin
-                  //TODO: Does test failure require its own results interface and class?
-                  Log(TLogLevel.ltError, 'Test failed : ' + test.Name + ' : ' + e.Message);
-                  testError := TDUnitXTestError.Create(test as ITestInfo, TTestResultType.Failure, e, ExceptAddr);
-                  context.RecordResult(testError);
-                  Self.Loggers_AddFailure(threadId, testError);
-                end;
-                on e : ETestWarning do
-                begin
-                  //TODO: Does test warning require its own results interface and class?
-                  Log(TLogLevel.ltWarning, 'Test warning : ' + test.Name + ' : ' + e.Message);
-                  testResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Warning, e.Message);
-                  context.RecordResult(testResult);
-                  Self.Loggers_AddWarning(threadId, testResult);
-                end;
-                on e : Exception do
-                begin
-                  Log(TLogLevel.ltError, 'Test Error : ' + test.Name + ' : ' + e.Message);
-                  testError := TDUnitXTestError.Create(test as ITestInfo, TTestResultType.Error, e, ExceptAddr);
-                  context.RecordResult(testError);
-                  Self.Loggers_AddError(threadId, testError);
-                end;
-              end;
-
-              if Assigned(fixture.TearDownMethod)  then
-              begin
-                try
-                  Self.Loggers_TeardownTest(threadId, test as ITestInfo);
-                  fixture.TearDownMethod;
-                except
-                  //TODO: Report test tear down exceptions to the user
-                end;
-              end;
-            finally
-              //TODO: Actully pass the results for the test here.
-              Self.Loggers_EndTest(threadId, nil);
-            end;
-          end;
-
-        except
-          //TODO: Report system failures to user
-
-        end;
-
-        if Assigned(fixture.TearDownFixtureMethod)  then
-        begin
-          try
-            Self.Loggers_TeardownFixture(threadId, fixture as ITestFixtureInfo);
-            fixture.TearDownFixtureMethod;
-          except
-            on e : Exception do
-            begin
-               //TODO: Report fixture tear down exceptions to the user
-
-            end;
-          end;
-        end;
-
-      finally
-        //TODO: Actully pass the results for the fixture here
-        Self.Loggers_EndTestFixture(threadId, nil);
-      end;
-    end;
+    ExecuteFixtures(context, threadId, fixtures);
   finally
     //TODO: Actully pass the results for all fixtures and tests here.
     Self.Loggers_TestingEnds(result);
@@ -536,6 +455,144 @@ class function TDUnitXTestRunner.GetActiveRunner: ITestRunner;
 begin
   result := nil;
   FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId,result)
+end;
+
+procedure TDUnitXTestRunner.ExecuteFixtures(const context: ITestExecuteContext; const threadId: Cardinal; const fixtures: ITestFixtureList);
+var
+  testResult: ITestResult;
+  tests: System.IEnumerable<ITest>;
+  testError: ITestError;
+  testExecute: ITestExecute;
+  test: ITest;
+  fixture: ITestFixture;
+begin
+  for fixture in fixtures do
+  begin
+    if not fixture.Enabled then
+      System.continue;
+    Self.Loggers_StartTestFixture(threadId, fixture as ITestFixtureInfo);
+    try
+      if Assigned(fixture.SetupFixtureMethod) then
+      begin
+        try
+          Self.Loggers_SetupFixture(threadid, fixture as ITestFixtureInfo);
+          fixture.SetupFixtureMethod;
+          Self.Loggers_EndSetupFixture(threadid, fixture as ITestFixtureInfo);
+        except
+          on e: Exception do
+          begin
+            Log(TLogLevel.ltError, 'Error in Fixture SetupError : ' + fixture.Name + ' : ' + e.Message);
+            Log(TLogLevel.ltError, 'Skipping Fixture.');
+            System.Continue;
+          end;
+        end;
+      end;
+      try
+        tests := fixture.Tests;
+        for test in tests do
+        begin
+          if not test.Enabled then
+            System.Continue;
+          testResult := nil;
+          testError := nil;
+          Self.Loggers_BeginTest(threadId, test as ITestInfo);
+          //Setup method is called before each test method.
+          if Assigned(fixture.SetupMethod) then
+          begin
+            try
+              Self.Loggers_SetupTest(threadId, test as ITestInfo);
+              fixture.SetupMethod;
+              Self.Loggers_EndSetupTest(threadId, test as ITestInfo);
+            except
+              on e: Exception do
+              begin
+                testResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Error, e.Message);
+                Log(TLogLevel.ltError, 'Error running test Setup method : ' + e.Message);
+                Log(TLogLevel.ltError, 'Skipping test.');
+                System.Continue;
+              end;
+            end;
+          end;
+          try
+            try
+              if Supports(test, ITestExecute, testExecute) then
+              begin
+                Self.Loggers_ExecuteTest(threadId, test as ITestInfo);
+                testExecute.Execute(context);
+                testResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Pass);
+                context.RecordResult(testResult);
+                Self.Loggers_AddSuccess(threadId, testResult);
+              end;
+            except
+              on e: ETestPass do
+              begin
+                testResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Pass);
+                context.RecordResult(testResult);
+                Self.Loggers_AddSuccess(threadId, testResult);
+              end;
+              on e: ETestFailure do
+              begin
+                //TODO: Does test failure require its own results interface and class?
+                Log(TLogLevel.ltError, 'Test failed : ' + test.Name + ' : ' + e.Message);
+                testError := TDUnitXTestError.Create(test as ITestInfo, TTestResultType.Failure, e, ExceptAddr);
+                context.RecordResult(testError);
+                Self.Loggers_AddFailure(threadId, testError);
+              end;
+              on e: ETestWarning do
+              begin
+                //TODO: Does test warning require its own results interface and class?
+                Log(TLogLevel.ltWarning, 'Test warning : ' + test.Name + ' : ' + e.Message);
+                testResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Warning, e.Message);
+                context.RecordResult(testResult);
+                Self.Loggers_AddWarning(threadId, testResult);
+              end;
+              on e: Exception do
+              begin
+                Log(TLogLevel.ltError, 'Test Error : ' + test.Name + ' : ' + e.Message);
+                testError := TDUnitXTestError.Create(test as ITestInfo, TTestResultType.Error, e, ExceptAddr);
+                context.RecordResult(testError);
+                Self.Loggers_AddError(threadId, testError);
+              end;
+            end;
+            if Assigned(fixture.TearDownMethod) then
+            begin
+              try
+                Self.Loggers_TeardownTest(threadId, test as ITestInfo);
+                fixture.TearDownMethod;
+              except
+              //TODO: Report test tear down exceptions to the user
+              end;
+            end;
+          finally
+            //TODO: Actully pass the results for the test here.
+            Self.Loggers_EndTest(threadId, nil);
+          end;
+        end;
+      except
+      //WTF?
+      end;
+      if fixture.HasChildFixtures then
+        ExecuteFixtures(context,threadId,fixture.Children);
+
+      if Assigned(fixture.TearDownFixtureMethod) then
+      begin
+        try
+          Self.Loggers_TeardownFixture(threadId, fixture as ITestFixtureInfo);
+          fixture.TearDownFixtureMethod;
+        except
+          on e: Exception do
+          begin
+          end;
+        end;
+        //TODO: Report fixture tear down exceptions to the user
+      end;
+
+
+    finally
+      //TODO: Actully pass the results for the fixture here
+      Self.Loggers_EndTestFixture(threadId, nil);
+    end;
+  end;
 end;
 
 function TDUnitXTestRunner.GetExitBehavior: TRunnerExitBehavior;

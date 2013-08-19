@@ -34,10 +34,9 @@ uses
 
 type
   {$M+}
-  [TestFixture('ExampleFixture1')]
+  [TestFixture('ExampleFixture1','General Example Tests')]
   TMyExampleTests = class
   public
-    [Test]
     //Run the same test with mulitiple parameters.
     //ideally we would like to implement this using
     //[TestCase('Case 1',[1,3,4])]
@@ -47,6 +46,7 @@ type
     //and attempt to convert the values to the parameters of the
     //test method.
 
+    [Test]
     [TestCase('Case 1','1,2')]
     [TestCase('Case 2','3,4')]
     [TestCase('Case 3','5,6')]

@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2012 Vincent Parrett                              }
+{           Copyright (C) 2013 Vincent Parrett                              }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -49,13 +49,13 @@ type
   TestFixtureAttribute = class(TCustomAttribute)
   private
     FName : string;
-    FRunAllMethods : boolean;
+    FDescription : string;
   public
     constructor Create;overload;
     constructor Create(const AName : string);overload;
-    constructor Create(const ARunAllMethods : boolean);overload;
-    constructor Create(const AName : string; const ARunAllMethods : boolean);overload;
+    constructor Create(const AName : string; const ADescription : string);overload;
     property Name : string read FName;
+    property Description : string read FDescription;
   end;
 
 
@@ -202,9 +202,9 @@ type
 {$IFDEF DELPHI_XE_UP}
     //Delphi 2010 compiler bug breaks this
     class procedure AreEqual<T>(const left, right : T; const message : string = '');overload;
-{$ELSE}
-    class procedure AreEqual(const left, right : Integer; const message : string = '');overload;
 {$ENDIF}
+    class procedure AreEqual(const left, right : Integer; const message : string = '');overload;
+
     class procedure AreEqualMemory(const left : Pointer; const right : Pointer; const size : Cardinal; message : string = '');
 
     class procedure AreNotEqual(const left : string; const right : string; const ignoreCase : boolean = true; const message : string = '');overload;
@@ -290,6 +290,7 @@ type
   ITestInfo = interface
     ['{FF61A6EB-A76B-4BE7-887A-598EBBAE5611}']
     function GetName : string;
+    function GetFullName : string;
     function GetActive : boolean;
     function GetTestFixture : ITestFixtureInfo;
 
@@ -301,6 +302,7 @@ type
     procedure SetEnabled(const value : boolean);
 
     property Name : string read GetName;
+    property FullName : string read GetFullName;
     property Enabled : boolean read GetEnabled write SetEnabled;
 
     property Active : boolean read GetActive;
@@ -318,6 +320,9 @@ type
   ITestFixtureInfo = interface
     ['{9E98B1E8-583A-49FC-B409-9B6937E22E81}']
     function GetName  : string;
+    function GetNameSpace : string;
+    function GetFullName : string;
+    function GetDescription : string;
     function GetTests : IList<ITestInfo>;
     function GetTestClass : TClass;
     function GetSetupMethodName : string;
@@ -325,11 +330,16 @@ type
     function GetTearDownMethodName : string;
     function GetTearDownFixtureMethodName : string;
     function GetTestInOwnThread : boolean;
+    function GetHasChildren : boolean;
 
     function GetTestCount : cardinal;
     function GetActiveTestCount : cardinal;
 
     property Name                       : string read GetName;
+    property NameSpace                  : string read GetNameSpace;
+    property FullName                   : string read GetFullName;
+    property Description                : string read GetDescription;
+    property HasChildFixtures           : boolean read GetHasChildren;
     property TestClass                  : TClass read GetTestClass;
     property Tests                      : IList<ITestInfo> read GetTests;
     property SetupMethodName            : string read GetSetupMethodName;
@@ -710,23 +720,18 @@ end;
 constructor TestFixtureAttribute.Create(const AName: string);
 begin
   FName := AName;
-  FRunAllMethods := False;
 end;
 
 constructor TestFixtureAttribute.Create;
 begin
-  FRunAllMethods := False;
+
 end;
 
-constructor TestFixtureAttribute.Create(const ARunAllMethods: boolean);
-begin
-  FRunAllMethods := ARunAllMethods;
-end;
 
-constructor TestFixtureAttribute.Create(const AName: string; const ARunAllMethods: boolean);
+constructor TestFixtureAttribute.Create(const AName: string; const ADescription : string);
 begin
   FName := AName;
-  FRunAllMethods := ARunAllMethods;
+  FDescription := ADescription;
 end;
 
 { Assert }
@@ -778,13 +783,13 @@ begin
     Fail(Format('left %s but got %s',[leftValue.AsString,rightValue.AsString]), ReturnAddress);
   end;
 end;
-{$ELSE}
+{$ENDIF}
 class procedure Assert.AreEqual(const left, right: Integer; const message: string);
 begin
   if left <> right then
     Fail(Format('left %d but got %d - %s' ,[left, right, message]), ReturnAddress);
 end;
-{$ENDIF}
+
 
 class procedure Assert.AreEqualMemory(const left : Pointer; const right : Pointer; const size : Cardinal; message : string);
 begin
@@ -1328,11 +1333,32 @@ end;
 class procedure TDUnitX.RegisterTestFixture(const AClass: TClass; const AName : string);
 var
   sName : string;
+  attrib : TestFixtureAttribute;
+  rType : TRttiType;
 begin
+  // If a name is passed in, then that's what we'll use, otherwise see if there
+  // is a TestFixture attribute and if it's name is set then use it. If no
+  // attribute then fallback to classname
   if AName <> '' then
     sName := AName
   else
-    sName := AClass.ClassName;
+  begin
+    rType := DUnitX.Utils.GetRttiType(AClass);
+    if rType <> nil then
+    begin
+      if rType.TryGetAttributeOfType<TestFixtureAttribute>(attrib) then
+        sName := attrib.Name;
+    end;
+
+
+    if sName = '' then
+      sName := AClass.ClassName;
+
+
+  end;
+
+
+
 
   if not RegisteredFixtures.ContainsValue(AClass) then
     RegisteredFixtures.Add(sName, AClass);
