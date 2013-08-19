@@ -58,9 +58,15 @@ type
 implementation
 
 uses
+  {$IFDEF MSWINDOWS}
+    {$if CompilerVersion < 23 }
+      Windows,
+    {$else}
+      WinAPI.Windows, // Delphi XE2 (CompilerVersion 23) added scopes in front of unit names
+    {$ifend}
+  {$ENDIF}
   DUnitX.Utils,
-  DUnitX.IoC,
-  Windows;
+  DUnitX.IoC;
 
 
 constructor TDUnitXWindowsConsoleWriter.Create;
