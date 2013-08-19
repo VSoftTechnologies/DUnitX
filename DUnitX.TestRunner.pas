@@ -202,7 +202,6 @@ var
   parentNamespace : string;
   fixtureNamespace : string;
   tmpFixtures : TDictionary<string,ITestFixture>;
-  rType : TRttiType;
 begin
   if FFixtureList <> nil then
   begin
