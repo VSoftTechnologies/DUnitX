@@ -26,6 +26,10 @@
 /Win32
 /Win64
 /__history
+/Tests/Win32
+/Tests/Win64
+/Test/__history
+
 
 
 # Testing Output  #
