@@ -1,19 +1,19 @@
 @echo off
-  for %%c in (set show clone pull help) do if /I !%1!==!%%c! call :%%c
+:: ##JWP TODO if %2 specifies a non-existing local repository name: emit error message (now it does nothing)
+:: ##JWP TODO check for each command if it actually exists (hg.exe, git.exe, svn.exe, etc)
+  for %%c in (set show clone pull help) do if /I !%1!==!%%c! call :%*
   if /I !%1!==!! call :help
   goto :eof
 :: this batch file routes all repository information through one central place :foorAllRepositories.
 :: If you need more, or less: change the information there.
 
 :forAllRepositories
-  :: Central place with all the repository information
-  :: note: local names for repositories do not use delimiters (spaces, dashes, etc) in their names to make parsing easier.
-  ::%1 == command
-  ::%2 == specific repository (local name like FastMM)
-::  call :forOneRepository git DUnitX https://github.com/VSoftTechnologies/DUnitX.git %1 %2
-::  call :forOneRepository svn FastMM svn://svn.code.sf.net/p/fastmm/code/ %1 %2
-::  call :forOneRepository svn Spring http://delphi-spring-framework.googlecode.com/svn/trunk/ %1 %2
-  call :forOneRepository git DelphiMocks https://github.com/VSoftTechnologies/Delphi-Mocks.git %1 %2
+  pushd %~dp0
+:: the for loop will strip leading spaces
+  for /f "tokens=1,2,*" %%l in (Dependencies.txt) do (
+    call :forOneRepository %%l %%m %%n %1 %2
+  )
+  popd
   goto :eof
 
 :forOneRepository
@@ -26,15 +26,28 @@
   ::echo matchIfNotEmpty=%5
   ::for %%d in (%~dp0..) do echo LocalDirectory=%%~fd\%2
   ::echo.
+  setlocal
+  set tool=%1
+  :: skip comments and empty lines
+  if "%tool:~0,3%"=="rem" goto :skipOneRepository
+  if "%tool:~0,2%"=="::" goto :skipOneRepository
+  if "%tool:~0,1%"=="#" goto :skipOneRepository
+  if "%tool%"=="" goto :skipOneRepository
+  goto :doOneRepository
+:skipOneRepository
+  endlocal
+  goto :endOneRepository
+:doOneRepository
+  endlocal
   :: always if no match
   if "%5"=="" call %4 %1 %2 %3
   if /I "%5"=="%2" call %4 %1 %2 %3
-  echo.
+:endOneRepository
   goto :eof
-  
+
 :set
   echo SET
-  call :forAllRepositories :setSpecific
+  call :forAllRepositories :setSpecific %1
   goto :eof
 
 :setSpecific
@@ -44,7 +57,7 @@
 
 :show
   echo SHOW
-  call :forAllRepositories :showSpecific
+  call :forAllRepositories :showSpecific %1
   goto :eof
 
 :showSpecific
@@ -68,7 +81,7 @@
   goto :eof
 :cloneContinue
   endlocal
-  call :forAllRepositories :cloneSpecific
+  call :forAllRepositories :cloneSpecific %1
   goto :eof
 
 :cloneSpecific
@@ -108,7 +121,7 @@
   goto :eof
 :pullContinue
   endlocal
-  call :forAllRepositories :pullSpecific
+  call :forAllRepositories :pullSpecific %1
   goto :eof
 
 :pullSpecific
@@ -125,7 +138,7 @@
 
 :help
   :: ^| to escape the pipe
-  echo Synax: %~f0 [set^|clone^|pull^|help]
+  echo Syntax: %~f0 [set^|clone^|pull^|help]
   echo set:
   echo   Sets the environment variables to the directories so you can use them in Delphi or Visual Studio for instance $(FastMM)
   echo   VS:     http://stackoverflow.com/questions/840472#1126937
