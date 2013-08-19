@@ -40,6 +40,8 @@ uses
   SysUtils;
 
 type
+  TResolveResult = (Unknown, Success, InterfaceNotRegistered, ImplNotRegistered, DeletegateFailedCreate);
+
   TActivatorDelegate<TInterface: IInterface> = reference to function: TInterface;
 
 
@@ -62,6 +64,9 @@ type
 
     private class destructor ClassDestroy;
 
+    function GetInterfaceKey<TInterface>(const AName: string = ''): string;
+    function InternalResolve<TInterface: IInterface>(out AInterface: TInterface; const AName: string = ''): TResolveResult;
+
   public
     constructor Create;
     destructor Destroy;override;
@@ -79,7 +84,7 @@ type
     procedure RegisterType<TInterface: IInterface>(const singleton : boolean;const delegate : TActivatorDelegate<TInterface>; const name : string);overload;
 
     //Resolution
-    function Resolve<TInterface: IInterface>(const name: string = ''): TInterface; overload;
+    function Resolve<TInterface: IInterface>(const name: string = ''; const AThrowOnFail : boolean = false): TInterface;
 
     //Default Container - used internally by DUnitX
     class function DefaultContainer : TDUnitXIoC;
@@ -200,6 +205,111 @@ begin
 end;
 
 
+function TDUnitXIoC.GetInterfaceKey<TInterface>(const AName: string): string;
+var
+  pInfo : PTypeInfo;
+begin
+  //By default the key is the interface name unless otherwise found.
+  pInfo := TypeInfo(TInterface);
+  result := string(pInfo.Name);
+
+  if (AName <> '') then
+    result := result + '_' + AName;
+
+  //All keys are stored in lower case form.
+  result := LowerCase(result);
+end;
+
+function TDUnitXIoC.InternalResolve<TInterface>(out AInterface: TInterface; const AName: string): TResolveResult;
+var
+  key : string;
+  errorMsg : string;
+  
+  container : TDictionary<string,TObject>;
+  registrationObj : TObject;
+  registration  : TIoCRegistration<TInterface>;
+  resolvedInf : IInterface;
+  resolvedObj : TInterface;
+  bIsSingleton: Boolean;
+  bInstanciate: Boolean;
+begin
+  AInterface := Default(TInterface);
+  Result := TResolveResult.Unknown;
+
+  //Get the key for the interace we are resolving and locate the container for that key.
+  key := GetInterfaceKey<TInterface>(AName);
+  container := FContainerInfo;
+
+  if not container.TryGetValue(key, registrationObj) then
+  begin
+    result := TResolveResult.InterfaceNotRegistered;
+    Exit;
+  end;
+
+  //Get the interface registration class correctly.
+  registration := TIoCRegistration<TInterface>(registrationObj);
+  bIsSingleton := registration.IsSingleton;
+
+  bInstanciate := true;
+
+  if bIsSingleton then
+  begin
+    //If a singleton was registered with this interface then check if it's already been instanciated.
+    if registration.Instance <> nil then
+    begin
+      //Get AInterface as TInterface
+      if registration.Instance.QueryInterface(GetTypeData(TypeInfo(TInterface)).Guid, AInterface) <> 0 then
+      begin
+        result  := TResolveResult.ImplNotRegistered;
+        Exit;
+      end;
+
+      bInstanciate := False;
+    end;
+  end;
+
+  if bInstanciate then
+  begin
+    //If the instance hasn't been instanciated then we need to lock and instanciate
+    MonitorEnter(container);
+    try
+      //If we have a implementing class then used this to activate.
+      if registration.ImplClass <> nil then
+        resolvedInf := TClassActivator.CreateInstance(registration.ImplClass)
+      //Otherwise if there is a activate delegate use this to activate.
+      else if registration.ActivatorDelegate <> nil then
+      begin
+        resolvedInf := registration.ActivatorDelegate();
+
+        if resolvedInf = nil then
+        begin
+          result  := TResolveResult.DeletegateFailedCreate;
+          Exit;
+        end;
+      end;
+
+      //Get AInterface as TInterface
+      if resolvedInf.QueryInterface(GetTypeData(TypeInfo(TInterface)).Guid, resolvedObj) <> 0 then
+      begin
+        result  := TResolveResult.ImplNotRegistered;
+        Exit;
+      end;
+
+      AInterface := resolvedObj;
+
+      if bIsSingleton then
+      begin
+        registration.Instance := resolvedObj;
+
+        //Reset the registration to show the instance which was created.
+        container.AddOrSetValue(key, registration);
+      end;
+    finally
+      MonitorExit(container);
+    end;
+  end;
+end;
+
 procedure TDUnitXIoC.RegisterType<TInterface>(const singleton: boolean; const delegate: TActivatorDelegate<TInterface>; const name: string);
 var
   key   : string;
@@ -230,102 +340,31 @@ begin
     raise EIoCException.Create(Format('An implementation for type %s with name %s is already registered with IoC',[pInfo.Name, newName]));
 end;
 
-
-
-
-
-function TDUnitXIoC.Resolve<TInterface>(const name: string): TInterface;
+function TDUnitXIoC.Resolve<TInterface>(const name: string = ''; const AThrowOnFail : boolean = false): TInterface;
 var
-  key   : string;
+  resolveResult: TResolveResult;
+  errorMsg : string;
   pInfo : PTypeInfo;
-  rego  : TIoCRegistration<TInterface>;
-  lcontainer : TDictionary<string,TObject>;
-  res : IInterface;
-  activator : TActivatorDelegate<TInterface>;
-  o : TObject;
-  newName : string;
 begin
-  newName := name;
-
-  result := Default(TInterface);
   pInfo := TypeInfo(TInterface);
-  if newName = '' then
-    key := string(pInfo.Name)
-  else
-    key := string(pInfo.Name) + '_' + newName;
-  key := LowerCase(key);
+  resolveResult := InternalResolve<TInterface>(result, name);
 
-  lcontainer := FContainerInfo;
-
-  if not lcontainer.TryGetValue(key,o) then
-  begin
-    exit(nil);
-  end;
-//    raise EIoCResolutionException.Create(Format('No implementation registered for type %s',[pInfo.Name]));
-
-  rego := TIoCRegistration<TInterface>(o);
-
-  if rego.IsSingleton then
-  begin
-    //If a singleton was registered with this interface then check if it's already been instanciated.
-    if rego.Instance <> nil then
+  //If we don't have a resolution and the caller wants an exception then throw one.
+  if (result = nil) and (AThrowOnFail) then
     begin
-      //get the result as T
-      if rego.Instance.QueryInterface(GetTypeData(pInfo).Guid,result) <> 0 then
-        //should never happen?
-        raise EIoCResolutionException.Create(Format('The Implementation registered for type %s does not actually implement %s' ,[pInfo.Name,pInfo.Name]));
-    end
+    case resolveResult of
+      TResolveResult.Success : ;
+      TResolveResult.InterfaceNotRegistered : errorMsg := Format('No implementation registered for type %s', [pInfo.Name]);
+      TResolveResult.ImplNotRegistered : errorMsg := Format('The Implementation registered for type %s does not actually implement %s', [pInfo.Name, pInfo.Name]);
+      TResolveResult.DeletegateFailedCreate : errorMsg := Format('The Implementation registered for type %s does not actually implement %s', [pInfo.Name, pInfo.Name]);
     else
-    begin
-      MonitorEnter(lcontainer);
-      try
-        if rego.ImplClass <> nil then
-          rego.Instance := TClassActivator.CreateInstance(rego.ImplClass)
-        else if rego.ActivatorDelegate <> nil then
-        begin
-          rego.Instance := rego.ActivatorDelegate();
-          if rego.Instance = nil then
-            raise EIoCResolutionException.Create(Format('The Activator Delegate registered for type %s did not instantiate an instance' ,[pInfo.Name]));
-        end;
-        //get the result as T
-        if rego.Instance.QueryInterface( GetTypeData(pInfo).Guid,result) <> 0 then
-        //should never happen?
-          raise EIoCResolutionException.Create(Format('The Implementation registered for type %s does not actually implement %s' ,[pInfo.Name,pInfo.Name]));
-
-        lcontainer.AddOrSetValue(key,rego);
-
-      finally
-        MonitorExit(lcontainer);
-      end;
+      //All other error types are treated as unknown until defined here.
+      errorMsg := Format('An Unknown Error has occurred for the resolution of the interface %s %s. This is either because a new error type isn''t being handled, ' +
+          'or it''s an bug.', [pInfo.Name, name]);
     end;
-  end
-  else
-  begin
-    MonitorEnter(lcontainer);
-    try
-      if rego.ImplClass <> nil then
-      begin
-        res := TClassActivator.CreateInstance(rego.ImplClass);
-        if res.QueryInterface(GetTypeData(pInfo).Guid,result) <> 0 then
-        //should never happen?
-          raise EIoCResolutionException.Create(Format('The Implementation registered for type %s does not actually implement %s' ,[pInfo.Name,pInfo.Name]));
-      end
-      else if rego.ActivatorDelegate <> nil then
-      begin
-        activator := TActivatorDelegate<TInterface>(rego.ActivatorDelegate);
-        res := activator();
-        if res = nil then
-          raise EIoCResolutionException.Create(Format('The Activator Delegate registered for type %s did not instantiate an instance' ,[pInfo.Name]));
-        if res.QueryInterface(GetTypeData(pInfo).Guid,result) <> 0 then
-        //should never happen?
-          raise EIoCResolutionException.Create(Format('The Implementation registered for type %s does not actually implement %s' ,[pInfo.Name,pInfo.Name]));
-      end;
 
-    finally
-      MonitorExit(lcontainer);
-    end;
+    raise EIoCResolutionException.Create(errorMsg);
   end;
-
 end;
 
 end.
