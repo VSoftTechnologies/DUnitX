@@ -85,6 +85,7 @@ type
 implementation
 
 uses
+  DUnitX.TestResult,
   DUnitX.IoC,
   SysUtils;
 
@@ -340,12 +341,40 @@ begin
     begin
       if testResult.ResultType = TTestResultType.Failure then
       begin
-        FConsoleWriter.WriteLn(testResult.Test.Fixture.Name + '.' + testResult.Test.Name);
+        FConsoleWriter.SetColour(ccBrightRed);
+        FConsoleWriter.WriteLn('  ' + testResult.Test.Fixture.Name + '.' + testResult.Test.Name);
+        FConsoleWriter.SetColour(ccDefault);
+        FConsoleWriter.WriteLn('  Message: ' + testResult.Message);
+        FConsoleWriter.WriteLn;
       end;
-      
     end;
 
+    FConsoleWriter.WriteLn;
   end;
+
+  if TestResults.ErrorCount > 0  then
+  begin
+    FConsoleWriter.SetColour(ccBrightRed);
+    FConsoleWriter.WriteLn;
+    FConsoleWriter.WriteLn('Tests With Errors');
+    FConsoleWriter.WriteLn;
+    FConsoleWriter.SetColour(ccDefault);
+
+    for testResult in TestResults.GetResults do
+    begin
+      if testResult.ResultType = TTestResultType.Error then
+      begin
+        FConsoleWriter.SetColour(ccBrightRed);
+        FConsoleWriter.WriteLn('  ' + testResult.Test.Fixture.Name + '.' + testResult.Test.Name);
+        FConsoleWriter.SetColour(ccDefault);
+        FConsoleWriter.WriteLn('  Message: ' + testResult.Message);
+        FConsoleWriter.WriteLn;
+      end;
+    end;
+
+    FConsoleWriter.WriteLn;
+  end;
+
   FConsoleWriter.SetColour(ccDefault );
 
 end;

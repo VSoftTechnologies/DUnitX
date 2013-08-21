@@ -123,7 +123,7 @@ begin
     FEndTime := Now();
 
     FDuration := TTimeSpan.Subtract(FEndTime,FStartTime);
-    end;
+  end;
 end;
 
 function TDUnitXTest.GetActive: boolean;
