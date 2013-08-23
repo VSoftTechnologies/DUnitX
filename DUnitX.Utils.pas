@@ -2953,8 +2953,7 @@ end;
 {$ENDIF}
 
 
-class function TStrUtils.SplitString(const S,
-  Delimiters: string): TStringDynArray;
+class function TStrUtils.SplitString(const S, Delimiters: string): TStringDynArray;
 var
   StartIdx: Integer;
   FoundIdx: Integer;

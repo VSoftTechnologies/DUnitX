@@ -70,20 +70,21 @@ type
 
     [TearDown]
     procedure TearDown;
-  //published
+  published
     procedure TestMeAnyway;
   end;
 
   [TestFixture]
   TExampleFixture2 = class
-    [SetupFixture]
+  private
+    FPublished_Procedures_Are_Included_As_Tests_Called : Boolean;
+  public
+    [Setup]
     procedure SetupFixture;
-
-    [TeardownFixture]
+    [Teardown]
     procedure TearDownFixture;
-
   published
-    procedure IAmATest;
+    procedure Published_Procedures_Are_Included_As_Tests;
   end;
 
 implementation
@@ -142,19 +143,22 @@ end;
 
 { TExampleFixture2 }
 
-procedure TExampleFixture2.IAmATest;
+procedure TExampleFixture2.Published_Procedures_Are_Included_As_Tests;
 begin
-  raise ENotImplemented.Create('Not implemented');
+  // FPublished_Procedures_Are_Included_As_Tests_Called := True;
+  Assert.Pass;
 end;
 
 procedure TExampleFixture2.SetupFixture;
 begin
   TDUnitX.CurrentRunner.Log('Setting up...');
+  FPublished_Procedures_Are_Included_As_Tests_Called := False;
 end;
 
 procedure TExampleFixture2.TearDownFixture;
 begin
   TDUnitX.CurrentRunner.Log('Tearing down');
+  Assert.IsTrue(FPublished_Procedures_Are_Included_As_Tests_Called);
 end;
 
 initialization

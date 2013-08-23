@@ -793,13 +793,13 @@ end;
 
 class procedure Assert.AreEqualMemory(const left : Pointer; const right : Pointer; const size : Cardinal; message : string);
 begin
-  if not CompareMem(left,right, size) then
+  if not CompareMem(left, right, size) then
     Fail('Memory values are not equal. ' + message, ReturnAddress);
 end;
 
 class procedure Assert.AreNotEqual(const left, right, tolerance: Extended; const message: string);
 begin
-  if Math.SameValue(left,right,tolerance) then
+  if not Math.SameValue(left, right, tolerance) then
     Fail(Format('%g equals right %g %s' ,[left,right,message]), ReturnAddress);
 end;
 

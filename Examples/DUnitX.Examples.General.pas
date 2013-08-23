@@ -73,12 +73,14 @@ type
 
   [TestFixture]
   TExampleFixture2 = class
+  private
+    FTestsRun : integer;
+  public
     [SetupFixture]
     procedure SetupFixture;
 
     [TeardownFixture]
     procedure TearDownFixture;
-
   published
     procedure IAmATest;
   end;
@@ -144,16 +146,18 @@ end;
 
 procedure TExampleFixture2.IAmATest;
 begin
-  raise ENotImplemented.Create('Not implemented');
+  Inc(FTestsRun);
 end;
 
 procedure TExampleFixture2.SetupFixture;
 begin
+  FTestsRun := 0;
   TDUnitX.CurrentRunner.Log('Setting up...');
 end;
 
 procedure TExampleFixture2.TearDownFixture;
 begin
+  Assert.AreEqual(FTestsRun, 1);
   TDUnitX.CurrentRunner.Log('Tearing down');
 end;
 

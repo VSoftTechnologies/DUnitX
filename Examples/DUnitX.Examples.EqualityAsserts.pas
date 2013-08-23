@@ -54,7 +54,7 @@ begin
   Assert.AreNotEqual(TObject, TInterfacedObject);
 
   //Extended with tolerance
-  Assert.AreNotEqual(1.18E4932, 1.19E4932, 0.001E4932);
+  Assert.AreNotEqual(extended + 1.81E10, 1.9E10, 0.1E10);
 
   //Generic
   valueToTest := false;

@@ -196,7 +196,6 @@ begin
   mockTest.Setup.WillReturn('WarningTest').When.Name;
   mockTest.Setup.WillReturn('WarningTest').When.FullName;
   mockTest.Setup.WillReturn(True).When.Active;
-  mockTest.Setup.WillReturn(mockFixture.InstanceAsValue).When.Fixture;
   mockWarning.Setup.WillReturn('!!WarningMessage!!').When.Message;
   mockWarning.Setup.WillReturn(mockTest.InstanceAsValue).When.Test;
   mockError.Setup.WillReturn(mockTest.InstanceAsValue).When.Test;
