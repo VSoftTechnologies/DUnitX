@@ -127,6 +127,7 @@ uses
   DUnitX.TestFixture,
   DUnitX.TestResults,
   DUnitX.TestResult,
+  DUnitX.Utils,
   TypInfo,
   SysUtils,
   StrUtils,

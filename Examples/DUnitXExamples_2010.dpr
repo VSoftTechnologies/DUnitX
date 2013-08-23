@@ -1,4 +1,4 @@
-program DUnitXExamples;
+program DUnitXExamples_2010;
 
 {$APPTYPE CONSOLE}
 

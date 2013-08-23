@@ -63,6 +63,7 @@ type
 type
   TStrUtils = class
     class function PadString(const s: string; const totalLength: integer; const padLeft: boolean = True; padChr: Char = ' '): string;
+    class function SplitString(const S, Delimiters: string): TStringDynArray;
   end;
 
 type
@@ -2951,6 +2952,46 @@ begin
 end;
 {$ENDIF}
 
+
+class function TStrUtils.SplitString(const S,
+  Delimiters: string): TStringDynArray;
+var
+  StartIdx: Integer;
+  FoundIdx: Integer;
+  SplitPoints: Integer;
+  CurrentSplit: Integer;
+  i: Integer;
+begin
+  Result := nil;
+
+  if S <> '' then
+  begin
+    { Determine the length of the resulting array }
+    SplitPoints := 0;
+    for i := 1 to Length(S) do
+      if IsDelimiter(Delimiters, S, i) then
+        Inc(SplitPoints);
+
+    SetLength(Result, SplitPoints + 1);
+
+    { Split the string and fill the resulting array }
+    StartIdx := 1;
+    CurrentSplit := 0;
+    repeat
+      FoundIdx := FindDelimiter(Delimiters, S, StartIdx);
+      if FoundIdx <> 0 then
+      begin
+        Result[CurrentSplit] := Copy(S, StartIdx, FoundIdx - StartIdx);
+        Inc(CurrentSplit);
+        StartIdx := FoundIdx + 1;
+      end;
+    until CurrentSplit = SplitPoints;
+
+    // copy the remaining part in case the string does not end in a delimiter
+    Result[SplitPoints] := Copy(S, StartIdx, Length(S) - StartIdx + 1);
+  end;
+
+end;
 
 initialization
   Enumerations := TObjectDictionary<PTypeInfo, TStrings>.Create([doOwnsValues]);
