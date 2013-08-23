@@ -98,7 +98,6 @@
 			</DCCReference>
 			<DCCReference Include="..\DUnitX.StackTrace.EurekaLog7.pas"/>
 			<DCCReference Include="DUnitX.Tests.TestResultCollector.pas"/>
-			<DCCReference Include="..\DUnitX.SuiteBuilderCollection.pas"/>
 			<None Include="..\DUnitX.inc"/>
 			<None Include="..\DUnitX.Stacktrace.inc"/>
 			<BuildConfiguration Include="Debug">

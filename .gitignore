@@ -38,3 +38,5 @@ Tests/dunit-report.xml
 *.fb7lck
 *.fbl7
 *.fbpInf
+Examples/Win32/
+Examples/Win64/

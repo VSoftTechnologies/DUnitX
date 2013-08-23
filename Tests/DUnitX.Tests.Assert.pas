@@ -58,7 +58,6 @@ type
     procedure Warn_Throws_ETestWarning_Exception;
     [TestCase]
     procedure AreEqual_Throws_No_Exception_When_Values_Are_Exactly_Equal;
-
   end;
 
 implementation
