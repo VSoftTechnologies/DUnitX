@@ -55,6 +55,19 @@ type
     [TestCase]
     procedure AreEqual_String_Throws_ETestFailure_When_Values_Are_NotEqual;
     [TestCase]
+    procedure AreEqual_Extended_Throws_No_Exception_When_Values_Are_Equal;
+    [TestCase]
+    procedure AreEqual_Extended_Throws_ETestFailure_When_Values_Are_NotEqual;
+    [TestCase]
+    procedure AreEqual_TClass_Throws_No_Exception_When_Classes_Are_Equal;
+    [TestCase]
+    procedure AreEqual_TClass_Throws_ETestFailure_When_Classes_Are_NotEqual;
+    [TestCase]
+    procedure AreEqual_T_Throws_No_Exception_When_Classes_Are_Equal;
+    [TestCase]
+    procedure AreEqual_T_Throws_ETestFailure_When_Classes_Are_NotEqual;
+
+    [TestCase]
     procedure Warn_Throws_ETestWarning_Exception;
     [TestCase]
     procedure AreEqual_Throws_No_Exception_When_Values_Are_Exactly_Equal;
@@ -63,7 +76,21 @@ type
 implementation
 
 uses
+  Delphi.Mocks,
   SysUtils;
+
+type
+  {$M+}
+  IMockInterface = interface
+    ['{8DB1A216-0E95-4241-9522-C50DF99AFB71}']
+    procedure Stub;
+  end;
+  {$M-}
+
+  TMockClassOne = class(TObject)
+  end;
+  TMockClassTwo = class(TObject)
+  end;
 
 { TTestAssert }
 
@@ -154,6 +181,33 @@ begin
     end, ETestWarning);
 end;
 
+procedure TTestsAssert.AreEqual_Extended_Throws_ETestFailure_When_Values_Are_NotEqual;
+const
+  ACTUAL_EXTENDED = 1.19E20;
+  EXPECTED_EXTENDED = 1.18E20;
+  TOLERANCE_EXTENDED = 0.001E20;
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.AreEqual(ACTUAL_EXTENDED, EXPECTED_EXTENDED, TOLERANCE_EXTENDED);
+    end, ETestFailure, Format('[%e] with in [%e] from [%e]', [ACTUAL_EXTENDED, TOLERANCE_EXTENDED, EXPECTED_EXTENDED]));
+
+end;
+
+procedure TTestsAssert.AreEqual_Extended_Throws_No_Exception_When_Values_Are_Equal;
+const
+  ACTUAL_EXTENDED = 1.19E20;
+  EXPECTED_EXTENDED = 1.18E20;
+  TOLERANCE_EXTENDED = 0.011E20;
+begin
+  Assert.WillNotRaise(
+    procedure
+    begin
+      Assert.AreEqual(ACTUAL_EXTENDED, EXPECTED_EXTENDED, TOLERANCE_EXTENDED);
+    end, Exception);
+end;
+
 procedure TTestsAssert.AreEqual_String_Throws_ETestFailure_When_Values_Are_NotEqual;
 const
   ACTUAL_STRING = 'the brown dog jumped something';
@@ -177,6 +231,24 @@ begin
     end, Exception);
 end;
 
+procedure TTestsAssert.AreEqual_TClass_Throws_ETestFailure_When_Classes_Are_NotEqual;
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.AreEqual(TMockClassOne, TMockClassTwo);
+    end, ETestFailure);
+end;
+
+procedure TTestsAssert.AreEqual_TClass_Throws_No_Exception_When_Classes_Are_Equal;
+begin
+  Assert.WillNotRaise(
+    procedure
+    begin
+      Assert.AreEqual(TMockClassOne, TMockClassOne);
+    end, ETestFailure);
+end;
+
 procedure TTestsAssert.AreEqual_Throws_No_Exception_When_Values_Are_Exactly_Equal;
 var
   actualAndExpected, tolerance : Extended;
@@ -190,6 +262,36 @@ begin
     begin
       Assert.AreEqual(actualAndExpected, actualAndExpected, tolerance);
     end, Exception);
+end;
+
+procedure TTestsAssert.AreEqual_T_Throws_ETestFailure_When_Classes_Are_NotEqual;
+var
+  mock : IInterface;
+  mock2 : IInterface;
+begin
+  mock := TInterfacedObject.Create();
+  mock2 := TInterfacedObject.Create();
+
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.AreEqual<IInterface>(mock, mock2);
+    end, ETestFailure);
+
+  //TODO: Fix generic are equals invalid cast error. TValue of a class does not allow AsString
+end;
+
+procedure TTestsAssert.AreEqual_T_Throws_No_Exception_When_Classes_Are_Equal;
+var
+  mock : IInterface;
+begin
+  mock := TInterfacedObject.Create();
+
+  Assert.WillNotRaise(
+    procedure
+    begin
+      Assert.AreEqual<IInterface>(mock, mock);
+    end, ETestFailure);
 end;
 
 initialization

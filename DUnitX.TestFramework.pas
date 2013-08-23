@@ -780,7 +780,7 @@ begin
     leftValue := TValue.From<T>(left);
     rightValue := TValue.From<T>(right);
 
-    Fail(Format('left %s but got %s',[leftValue.AsString,rightValue.AsString]), ReturnAddress);
+    Fail(Format('left %s but got %s', [leftValue.AsString, rightValue.AsString]), ReturnAddress);
   end;
 end;
 {$ENDIF}
@@ -939,7 +939,6 @@ begin
     //Otherwise use the return address we can currently get to for where to raise the exception
     raise ETestFailure.Create(message) at ReturnAddress;
 
-  // raise ETestFailure.Create(Format('Fail. %s',[message]));
 end;
 
 
@@ -1168,7 +1167,7 @@ begin
       if exceptionClass <> nil then
       begin
         if e.ClassType <> exceptionClass then
-          Fail('Method did not throw exception of type : ' + exceptionClass.ClassName + GetMsg, ReturnAddress)
+          Fail(Format('Method raised [%s] was expecting [%s]. %s', [e.ClassName, exceptionClass.ClassName, e.message]), ReturnAddress)
         else
           exit;
       end;
@@ -1202,10 +1201,10 @@ begin
       if exceptionClass <> nil then
       begin
         if e.ClassType = exceptionClass then
-          Fail('Method raised an exception of type : ' + exceptionClass.ClassName + #13#10 + e.Message + GetMsg, ReturnAddress);
+           Fail('Method raised an exception of type : ' + exceptionClass.ClassName + #13#10 + e.Message + GetMsg, ReturnAddress);
       end
       else
-        Fail('Method raised and exception of type : ' + e.ClassName + #13#10 + e.Message + GetMsg, ReturnAddress);
+        Fail(Format('Method raised [%s] was expecting not to raise [%s]. %s', [e.ClassName, exceptionClass.ClassName, e.message]), ReturnAddress);
     end;
   end;
 end;

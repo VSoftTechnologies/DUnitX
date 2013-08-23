@@ -535,7 +535,7 @@ begin
               begin
                 //TODO: Does test failure require its own results interface and class?
                 Log(TLogLevel.ltError, 'Test failed : ' + test.Name + ' : ' + e.Message);
-                testError := TDUnitXTestError.Create(test as ITestInfo, TTestResultType.Failure, e, ExceptAddr);
+                testError := TDUnitXTestError.Create(test as ITestInfo, TTestResultType.Failure, e, ExceptAddr, e.Message);
                 context.RecordResult(testError);
                 Self.Loggers_AddFailure(threadId, testError);
               end;
@@ -550,7 +550,7 @@ begin
               on e: Exception do
               begin
                 Log(TLogLevel.ltError, 'Test Error : ' + test.Name + ' : ' + e.Message);
-                testError := TDUnitXTestError.Create(test as ITestInfo, TTestResultType.Error, e, ExceptAddr);
+                testError := TDUnitXTestError.Create(test as ITestInfo, TTestResultType.Error, e, ExceptAddr, e.Message);
                 context.RecordResult(testError);
                 Self.Loggers_AddError(threadId, testError);
               end;
