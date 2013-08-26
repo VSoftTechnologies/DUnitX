@@ -197,6 +197,7 @@ type
     class procedure Warn(const message : string = ''; const errorAddrs : pointer = nil);
 
     class procedure AreEqual(const left : string; const right : string; const ignoreCase : boolean = true; const message : string = '');overload;
+    class procedure AreEqual(const left : string; const right : string; const message : string = '');overload;
     class procedure AreEqual(const left, right : Extended; const tolerance : Extended; const message : string = '');overload;
     class procedure AreEqual(const left, right : Extended; const message : string = '');overload;
     class procedure AreEqual(const left, right : TClass; const message : string = '');overload;
@@ -791,6 +792,11 @@ begin
     Fail(Format('left %d but got %d - %s' ,[left, right, message]), ReturnAddress);
 end;
 
+
+class procedure Assert.AreEqual(const left, right, message: string);
+begin
+  AreEqual(left, right, True, message);
+end;
 
 class procedure Assert.AreEqual(const left, right: Extended; const message: string);
 begin
