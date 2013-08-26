@@ -232,6 +232,7 @@ begin
       //if the unit name has no namespaces the just add the tests.
       fixtureNamespace := '';
       parentNameSpace := '';
+
       parentFixture := nil;
       fixture := nil;
         
@@ -253,19 +254,27 @@ begin
             FFixtureList.Add(parentFixture);
             tmpFixtures.Add(parentNamespace,parentFixture);
           end;
+
           if not tmpFixtures.TryGetValue(fixtureNamespace,fixture) then
           begin
             fixture := TDUnitXTestFixture.Create(fixtureNamespace, TObject);
             parentFixture.Children.Add(fixture);
             tmpFixtures.Add(fixtureNamespace,fixture);
           end;
+
           parentFixture := fixture;
           parentNamespace := fixtureNamespace;
         end;
       end;
+
+
       fixtureNamespace := fixtureNamespace + '.' + pair.Key;
       fixture := TDUnitXTestFixture.Create(fixtureNamespace, pair.Value);
-      parentFixture.Children.Add(fixture);
+
+      if parentFixture = nil then
+        FFixtureList.Add(fixture)
+      else
+        parentFixture.Children.Add(fixture);
     end;
   finally
     tmpFixtures.Free;
