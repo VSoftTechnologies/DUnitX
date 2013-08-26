@@ -97,7 +97,6 @@
 				<Form>Form1</Form>
 			</DCCReference>
 			<DCCReference Include="..\DUnitX.StackTrace.EurekaLog7.pas"/>
-			<DCCReference Include="DUnitX.Tests.TestResultCollector.pas"/>
 			<None Include="..\DUnitX.inc"/>
 			<None Include="..\DUnitX.Stacktrace.inc"/>
 			<BuildConfiguration Include="Debug">
