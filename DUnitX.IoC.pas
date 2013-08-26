@@ -172,7 +172,7 @@ end;
 
 procedure TDUnitXIoC.RegisterType<TInterface>(const singleton: boolean; const delegate: TActivatorDelegate<TInterface>);
 begin
-  Self.RegisterType<TInterface>(false,delegate,'');
+  Self.RegisterType<TInterface>(singleton, delegate, '');
 end;
 
 class destructor TDUnitXIoC.ClassDestroy;
