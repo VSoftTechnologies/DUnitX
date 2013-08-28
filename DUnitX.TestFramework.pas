@@ -197,8 +197,10 @@ type
     //TODO: Make more use of warnings. Currently none in use.
     class procedure Warn(const message : string = ''; const errorAddrs : pointer = nil);
 
-    class procedure AreEqual(const left : string; const right : string; const ignoreCase : boolean = true; const message : string = '');overload;
+    class procedure AreEqual(const left : string; const right : string; const ignoreCase : boolean; const message : string);overload;
+    class procedure AreEqual(const left : string; const right : string; const message : string = '');overload;
     class procedure AreEqual(const left, right : Extended; const tolerance : Extended; const message : string = '');overload;
+    class procedure AreEqual(const left, right : Extended; const message : string = '');overload;
     class procedure AreEqual(const left, right : TClass; const message : string = '');overload;
 {$IFDEF DELPHI_XE_UP}
     //Delphi 2010 compiler bug breaks this
@@ -804,6 +806,10 @@ begin
     Fail(Format('left %d but got %d - %s' ,[left, right, message]), ReturnAddress);
 end;
 
+class procedure Assert.AreEqual(const left, right: Extended; const message: string);
+begin
+  AreEqual(left, right, 0, message);
+end;
 
 class procedure Assert.AreEqualMemory(const left : Pointer; const right : Pointer; const size : Cardinal; message : string);
 begin
@@ -1231,6 +1237,11 @@ begin
       AMethod;
     end,
     exceptionClass, msg);
+end;
+
+class procedure Assert.AreEqual(const left : string; const right : string; const message : string);
+begin
+  Assert.AreEqual(left, right, true, message);
 end;
 
 class procedure Assert.AreEqual(const left, right : string;  const ignoreCase : boolean; const message: string);
