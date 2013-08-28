@@ -31,6 +31,7 @@ interface
 uses
   classes,
   SysUtils,
+  TypInfo,
   Rtti,
   TimeSpan,
   DUnitX.Generics,
@@ -773,14 +774,27 @@ class procedure Assert.AreEqual<T>(const left, right: T; const message: string);
 var
   comparer : IComparer<T>;
   leftvalue, rightvalue : TValue;
+  pInfo : PTypeInfo;
+  tInfo : TValue;
 begin
   comparer := TComparer<T>.Default;
   if comparer.Compare(right,left) <> 0 then
   begin
     leftValue := TValue.From<T>(left);
     rightValue := TValue.From<T>(right);
+    pInfo := TypeInfo(string);
 
-    Fail(Format('left %s but got %s', [leftValue.AsString, rightValue.AsString]), ReturnAddress);
+    if leftValue.IsEmpty or rightvalue.IsEmpty then
+      Fail('left is not equal to right', ReturnAddress)
+    else
+    begin
+      if leftValue.TryCast(pInfo,tInfo) then
+        Fail(Format('left %s but got %s', [leftValue.AsString, rightValue.AsString]), ReturnAddress)
+      else
+        Fail('left is not equal to right', ReturnAddress)
+    end;
+
+
   end;
 end;
 {$ENDIF}

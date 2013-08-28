@@ -97,7 +97,6 @@
 				<Form>Form1</Form>
 			</DCCReference>
 			<DCCReference Include="..\DUnitX.StackTrace.EurekaLog7.pas"/>
-			<DCCReference Include="DUnitX.Tests.TestResultCollector.pas"/>
 			<None Include="..\DUnitX.inc"/>
 			<None Include="..\DUnitX.Stacktrace.inc"/>
 			<BuildConfiguration Include="Debug">
@@ -165,3 +164,8 @@
 		</ProjectExtensions>
 		<Import Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')" Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj"/>
 	</Project>
+
+<!-- EurekaLog First Line
+[Exception Log]
+EurekaLog Version=7001
+EurekaLog Last Line -->

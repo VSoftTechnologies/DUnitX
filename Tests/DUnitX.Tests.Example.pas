@@ -145,7 +145,7 @@ end;
 
 procedure TExampleFixture2.Published_Procedures_Are_Included_As_Tests;
 begin
-  // FPublished_Procedures_Are_Included_As_Tests_Called := True;
+  FPublished_Procedures_Are_Included_As_Tests_Called := True;
   Assert.Pass;
 end;
 

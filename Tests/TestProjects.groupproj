@@ -6,7 +6,7 @@
 			<Projects Include="DUnitXGuiTest.dproj">
 				<Dependencies/>
 			</Projects>
-			<Projects Include="DUnitXTest.dproj">
+			<Projects Include="DUnitXTest_XE2.dproj">
 				<Dependencies/>
 			</Projects>
 		</ItemGroup>
@@ -26,23 +26,23 @@
 		<Target Name="DUnitXGuiTest:Make">
 			<MSBuild Targets="Make" Projects="DUnitXGuiTest.dproj"/>
 		</Target>
-		<Target Name="DUnitXTest">
-			<MSBuild Projects="DUnitXTest.dproj"/>
+		<Target Name="DUnitXTest_XE2">
+			<MSBuild Projects="DUnitXTest_XE2.dproj"/>
 		</Target>
-		<Target Name="DUnitXTest:Clean">
-			<MSBuild Targets="Clean" Projects="DUnitXTest.dproj"/>
+		<Target Name="DUnitXTest_XE2:Clean">
+			<MSBuild Targets="Clean" Projects="DUnitXTest_XE2.dproj"/>
 		</Target>
-		<Target Name="DUnitXTest:Make">
-			<MSBuild Targets="Make" Projects="DUnitXTest.dproj"/>
+		<Target Name="DUnitXTest_XE2:Make">
+			<MSBuild Targets="Make" Projects="DUnitXTest_XE2.dproj"/>
 		</Target>
 		<Target Name="Build">
-			<CallTarget Targets="DUnitXGuiTest;DUnitXTest"/>
+			<CallTarget Targets="DUnitXGuiTest;DUnitXTest_XE2"/>
 		</Target>
 		<Target Name="Clean">
-			<CallTarget Targets="DUnitXGuiTest:Clean;DUnitXTest:Clean"/>
+			<CallTarget Targets="DUnitXGuiTest:Clean;DUnitXTest_XE2:Clean"/>
 		</Target>
 		<Target Name="Make">
-			<CallTarget Targets="DUnitXGuiTest:Make;DUnitXTest:Make"/>
+			<CallTarget Targets="DUnitXGuiTest:Make;DUnitXTest_XE2:Make"/>
 		</Target>
 		<Import Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')" Project="$(BDS)\Bin\CodeGear.Group.Targets"/>
 	</Project>
