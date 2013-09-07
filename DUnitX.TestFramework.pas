@@ -31,6 +31,7 @@ interface
 uses
   classes,
   SysUtils,
+  TypInfo,
   Rtti,
   TimeSpan,
   DUnitX.Generics,
@@ -196,8 +197,10 @@ type
     //TODO: Make more use of warnings. Currently none in use.
     class procedure Warn(const message : string = ''; const errorAddrs : pointer = nil);
 
-    class procedure AreEqual(const left : string; const right : string; const ignoreCase : boolean = true; const message : string = '');overload;
+    class procedure AreEqual(const left : string; const right : string; const ignoreCase : boolean; const message : string);overload;
+    class procedure AreEqual(const left : string; const right : string; const message : string = '');overload;
     class procedure AreEqual(const left, right : Extended; const tolerance : Extended; const message : string = '');overload;
+    class procedure AreEqual(const left, right : Extended; const message : string = '');overload;
     class procedure AreEqual(const left, right : TClass; const message : string = '');overload;
 {$IFDEF DELPHI_XE_UP}
     //Delphi 2010 compiler bug breaks this
@@ -773,14 +776,27 @@ class procedure Assert.AreEqual<T>(const left, right: T; const message: string);
 var
   comparer : IComparer<T>;
   leftvalue, rightvalue : TValue;
+  pInfo : PTypeInfo;
+  tInfo : TValue;
 begin
   comparer := TComparer<T>.Default;
   if comparer.Compare(right,left) <> 0 then
   begin
     leftValue := TValue.From<T>(left);
     rightValue := TValue.From<T>(right);
+    pInfo := TypeInfo(string);
 
-    Fail(Format('left %s but got %s', [leftValue.AsString, rightValue.AsString]), ReturnAddress);
+    if leftValue.IsEmpty or rightvalue.IsEmpty then
+      Fail('left is not equal to right', ReturnAddress)
+    else
+    begin
+      if leftValue.TryCast(pInfo,tInfo) then
+        Fail(Format('left %s but got %s', [leftValue.AsString, rightValue.AsString]), ReturnAddress)
+      else
+        Fail('left is not equal to right', ReturnAddress)
+    end;
+
+
   end;
 end;
 {$ENDIF}
@@ -790,6 +806,10 @@ begin
     Fail(Format('left %d but got %d - %s' ,[left, right, message]), ReturnAddress);
 end;
 
+class procedure Assert.AreEqual(const left, right: Extended; const message: string);
+begin
+  AreEqual(left, right, 0, message);
+end;
 
 class procedure Assert.AreEqualMemory(const left : Pointer; const right : Pointer; const size : Cardinal; message : string);
 begin
@@ -1217,6 +1237,11 @@ begin
       AMethod;
     end,
     exceptionClass, msg);
+end;
+
+class procedure Assert.AreEqual(const left : string; const right : string; const message : string);
+begin
+  Assert.AreEqual(left, right, true, message);
 end;
 
 class procedure Assert.AreEqual(const left, right : string;  const ignoreCase : boolean; const message: string);

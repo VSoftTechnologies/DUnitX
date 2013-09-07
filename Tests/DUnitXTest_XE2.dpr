@@ -38,8 +38,7 @@ uses
   DUnitX.StackTrace.MadExcept3 in '..\DUnitX.StackTrace.MadExcept3.pas',
   DUnitX.StackTrace.MadExcept4 in '..\DUnitX.StackTrace.MadExcept4.pas',
   DUnitX.Loggers.GUI in '..\DUnitX.Loggers.GUI.pas' {Form1},
-  DUnitX.StackTrace.EurekaLog7 in '..\DUnitX.StackTrace.EurekaLog7.pas',
-  DUnitX.Tests.TestResultCollector in 'DUnitX.Tests.TestResultCollector.pas';
+  DUnitX.StackTrace.EurekaLog7 in '..\DUnitX.StackTrace.EurekaLog7.pas';
 
 var
   runner : ITestRunner;

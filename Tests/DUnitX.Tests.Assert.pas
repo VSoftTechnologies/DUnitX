@@ -37,39 +37,43 @@ type
   {+M}
   [TestFixture]
   TTestsAssert = class
+  private
   published
-    [TestCase]
+    [Test]
     procedure Pass_Throws_ETestPass_Exception;
-    [TestCase]
+    [Test]
     procedure Pass_Throws_ETestPass_Exception_With_Message;
-    [TestCase]
+    [Test]
     procedure Fail_Throws_ETestFailure_Exception;
-    [TestCase]
+    [Test]
     procedure Fail_Throws_ETestFailure_Exception_With_Message;
-    [TestCase]
+    [Test]
     procedure Fail_Throws_ETestFailure_Exception_With_Return_Address_Reference;
-    [TestCase]
+    [Test]
     procedure Fail_Throws_ETestFailure_Exception_With_Caller_Address_Reference;
-    [TestCase]
+    [Test]
     procedure AreEqual_String_Throws_No_Exception_When_Values_Are_Equal;
-    [TestCase]
+    [Test]
     procedure AreEqual_String_Throws_ETestFailure_When_Values_Are_NotEqual;
-    [TestCase]
+    [Test]
     procedure AreEqual_Extended_Throws_No_Exception_When_Values_Are_Equal;
-    [TestCase]
+    [Test]
     procedure AreEqual_Extended_Throws_ETestFailure_When_Values_Are_NotEqual;
-    [TestCase]
+    [Test]
     procedure AreEqual_TClass_Throws_No_Exception_When_Classes_Are_Equal;
-    [TestCase]
+    [Test]
     procedure AreEqual_TClass_Throws_ETestFailure_When_Classes_Are_NotEqual;
-    [TestCase]
+    [Test]
     procedure AreEqual_T_Throws_No_Exception_When_Classes_Are_Equal;
-    [TestCase]
+    [Test]
     procedure AreEqual_T_Throws_ETestFailure_When_Classes_Are_NotEqual;
 
-    [TestCase]
+    [Test]
+    procedure AreEqual_T_Throws_ETestFailure_When_Interfaces_Are_NotEqual_OrNil;
+
+    [Test]
     procedure Warn_Throws_ETestWarning_Exception;
-    [TestCase]
+    [Test]
     procedure AreEqual_Throws_No_Exception_When_Values_Are_Exactly_Equal;
   end;
 
@@ -280,6 +284,23 @@ begin
 
   //TODO: Fix generic are equals invalid cast error. TValue of a class does not allow AsString
 end;
+
+
+procedure TTestsAssert.AreEqual_T_Throws_ETestFailure_When_Interfaces_Are_NotEqual_OrNil;
+var
+  mock : IInterface;
+begin
+  mock := TInterfacedObject.Create();
+
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.AreEqual<IInterface>(mock, nil);
+    end, ETestFailure);
+
+  //TODO: Fix generic are equals invalid cast error. TValue of a class does not allow AsString
+end;
+
 
 procedure TTestsAssert.AreEqual_T_Throws_No_Exception_When_Classes_Are_Equal;
 var
