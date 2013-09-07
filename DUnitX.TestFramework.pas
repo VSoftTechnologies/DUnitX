@@ -1173,7 +1173,7 @@ begin
       end;
     end;
   end;
-  Fail('Method did not throw any excpetions.' + GetMsg, ReturnAddress);
+  Fail('Method did not throw any exceptions.' + GetMsg, ReturnAddress);
 end;
 
 class procedure Assert.Warn(const message : string; const errorAddrs : pointer);
