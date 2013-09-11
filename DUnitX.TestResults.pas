@@ -49,6 +49,7 @@ type
     FFailureCount : integer;
     FPassCount : integer;
     FWarningCount : integer;
+    FIgnoredCount : integer;
 
     FStartTime: TDateTime;
     FFinishTime: TDateTime;
@@ -62,6 +63,7 @@ type
     function GetResults: IEnumerable<DUnitX.TestFramework.ITestResult>;
     function GetPassCount: Integer;
     function GetWarningCount: Integer;
+    function GetIgnoredCount: Integer;
 
     function GetSuccessRate : integer;
     function GetStartTime: TDateTime;
@@ -144,6 +146,11 @@ begin
   result := FFixtures;
 end;
 
+function TDUnitXTestResults.GetIgnoredCount: Integer;
+begin
+  result := FIgnoredCount;
+end;
+
 function TDUnitXTestResults.GetResults: System.IEnumerable<DUnitX.TestFramework.ITestResult>;
 begin
   result := FResults;
@@ -188,6 +195,7 @@ begin
     TTestResultType.Failure : Inc(FFailureCount);
     TTestResultType.Warning : Inc(FWarningCount);
     TTestResultType.Error   : Inc(FErrorCount);
+    TTestResultType.Ignored : Inc(FIgnoredCount);
   end;
 
   if testResult.ResultType <> Pass then

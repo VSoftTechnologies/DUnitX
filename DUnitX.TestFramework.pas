@@ -123,6 +123,14 @@ type
     property Enabled : boolean read FEnabled;
   end;
 
+  IgnoreAttribute = class(TCustomAttribute)
+  private
+    FReason : string;
+  public
+    constructor Create(const AReason : string = '');
+    property Reason : string read FReason;
+  end;
+
 
   ///	<summary>
   ///	  Marks a test method to be repeated count times.
@@ -362,7 +370,7 @@ type
   TTestFixtureInfoList = class(TDUnitXList<ITestFixtureInfo>, ITestFixtureInfoList);
   {$M-}
 
-  TTestResultType = (Pass,Failure,Warning,Error);
+  TTestResultType = (Pass,Failure,Warning,Error,Ignored);
 
   {$M+}
   ITestResult = interface
@@ -444,6 +452,7 @@ type
     function GetErrorCount : integer;
     function GetWarningCount : integer;
     function GetPassCount : integer;
+    function GetIgnoredCount : integer;
     function GetSuccessRate : integer;
     function GetStartTime: TDateTime;
     function GetFinishTime: TDateTime;
@@ -457,6 +466,7 @@ type
     property Count : integer read GetCount;
     property FailureCount : integer read GetFailureCount;
     property ErrorCount : integer read GetErrorCount;
+    property IgnoredCount : integer read GetIgnoredCount;
     property WarningCount : integer read GetWarningCount;
     property PassCount : integer read GetPassCount;
 
@@ -496,42 +506,48 @@ type
     ///	<summary>
     ///	  Called before a Test method is run.
     ///	</summary>
-    procedure OnBeginTest(const threadId : Cardinal; Test: ITestInfo);
+    procedure OnBeginTest(const threadId : Cardinal;const  Test: ITestInfo);
 
     ///	<summary>
     ///	  Called before a test setup method is run.
     ///	</summary>
-    procedure OnSetupTest(const threadId : Cardinal; Test: ITestInfo);
+    procedure OnSetupTest(const threadId : Cardinal;const  Test: ITestInfo);
 
     ///	<summary>
     ///	  Called after a test setup method is run.
     ///	</summary>
-    procedure OnEndSetupTest(const threadId : Cardinal; Test: ITestInfo);
+    procedure OnEndSetupTest(const threadId : Cardinal;const  Test: ITestInfo);
 
     ///	<summary>
     ///	  Called before a Test method is run.
     ///	</summary>
-    procedure OnExecuteTest(const threadId : Cardinal; Test: ITestInfo);
+    procedure OnExecuteTest(const threadId : Cardinal;const  Test: ITestInfo);
 
     ///	<summary>
     ///	  Called when a test succeeds
     ///	</summary>
-    procedure OnTestSuccess(const threadId : Cardinal; Test: ITestResult);
+    procedure OnTestSuccess(const threadId : Cardinal;const  Test: ITestResult);
 
     ///	<summary>
     ///	  Called when a test errors.
     ///	</summary>
-    procedure OnTestError(const threadId : Cardinal; Error: ITestError);
+    procedure OnTestError(const threadId : Cardinal;const Error: ITestError);
 
     ///	<summary>
     ///	  Called when a test fails.
     ///	</summary>
-    procedure OnTestFailure(const threadId : Cardinal; Failure: ITestError);
+    procedure OnTestFailure(const threadId : Cardinal;const  Failure: ITestError);
 
     ///	<summary>
     ///	  //called when a test results in a warning.
     ///	</summary>
-    procedure OnTestWarning(const threadId : Cardinal; AWarning: ITestResult);
+    procedure OnTestWarning(const threadId : Cardinal;const  AWarning: ITestResult);
+
+    ///	<summary>
+    ///	  //called when a test is ignored.
+    ///	</summary>
+    procedure OnTestIgnored(const threadId : Cardinal; const AIgnored: ITestResult);
+
 
     ///	<summary>
     ///	  //allows tests to write to the log.
@@ -541,17 +557,17 @@ type
     ///	<summary>
     ///	  //called before a Test Teardown method is run.
     ///	</summary>
-    procedure OnTeardownTest(const threadId : Cardinal; Test: ITestInfo);
+    procedure OnTeardownTest(const threadId : Cardinal;const  Test: ITestInfo);
 
     ///	<summary>
     ///	  //called after a test teardown method is run.
     ///	</summary>
-    procedure OnEndTeardownTest(const threadId : Cardinal; Test: ITestInfo);
+    procedure OnEndTeardownTest(const threadId : Cardinal; const Test: ITestInfo);
 
     ///	<summary>
     ///	  //called after a test method and teardown is run.
     ///	</summary>
-    procedure OnEndTest(const threadId : Cardinal; Test: ITestResult);
+    procedure OnEndTest(const threadId : Cardinal;const  Test: ITestResult);
 
     ///	<summary>
     ///	  //called before a Fixture Teardown method is called.
@@ -1307,7 +1323,10 @@ begin
   FEnabled := AEnabled;
 end;
 
-{ TDUnit3 }
+constructor IgnoreAttribute.Create(const AReason: string);
+begin
+  FReason := AReason;
+end;
 
 class function TDUnitX.CreateRunner: ITestRunner;
 begin
@@ -1447,5 +1466,8 @@ constructor RepeatAttribute.Create(const ACount: Cardinal);
 begin
   FCount := ACount;
 end;
+
+{ IgnoreAttribute }
+
 
 end.

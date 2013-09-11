@@ -85,6 +85,7 @@ begin
   mockResults.Setup.WillReturn(3).When.FailureCount;
   mockResults.Setup.WillReturn(1).When.ErrorCount;
   mockResults.Setup.WillReturn(50).When.SuccessRate;
+    mockResults.Setup.WillReturn(3).When.IgnoredCount;
 
   TempStartTime := EncodeDateTime(2000, 2, 1, 11, 32, 50, 0);
   TempFinishTime := EncodeDateTime(2000, 2, 28, 12, 34, 56, 0);
@@ -103,6 +104,7 @@ begin
                   Format('<stat name="tests" value="%d" />', [6]) + CRLF +
                   Format('<stat name="failures" value="%d" />', [3]) + CRLF +
                   Format('<stat name="errors" value="%d" />', [1]) + CRLF +
+                  Format('<stat name="ignored" value="%d" />', [3]) + CRLF +
                   Format('<stat name="success-rate" value="%d%%" />', [50]) + CRLF +
                   Format('<stat name="started-at" value="%s" />', [StartTimeStr]) + CRLF +
                   Format('<stat name="finished-at" value="%s" />', [FinishTimeStr]) + CRLF +

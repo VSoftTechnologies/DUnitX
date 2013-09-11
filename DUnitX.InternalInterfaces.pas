@@ -54,10 +54,14 @@ type
     function GetTestDuration : TTimeSpan;
     function GetEnabled : boolean;
     procedure SetEnabled(const value : boolean);
+    function GetIgnored : boolean;
+    function GetIgnoreReason : string;
 
     property Name : string read GetName;
     property Enabled : boolean read GetEnabled write SetEnabled;
     property Fixture : ITestFixture read GetTestFixture;
+    property Ignored : boolean read GetIgnored;
+    property IgnoreReason : string read GetIgnoreReason;
     property TestMethod : TTestMethod read GetTestMethod;
   end;
 

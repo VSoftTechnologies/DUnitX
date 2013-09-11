@@ -77,6 +77,7 @@ type
     procedure Loggers_AddError(const threadId : Cardinal; const Error: ITestError);
     procedure Loggers_AddFailure(const threadId : Cardinal; const Failure: ITestError);
     procedure Loggers_AddWarning(const threadId : Cardinal; const AWarning: ITestResult);
+    procedure Loggers_AddIgnored(const threadId : Cardinal; const AIgnored: ITestResult);
 
     procedure Loggers_EndTest(const threadId : Cardinal; const Test: ITestResult);
     procedure Loggers_TeardownTest(const threadId : Cardinal; const Test: ITestInfo);
@@ -102,6 +103,8 @@ type
     function ExecuteFailureResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const exception : Exception) : ITestError;
     function ExecuteWarningResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const exception : Exception) : ITestResult;
     function ExecuteErrorResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const exception : Exception) : ITestError;
+    function ExecuteIgnoredResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const ignoreReason : string) : ITestResult;
+
 
     function ExecuteTestTearDown(const context: ITestExecuteContext; const threadId: Cardinal; const fixture: ITestFixture; const test: ITest; out errorResult: ITestResult) : boolean;
     procedure ExecuteTearDownFixtureMethod(const context: ITestExecuteContext; const threadId: Cardinal; const fixture: ITestFixture);
@@ -174,6 +177,16 @@ begin
   for logger in FLoggers do
   begin
     logger.OnTestFailure(threadId, Failure);
+  end;
+end;
+
+procedure TDUnitXTestRunner.Loggers_AddIgnored(const threadId: Cardinal; const AIgnored: ITestResult);
+var
+  logger : ITestLogger;
+begin
+  for logger in FLoggers do
+  begin
+    logger.OnTestIgnored(threadId,AIgnored);
   end;
 end;
 
@@ -370,6 +383,13 @@ begin
         context.RecordResult(testResult);
         Self.Loggers_AddError(threadId, ITestError(testResult));
       end;
+    Ignored :
+      begin
+        Log(TLogLevel.ltError, 'Test Ignored : ' + testResult.Test.Name + ' : ' + testResult.Message);
+        context.RecordResult(testResult);
+        Self.Loggers_AddIgnored(threadId, testResult);
+      end;
+
   end;
 end;
 
@@ -556,6 +576,11 @@ begin
   end;
 end;
 
+function TDUnitXTestRunner.ExecuteIgnoredResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const ignoreReason: string): ITestResult;
+begin
+  result := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Ignored, ignoreReason);
+end;
+
 procedure TDUnitXTestRunner.ExecuteSetupFixtureMethod(const threadid: cardinal; const fixture : ITestFixture);
 begin
   try
@@ -636,14 +661,16 @@ begin
     Self.Loggers_BeginTest(threadId, test as ITestInfo);
 
     //If the setup fails then we need to show this as the result.
-    if Assigned(fixture.SetupMethod) then
+    if Assigned(fixture.SetupMethod) and (not test.Ignored) then
       if not (ExecuteTestSetupMethod(context, threadId, fixture, test, setupResult)) then
         testResult := setupResult;
 
     try
       try
-        //If we haven't already failed, then run the test.
-        if testResult = nil then
+        if test.Ignored then
+            testResult :=  ExecuteIgnoredResult(context,threadId,test,test.IgnoreReason)
+       //If we haven't already failed, then run the test.
+        else if testResult = nil then
            testResult := ExecuteTest(context, threadId, test);
         
       except
@@ -659,7 +686,7 @@ begin
       end;
 
       //If the tear down fails then we need to show this as the test result.
-      if Assigned(fixture.TearDownMethod) then
+      if Assigned(fixture.TearDownMethod) and (not test.Ignored) then
         if not (ExecuteTestTearDown(context, threadId, fixture, test, tearDownResult)) then
           testResult := tearDownResult;
 

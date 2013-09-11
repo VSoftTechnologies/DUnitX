@@ -40,31 +40,32 @@ uses
 type
   TDUnitXTestFixture = class(TWeakReferencedObject, ITestFixture, ITestFixtureInfo)
   class var
-    FRttiContext : TRttiContext;
+    FRttiContext  : TRttiContext;
   private
-    FTestClass : TClass;
-    FName : string;
-    FNameSpace : string;
-    FDescription : string;
-    FEnabled : boolean;
-    FTests : IList<ITest>;
-    FTestInfos : IList<ITestInfo>;
+    FTestClass    : TClass;
+    FName         : string;
+    FNameSpace    : string;
+    FDescription  : string;
+    FEnabled      : boolean;
+    FTests        : IList<ITest>;
+    FTestInfos              : IList<ITestInfo>;
     FSetupMethod            : TTestMethod;
     FSetupFixtureMethod     : TTestMethod;
     FTearDownMethod         : TTestMethod;
     FTearDownFixtureMethod  : TTestMethod;
-    FFixtureInstance : TObject;
-    FTestInOwnThread : boolean;
-    FSetupFixtureMethodName: string;
-    FSetupMethodName: string;
-    FTearDownMethodName: string;
-    FTearDownFixtureMethodName: string;
+    FFixtureInstance        : TObject;
+    FTestInOwnThread        : boolean;
+    FSetupFixtureMethodName : string;
+    FSetupMethodName        : string;
+    FTearDownMethodName     : string;
+    FTearDownFixtureMethodName  : string;
     FChildren : ITestFixtureList;
   protected
     //uses RTTI to buid the fixture & tests
     procedure GenerateFixtureFromClass;
     function GetEnabled: Boolean;
     procedure SetEnabled(const value: Boolean);
+
 
     function GetName: string;
     function GetNameSpace : string;
@@ -181,11 +182,11 @@ var
   meth : TMethod;
   newTest : ITest;
 
-  fixtureAttrib : TestFixtureAttribute;
-  testCases : TArray<TestCaseAttribute>;
-  testCaseAttrib : TestCaseAttribute;
-  testEnabled : boolean;
-
+  fixtureAttrib   : TestFixtureAttribute;
+  testCases       : TArray<TestCaseAttribute>;
+  testCaseAttrib  : TestCaseAttribute;
+  testEnabled     : boolean;
+  ignoredAttrib   : IgnoreAttribute;
 begin
   rType := FRttiContext.GetType(FTestClass);
   System.Assert(rType <> nil);
@@ -235,12 +236,16 @@ begin
         else if ((attribute.ClassType = TestAttribute)) or
                 ((attribute.ClassType <> TestAttribute) and (method.Visibility = TMemberVisibility.mvPublished) and (not method.HasAttributeOfType<TestAttribute>)) then
         begin
-
+          ignoredAttrib := method.GetAttributeOfType<IgnoreAttribute>;
           if attribute.ClassType = TestAttribute then
           begin
             testEnabled := TestAttribute(attribute).Enabled;
-            //find out if the test fixture has test cases.
-            testCases := method.GetAttributesOfType<TestCaseAttribute>;
+
+
+
+            if testEnabled and (ignoredAttrib = nil) then
+              //find out if the test fixture has test cases.
+              testCases := method.GetAttributesOfType<TestCaseAttribute>;
 
             if Length(testCases) > 0 then
             begin
@@ -253,13 +258,19 @@ begin
             end
             else
             begin
-              newTest := TDUnitXTest.Create(Self, method.Name, TTestMethod(meth),testEnabled);
+              if ignoredAttrib <> nil then
+                newTest := TDUnitXTest.Create(Self, method.Name, TTestMethod(meth),testEnabled,true,ignoredAttrib.Reason)
+              else
+                newTest := TDUnitXTest.Create(Self, method.Name, TTestMethod(meth),testEnabled);
               FTests.Add(newTest);
             end;
           end
           else
           begin
-            newTest := TDUnitXTest.Create(Self, method.Name, TTestMethod(meth),True);
+            if ignoredAttrib <> nil then
+              newTest := TDUnitXTest.Create(Self, method.Name, TTestMethod(meth),true,true,ignoredAttrib.Reason)
+            else
+              newTest := TDUnitXTest.Create(Self, method.Name, TTestMethod(meth),true);
             FTests.Add(newTest);
           end;
 
@@ -311,6 +322,7 @@ function TDUnitXTestFixture.GetHasChildren: boolean;
 begin
   result := (FChildren <> nil) and (FChildren.Count > 0);
 end;
+
 
 function TDUnitXTestFixture.GetName: string;
 begin

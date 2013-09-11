@@ -69,6 +69,12 @@ type
     procedure TearDown;
 
     procedure TestMeAnyway;
+
+  published
+
+    [Ignore('Because I said so!!!')]
+    procedure IgnoreMe;
+
   end;
 
   [TestFixture]
@@ -101,6 +107,13 @@ begin
   raise Exception.Create('DontCallMe was called!!!!');
 end;
 
+procedure TMyExampleTests.IgnoreMe;
+begin
+  TDUnitX.CurrentRunner.Status('IgnoreMe called');
+  raise Exception.Create('IgnoreMe was called when it has IgnoreAttibute !!!!');
+
+end;
+
 procedure TMyExampleTests.Setup;
 begin
   TDUnitX.CurrentRunner.Status('Setup called');
@@ -128,16 +141,17 @@ end;
 
 
 procedure TMyExampleTests.TestTwo;
+{$IFDEF DELPHI_XE_UP}
 var
   x : TMyExampleTests;
+{$ENDIF}
 begin
   TDUnitX.CurrentRunner.Status('TestTwo called');
-  x := TMyExampleTests.Create;
-  //CheckIs(x,TObject); //DUnit compatibility.
   TDUnitX.CurrentRunner.Status('hello world');
 
   //No longer compatible for Delphi2010
 {$IFDEF DELPHI_XE_UP}
+  x := TMyExampleTests.Create;
   Assert.IsType<TObject>(x); /// a bit pointless since it's strongly typed.
 {$ENDIF}
 end;

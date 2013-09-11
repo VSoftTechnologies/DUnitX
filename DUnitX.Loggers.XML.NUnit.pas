@@ -55,24 +55,25 @@ type
     procedure OnSetupFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
     procedure OnEndSetupFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
 
-    procedure OnBeginTest(const threadId: Cardinal; Test: ITestInfo);
+    procedure OnBeginTest(const threadId: Cardinal; const Test: ITestInfo);
 
-    procedure OnSetupTest(const threadId: Cardinal; Test: ITestInfo);
-    procedure OnEndSetupTest(const threadId: Cardinal; Test: ITestInfo);
+    procedure OnSetupTest(const threadId: Cardinal; const Test: ITestInfo);
+    procedure OnEndSetupTest(const threadId: Cardinal; const Test: ITestInfo);
 
-    procedure OnExecuteTest(const threadId: Cardinal; Test: ITestInfo);
+    procedure OnExecuteTest(const threadId: Cardinal; const Test: ITestInfo);
 
-    procedure OnTestSuccess(const threadId: Cardinal; Success: ITestResult);
-    procedure OnTestWarning(const threadId: Cardinal; Warning: ITestResult);
-    procedure OnTestError(const threadId: Cardinal; Error: ITestError);
-    procedure OnTestFailure(const threadId: Cardinal; Failure: ITestError);
+    procedure OnTestSuccess(const threadId: Cardinal; const Success: ITestResult);
+    procedure OnTestWarning(const threadId: Cardinal; const Warning: ITestResult);
+    procedure OnTestError(const threadId: Cardinal; const Error: ITestError);
+    procedure OnTestFailure(const threadId: Cardinal; const Failure: ITestError);
+    procedure OnTestIgnored(const threadId: Cardinal; const Ignored: ITestResult);
 
     procedure OnLog(const logType: TLogLevel; const msg: string);
 
-    procedure OnTeardownTest(const threadId: Cardinal; Test: ITestInfo);
-    procedure OnEndTeardownTest(const threadId: Cardinal; Test: ITestInfo);
+    procedure OnTeardownTest(const threadId: Cardinal; const Test: ITestInfo);
+    procedure OnEndTeardownTest(const threadId: Cardinal; const Test: ITestInfo);
 
-    procedure OnEndTest(const threadId: Cardinal; Test: ITestResult);
+    procedure OnEndTest(const threadId: Cardinal; const Test: ITestResult);
 
     procedure OnTearDownFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
     procedure OnEndTearDownFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
@@ -152,7 +153,7 @@ begin
   Result := (FLogList.Count > 0) or (FWarningList.Count > 0);
 end;
 
-procedure TDUnitXXMLNUnitLogger.OnBeginTest(const threadId: Cardinal; Test: ITestInfo);
+procedure TDUnitXXMLNUnitLogger.OnBeginTest(const threadId: Cardinal; const Test: ITestInfo);
 begin
   FLogList.Clear;
   FWarningList.Clear;
@@ -163,7 +164,7 @@ begin
 
 end;
 
-procedure TDUnitXXMLNUnitLogger.OnEndSetupTest(const threadId: Cardinal; Test: ITestInfo);
+procedure TDUnitXXMLNUnitLogger.OnEndSetupTest(const threadId: Cardinal; const Test: ITestInfo);
 begin
 
 end;
@@ -173,12 +174,12 @@ begin
 
 end;
 
-procedure TDUnitXXMLNUnitLogger.OnEndTeardownTest(const threadId: Cardinal; Test: ITestInfo);
+procedure TDUnitXXMLNUnitLogger.OnEndTeardownTest(const threadId: Cardinal; const Test: ITestInfo);
 begin
 
 end;
 
-procedure TDUnitXXMLNUnitLogger.OnEndTest(const threadId: Cardinal; Test: ITestResult);
+procedure TDUnitXXMLNUnitLogger.OnEndTest(const threadId: Cardinal; const Test: ITestResult);
 begin
 
 end;
@@ -189,7 +190,7 @@ begin
    WriteXMLLine('</test-suite>');
 end;
 
-procedure TDUnitXXMLNUnitLogger.OnExecuteTest(const threadId: Cardinal; Test: ITestInfo);
+procedure TDUnitXXMLNUnitLogger.OnExecuteTest(const threadId: Cardinal; const Test: ITestInfo);
 begin
 
 end;
@@ -204,7 +205,7 @@ begin
 
 end;
 
-procedure TDUnitXXMLNUnitLogger.OnSetupTest(const threadId: Cardinal; Test: ITestInfo);
+procedure TDUnitXXMLNUnitLogger.OnSetupTest(const threadId: Cardinal; const Test: ITestInfo);
 begin
 
 end;
@@ -227,12 +228,12 @@ begin
 
 end;
 
-procedure TDUnitXXMLNUnitLogger.OnTeardownTest(const threadId: Cardinal; Test: ITestInfo);
+procedure TDUnitXXMLNUnitLogger.OnTeardownTest(const threadId: Cardinal; const Test: ITestInfo);
 begin
 
 end;
 
-procedure TDUnitXXMLNUnitLogger.OnTestError(const threadId: Cardinal; Error: ITestError);
+procedure TDUnitXXMLNUnitLogger.OnTestError(const threadId: Cardinal; const Error: ITestError);
 begin
   //TODO: Getting Test, and Fixture from Error is painful for testing. Therefore its painful for setup, and use?
 
@@ -247,7 +248,7 @@ begin
   WriteXMLLine('</test-case>');
 end;
 
-procedure TDUnitXXMLNUnitLogger.OnTestFailure(const threadId: Cardinal; Failure: ITestError);
+procedure TDUnitXXMLNUnitLogger.OnTestFailure(const threadId: Cardinal; const Failure: ITestError);
 begin
   WriteXMLLine(Format('<test-case name="%s" executed="%s" success="False" time="%1.3f" result="Failure">',
                     [EscapeForXML(Failure.Test.FullName), BoolToStr(Failure.Test.Active, True),
@@ -259,12 +260,35 @@ begin
   WriteXMLLine('</test-case>');
 end;
 
+procedure TDUnitXXMLNUnitLogger.OnTestIgnored(const threadId: Cardinal; const Ignored: ITestResult);
+var
+  endTag : string;
+  fixture: ITestFixtureInfo;
+begin
+  if Ignored.Message <> '' then
+    endTag := '>'
+  else
+    endTag := '/>';
+
+  fixture := Ignored.Test.Fixture;
+
+  WriteXMLLine(Format('<test-case name="%s" executed="False" result="Ignored" %s',
+                     [EscapeForXML(Ignored.Test.FullName),endTag]));
+
+  if Ignored.Message <> '' then
+  begin
+    WriteXMLLine('<status>' + EscapeForXML(Ignored.Message, false) + '</status>');
+    WriteXMLLine('</test-case>');
+  end;
+end;
+
 procedure TDUnitXXMLNUnitLogger.OnTestingEnds(const TestResults: ITestResults);
 begin
   WriteXMLLine('<statistics>' + NUNIT_LOGGER_CRLF +
                   Format('<stat name="tests" value="%d" />', [TestResults.Count]) + NUNIT_LOGGER_CRLF +
                   Format('<stat name="failures" value="%d" />', [TestResults.FailureCount]) + NUNIT_LOGGER_CRLF +
                   Format('<stat name="errors" value="%d" />', [TestResults.ErrorCount]) + NUNIT_LOGGER_CRLF +
+                  Format('<stat name="ignored" value="%d" />', [TestResults.IgnoredCount]) + NUNIT_LOGGER_CRLF +
                   Format('<stat name="success-rate" value="%d%%" />', [TestResults.SuccessRate]) + NUNIT_LOGGER_CRLF +
                   Format('<stat name="started-at" value="%s" />', [DateTimeToStr(TestResults.StartTime)]) + NUNIT_LOGGER_CRLF +
                   Format('<stat name="finished-at" value="%s" />', [DateTimeToStr(TestResults.FinishTime)]) + NUNIT_LOGGER_CRLF +
@@ -298,7 +322,7 @@ begin
    WriteXMLLine(Format('<application name="%s" />',[ExtractFileName(ParamStr(0))]));
 end;
 
-procedure TDUnitXXMLNUnitLogger.OnTestSuccess(const threadId: Cardinal; Success: ITestResult);
+procedure TDUnitXXMLNUnitLogger.OnTestSuccess(const threadId: Cardinal; const Success: ITestResult);
 var
   endTag : string;
   fixture: ITestFixtureInfo;
@@ -321,7 +345,7 @@ begin
   end;
 end;
 
-procedure TDUnitXXMLNUnitLogger.OnTestWarning(const threadId: Cardinal; Warning: ITestResult);
+procedure TDUnitXXMLNUnitLogger.OnTestWarning(const threadId: Cardinal; const Warning: ITestResult);
 begin
   FWarningList.Add(Format('WARNING: %s: %s', [Warning.Test.Name, Warning.Message]));
 end;

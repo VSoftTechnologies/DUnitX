@@ -1,4 +1,4 @@
-program DUnitXExamples_2010;
+program DUnitXExamples_XE5;
 
 {$APPTYPE CONSOLE}
 
@@ -29,7 +29,9 @@ uses
   DUnitX.Utils.XML in '..\DUnitX.Utils.XML.pas',
   DUnitX.WeakReference in '..\DUnitX.WeakReference.pas',
   DUnitX.Windows.Console in '..\DUnitX.Windows.Console.pas',
-  DUnitX.StackTrace.EurekaLog7 in '..\DUnitX.StackTrace.EurekaLog7.pas';
+  DUnitX.StackTrace.EurekaLog7 in '..\DUnitX.StackTrace.EurekaLog7.pas',
+  NonNamespacedExample in 'NonNamespacedExample.pas';
+
 var
   runner : ITestRunner;
   results : ITestResults;

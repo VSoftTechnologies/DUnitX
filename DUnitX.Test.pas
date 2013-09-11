@@ -41,13 +41,15 @@ uses
 type
   TDUnitXTest = class(TWeakReferencedObject, ITest, ITestInfo, ISetTestResult, ITestExecute)
   private
-    FName        : string;
-    FMethod      : TTestMethod;
-    FFixture     : IWeakReference<ITestFixture>;
-    FStartTime   : TDateTime;
-    FEndTime     : TDateTime;
-    FDuration    : TTimeSpan;
-    FEnabled     : boolean;
+    FName         : string;
+    FMethod       : TTestMethod;
+    FFixture      : IWeakReference<ITestFixture>;
+    FStartTime    : TDateTime;
+    FEndTime      : TDateTime;
+    FDuration     : TTimeSpan;
+    FEnabled      : boolean;
+    FIgnored      : boolean;
+    FIgnoreReason : string;
   protected
     //ITest
     function GetName: string; virtual;
@@ -64,7 +66,8 @@ type
     function ITestInfo_GetTestFixture: ITestFixtureInfo;
     function GetEnabled: Boolean;
     procedure SetEnabled(const value: Boolean);
-
+    function GetIgnored : boolean;
+    function GetIgnoreReason : string;
 
     //ISetTestResult
     procedure SetResult(const value: ITestResult);
@@ -72,11 +75,12 @@ type
     //ITestExecute
     procedure Execute(const context : ITestExecuteContext);virtual;
   public
-    constructor Create(const AFixture : ITestFixture; const AName : string; const AMethod : TTestMethod; const AEnabled : boolean);
+    constructor Create(const AFixture : ITestFixture; const AName : string; const AMethod : TTestMethod; const AEnabled : boolean;
+                       const AIgnored : boolean = false; const AIgnoreReason : string = '');
 
-    property Name : string read GetName;
-    property Fixture : ITestFixture read GetTestFixture;
-    property TestMethod : TTestMethod read GetTestMethod;
+    //property Name : string read GetName;
+//    property Fixture : ITestFixture read GetTestFixture;
+//    property TestMethod : TTestMethod read GetTestMethod;
   end;
 
   TDUnitXTestCase = class(TDUnitXTest, ITestExecute)
@@ -92,9 +96,9 @@ type
     constructor Create(const AInstance : TObject; const AFixture : ITestFixture; const ACaseName : string; const AName : string; const AMethod : TRttiMethod;
                        const AEnabled : boolean; const AArgs : TValueArray);reintroduce;
 
-    property Name : string read GetName;
-    property Fixture : ITestFixture read GetTestFixture;
-    property TestMethod : TTestMethod read GetTestMethod;
+//    property Name : string read GetName;
+//    property Fixture : ITestFixture read GetTestFixture;
+//    property TestMethod : TTestMethod read GetTestMethod;
   end;
 
 
@@ -106,12 +110,14 @@ uses
 
 { TDUnitXTest }
 
-constructor TDUnitXTest.Create(const AFixture: ITestFixture; const AName: string; const AMethod: TTestMethod; const AEnabled : boolean);
+constructor TDUnitXTest.Create(const AFixture: ITestFixture; const AName: string; const AMethod: TTestMethod; const AEnabled : boolean; const AIgnored : boolean; const AIgnoreReason : string);
 begin
   FFixture := TWeakReference<ITestFixture>.Create(AFixture);
   FName := AName;
   FMethod := AMethod;
   FEnabled := AEnabled;
+  FIgnored := AIgnored;
+  FIgnoreReason := AIgnoreReason;
 end;
 
 procedure TDUnitXTest.Execute(const context : ITestExecuteContext);
@@ -140,6 +146,16 @@ end;
 function TDUnitXTest.GetFullName: string;
 begin
   result := FFixture.Data.FullName + '.' + FName;
+end;
+
+function TDUnitXTest.GetIgnored: boolean;
+begin
+  result := FIgnored;
+end;
+
+function TDUnitXTest.GetIgnoreReason: string;
+begin
+  result := FIgnoreReason;
 end;
 
 function TDUnitXTest.GetName: string;
