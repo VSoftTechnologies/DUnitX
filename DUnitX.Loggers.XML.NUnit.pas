@@ -284,6 +284,7 @@ end;
 
 procedure TDUnitXXMLNUnitLogger.OnTestingEnds(const TestResults: ITestResults);
 begin
+  WriteXMLLine('</test-suite>');
   WriteXMLLine('<statistics>' + NUNIT_LOGGER_CRLF +
                   Format('<stat name="tests" value="%d" />', [TestResults.Count]) + NUNIT_LOGGER_CRLF +
                   Format('<stat name="failures" value="%d" />', [TestResults.FailureCount]) + NUNIT_LOGGER_CRLF +
@@ -303,6 +304,7 @@ procedure TDUnitXXMLNUnitLogger.OnTestingStarts(const threadId, testCount, testA
 var
   unicodePreamble: TBytes;
   dtNow: TDateTime;
+  sExe : string;
 begin
    //write the byte order mark
    unicodePreamble := TEncoding.UTF8.GetPreamble;
@@ -319,7 +321,13 @@ begin
                              DateToStr(dtNow),
                                TimeToStr(dtNow)]));
 
-   WriteXMLLine(Format('<application name="%s" />',[ExtractFileName(ParamStr(0))]));
+   sExe := ExtractFileName(ParamStr(0));
+
+
+   WriteXMLLine(Format('<application name="%s" />',[sExe]));
+   WriteXMLLine(Format('<test-suite type="Assembly" name="%s" total="0" notrun="0">',[ChangeFileExt(sExe,'')]));
+
+
 end;
 
 procedure TDUnitXXMLNUnitLogger.OnTestSuccess(const threadId: Cardinal; const Success: ITestResult);
@@ -359,7 +367,7 @@ begin
   sLine := AXMLLine + NUNIT_LOGGER_CRLF;
   if FOutputStream <> nil then
   begin
-    btUTF8Buffer := TEncoding.UTF8.GetBytes(AXMLLine);
+    btUTF8Buffer := TEncoding.UTF8.GetBytes(sLine);
     FOutputStream.WriteBuffer(btUTF8Buffer[0],Length(btUTF8Buffer));
   end
   else
