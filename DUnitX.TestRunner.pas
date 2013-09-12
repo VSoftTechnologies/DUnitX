@@ -485,10 +485,34 @@ end;
 
 //TODO - this needs to be thread aware so we can run tests in threads.
 function TDUnitXTestRunner.Execute: ITestResults;
+
+procedure CountTests(const fixtureList : ITestFixtureList; var count : Cardinal; var active : Cardinal);
 var
-  fixtures : ITestFixtureList;
+  children : ITestFixtureList;
   fixture  : ITestFixture;
   test     : ITest;
+begin
+  for fixture in fixtureList do
+  begin
+    for test in fixture.Tests do
+    begin
+      if test.Enabled then
+      begin
+        Inc(count);
+        if not test.Ignored then
+          Inc(active);
+      end;
+    end;
+    if fixture.HasChildFixtures then
+      CountTests(fixture.children,count,active);
+  end;
+
+
+
+end;
+
+var
+  fixtures : ITestFixtureList;
   context : ITestExecuteContext;
   threadId : Cardinal;
   testCount : Cardinal;
@@ -503,10 +527,9 @@ begin
   //TODO: Count the active tests that we have.
   testActiveCount := 0;
 
+  CountTests(fixtures,testCount,testActiveCount);
+
   //TODO: Move to the fixtures class
-  for fixture in fixtures do
-    for test in fixture.Tests do
-      Inc(testCount);
 
   //TODO: Need a simple way of converting one list to another list of a supported interface. Generics should help here.
   result := TDUnitXTestResults.Create(fixtures.AsFixtureInfoList);
