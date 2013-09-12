@@ -59,8 +59,11 @@ begin
     //Run tests
     results := runner.Execute;
 
+    {$IFNDEF CI}
+    //We don;t want this happening when running under CI.
     System.Write('Done.. press <Enter> key to quit.');
     System.Readln;
+    {$ENDIF}
   except
     on E: Exception do
       System.Writeln(E.ClassName, ': ', E.Message);
