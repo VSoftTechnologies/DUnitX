@@ -251,7 +251,7 @@ begin
       FFixtureClasses.AddOrSetValue(pair.Key, pair.Value);
   end;
 
-  //Build up a fixture heriachy based on unit names.
+  //Build up a fixture hierarchy based on unit names.
   tmpFixtures := TDictionary<string,ITestFixture>.Create;
   try
     for pair in FFixtureClasses do
