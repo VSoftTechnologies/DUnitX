@@ -26,18 +26,15 @@
 
 unit DUnitX.Tests.Assert;
 
-
 interface
 
 uses
   DUnitX.TestFramework;
 
-
 type
   {+M}
   [TestFixture]
   TTestsAssert = class
-  private
   published
     [Test]
     procedure Pass_Throws_ETestPass_Exception;
@@ -64,13 +61,21 @@ type
     [Test]
     procedure AreEqual_TClass_Throws_ETestFailure_When_Classes_Are_NotEqual;
     [Test]
-    procedure AreEqual_T_Throws_No_Exception_When_Classes_Are_Equal;
+    procedure AreEqual_T_Throws_No_Exception_When_Interfaces_Are_Equal;
     [Test]
-    procedure AreEqual_T_Throws_ETestFailure_When_Classes_Are_NotEqual;
-
+    procedure AreEqual_T_Throws_ETestFailure_When_Interfaces_Are_NotEqual;
     [Test]
-    procedure AreEqual_T_Throws_ETestFailure_When_Interfaces_Are_NotEqual_OrNil;
-
+    procedure AreEqual_T_Throws_ETestFailure_When_Interfaces_Are_Nil;
+    [Test]
+    procedure AreEqual_T_Throws_No_Exception_When_Objects_Are_Equal;
+    [Test]
+    procedure AreEqual_T_Throws_ETestFailure_When_Objects_Are_NotEqual;
+    [Test]
+    procedure AreEqual_T_Throws_ETestFailure_When_Objects_Are_Nil;
+    [Test]
+    procedure AreEqualMemory_Throws_No_Exception_When_Pointers_Are_Equal;
+    [Test]
+    procedure AreEqualMemory_Throws_ETestFailure_When_Pointers_Are_NotEqual;
     [Test]
     procedure Warn_Throws_ETestWarning_Exception;
     [Test]
@@ -185,6 +190,28 @@ begin
     end, ETestWarning);
 end;
 
+procedure TTestsAssert.AreEqualMemory_Throws_ETestFailure_When_Pointers_Are_NotEqual;
+begin
+  Assert.WillNotRaise(
+    procedure
+    begin
+      Assert.AreEqualMemory(, @mock, SizeOf(mock));
+    end, ETestFailure);
+end;
+
+procedure TTestsAssert.AreEqualMemory_Throws_No_Exception_When_Pointers_Are_Equal;
+var
+  mock : IInterface;
+begin
+  mock := TInterfacedObject.Create();
+
+  Assert.WillNotRaise(
+    procedure
+    begin
+      Assert.AreEqualMemory(@mock, @mock, SizeOf(mock));
+    end, ETestFailure);
+end;
+
 procedure TTestsAssert.AreEqual_Extended_Throws_ETestFailure_When_Values_Are_NotEqual;
 const
   ACTUAL_EXTENDED = 1.19E20;
@@ -268,7 +295,7 @@ begin
     end, Exception);
 end;
 
-procedure TTestsAssert.AreEqual_T_Throws_ETestFailure_When_Classes_Are_NotEqual;
+procedure TTestsAssert.AreEqual_T_Throws_ETestFailure_When_Interfaces_Are_NotEqual;
 var
   mock : IInterface;
   mock2 : IInterface;
@@ -281,12 +308,53 @@ begin
     begin
       Assert.AreEqual<IInterface>(mock, mock2);
     end, ETestFailure);
-
-  //TODO: Fix generic are equals invalid cast error. TValue of a class does not allow AsString
 end;
 
+procedure TTestsAssert.AreEqual_T_Throws_ETestFailure_When_Objects_Are_Nil;
+var
+  mock : TObject;
+  nilObject : TObject;
+begin
+  mock := TObject.Create();
+  try
+    nilObject := nil;
 
-procedure TTestsAssert.AreEqual_T_Throws_ETestFailure_When_Interfaces_Are_NotEqual_OrNil;
+    Assert.WillRaise(
+      procedure
+      begin
+        Assert.AreEqual<TObject>(mock, nilObject);
+      end, ETestFailure);
+
+    Assert.WillRaise(
+      procedure
+      begin
+        Assert.AreEqual<TObject>(nilObject, mock);
+      end, ETestFailure);
+  finally
+    FreeAndNil(mock);
+  end;
+end;
+
+procedure TTestsAssert.AreEqual_T_Throws_ETestFailure_When_Objects_Are_NotEqual;
+var
+  mock : TObject;
+  mock2 : TObject;
+begin
+  mock := TObject.Create;
+  mock2 := TObject.Create;
+  try
+    Assert.WillRaise(
+      procedure
+      begin
+        Assert.AreEqual<TObject>(mock, mock2);
+      end, ETestFailure);
+  finally
+    FreeAndNil(mock);
+    FreeAndNil(mock2);
+  end;
+end;
+
+procedure TTestsAssert.AreEqual_T_Throws_ETestFailure_When_Interfaces_Are_Nil;
 var
   mock : IInterface;
 begin
@@ -298,11 +366,15 @@ begin
       Assert.AreEqual<IInterface>(mock, nil);
     end, ETestFailure);
 
-  //TODO: Fix generic are equals invalid cast error. TValue of a class does not allow AsString
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.AreEqual<IInterface>(nil, mock);
+    end, ETestFailure);
 end;
 
 
-procedure TTestsAssert.AreEqual_T_Throws_No_Exception_When_Classes_Are_Equal;
+procedure TTestsAssert.AreEqual_T_Throws_No_Exception_When_Interfaces_Are_Equal;
 var
   mock : IInterface;
 begin
@@ -313,6 +385,22 @@ begin
     begin
       Assert.AreEqual<IInterface>(mock, mock);
     end, ETestFailure);
+end;
+
+procedure TTestsAssert.AreEqual_T_Throws_No_Exception_When_Objects_Are_Equal;
+var
+  mock : TObject;
+begin
+  mock := TObject.Create;
+  try
+    Assert.WillNotRaise(
+      procedure
+      begin
+        Assert.AreEqual<TObject>(mock, mock);
+      end, ETestFailure);
+  finally
+    FreeAndNil(mock);
+  end;
 end;
 
 initialization
