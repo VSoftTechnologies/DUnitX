@@ -68,7 +68,7 @@ end;
 
 procedure TDUnitXXMLNUnitLogger.Indent;
 begin
-  Inc(FIndent,1);
+  Inc(FIndent,2);
 end;
 
 procedure TDUnitXXMLNUnitLogger.OnTestingEnds(const RunResults: IRunResults);
@@ -105,7 +105,7 @@ begin
   for fixtureRes in RunResults.FixtureResults do
   begin
     fixtureRes.Reduce;
-    LogFixture(fixtureRes,0);
+//    LogFixture(fixtureRes,0);
   end;
 
 
@@ -116,7 +116,7 @@ begin
 
   WriteXMLLine(Format('<test-results name="%s" total="%d" errors="%d" failures="%d" ignored="%d" inconclusive="0" not-run="%d" skipped="0" invalid="0" date="%s" time="%s">',
                       [sExeName,RunResults.TestCount,RunResults.ErrorCount,RunResults.FailureCount,RunResults.IgnoredCount,RunResults.IgnoredCount,sDate,sTime]));
-  sExeName := ChangeFileExt(ExtractFileName(sExeName),'');
+  sExeName := ExtractFileName(sExeName);
 
   if RunResults.AllPassed then
     sResult := 'Success'
@@ -149,7 +149,7 @@ end;
 
 procedure TDUnitXXMLNUnitLogger.Outdent;
 begin
-  Dec(FIndent,1);
+  Dec(FIndent,2);
 end;
 
 procedure TDUnitXXMLNUnitLogger.WriteFixtureResult(const fixtureResult: IFixtureResult);
@@ -197,12 +197,16 @@ begin
       WriteXMLLine(Format('<test-suite type="Namespace" name="%s" executed="true" result="%s" success="%s" time="%s" asserts="0" %s>',[fixtureResult.Fixture.Name, sResult,BoolToStr(not fixtureResult.HasFailures,true),sTime,sLineEnd]));
       if fixtureResult.ChildCount > 0 then
       begin
+        Indent;
         WriteXMLLine('<results>');
+        Indent;
         for child in fixtureResult.Children do
         begin
             WriteFixtureResult(child);
         end;
+        Outdent;
         WriteXMLLine('</results>');
+        Outdent;
         WriteXMLLine('</test-suite>');
       end;
     end;
@@ -238,7 +242,7 @@ begin
     else
       sSuccess := '';
 
-    WriteXMLLine(Format('<test-case name="%s" executed="%s" result="%s" %s time="%s" asserts="0" %s>',[testResult.Test.FullName, sExecuted, sResult,sSuccess,sTime,sLineEnd]));
+    WriteXMLLine(Format('<test-case name="%s" executed="%s" result="%s" %s time="%s" asserts="0" %s>',[testResult.Test.Name, sExecuted, sResult,sSuccess,sTime,sLineEnd]));
     if testResult.ResultType <> TTestResultType.Pass then
     begin
       Indent;
