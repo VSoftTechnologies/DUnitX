@@ -73,7 +73,7 @@ end;
 
 procedure TDUnitXXMLNUnitLogger.OnTestingEnds(const RunResults: IRunResults);
 
-(*
+
 procedure LogFixture(const fixture : IFixtureResult; level : integer);
 var
   child : IFixtureResult;
@@ -89,7 +89,7 @@ begin
   end;
 
 end;
-*)
+
 
 var
   fixtureRes : IFixtureResult;
@@ -105,7 +105,7 @@ begin
   for fixtureRes in RunResults.FixtureResults do
   begin
     fixtureRes.Reduce;
-  //  LogFixture(fixtureRes,0);
+    LogFixture(fixtureRes,0);
   end;
 
 
@@ -159,6 +159,7 @@ var
   sLineEnd : string;
   child : IFixtureResult;
   testResult : ITestResult;
+  sExecuted : string;
 begin
   Indent;
   try
@@ -168,10 +169,16 @@ begin
       sResult := 'Failure';
     sTime := Format('%.3f',[fixtureResult.Duration.TotalSeconds]);
 
-    if fixtureResult.ResultCount > 0  then
+
+    //its a real fixture if the class is not TObject.
+    if (not fixtureResult.Fixture.TestClass.ClassNameIs('TObject'))  then
     begin
-      //It's a fixture
-      WriteXMLLine(Format('<test-suite type="Fixture" name="%s" executed="true" result="%s" success="%s" time="%s">',[fixtureResult.Fixture.Name, sResult,BoolToStr(not fixtureResult.HasFailures,true),sTime]));
+      //if there were no tests then just ignore this fixture.
+      if fixtureResult.ResultCount = 0 then
+        exit;
+      sExecuted := BoolToStr(fixtureResult.ResultCount > 0,true);
+
+      WriteXMLLine(Format('<test-suite type="Fixture" name="%s" executed="%s" result="%s" success="%s" time="%s" >',[fixtureResult.Fixture.Name, sResult,sExecuted,BoolToStr(not fixtureResult.HasFailures,true),sTime]));
       Indent;
       WriteXMLLine('<results>');
       for testResult in fixtureResult.TestResults do
@@ -187,7 +194,7 @@ begin
       if fixtureResult.ChildCount = 0 then
         sLineEnd := '/';
       //It's a Namespace.
-      WriteXMLLine(Format('<test-suite type="Namespace" name="%s" executed="true" result="%s" success="%s" time="%s" asserts="0" %s>',[fixtureResult.Fixture.FullName, sResult,BoolToStr(not fixtureResult.HasFailures,true),sTime,sLineEnd]));
+      WriteXMLLine(Format('<test-suite type="Namespace" name="%s" executed="true" result="%s" success="%s" time="%s" asserts="0" %s>',[fixtureResult.Fixture.Name, sResult,BoolToStr(not fixtureResult.HasFailures,true),sTime,sLineEnd]));
       if fixtureResult.ChildCount > 0 then
       begin
         WriteXMLLine('<results>');
@@ -214,6 +221,7 @@ var
   sLineEnd : string;
   sResult  : string;
   sTime : string;
+  sExecuted : string;
 begin
   Indent;
   try
@@ -221,7 +229,9 @@ begin
     sResult := ResultTypeToString(testResult.ResultType);
     if testResult.ResultType = TTestResultType.Pass then
       sLineEnd := '/';
-    WriteXMLLine(Format('<test-case name="%s" executed="True" result="%s" success="%s" time="%s" asserts="0" %s>',[testResult.Test.FullName, sResult,BoolToStr(testResult.ResultType = Pass,true),sTime,sLineEnd]));
+    sExecuted := BoolToStr(testResult.ResultType <> Ignored,true);
+
+    WriteXMLLine(Format('<test-case name="%s" executed="%s" result="%s" time="%s" asserts="0" %s>',[testResult.Test.FullName, sExecuted, sResult,sTime,sLineEnd]));
     if testResult.ResultType <> TTestResultType.Pass then
     begin
       Indent;

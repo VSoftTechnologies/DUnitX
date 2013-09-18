@@ -27,6 +27,9 @@ type
     FFinishTime   : TDateTime;
     FDuration     : TTimeSpan;
 
+    FName         : string;
+    FNameSpace    : string;
+    FCanReduce    : boolean;
 
   protected
     procedure Reduce;
@@ -49,6 +52,9 @@ type
     function GetStartTime: TDateTime;
     function GetFinishTime: TDateTime;
     function GetDuration: TTimeSpan;
+    function GetName : string;
+    function GetNamespace : string;
+
 
     procedure AddChild(const AFixtureResult: IFixtureResult);
     procedure AddTestResult(const AResult: ITestResult);
@@ -91,8 +97,15 @@ begin
   FChildren := nil;
   FTestResults := nil;
 
+  FName := AFixture.Name;
+  FNameSpace := AFixture.NameSpace;
+
+
   if AParentResult <> nil then
+  begin
     (AParentResult as IFixtureResultBuilder).AddChild(Self);
+    FCanReduce := True;
+  end;
 
 end;
 
@@ -180,6 +193,16 @@ begin
   result := FIgnoredCount;
 end;
 
+function TDUnitXFixtureResult.GetName: string;
+begin
+  result := FName;
+end;
+
+function TDUnitXFixtureResult.GetNamespace: string;
+begin
+  result := FName;
+end;
+
 function TDUnitXFixtureResult.GetPassCount: Integer;
 begin
   result := FPassCount;
@@ -253,9 +276,13 @@ begin
       fixtureRes.Reduce;
 
     //if we have no tests and only one child, then we reduce to that child.
-    if (FChildren.Count = 1) and ((FTestResults = nil) or (FTestResults.Count = 0)) then
+    if FCanReduce and (FChildren.Count = 1) and ((FTestResults = nil) or (FTestResults.Count = 0)) then
     begin
        fixtureRes := FChildren[0];
+
+       FNameSpace := FNameSpace + '.' + FName;
+       FName := fixtureRes.Name;
+
        FFixture := fixtureRes.Fixture;
        if FTestResults = nil then
          FTestResults := TDUnitXList<ITestResult>.Create;

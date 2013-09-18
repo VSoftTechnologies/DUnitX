@@ -100,6 +100,7 @@
 			<DCCReference Include="DUnitX.Tests.WeakReference.pas"/>
 			<DCCReference Include="DUnitX.Tests.Loggers.XML.NUnit.pas"/>
 			<DCCReference Include="..\DUnitX.Loggers.XML.NUnit.pas"/>
+			<DCCReference Include="DUnitX.SingleNameSpace.pas"/>
 			<None Include="..\DUnitX.inc"/>
 			<None Include="..\DUnitX.Stacktrace.inc"/>
 			<BuildConfiguration Include="Debug">

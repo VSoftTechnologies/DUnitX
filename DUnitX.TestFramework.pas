@@ -432,6 +432,8 @@ end;
     function GetFailures  : IList<ITestResult>;
     function GetErrors    : IList<ITestError>;
     function GetPasses : IList<ITestResult>;
+    function GetName : string;
+    function GetNamespace : string;
     procedure Reduce;
 
     property HasFailures  : Boolean read GetHasFailures;
@@ -442,6 +444,8 @@ end;
     property ResultCount  : integer read GetTestResultCount;
     property ChildCount   : integer read GetChildCount;
 
+    property Name         : string read GetName;
+    property Namespace    : string read GetNamespace;
     property Fixture      : ITestFixtureInfo read GetFixture;
     property Children     : IList<IFixtureResult> read GetChildren;
     property TestResults  : IList<ITestResult> read GetTestResults;

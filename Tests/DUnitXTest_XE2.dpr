@@ -41,7 +41,8 @@ uses
   DUnitX.Tests.Utils.XML in 'DUnitX.Tests.Utils.XML.pas',
   DUnitX.Tests.WeakReference in 'DUnitX.Tests.WeakReference.pas',
   DUnitX.Tests.Loggers.XML.NUnit in 'DUnitX.Tests.Loggers.XML.NUnit.pas',
-  DUnitX.Loggers.XML.NUnit in '..\DUnitX.Loggers.XML.NUnit.pas';
+  DUnitX.Loggers.XML.NUnit in '..\DUnitX.Loggers.XML.NUnit.pas',
+  DUnitX.SingleNameSpace in 'DUnitX.SingleNameSpace.pas';
 
 var
   runner : ITestRunner;
