@@ -841,16 +841,14 @@ begin
     pInfo := TypeInfo(string);
 
     if leftValue.IsEmpty or rightvalue.IsEmpty then
-      Fail('left is not equal to right', ReturnAddress)
+      Fail(Format('left is not equal to right - %s', [message]), ReturnAddress)
     else
     begin
       if leftValue.TryCast(pInfo,tInfo) then
-        Fail(Format('left %s but got %s', [leftValue.AsString, rightValue.AsString]), ReturnAddress)
+        Fail(Format('left %s but got %s - %s', [leftValue.AsString, rightValue.AsString, message]), ReturnAddress)
       else
-        Fail('left is not equal to right', ReturnAddress)
+        Fail(Format('left is not equal to right - %s', [message]), ReturnAddress)
     end;
-
-
   end;
 end;
 {$ENDIF}
