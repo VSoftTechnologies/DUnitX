@@ -34,6 +34,7 @@ uses
   DUnitX.InternalInterfaces,
   DUnitX.Generics,
   DUnitX.WeakReference,
+  classes,
   SysUtils,
   Rtti;
 
@@ -43,19 +44,20 @@ uses
 type
   ///  Note - we rely on the fact that there will only ever be 1 testrunner
   ///  per thread, if this changes then handling of WriteLn will need to change
-  TDUnitXTestRunner = class(TWeakReferencedObject, ITestRunner)
+  TDUnitXTestRunner = class(TInterfacedObject, ITestRunner)
   private class var
     FRttiContext : TRttiContext;
   public class var
     FActiveRunners : TDictionary<Cardinal,ITestRunner>;
   private
-    FLoggers      : TList<ITestLogger>;
+    FLoggers        : TList<ITestLogger>;
     FUseCommandLine : boolean;
     FUseRTTI        : boolean;
     FExitBehavior   : TRunnerExitBehavior;
-    FFixtureClasses : TDictionary<string,TClass>;
+    FFixtureClasses : TDictionary<TClass,string>;
 
     FFixtureList    : ITestFixtureList;
+    FLogMessages    : TStringList;
 
   protected
     //Logger calls - sequence ordered
@@ -76,7 +78,6 @@ type
     procedure Loggers_AddSuccess(const threadId : Cardinal; const Test: ITestResult);
     procedure Loggers_AddError(const threadId : Cardinal; const Error: ITestError);
     procedure Loggers_AddFailure(const threadId : Cardinal; const Failure: ITestError);
-    procedure Loggers_AddWarning(const threadId : Cardinal; const AWarning: ITestResult);
     procedure Loggers_AddIgnored(const threadId : Cardinal; const AIgnored: ITestResult);
 
     procedure Loggers_EndTest(const threadId : Cardinal; const Test: ITestResult);
@@ -86,22 +87,21 @@ type
 
     procedure Loggers_EndTestFixture(const threadId : Cardinal; const results : IFixtureResult);
 
-    procedure Loggers_TestingEnds(const TestResult: ITestResults);
+    procedure Loggers_TestingEnds(const RunResults: IRunResults);
 
     //ITestRunner
     procedure AddLogger(const value: ITestLogger);
-    function Execute: ITestResults;
+    function Execute: IRunResults;
 
-    procedure ExecuteFixtures(const context: ITestExecuteContext; const threadId: Cardinal; const fixtures: ITestFixtureList);
+    procedure ExecuteFixtures(const parentFixtureResult : IFixtureResult; const context: ITestExecuteContext; const threadId: Cardinal; const fixtures: ITestFixtureList);
     procedure ExecuteSetupFixtureMethod(const threadid: cardinal; const fixture: ITestFixture);
     function  ExecuteTestSetupMethod(const context : ITestExecuteContext; const threadid: cardinal; const fixture: ITestFixture; const test: ITest; out errorResult: ITestResult): boolean;
 
-    procedure ExecuteTests(const context : ITestExecuteContext; const threadId: Cardinal; const fixture: ITestFixture);
+    procedure ExecuteTests(const context : ITestExecuteContext; const threadId: Cardinal; const fixture: ITestFixture; const fixtureResult : IFixtureResult);
 
     function ExecuteTest(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest) : ITestResult;
     function ExecuteSuccessfulResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const message: string = '') : ITestResult;
     function ExecuteFailureResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const exception : Exception) : ITestError;
-    function ExecuteWarningResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const exception : Exception) : ITestResult;
     function ExecuteErrorResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const exception : Exception) : ITestError;
     function ExecuteIgnoredResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const ignoreReason : string) : ITestResult;
 
@@ -109,7 +109,7 @@ type
     function ExecuteTestTearDown(const context: ITestExecuteContext; const threadId: Cardinal; const fixture: ITestFixture; const test: ITest; out errorResult: ITestResult) : boolean;
     procedure ExecuteTearDownFixtureMethod(const context: ITestExecuteContext; const threadId: Cardinal; const fixture: ITestFixture);
 
-    procedure RecordResult(const context: ITestExecuteContext; const threadId: cardinal; const testResult: ITestResult);
+    procedure RecordResult(const context: ITestExecuteContext; const threadId: cardinal; const fixtureResult : IFixtureResult; const testResult: ITestResult);
 
     function GetExitBehavior: TRunnerExitBehavior;
     function GetUseCommandLineOptions: Boolean;
@@ -145,13 +145,13 @@ implementation
 
 uses
   DUnitX.TestFixture,
-  DUnitX.TestResults,
+  DUnitX.RunResults,
   DUnitX.TestResult,
+  DUnitX.FixtureResult,
   DUnitX.Utils,
   TypInfo,
   StrUtils,
-  Types,
-  classes;
+  Types;
 
 { TDUnitXTestRunner }
 
@@ -206,15 +206,6 @@ begin
   end;
 end;
 
-procedure TDUnitXTestRunner.Loggers_AddWarning(const threadId : Cardinal; const AWarning: ITestResult);
-var
-  logger : ITestLogger;
-begin
-  for logger in FLoggers do
-  begin
-    logger.OnTestWarning(threadId,AWarning);
-  end;
-end;
 
 procedure TDUnitXTestRunner.AddStatus(const threadId; const msg: string);
 begin
@@ -225,7 +216,7 @@ function TDUnitXTestRunner.BuildFixtures  : IInterface;
 var
   fixture : ITestFixture;
   parentFixture : ITestFixture;
-  pair : TPair<string,TClass>;
+  pair : TPair<TClass,string>;
   uName : string;
   namespaces : TStringDynArray;
   namespace : string;
@@ -256,7 +247,7 @@ begin
   try
     for pair in FFixtureClasses do
     begin
-      uName := pair.Value.UnitName;
+      uName := pair.Key.UnitName;
       namespaces := SplitString(uName,'.');
       //if the unit name has no namespaces the just add the tests.
       fixtureNamespace := '';
@@ -297,8 +288,8 @@ begin
       end;
 
 
-      fixtureNamespace := fixtureNamespace + '.' + pair.Key;
-      fixture := TDUnitXTestFixture.Create(fixtureNamespace, pair.Value);
+      fixtureNamespace := fixtureNamespace + '.' + pair.Value;
+      fixture := TDUnitXTestFixture.Create(fixtureNamespace, pair.Key);
 
       if parentFixture = nil then
         FFixtureList.Add(fixture)
@@ -323,9 +314,10 @@ begin
   FLoggers := TList<ITestLogger>.Create;
   if AListener <> nil then
     FLoggers.Add(AListener);
-  FFixtureClasses := TDictionary<string,TClass>.Create;
+  FFixtureClasses := TDictionary<TClass,string>.Create;
   FUseCommandLine := useCommandLineOptions;
   FUseRTTI := False;
+  FLogMessages    := TStringList.Create;
   MonitorEnter(TDUnitXTestRunner.FActiveRunners);
   try
     TDUnitXTestRunner.FActiveRunners.Add(TThread.CurrentThread.ThreadID, Self);
@@ -336,7 +328,6 @@ end;
 
 destructor TDUnitXTestRunner.Destroy;
 var
-
   tId : Cardinal;
 begin
   MonitorEnter(TDUnitXTestRunner.FActiveRunners);
@@ -347,8 +338,10 @@ begin
   finally
     MonitorExit(TDUnitXTestRunner.FActiveRunners);
   end;
+  FLogMessages.Free;
   FLoggers.Free;
   FFixtureClasses.Free;
+
   inherited;
 end;
 
@@ -357,36 +350,30 @@ begin
   FActiveRunners.Free;
 end;
 
-procedure TDUnitXTestRunner.RecordResult(const context: ITestExecuteContext; const threadId: cardinal; const testResult: ITestResult);
+procedure TDUnitXTestRunner.RecordResult(const context: ITestExecuteContext; const threadId: cardinal; const fixtureResult : IFixtureResult; const testResult: ITestResult);
 begin
   case testResult.ResultType of
     Pass:
       begin
-        context.RecordResult(testResult);
+        context.RecordResult(fixtureResult,testResult);
         Self.Loggers_AddSuccess(threadId, testResult);
       end;
     Failure:
       begin
         Log(TLogLevel.ltError, 'Test failed : ' + testResult.Test.Name + ' : ' + testResult.Message);
-        context.RecordResult(testResult);
+        context.RecordResult(fixtureResult, testResult);
         Self.Loggers_AddFailure(threadId, ITestError(testResult));
-      end;
-    Warning:
-      begin
-        Log(TLogLevel.ltWarning, 'Test warning : ' + testResult.Test.Name + ' : ' + testResult.Message);
-        context.RecordResult(testResult);
-        Self.Loggers_AddWarning(threadId, testResult);
       end;
     Error:
       begin
         Log(TLogLevel.ltError, 'Test Error : ' + testResult.Test.Name + ' : ' + testResult.Message);
-        context.RecordResult(testResult);
+        context.RecordResult(fixtureResult, testResult);
         Self.Loggers_AddError(threadId, ITestError(testResult));
       end;
     Ignored :
       begin
         Log(TLogLevel.ltError, 'Test Ignored : ' + testResult.Test.Name + ' : ' + testResult.Message);
-        context.RecordResult(testResult);
+        context.RecordResult(fixtureResult,testResult);
         Self.Loggers_AddIgnored(threadId, testResult);
       end;
 
@@ -416,8 +403,8 @@ begin
             sName := TestFixtureAttribute(attribute).Name;
             if sName = '' then
               sName := TRttiInstanceType(rType).MetaclassType.ClassName;
-            if not FFixtureClasses.ContainsValue(TRttiInstanceType(rType).MetaclassType) then
-              FFixtureClasses.Add(sName,TRttiInstanceType(rType).MetaclassType);
+            if not FFixtureClasses.ContainsKey(TRttiInstanceType(rType).MetaclassType) then
+              FFixtureClasses.Add(TRttiInstanceType(rType).MetaclassType,sName);
           end;
         end;
     end;
@@ -484,11 +471,10 @@ begin
 end;
 
 //TODO - this needs to be thread aware so we can run tests in threads.
-function TDUnitXTestRunner.Execute: ITestResults;
+function TDUnitXTestRunner.Execute: IRunResults;
 
 procedure CountTests(const fixtureList : ITestFixtureList; var count : Cardinal; var active : Cardinal);
 var
-  children : ITestFixtureList;
   fixture  : ITestFixture;
   test     : ITest;
 begin
@@ -532,16 +518,17 @@ begin
   //TODO: Move to the fixtures class
 
   //TODO: Need a simple way of converting one list to another list of a supported interface. Generics should help here.
-  result := TDUnitXTestResults.Create(fixtures.AsFixtureInfoList);
+  result := TDUnitXRunResults.Create(fixtures.AsFixtureInfoList);
   context := result as ITestExecuteContext;
 
   //TODO: Record Test metrics.. runtime etc.
   threadId := TThread.CurrentThread.ThreadID;
   Self.Loggers_TestingStarts(threadId, testCount, testActiveCount);
   try
-    ExecuteFixtures(context, threadId, fixtures);
+    ExecuteFixtures(nil,context, threadId, fixtures);
+    //make sure each fixture includes it's child fixture result counts.
+    context.RollupResults;
   finally
-    //TODO: Actully pass the results for all fixtures and tests here.
     Self.Loggers_TestingEnds(result);
   end;
 end;
@@ -567,34 +554,38 @@ begin
   Result := TDUnitXTestError.Create(test as ITestInfo, TTestResultType.Failure, exception, ExceptAddr, exception.Message);
 end;
 
-procedure TDUnitXTestRunner.ExecuteFixtures(const context: ITestExecuteContext; const threadId: Cardinal; const fixtures: ITestFixtureList);
+procedure TDUnitXTestRunner.ExecuteFixtures(const parentFixtureResult : IFixtureResult; const context: ITestExecuteContext; const threadId: Cardinal; const fixtures: ITestFixtureList);
 var
   fixture: ITestFixture;
-  testResult : ITestResult;
+  fixtureResult : IFixtureResult;
 begin
   for fixture in fixtures do
   begin
     if not fixture.Enabled then
       System.continue;
 
+    fixtureResult := TDUnitXFixtureResult.Create(parentFixtureResult, fixture as ITestFixtureInfo);
+    if parentFixtureResult = nil then
+      context.RecordFixture(fixtureResult);
+
     Self.Loggers_StartTestFixture(threadId, fixture as ITestFixtureInfo);
     try
-      if Assigned(fixture.SetupFixtureMethod) then
+      //only run the setup method if there are actually tests
+      if fixture.HasTests and Assigned(fixture.SetupFixtureMethod) then
         //TODO: Errors from here need to be logged into each test below us
         ExecuteSetupFixtureMethod(threadId, fixture);
 
-      ExecuteTests(context, threadId, fixture);
+      if fixture.HasTests then
+        ExecuteTests(context, threadId, fixture,fixtureResult);
 
       if fixture.HasChildFixtures then
-        ExecuteFixtures(context, threadId, fixture.Children);
+        ExecuteFixtures(fixtureResult, context, threadId, fixture.Children);
 
-      if Assigned(fixture.TearDownFixtureMethod) then
+      if fixture.HasTests and Assigned(fixture.TearDownFixtureMethod) then
         //TODO: Tricker yet each test above us requires errors that occur here
         ExecuteTearDownFixtureMethod(context, threadId, fixture);
-
     finally
-      //TODO: Actully pass the results for the fixture here
-      Self.Loggers_EndTestFixture(threadId, nil);
+      Self.Loggers_EndTestFixture(threadId, fixtureResult);
     end;
   end;
 end;
@@ -633,6 +624,7 @@ begin
   try
     Self.Loggers_TeardownFixture(threadId, fixture as ITestFixtureInfo);
     fixture.TearDownFixtureMethod;
+    fixture.OnMethodExecuted(fixture.TearDownFixtureMethod);
   except
     on e: Exception do
     begin
@@ -644,13 +636,14 @@ end;
 function TDUnitXTestRunner.ExecuteTest(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest) : ITestResult;
 var
   testExecute: ITestExecute;
-  testResult: ITestResult;
 begin
   if Supports(test, ITestExecute, testExecute) then
   begin
+    FLogMessages.Clear;
     Self.Loggers_ExecuteTest(threadId, test as ITestInfo);
     testExecute.Execute(context);
-    Result := ExecuteSuccessfulResult(context, threadId, test);
+    Result := ExecuteSuccessfulResult(context, threadId, test,FLogMessages.Text);
+    FLogMessages.Clear;
   end
   else
   begin
@@ -659,7 +652,7 @@ begin
   end;
 end;
 
-procedure TDUnitXTestRunner.ExecuteTests(const context : ITestExecuteContext; const threadId: Cardinal; const fixture: ITestFixture);
+procedure TDUnitXTestRunner.ExecuteTests(const context : ITestExecuteContext; const threadId: Cardinal; const fixture: ITestFixture; const fixtureResult : IFixtureResult);
 var
   tests : IEnumerable<ITest>;
   test : ITest;
@@ -702,8 +695,6 @@ begin
           testResult := ExecuteSuccessfulResult(context, threadId, test, e.Message);
         on e: ETestFailure do
           testResult := ExecuteFailureResult(context, threadId, test, e);
-        on e: ETestWarning do
-          testResult := ExecuteWarningResult(context, threadId, test, e);
         on e: Exception do
           testResult := ExecuteErrorResult(context, threadId, test, e);
       end;
@@ -714,7 +705,7 @@ begin
           testResult := tearDownResult;
 
     finally
-      RecordResult(context, threadId, testResult);
+      RecordResult(context, threadId, fixtureResult, testResult);
       Self.Loggers_EndTest(threadId, testResult);
     end;
   end;
@@ -757,12 +748,6 @@ begin
       errorResult := ExecuteErrorResult(context, threadId, test, e);
     end;
   end;
-end;
-
-function TDUnitXTestRunner.ExecuteWarningResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const exception: Exception) : ITestResult;
-begin
-  //TODO: Does test warning require its own results interface and class?
-  result := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Warning, exception.Message);
 end;
 
 function TDUnitXTestRunner.GetExitBehavior: TRunnerExitBehavior;
@@ -861,12 +846,12 @@ begin
     logger.OnTeardownTest(threadId, Test);
 end;
 
-procedure TDUnitXTestRunner.Loggers_TestingEnds(const TestResult: ITestResults);
+procedure TDUnitXTestRunner.Loggers_TestingEnds(const RunResults: IRunResults);
 var
   logger : ITestLogger;
 begin
   for logger in FLoggers do
-    logger.OnTestingEnds(TestResult);
+    logger.OnTestingEnds(RunResults);
 end;
 
 procedure TDUnitXTestRunner.Loggers_TestingStarts(const threadId, testCount, testActiveCount : Cardinal);
@@ -881,12 +866,14 @@ procedure TDUnitXTestRunner.Log(const logType: TLogLevel; const msg: string);
 var
   logger : ITestLogger;
 begin
-
   if logType >= TDUnitX.CommandLine.LogLevel then
   begin
+    //TODO : Need to get this to the current test result.
+    FLogMessages.Add(msg);
     for logger in FLoggers do
       logger.OnLog(logType,msg);
   end;
 end;
 
 end.
+

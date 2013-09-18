@@ -1,396 +1,307 @@
-{***************************************************************************}
-{                                                                           }
-{           DUnitX                                                          }
-{                                                                           }
-{           Copyright (C) 2013 Vincent Parrett                              }
-{                                                                           }
-{           vincent@finalbuilder.com                                        }
-{           http://www.finalbuilder.com                                     }
-{                                                                           }
-{                                                                           }
-{***************************************************************************}
-{                                                                           }
-{  Licensed under the Apache License, Version 2.0 (the "License");          }
-{  you may not use this file except in compliance with the License.         }
-{  You may obtain a copy of the License at                                  }
-{                                                                           }
-{      http://www.apache.org/licenses/LICENSE-2.0                           }
-{                                                                           }
-{  Unless required by applicable law or agreed to in writing, software      }
-{  distributed under the License is distributed on an "AS IS" BASIS,        }
-{  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. }
-{  See the License for the specific language governing permissions and      }
-{  limitations under the License.                                           }
-{                                                                           }
-{***************************************************************************}
-
 unit DUnitX.Loggers.XML.NUnit;
 
 interface
 
 uses
+  classes,
+  SysUtils,
   DUnitX.TestFramework,
-  classes;
+  DUnitX.Loggers.Null;
 
-{$I DUnitX.inc}
+//TODO : Rework https://github.com/VSoftTechnologies/Delphi-Fluent-XML so it doesn't use msxml and use it here?
 
 type
-  TDUnitXXMLNUnitLogger = class(TInterfacedObject, ITestLogger)
+  TDUnitXXMLNUnitLogger = class(TDUnitXNullLogger)
   private
     FOutputStream : TStream;
-
-    FLogList : TStringList;
-    FWarningList : TStringList;
-
-    procedure WriteXMLLine(const AXMLLine: string);
-    procedure WriteInfoAndWarningsXML;
-
-    function HasInfoOrWarnings: Boolean;
-
+    FOwnsStream   : boolean;
+    FIndent       : integer;
   protected
-    procedure OnTestingStarts(const threadId, testCount, testActiveCount: Cardinal);
+    procedure Indent;
+    procedure Outdent;
+    procedure WriteXMLLine(const value : string);
 
-    procedure OnStartTestFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
 
-    procedure OnSetupFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
-    procedure OnEndSetupFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
+    procedure OnTestingEnds(const RunResults: IRunResults); override;
 
-    procedure OnBeginTest(const threadId: Cardinal; const Test: ITestInfo);
+    procedure WriteFixtureResult(const fixtureResult : IFixtureResult);
+    procedure WriteTestResult(const testResult : ITestResult);
 
-    procedure OnSetupTest(const threadId: Cardinal; const Test: ITestInfo);
-    procedure OnEndSetupTest(const threadId: Cardinal; const Test: ITestInfo);
 
-    procedure OnExecuteTest(const threadId: Cardinal; const Test: ITestInfo);
-
-    procedure OnTestSuccess(const threadId: Cardinal; const Success: ITestResult);
-    procedure OnTestWarning(const threadId: Cardinal; const Warning: ITestResult);
-    procedure OnTestError(const threadId: Cardinal; const Error: ITestError);
-    procedure OnTestFailure(const threadId: Cardinal; const Failure: ITestError);
-    procedure OnTestIgnored(const threadId: Cardinal; const Ignored: ITestResult);
-
-    procedure OnLog(const logType: TLogLevel; const msg: string);
-
-    procedure OnTeardownTest(const threadId: Cardinal; const Test: ITestInfo);
-    procedure OnEndTeardownTest(const threadId: Cardinal; const Test: ITestInfo);
-
-    procedure OnEndTest(const threadId: Cardinal; const Test: ITestResult);
-
-    procedure OnTearDownFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
-    procedure OnEndTearDownFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
-
-    procedure OnEndTestFixture(const threadId: Cardinal; const results: IFixtureResult);
-
-    procedure OnTestingEnds(const TestResults: ITestResults);
   public
-    constructor Create(const AOutputStream : TStream);
+    constructor Create(const AOutputStream : TStream; const AOwnsStream : boolean = false);
     destructor Destroy;override;
   end;
 
   TDUnitXXMLNUnitFileLogger = class(TDUnitXXMLNUnitLogger)
-  private
-    FXMLFileStream : TFileStream;
   public
     constructor Create(const AFilename: string = '');
   end;
 
+
 implementation
 
 uses
-  {$IFDEF MSWINDOWS}
-    {$if CompilerVersion < 23 }
-      Forms,
-      Windows,
-    {$else}
-      Vcl.Forms,
-      WinAPI.Windows, // Delphi XE2 (CompilerVersion 23) added scopes in front of unit names
-    {$ifend}
-  {$ENDIF}
-  DUnitX.Utils.XML,
-  SysUtils;
+  TypInfo;
 
-const
-  NUNIT_LOGGER_CRLF = #13#10;
 
-{ TDUnitXTextFileLogger }
+{ TDUnitXXMLNUnitLogger }
 
-procedure TDUnitXXMLNUnitLogger.WriteInfoAndWarningsXML;
+constructor TDUnitXXMLNUnitLogger.Create(const AOutputStream: TStream; const AOwnsStream : boolean = false);
 var
-  log : string;
-  warning : string;
+  preamble: TBytes;
 begin
-  if FLogList.Count > 0 then
-  begin
-    for log in FLogList do
-      WriteXMLLine('<status>' + EscapeForXML(log, false) + '</status>');
-  end;
-
-  if FWarningList.Count > 0 then
-  begin
-    for warning in FWarningList do
-      WriteXMLLine('<warning>' + EscapeForXML(warning, false) + '</warning>');
-  end;
-end;
-
-constructor TDUnitXXMLNUnitLogger.Create(const AOutputStream: TStream);
-begin
-  //We are given this stream to use as we see fit, would pass in an interface but there is none for streams.
   FOutputStream := AOutputStream;
-  FLogList := TStringList.Create;
-  FWarningList := TStringList.Create;
+  FOwnsStream   := AOwnsStream;
+
+  Preamble := TEncoding.UTF8.GetPreamble;
+  FOutputStream.WriteBuffer(preamble[0], Length(preamble));
+
 end;
 
 destructor TDUnitXXMLNUnitLogger.Destroy;
 begin
-  FOutputStream.Free;
-  FLogList.Free;
-  FWarningList.Free;
-
+  if FOwnsStream then
+    FOutputStream.Free;
   inherited;
 end;
 
-function TDUnitXXMLNUnitLogger.HasInfoOrWarnings: Boolean;
+procedure TDUnitXXMLNUnitLogger.Indent;
 begin
-  Result := (FLogList.Count > 0) or (FWarningList.Count > 0);
+  Inc(FIndent,1);
 end;
 
-procedure TDUnitXXMLNUnitLogger.OnBeginTest(const threadId: Cardinal; const Test: ITestInfo);
-begin
-  FLogList.Clear;
-  FWarningList.Clear;
-end;
+procedure TDUnitXXMLNUnitLogger.OnTestingEnds(const RunResults: IRunResults);
 
-procedure TDUnitXXMLNUnitLogger.OnEndSetupFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
-begin
-
-end;
-
-procedure TDUnitXXMLNUnitLogger.OnEndSetupTest(const threadId: Cardinal; const Test: ITestInfo);
-begin
-
-end;
-
-procedure TDUnitXXMLNUnitLogger.OnEndTearDownFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
-begin
-
-end;
-
-procedure TDUnitXXMLNUnitLogger.OnEndTeardownTest(const threadId: Cardinal; const Test: ITestInfo);
-begin
-
-end;
-
-procedure TDUnitXXMLNUnitLogger.OnEndTest(const threadId: Cardinal; const Test: ITestResult);
-begin
-
-end;
-
-procedure TDUnitXXMLNUnitLogger.OnEndTestFixture(const threadId: Cardinal; const results: IFixtureResult);
-begin
-   WriteXMLLine('</results>');
-   WriteXMLLine('</test-suite>');
-end;
-
-procedure TDUnitXXMLNUnitLogger.OnExecuteTest(const threadId: Cardinal; const Test: ITestInfo);
-begin
-
-end;
-
-procedure TDUnitXXMLNUnitLogger.OnLog(const logType: TLogLevel; const msg: string);
-begin
-  FLogList.Add(Format('STATUS: %s: %s', [TLogLevelDesc[logType], msg]));
-end;
-
-procedure TDUnitXXMLNUnitLogger.OnSetupFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
-begin
-
-end;
-
-procedure TDUnitXXMLNUnitLogger.OnSetupTest(const threadId: Cardinal; const Test: ITestInfo);
-begin
-
-end;
-
-procedure TDUnitXXMLNUnitLogger.OnStartTestFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
+(*
+procedure LogFixture(const fixture : IFixtureResult; level : integer);
 var
-  sType : string;
+  child : IFixtureResult;
+  sLevel : string;
 begin
-  if fixture.Tests.Count > 0 then
-    sType := 'TestFixture'
-  else
-    sType := 'Namespace';
+  sLevel := StringOfChar(' ', level * 2 );
+  System.WriteLn(sLevel + fixture.Fixture.NameSpace + ':' + fixture.Fixture.Name + Format(' [Tests: %d] [Children: %d] [Passed : %d]',[fixture.ResultCount,fixture.ChildCount,fixture.PassCount]));
 
-  WriteXMLLine(Format('<test-suite type="%s" name="%s" total="%d" notrun="%d">', [sType,fixture.Name, fixture.TestCount, fixture.TestCount - fixture.ActiveTestCount]));
+  Inc(level);
+  for child in fixture.Children do
+  begin
+    LogFixture(child,level);
+  end;
+
+end;
+*)
+
+var
+  fixtureRes : IFixtureResult;
+  sExeName : string;
+  sResult : string;
+  sTime   : string;
+  sDate   : string;
+begin
+
+{ first things first, rollup the namespaces.
+  So, where parent fixtures have no tests, or only one child fixture, combine into a single fixture.
+  }
+  for fixtureRes in RunResults.FixtureResults do
+  begin
+    fixtureRes.Reduce;
+  //  LogFixture(fixtureRes,0);
+  end;
+
+
+  sExeName := ParamStr(0);
+  FIndent := 0;
+  sTime := Format('%.3f',[RunResults.Duration.TotalSeconds]);
+  sDate := FormatDateTime('yyyy-MM-dd',RunResults.StartTime);
+
+  WriteXMLLine(Format('<test-results name="%s" total="%d" errors="%d" failures="%d" ignored="%d" inconclusive="0" not-run="%d" skipped="0" invalid="0" date="%s" time="%s">',
+                      [sExeName,RunResults.TestCount,RunResults.ErrorCount,RunResults.FailureCount,RunResults.IgnoredCount,RunResults.IgnoredCount,sDate,sTime]));
+  sExeName := ChangeFileExt(ExtractFileName(sExeName),'');
+
+  if RunResults.AllPassed then
+    sResult := 'Success'
+  else
+    sResult := 'Failure';
+
+  Indent;
+  //TODO: Populate these properly.
+  WriteXMLLine('<environment nunit-version="DUnitX" clr-version="2.0.0.0" os-version="6.1.0.0" platform="Windows" cwd="c:\test" machine-name="mymachine" user="vincent" user-domain="finalbuilder.com"  />');
+  WriteXMLLine('<culture-info current-culture="en" current-uiculture="en" />');
+  Outdent;
+
+  Indent;
+  WriteXMLLine(Format('<test-suite type="Assembly" name="%s" executed="true" result="%s" success="%s" time="%s" asserts="0">',[sExeName,sResult,BoolToStr(RunResults.AllPassed,true),sTime]));
+  Indent;
   WriteXMLLine('<results>');
-end;
 
-procedure TDUnitXXMLNUnitLogger.OnTearDownFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
-begin
+  Indent;
+  for fixtureRes in RunResults.FixtureResults do
+    WriteFixtureResult(fixtureRes);
 
-end;
-
-procedure TDUnitXXMLNUnitLogger.OnTeardownTest(const threadId: Cardinal; const Test: ITestInfo);
-begin
-
-end;
-
-procedure TDUnitXXMLNUnitLogger.OnTestError(const threadId: Cardinal; const Error: ITestError);
-begin
-  //TODO: Getting Test, and Fixture from Error is painful for testing. Therefore its painful for setup, and use?
-
-  WriteXMLLine(Format('<test-case name="%s" executed="%s" success="False" time="%1.3f" result="Error">',
-                    [EscapeForXML(Error.Test.FullName), BoolToStr(Error.Test.Active, True),
-                      Error.TestDuration.TotalMilliseconds / 1000]));
-
-  WriteXMLLine(Format('<failure name="%s" location="%s">', [EscapeForXML(error.ExceptionClass.ClassName), EscapeForXML(error.ExceptionLocationInfo)]));
-  WriteXMLLine(Format('<message>%s</message>', [EscapeForXML(error.ExceptionMessage, false)]));
-  WriteXMLLine('</failure>');
-  WriteInfoAndWarningsXML;
-  WriteXMLLine('</test-case>');
-end;
-
-procedure TDUnitXXMLNUnitLogger.OnTestFailure(const threadId: Cardinal; const Failure: ITestError);
-begin
-  WriteXMLLine(Format('<test-case name="%s" executed="%s" success="False" time="%1.3f" result="Failure">',
-                    [EscapeForXML(Failure.Test.FullName), BoolToStr(Failure.Test.Active, True),
-                    Failure.TestDuration.Milliseconds / 1000]));
-  WriteXMLLine(Format('<failure name="%s" location="%s">', [EscapeForXML(Failure.ExceptionClass.ClassName), EscapeForXML(Failure.ExceptionLocationInfo)]));
-  WriteXMLLine(Format('<message>%s</message>', [EscapeForXML(Failure.ExceptionMessage, false)]));
-  WriteXMLLine('</failure>');
-  WriteInfoAndWarningsXML;
-  WriteXMLLine('</test-case>');
-end;
-
-procedure TDUnitXXMLNUnitLogger.OnTestIgnored(const threadId: Cardinal; const Ignored: ITestResult);
-var
-  endTag : string;
-  fixture: ITestFixtureInfo;
-begin
-  if Ignored.Message <> '' then
-    endTag := '>'
-  else
-    endTag := '/>';
-
-  fixture := Ignored.Test.Fixture;
-
-  WriteXMLLine(Format('<test-case name="%s" executed="False" result="Ignored" %s',
-                     [EscapeForXML(Ignored.Test.FullName),endTag]));
-
-  if Ignored.Message <> '' then
-  begin
-    WriteXMLLine('<status>' + EscapeForXML(Ignored.Message, false) + '</status>');
-    WriteXMLLine('</test-case>');
-  end;
-end;
-
-procedure TDUnitXXMLNUnitLogger.OnTestingEnds(const TestResults: ITestResults);
-begin
+  Outdent;
+  WriteXMLLine('</results>');
+  Outdent;
   WriteXMLLine('</test-suite>');
-  WriteXMLLine('<statistics>' + NUNIT_LOGGER_CRLF +
-                  Format('<stat name="tests" value="%d" />', [TestResults.Count]) + NUNIT_LOGGER_CRLF +
-                  Format('<stat name="failures" value="%d" />', [TestResults.FailureCount]) + NUNIT_LOGGER_CRLF +
-                  Format('<stat name="errors" value="%d" />', [TestResults.ErrorCount]) + NUNIT_LOGGER_CRLF +
-                  Format('<stat name="ignored" value="%d" />', [TestResults.IgnoredCount]) + NUNIT_LOGGER_CRLF +
-                  Format('<stat name="success-rate" value="%d%%" />', [TestResults.SuccessRate]) + NUNIT_LOGGER_CRLF +
-                  Format('<stat name="started-at" value="%s" />', [DateTimeToStr(TestResults.StartTime)]) + NUNIT_LOGGER_CRLF +
-                  Format('<stat name="finished-at" value="%s" />', [DateTimeToStr(TestResults.FinishTime)]) + NUNIT_LOGGER_CRLF +
-                  Format('<stat name="runtime" value="%1.3f"/>', [TestResults.TestDuration.TotalMilliseconds / 1000]) + NUNIT_LOGGER_CRLF +
-                  '</statistics>' + NUNIT_LOGGER_CRLF +
-              '</test-results>');
-
-  //TODO: Do we need to write to the console here?
-end;
-
-procedure TDUnitXXMLNUnitLogger.OnTestingStarts(const threadId, testCount, testActiveCount: Cardinal);
-var
-  unicodePreamble: TBytes;
-  dtNow: TDateTime;
-  sExe : string;
-begin
-   //write the byte order mark
-   unicodePreamble := TEncoding.UTF8.GetPreamble;
-
-   if Length(unicodePreamble) > 0 then
-      FOutputStream.WriteBuffer(unicodePreamble[0], Length(unicodePreamble));
-
-   WriteXMLLine('<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>');
-
-   dtNow := Now;
-   WriteXMLLine(Format('<test-results total="%d" notrun="%d" date="%s" time="%s" >',
-                         [testCount,
-                           testCount - testActiveCount,
-                             DateToStr(dtNow),
-                               TimeToStr(dtNow)]));
-
-   sExe := ExtractFileName(ParamStr(0));
-
-
-   WriteXMLLine(Format('<application name="%s" />',[sExe]));
-   WriteXMLLine(Format('<test-suite type="Assembly" name="%s" total="0" notrun="0">',[ChangeFileExt(sExe,'')]));
-
+  Outdent;
+  WriteXMLLine('</test-results>');
 
 end;
 
-procedure TDUnitXXMLNUnitLogger.OnTestSuccess(const threadId: Cardinal; const Success: ITestResult);
-var
-  endTag : string;
-  fixture: ITestFixtureInfo;
+procedure TDUnitXXMLNUnitLogger.Outdent;
 begin
-  if HasInfoOrWarnings then
-    endTag := '>'
-  else
-    endTag := '/>';
+  Dec(FIndent,1);
+end;
 
-  fixture := Success.Test.Fixture;
+procedure TDUnitXXMLNUnitLogger.WriteFixtureResult(const fixtureResult: IFixtureResult);
+var
+  sResult : string;
+  sTime   : string;
+  sLineEnd : string;
+  child : IFixtureResult;
+  testResult : ITestResult;
+begin
+  Indent;
+  try
+    if not fixtureResult.HasFailures then
+      sResult := 'Success'
+    else
+      sResult := 'Failure';
+    sTime := Format('%.3f',[fixtureResult.Duration.TotalSeconds]);
 
-  WriteXMLLine(Format('<test-case name="%s" executed="%s" success="True" time="%1.3f" result="Pass" %s',
-                     [EscapeForXML(Success.Test.FullName),  BoolToStr(Success.Test.Active, True),
-                     Success.TestDuration.TotalMilliseconds / 1000, endTag]));
-
-  if HasInfoOrWarnings then
-  begin
-    WriteInfoAndWarningsXML;
-    WriteXMLLine('</test-case>');
+    if fixtureResult.ResultCount > 0  then
+    begin
+      //It's a fixture
+      WriteXMLLine(Format('<test-suite type="Fixture" name="%s" executed="true" result="%s" success="%s" time="%s">',[fixtureResult.Fixture.Name, sResult,BoolToStr(not fixtureResult.HasFailures,true),sTime]));
+      Indent;
+      WriteXMLLine('<results>');
+      for testResult in fixtureResult.TestResults do
+      begin
+        WriteTestResult(testResult);
+      end;
+      WriteXMLLine('</results>');
+      Outdent;
+      WriteXMLLine('</test-suite>');
+    end
+    else
+    begin
+      if fixtureResult.ChildCount = 0 then
+        sLineEnd := '/';
+      //It's a Namespace.
+      WriteXMLLine(Format('<test-suite type="Namespace" name="%s" executed="true" result="%s" success="%s" time="%s" asserts="0" %s>',[fixtureResult.Fixture.FullName, sResult,BoolToStr(not fixtureResult.HasFailures,true),sTime,sLineEnd]));
+      if fixtureResult.ChildCount > 0 then
+      begin
+        WriteXMLLine('<results>');
+        for child in fixtureResult.Children do
+        begin
+            WriteFixtureResult(child);
+        end;
+        WriteXMLLine('</results>');
+        WriteXMLLine('</test-suite>');
+      end;
+    end;
+  finally
+    Outdent;
   end;
 end;
 
-procedure TDUnitXXMLNUnitLogger.OnTestWarning(const threadId: Cardinal; const Warning: ITestResult);
+function ResultTypeToString(const value : TTestResultType) : string;
 begin
-  FWarningList.Add(Format('WARNING: %s: %s', [Warning.Test.Name, Warning.Message]));
+  result := GetEnumName(TypeInfo(TTestResultType),Ord(value));
 end;
 
-
-procedure TDUnitXXMLNUnitLogger.WriteXMLLine(const AXMLLine: string);
+procedure TDUnitXXMLNUnitLogger.WriteTestResult(const testResult: ITestResult);
 var
-  btUTF8Buffer : TBytes;
-  sLine: string;
+  sLineEnd : string;
+  sResult  : string;
+  sTime : string;
 begin
-  sLine := AXMLLine + NUNIT_LOGGER_CRLF;
-  if FOutputStream <> nil then
-  begin
-    btUTF8Buffer := TEncoding.UTF8.GetBytes(sLine);
-    FOutputStream.WriteBuffer(btUTF8Buffer[0],Length(btUTF8Buffer));
-  end
-  else
-    WriteLn(AXMLLine);
+  Indent;
+  try
+    sTime := Format('%.3f',[testResult.Duration.TotalSeconds]);
+    sResult := ResultTypeToString(testResult.ResultType);
+    if testResult.ResultType = TTestResultType.Pass then
+      sLineEnd := '/';
+    WriteXMLLine(Format('<test-case name="%s" executed="True" result="%s" success="%s" time="%s" asserts="0" %s>',[testResult.Test.FullName, sResult,BoolToStr(testResult.ResultType = Pass,true),sTime,sLineEnd]));
+    if testResult.ResultType <> TTestResultType.Pass then
+    begin
+      Indent;
+      case testResult.ResultType of
+        Failure, Error:
+        begin
+          Indent;
+          WriteXMLLine('<failure>');
+          Indent;
+            WriteXMLLine('<message>');
+            Indent;
+              WriteXMLLine(Format('<![CDATA[ %s ]]>',[testResult.Message]));
+            Outdent;
+            WriteXMLLine('</message>');
+          Outdent;
+          Indent;
+            WriteXMLLine('<stack-trace>');
+            Indent;
+              WriteXMLLine(Format('<![CDATA[ %s ]]>',[testResult.StackTrace]));
+            Outdent;
+            WriteXMLLine('</stack-trace>');
+          Outdent;
+          WriteXMLLine('</failure>');
+          Outdent;
+        end;
+        Ignored:
+        begin
+          Indent;
+          WriteXMLLine('<reason>');
+          Indent;
+            WriteXMLLine('<message>');
+            Indent;
+              WriteXMLLine(Format('<![CDATA[ %s ]]>',[testResult.Message]));
+            Outdent;
+            WriteXMLLine('</message>');
+          Outdent;
+          WriteXMLLine('</reason>');
+          Outdent;
+        end;
+      end;
+
+
+
+      Outdent;
+      WriteXMLLine('</test-case>');
+    end;
+
+  finally
+    Outdent;
+  end;
 end;
 
-{ TDUnitXXMLNUnitLoggerFile }
-
-constructor TDUnitXXMLNUnitFileLogger.Create(const AFilename: string = '');
+procedure TDUnitXXMLNUnitLogger.WriteXMLLine(const value: string);
 var
-  sXmlFilename: string;
+  bytes : TBytes;
+  s : string;
+begin
+  s := StringOfChar(' ',FIndent) + value + #13#10;
+  bytes := TEncoding.UTF8.GetBytes(s);
+  FOutputStream.Write(bytes[0],Length(bytes));
+end;
+
+{ TDUnitXXMLNUnitFileLogger }
+
+constructor TDUnitXXMLNUnitFileLogger.Create(const AFilename: string);
+var
+  sXmlFilename  : string;
+  fileStream    : TFileStream;
 const
-  DEFAULT_NUNIT_FILE_NAME = 'dunit-report.xml';
+  DEFAULT_NUNIT_FILE_NAME = 'dunitx-results.xml';
 begin
   sXmlFilename := AFilename;
 
   if sXmlFilename = '' then
-    sXmlFilename := ExtractFilePath(Application.ExeName) + DEFAULT_NUNIT_FILE_NAME;
+    sXmlFilename := ExtractFilePath(ParamStr(0)) + DEFAULT_NUNIT_FILE_NAME;
 
-  FXMLFileStream := TFileStream.Create(sXmlFilename, fmCreate);
+  fileStream := TFileStream.Create(sXmlFilename, fmCreate);
 
-  //The stream class will take care of cleaning this up for us.
-  inherited Create(FXMLFileStream);
+  //base class will destroy the stream;
+  inherited Create(fileStream,true);
 end;
 
 end.

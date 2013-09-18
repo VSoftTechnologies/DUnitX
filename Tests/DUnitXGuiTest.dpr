@@ -31,8 +31,15 @@ uses
   DUnitX.StackTrace.MadExcept4 in '..\DUnitX.StackTrace.MadExcept4.pas',
   DUnitX.Loggers.GUI in '..\DUnitX.Loggers.GUI.pas' {DUnitXGuiLoggerForm},
   DUnitX.StackTrace.EurekaLog7 in '..\DUnitX.StackTrace.EurekaLog7.pas',
-  DUnitX.Examples.EqualityAsserts in '..\Examples\DUnitX.Examples.EqualityAsserts.pas',
-  DUnitX.Examples.General in '..\Examples\DUnitX.Examples.General.pas';
+  DUnitX.Tests.Assert in 'DUnitX.Tests.Assert.pas',
+  DUnitX.Tests.DUnitCompatibility in 'DUnitX.Tests.DUnitCompatibility.pas',
+  DUnitX.Tests.Example in 'DUnitX.Tests.Example.pas',
+  DUnitX.Tests.Framework in 'DUnitX.Tests.Framework.pas',
+  DUnitX.Tests.IoC in 'DUnitX.Tests.IoC.pas',
+  DUnitX.Tests.Loggers.XML.NUnit in 'DUnitX.Tests.Loggers.XML.NUnit.pas',
+  DUnitX.Tests.TestFixture in 'DUnitX.Tests.TestFixture.pas',
+  DUnitX.Tests.Utils.XML in 'DUnitX.Tests.Utils.XML.pas',
+  DUnitX.Tests.WeakReference in 'DUnitX.Tests.WeakReference.pas';
 
 begin
   Application.Initialize;

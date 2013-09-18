@@ -34,7 +34,7 @@ uses
 
 
 type
-  {+M}
+  {$M+}
   [TestFixture]
   TTestsAssert = class
   private
@@ -71,8 +71,6 @@ type
     [Test]
     procedure AreEqual_T_Throws_ETestFailure_When_Interfaces_Are_NotEqual_OrNil;
 
-    [Test]
-    procedure Warn_Throws_ETestWarning_Exception;
     [Test]
     procedure AreEqual_Throws_No_Exception_When_Values_Are_Exactly_Equal;
   end;
@@ -176,14 +174,6 @@ begin
     end, ETestPass, EXPECTED_EXCEPTION_MSG);
 end;
 
-procedure TTestsAssert.Warn_Throws_ETestWarning_Exception;
-begin
-  Assert.WillRaise(
-    procedure
-    begin
-      Assert.Warn;
-    end, ETestWarning);
-end;
 
 procedure TTestsAssert.AreEqual_Extended_Throws_ETestFailure_When_Values_Are_NotEqual;
 const
