@@ -222,6 +222,8 @@ var
   sResult  : string;
   sTime : string;
   sExecuted : string;
+  sSuccess : string;
+
 begin
   Indent;
   try
@@ -231,7 +233,12 @@ begin
       sLineEnd := '/';
     sExecuted := BoolToStr(testResult.ResultType <> Ignored,true);
 
-    WriteXMLLine(Format('<test-case name="%s" executed="%s" result="%s" time="%s" asserts="0" %s>',[testResult.Test.FullName, sExecuted, sResult,sTime,sLineEnd]));
+    if testResult.ResultType <> Ignored then
+      sSuccess := Format('success="%s"',[BoolToStr(testResult.ResultType = Pass,true)])
+    else
+      sSuccess := '';
+
+    WriteXMLLine(Format('<test-case name="%s" executed="%s" result="%s" %s time="%s" asserts="0" %s>',[testResult.Test.FullName, sExecuted, sResult,sSuccess,sTime,sLineEnd]));
     if testResult.ResultType <> TTestResultType.Pass then
     begin
       Indent;
