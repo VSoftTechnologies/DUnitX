@@ -63,7 +63,6 @@
 			<DCCReference Include="..\DUnitX.Test.pas"/>
 			<DCCReference Include="..\DUnitX.TestFixture.pas"/>
 			<DCCReference Include="..\DUnitX.TestResult.pas"/>
-			<DCCReference Include="..\DUnitX.TestResults.pas"/>
 			<DCCReference Include="..\DUnitX.TestRunner.pas"/>
 			<DCCReference Include="..\DUnitX.InternalInterfaces.pas"/>
 			<DCCReference Include="..\DUnitX.TestFramework.pas"/>
@@ -87,6 +86,7 @@
 			<DCCReference Include="DUnitX.Tests.TestFixture.pas"/>
 			<DCCReference Include="DUnitX.Tests.Utils.XML.pas"/>
 			<DCCReference Include="DUnitX.Tests.WeakReference.pas"/>
+			<DCCReference Include="..\DUnitX.RunResults.pas"/>
 			<None Include="..\DUnitX.inc"/>
 			<None Include="..\DUnitX.Stacktrace.inc"/>
 			<BuildConfiguration Include="Debug">

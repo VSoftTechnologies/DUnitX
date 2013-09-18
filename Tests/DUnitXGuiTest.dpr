@@ -18,7 +18,6 @@ uses
   DUnitX.Test in '..\DUnitX.Test.pas',
   DUnitX.TestFixture in '..\DUnitX.TestFixture.pas',
   DUnitX.TestResult in '..\DUnitX.TestResult.pas',
-  DUnitX.TestResults in '..\DUnitX.TestResults.pas',
   DUnitX.TestRunner in '..\DUnitX.TestRunner.pas',
   DUnitX.InternalInterfaces in '..\DUnitX.InternalInterfaces.pas',
   DUnitX.TestFramework in '..\DUnitX.TestFramework.pas',
@@ -39,7 +38,8 @@ uses
   DUnitX.Tests.Loggers.XML.NUnit in 'DUnitX.Tests.Loggers.XML.NUnit.pas',
   DUnitX.Tests.TestFixture in 'DUnitX.Tests.TestFixture.pas',
   DUnitX.Tests.Utils.XML in 'DUnitX.Tests.Utils.XML.pas',
-  DUnitX.Tests.WeakReference in 'DUnitX.Tests.WeakReference.pas';
+  DUnitX.Tests.WeakReference in 'DUnitX.Tests.WeakReference.pas',
+  DUnitX.RunResults in '..\DUnitX.RunResults.pas';
 
 begin
   Application.Initialize;
