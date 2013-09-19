@@ -15,10 +15,15 @@ type
 
 implementation
 
+uses
+  classes;
+
+
 { TSingleNamespaceTest }
 
 procedure TSingleNamespaceTest.ATest;
 begin
+  TThread.Sleep(50);// just so we can test duration output.
   Assert.IsTrue(true);
 end;
 
