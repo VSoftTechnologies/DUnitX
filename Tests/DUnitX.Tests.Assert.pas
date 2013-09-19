@@ -32,7 +32,7 @@ uses
   DUnitX.TestFramework;
 
 type
-  {+M}
+  {$M+}
   [TestFixture]
   TTestsAssert = class
   published
@@ -76,8 +76,6 @@ type
     procedure AreEqualMemory_Throws_No_Exception_When_Pointers_Are_Equal;
     [Test]
     procedure AreEqualMemory_Throws_ETestFailure_When_Pointers_Are_NotEqual;
-    [Test]
-    procedure Warn_Throws_ETestWarning_Exception;
     [Test]
     procedure AreEqual_Throws_No_Exception_When_Values_Are_Exactly_Equal;
   end;
@@ -181,14 +179,6 @@ begin
     end, ETestPass, EXPECTED_EXCEPTION_MSG);
 end;
 
-procedure TTestsAssert.Warn_Throws_ETestWarning_Exception;
-begin
-  Assert.WillRaise(
-    procedure
-    begin
-      Assert.Warn;
-    end, ETestWarning);
-end;
 
 procedure TTestsAssert.AreEqualMemory_Throws_ETestFailure_When_Pointers_Are_NotEqual;
 begin

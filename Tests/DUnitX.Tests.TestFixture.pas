@@ -47,36 +47,12 @@ type
   end;
   {$M-}
 
-  {$M+}
-  [TestFixture]
-  TDUnitXTestFixtureTests = class
-  protected
-    procedure Create_TDUnitXTestFixtureTests_Fixture;
-  public
-    [Test]
-    procedure Setup_Attribute_On_Compiled_Out_Procedure_Raises_Exception;
-  end;
-  {$M-}
+
 implementation
 
 uses
   SysUtils;
 { TDUnitXTestFixtureTests }
-
-procedure TDUnitXTestFixtureTests.Create_TDUnitXTestFixtureTests_Fixture;
-var
-  testFixture : ITestFixtureInfo;
-begin
-  testFixture := TDUnitXTestFixture.Create(TDUnitXTestFixtureTests.ClassName, TDUnitXTestFixtureTests);
-end;
-
-procedure TDUnitXTestFixtureTests.Setup_Attribute_On_Compiled_Out_Procedure_Raises_Exception;
-var
-  testFixture : ITestFixtureInfo;
-begin
-  //TODO: Make this raise an exception of sort.
-  Assert.WillRaise(Create_TDUnitXTestFixtureTests_Fixture, Exception);
-end;
 
 { TTestClassWithNonPublicSetup }
 
@@ -93,5 +69,5 @@ begin
 end;
 
 initialization
-  TDUnitX.RegisterTestFixture(TDUnitXTestFixtureTests);
+  TDUnitX.RegisterTestFixture(TTestClassWithNonPublicSetup);
 end.

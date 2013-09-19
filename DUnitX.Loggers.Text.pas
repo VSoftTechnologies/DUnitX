@@ -47,25 +47,25 @@ type
     procedure OnSetupFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
     procedure OnEndSetupFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
 
-    procedure OnBeginTest(const threadId: Cardinal; Test: ITestInfo);
+    procedure OnBeginTest(const threadId: Cardinal; const Test: ITestInfo);
 
-    procedure OnSetupTest(const threadId: Cardinal; Test: ITestInfo);
-    procedure OnEndSetupTest(const threadId: Cardinal; Test: ITestInfo);
+    procedure OnSetupTest(const threadId: Cardinal; const Test: ITestInfo);
+    procedure OnEndSetupTest(const threadId: Cardinal; const Test: ITestInfo);
 
-    procedure OnExecuteTest(const threadId : Cardinal; Test: ITestInfo);
+    procedure OnExecuteTest(const threadId : Cardinal; const Test: ITestInfo);
 
 
-    procedure OnTestSuccess(const threadId: Cardinal; Test: ITestResult);
-    procedure OnTestWarning(const threadId: Cardinal; AWarning: ITestResult);
-    procedure OnTestError(const threadId: Cardinal; Error: ITestError);
-    procedure OnTestFailure(const threadId: Cardinal; Failure: ITestError);
+    procedure OnTestSuccess(const threadId: Cardinal; const Test: ITestResult);
+    procedure OnTestError(const threadId: Cardinal; const Error: ITestError);
+    procedure OnTestFailure(const threadId: Cardinal; const Failure: ITestError);
+    procedure OnTestIgnored(const threadId: Cardinal; const AIgnored: ITestResult);
 
     procedure OnLog(const logType: TLogLevel; const msg : string);
 
-    procedure OnTeardownTest(const threadId: Cardinal; Test: ITestInfo);
-    procedure OnEndTeardownTest(const threadId: Cardinal; Test: ITestInfo);
+    procedure OnTeardownTest(const threadId: Cardinal; const Test: ITestInfo);
+    procedure OnEndTeardownTest(const threadId: Cardinal; const Test: ITestInfo);
 
-    procedure OnEndTest(const threadId: Cardinal; Test: ITestResult);
+    procedure OnEndTest(const threadId: Cardinal; const Test: ITestResult);
 
 
     procedure OnTearDownFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
@@ -73,7 +73,7 @@ type
 
     procedure OnEndTestFixture(const threadId: Cardinal; const results: IFixtureResult);
 
-    procedure OnTestingEnds(const TestResult: ITestResults);
+    procedure OnTestingEnds(const RunResults: IRunResults);
   public
     constructor Create(const AFileName: string; const overwrite : boolean = true);
   end;
@@ -93,7 +93,7 @@ begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnEndSetupTest(const threadId: Cardinal; Test: ITestInfo);
+procedure TDUnitXTextFileLogger.OnEndSetupTest(const threadId: Cardinal; const Test: ITestInfo);
 begin
 
 end;
@@ -103,12 +103,12 @@ begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnEndTeardownTest(const threadId: Cardinal; Test: ITestInfo);
+procedure TDUnitXTextFileLogger.OnEndTeardownTest(const threadId: Cardinal; const Test: ITestInfo);
 begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnEndTest(const threadId: Cardinal; Test: ITestResult);
+procedure TDUnitXTextFileLogger.OnEndTest(const threadId: Cardinal; const Test: ITestResult);
 begin
 
 end;
@@ -118,17 +118,22 @@ begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnExecuteTest(const threadId: Cardinal; Test: ITestInfo);
+procedure TDUnitXTextFileLogger.OnExecuteTest(const threadId: Cardinal; const Test: ITestInfo);
 begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnTestError(const threadId: Cardinal; Error: ITestError);
+procedure TDUnitXTextFileLogger.OnTestError(const threadId: Cardinal; const Error: ITestError);
 begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnTestFailure(const threadId: Cardinal; Failure: ITestError);
+procedure TDUnitXTextFileLogger.OnTestFailure(const threadId: Cardinal; const Failure: ITestError);
+begin
+
+end;
+
+procedure TDUnitXTextFileLogger.OnTestIgnored(const threadId: Cardinal; const AIgnored: ITestResult);
 begin
 
 end;
@@ -143,12 +148,12 @@ begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnSetupTest(const threadId: Cardinal; Test: ITestInfo);
+procedure TDUnitXTextFileLogger.OnSetupTest(const threadId: Cardinal; const Test: ITestInfo);
 begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnBeginTest(const threadId: Cardinal; Test: ITestInfo);
+procedure TDUnitXTextFileLogger.OnBeginTest(const threadId: Cardinal; const Test: ITestInfo);
 begin
 
 end;
@@ -159,7 +164,7 @@ begin
 end;
 
 
-procedure TDUnitXTextFileLogger.OnTestSuccess(const threadId: Cardinal; Test: ITestResult);
+procedure TDUnitXTextFileLogger.OnTestSuccess(const threadId: Cardinal; const Test: ITestResult);
 begin
 
 end;
@@ -169,12 +174,12 @@ begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnTeardownTest(const threadId: Cardinal; Test: ITestInfo);
+procedure TDUnitXTextFileLogger.OnTeardownTest(const threadId: Cardinal; const Test: ITestInfo);
 begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnTestingEnds(const TestResult: ITestResults);
+procedure TDUnitXTextFileLogger.OnTestingEnds(const RunResults: IRunResults);
 begin
 
 end;
@@ -184,9 +189,5 @@ begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnTestWarning(const threadId: Cardinal; AWarning: ITestResult);
-begin
-
-end;
 
 end.

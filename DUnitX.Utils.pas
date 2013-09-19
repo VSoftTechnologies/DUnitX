@@ -503,6 +503,12 @@ type
     {$ENDREGION}
     function TryGetMethod(const AName: string; out AMethod: TRttiMethod): Boolean; overload;
 
+    //will get the first declated constructor it finds
+    function TryGetConstructor(out AMethod : TRttiMethod) : boolean;
+
+    function TryGetDestructor(out AMethod : TRttiMethod) : boolean;
+
+
     {$REGION 'Documentation'}
     ///	<summary>
     ///	  Retrieves the property with the given name and returns if this was
@@ -2277,6 +2283,40 @@ begin
   else
   begin
     Result := nil;
+  end;
+end;
+
+function TRttiTypeHelper.TryGetConstructor(out AMethod: TRttiMethod): boolean;
+var
+  methods : TArray<TRttiMethod>;
+  method : TRttiMethod;
+begin
+  result := False;
+  methods := GetDeclaredMethods;
+  for method in methods do
+  begin
+    if method.IsConstructor and (Length(method.GetParameters) = 0) then
+    begin
+      AMethod := method;
+      Exit(true);
+    end;
+  end;
+end;
+
+function TRttiTypeHelper.TryGetDestructor(out AMethod: TRttiMethod): boolean;
+var
+  methods : TArray<TRttiMethod>;
+  method : TRttiMethod;
+begin
+  result := False;
+  methods := GetDeclaredMethods;
+  for method in methods do
+  begin
+    if method.IsDestructor then
+    begin
+      AMethod := method;
+      Exit(true);
+    end;
   end;
 end;
 

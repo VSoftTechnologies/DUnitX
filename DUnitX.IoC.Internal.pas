@@ -40,18 +40,7 @@ uses
   Generics.Collections,
   DUnitX.IoC;
 
-type
 
-  //Makes sure virtual constructors are called correctly. Just using a class reference will not call the overriden constructor!
-  //See http://stackoverflow.com/questions/791069/how-can-i-create-an-delphi-object-from-a-class-reference-and-ensure-constructor
-  TClassActivator = class
-  private
-    class var
-      FRttiCtx : TRttiContext;
-      class constructor Create;
-  public
-    class function CreateInstance(const AClass : TClass) : IInterface;
-  end;
 
 
 
@@ -95,33 +84,6 @@ asm
 end;
 {$ENDIF}
 
-{ TActivator }
 
-class constructor TClassActivator.Create;
-begin
-  TClassActivator.FRttiCtx := TRttiContext.Create;
-end;
-
-class function TClassActivator.CreateInstance(const AClass : TClass): IInterface;
-var
-  rType : TRttiType;
-  method: TRttiMethod;
-begin
-  result := nil;
-
-  rType := FRttiCtx.GetType(AClass);
-  if not (rType is TRttiInstanceType) then
-    exit;
-
-  for method in TRttiInstanceType(rType).GetMethods do
-  begin
-    if method.IsConstructor and (Length(method.GetParameters) = 0) then
-    begin
-      Result := method.Invoke(TRttiInstanceType(rtype).MetaclassType, []).AsInterface;
-      Break;
-    end;
-  end;
-
-end;
 
 end.

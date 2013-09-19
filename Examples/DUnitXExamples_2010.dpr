@@ -30,12 +30,29 @@ uses
   DUnitX.WeakReference in '..\DUnitX.WeakReference.pas',
   DUnitX.Windows.Console in '..\DUnitX.Windows.Console.pas',
   DUnitX.StackTrace.EurekaLog7 in '..\DUnitX.StackTrace.EurekaLog7.pas';
-
+var
+  runner : ITestRunner;
+  results : ITestResults;
+  logger : ITestLogger;
+  nunitLogger : ITestLogger;
 begin
   try
-    { TODO -oUser -cConsole Main : Insert code here }
+    //Create the runner
+    runner := TDUnitX.CreateRunner;
+    runner.UseRTTI := True;
+    //tell the runner how we will log things
+    logger := TDUnitXConsoleLogger.Create(true);
+    nunitLogger := TDUnitXXMLNUnitFileLogger.Create;
+    runner.AddLogger(logger);
+    runner.AddLogger(nunitLogger);
+
+    //Run tests
+    results := runner.Execute;
+
+    System.Write('Done.. press <Enter> key to quit.');
+    System.Readln;
   except
     on E: Exception do
-      Writeln(E.ClassName, ': ', E.Message);
+      System.Writeln(E.ClassName, ': ', E.Message);
   end;
 end.

@@ -39,7 +39,6 @@ uses
 const
   WM_LOAD_TESTS = WM_USER + 123;
 
-
 type
   TDUnitXGuiLoggerForm = class(TForm,ITestLogger)
     ActionManager1: TActionManager;
@@ -67,25 +66,25 @@ type
     procedure BuildTree(parentNode: TTreeNode; const fixtureList: ITestFixtureList);
   protected
 
-    procedure OnBeginTest(const threadId: Cardinal; Test: ITestInfo);
+    procedure OnBeginTest(const threadId: Cardinal; const Test: ITestInfo);
     procedure OnEndSetupFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
-    procedure OnEndSetupTest(const threadId: Cardinal; Test: ITestInfo);
+    procedure OnEndSetupTest(const threadId: Cardinal; const Test: ITestInfo);
     procedure OnEndTearDownFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
-    procedure OnEndTeardownTest(const threadId: Cardinal; Test: ITestInfo);
-    procedure OnEndTest(const threadId: Cardinal; Test: ITestResult);
+    procedure OnEndTeardownTest(const threadId: Cardinal; const Test: ITestInfo);
+    procedure OnEndTest(const threadId: Cardinal; const Test: ITestResult);
     procedure OnEndTestFixture(const threadId: Cardinal; const results: IFixtureResult);
-    procedure OnExecuteTest(const threadId: Cardinal; Test: ITestInfo);
+    procedure OnExecuteTest(const threadId: Cardinal; const Test: ITestInfo);
     procedure OnLog(const logType: TLogLevel; const msg: string);
     procedure OnSetupFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
-    procedure OnSetupTest(const threadId: Cardinal; Test: ITestInfo);
+    procedure OnSetupTest(const threadId: Cardinal; const Test: ITestInfo);
     procedure OnStartTestFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
     procedure OnTearDownFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
-    procedure OnTeardownTest(const threadId: Cardinal; Test: ITestInfo);
-    procedure OnTestError(const threadId: Cardinal; Error: ITestError);
-    procedure OnTestFailure(const threadId: Cardinal; Failure: ITestError);
-    procedure OnTestSuccess(const threadId: Cardinal; Test: ITestResult);
-    procedure OnTestWarning(const threadId: Cardinal; AWarning: ITestResult);
-    procedure OnTestingEnds(const TestResults: ITestResults);
+    procedure OnTeardownTest(const threadId: Cardinal; const Test: ITestInfo);
+    procedure OnTestError(const threadId: Cardinal; const Error: ITestError);
+    procedure OnTestFailure(const threadId: Cardinal; const Failure: ITestError);
+    procedure OnTestSuccess(const threadId: Cardinal; const Test: ITestResult);
+    procedure OnTestIgnored(const threadId: Cardinal; const Ignored: ITestResult);
+    procedure OnTestingEnds(const RunResults: IRunResults);
     procedure OnTestingStarts(const threadId: Cardinal; const testCount: Cardinal; const testActiveCount: Cardinal);
 
     procedure WMLoadTests(var message : TMessage); message WM_LOAD_TESTS;
@@ -118,7 +117,7 @@ begin
   PostMessage(Self.Handle,WM_LOAD_TESTS,0,0);
 end;
 
-procedure TDUnitXGuiLoggerForm.OnBeginTest(const threadId: Cardinal; Test: ITestInfo);
+procedure TDUnitXGuiLoggerForm.OnBeginTest(const threadId: Cardinal; const Test: ITestInfo);
 begin
 
 end;
@@ -128,7 +127,7 @@ begin
 
 end;
 
-procedure TDUnitXGuiLoggerForm.OnEndSetupTest(const threadId: Cardinal; Test: ITestInfo);
+procedure TDUnitXGuiLoggerForm.OnEndSetupTest(const threadId: Cardinal; const Test: ITestInfo);
 begin
 
 end;
@@ -138,12 +137,12 @@ begin
 
 end;
 
-procedure TDUnitXGuiLoggerForm.OnEndTeardownTest(const threadId: Cardinal; Test: ITestInfo);
+procedure TDUnitXGuiLoggerForm.OnEndTeardownTest(const threadId: Cardinal; const Test: ITestInfo);
 begin
 
 end;
 
-procedure TDUnitXGuiLoggerForm.OnEndTest(const threadId: Cardinal; Test: ITestResult);
+procedure TDUnitXGuiLoggerForm.OnEndTest(const threadId: Cardinal; const Test: ITestResult);
 begin
 
 end;
@@ -153,7 +152,7 @@ begin
 
 end;
 
-procedure TDUnitXGuiLoggerForm.OnExecuteTest(const threadId: Cardinal; Test: ITestInfo);
+procedure TDUnitXGuiLoggerForm.OnExecuteTest(const threadId: Cardinal; const Test: ITestInfo);
 begin
 
 end;
@@ -168,7 +167,7 @@ begin
 
 end;
 
-procedure TDUnitXGuiLoggerForm.OnSetupTest(const threadId: Cardinal; Test: ITestInfo);
+procedure TDUnitXGuiLoggerForm.OnSetupTest(const threadId: Cardinal; const Test: ITestInfo);
 begin
 
 end;
@@ -183,22 +182,27 @@ begin
 
 end;
 
-procedure TDUnitXGuiLoggerForm.OnTeardownTest(const threadId: Cardinal; Test: ITestInfo);
+procedure TDUnitXGuiLoggerForm.OnTeardownTest(const threadId: Cardinal; const Test: ITestInfo);
 begin
 
 end;
 
-procedure TDUnitXGuiLoggerForm.OnTestError(const threadId: Cardinal; Error: ITestError);
+procedure TDUnitXGuiLoggerForm.OnTestError(const threadId: Cardinal; const Error: ITestError);
 begin
 
 end;
 
-procedure TDUnitXGuiLoggerForm.OnTestFailure(const threadId: Cardinal; Failure: ITestError);
+procedure TDUnitXGuiLoggerForm.OnTestFailure(const threadId: Cardinal; const Failure: ITestError);
 begin
 
 end;
 
-procedure TDUnitXGuiLoggerForm.OnTestingEnds(const TestResults: ITestResults);
+procedure TDUnitXGuiLoggerForm.OnTestIgnored(const threadId: Cardinal; const Ignored: ITestResult);
+begin
+
+end;
+
+procedure TDUnitXGuiLoggerForm.OnTestingEnds(const RunResults: IRunResults);
 begin
 
 end;
@@ -208,22 +212,17 @@ begin
 
 end;
 
-procedure TDUnitXGuiLoggerForm.OnTestSuccess(const threadId: Cardinal; Test: ITestResult);
+procedure TDUnitXGuiLoggerForm.OnTestSuccess(const threadId: Cardinal; const Test: ITestResult);
 begin
 
 end;
 
-procedure TDUnitXGuiLoggerForm.OnTestWarning(const threadId: Cardinal; AWarning: ITestResult);
-begin
-
-end;
 
 procedure TDUnitXGuiLoggerForm.BuildTree(parentNode : TTreeNode; const fixtureList : ITestFixtureList);
 var
   fixture : ITestFixture;
   test : ITest;
   fixtureNode : TTreeNode;
-  testNode : TTreeNode;
 begin
   for fixture in fixtureList do
   begin
@@ -232,7 +231,7 @@ begin
       BuildTree(fixtureNode,fixture.Children);
     for test in fixture.Tests do
     begin
-      testNode := TestTree.Items.AddChild(fixtureNode,test.Name);
+      TestTree.Items.AddChild(fixtureNode,test.Name);
     end;
   end;
 end;
