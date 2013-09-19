@@ -217,7 +217,11 @@ end;
 
 function ResultTypeToString(const value : TTestResultType) : string;
 begin
-  result := GetEnumName(TypeInfo(TTestResultType),Ord(value));
+  case value of
+    Pass: result := 'Success';
+  else
+    result := GetEnumName(TypeInfo(TTestResultType),Ord(value));
+  end;
 end;
 
 procedure TDUnitXXMLNUnitLogger.WriteTestResult(const testResult: ITestResult);
