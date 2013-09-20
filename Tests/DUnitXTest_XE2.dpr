@@ -42,7 +42,9 @@ uses
   DUnitX.Tests.WeakReference in 'DUnitX.Tests.WeakReference.pas',
   DUnitX.Tests.Loggers.XML.NUnit in 'DUnitX.Tests.Loggers.XML.NUnit.pas',
   DUnitX.Loggers.XML.NUnit in '..\DUnitX.Loggers.XML.NUnit.pas',
-  DUnitX.SingleNameSpace in 'DUnitX.SingleNameSpace.pas';
+  DUnitX.SingleNameSpace in 'DUnitX.SingleNameSpace.pas',
+  DUnitX.MemoryLeakMonitor.Default in '..\DUnitX.MemoryLeakMonitor.Default.pas',
+  DUnitX.MemoryLeakMonitor.FastMM4 in '..\DUnitX.MemoryLeakMonitor.FastMM4.pas';
 
 var
   runner : ITestRunner;

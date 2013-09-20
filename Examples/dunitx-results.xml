@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<test-results name="I:\Github\VSoftTechnologies\DUnitX\Examples\DUnitXExamples_2010.exe" total="7" errors="0" failures="0" ignored="1" inconclusive="0" not-run="1" skipped="0" invalid="0" date="2013-09-20" time="0.001">
+  <environment nunit-version="DUnitX" clr-version="2.0.0.0" os-version="6.1.0.0" platform="Windows" cwd="c:\test" machine-name="mymachine" user="vincent" user-domain="finalbuilder.com"  />
+  <culture-info current-culture="en" current-uiculture="en" />
+  <test-suite type="Assembly" name="DUnitXExamples_2010.exe" executed="true" result="Failure" success="False" time="0.001" asserts="0">
+    <results>
+        <test-suite type="Namespace" name="DUnitX" executed="true" result="Success" success="True" time="0.001" asserts="0" >
+          <results>
+              <test-suite type="Namespace" name="Examples" executed="true" result="Success" success="True" time="0.001" asserts="0" >
+                <results>
+                    <test-suite type="Namespace" name="General" executed="true" result="Success" success="True" time="0.001" asserts="0" >
+                      <results>
+                          <test-suite type="Fixture" name="ExampleFixture1" executed="Success" result="True" success="True" time="0.001" >
+                            <results>
+                              <test-case name="TestOne ( 1, 2 ) [Case 1]" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                              <test-case name="TestOne ( 3, 4 ) [Case 2]" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                              <test-case name="TestOne ( 5, 6 ) [Case 3]" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                              <test-case name="TestTwo" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                              <test-case name="IgnoreMe" executed="False" result="Ignored"  time="0.000" asserts="0" >
+                                  <reason>
+                                    <message>
+                                      <![CDATA[ Because I said so!!! ]]>
+                                    </message>
+                                  </reason>
+                              </test-case>
+                            </results>
+                          </test-suite>
+                          <test-suite type="Fixture" name="TExampleFixture2" executed="Success" result="True" success="True" time="0.000" >
+                            <results>
+                              <test-case name="IAmATest" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                            </results>
+                          </test-suite>
+                      </results>
+                    </test-suite>
+                    <test-suite type="Fixture" name="TDUnitXExamplesEqualityAsserts" executed="Success" result="True" success="True" time="0.000" >
+                      <results>
+                        <test-case name="Assert_AreNotEqual" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                      </results>
+                    </test-suite>
+                </results>
+              </test-suite>
+          </results>
+        </test-suite>
+    </results>
+  </test-suite>
+</test-results>

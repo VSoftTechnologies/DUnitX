@@ -113,6 +113,7 @@ begin
   FIndent := 0;
   sTime := Format('%.3f',[RunResults.Duration.TotalSeconds]);
   sDate := FormatDateTime('yyyy-MM-dd',RunResults.StartTime);
+  WriteXMLLine('<?xml version="1.0" encoding="utf-8" ?>');
 
   WriteXMLLine(Format('<test-results name="%s" total="%d" errors="%d" failures="%d" ignored="%d" inconclusive="0" not-run="%d" skipped="0" invalid="0" date="%s" time="%s">',
                       [sExeName,RunResults.TestCount,RunResults.ErrorCount,RunResults.FailureCount,RunResults.IgnoredCount,RunResults.IgnoredCount,sDate,sTime]));

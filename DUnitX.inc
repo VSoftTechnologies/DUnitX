@@ -110,3 +110,5 @@
 {$ENDIF}
 
 {$I DUnitX.Stacktrace.inc}
+{$I DUnitX.MemoryLeaks.inc}
+

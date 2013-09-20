@@ -454,38 +454,6 @@ end;
     property Pesses       : IList<ITestResult> read GetPasses;
   end;
 
-  (*
-
-  IFixtureResult = interface(IEnumerable<ITestResult>)
-  ['{2ED7CD6D-AF17-4A56-9ECF-7528A1583B30}']
-    function GetErrorCount : integer;
-    function GetFailureCount : integer;
-    function GetSuccessCount : integer;
-    function GetHasFailures : boolean;
-    function GetFixture : ITestFixtureInfo;
-    function GetResult(index : integer) : ITestResult;
-    function GetCount : integer;
-
-    function GetFailures  : IEnumerable<ITestResult>;
-    function GetErrors    : IEnumerable<ITestError>;
-    function GetSuccesses : IEnumerable<ITestResult>;
-
-    function GetResults   : IEnumerable<ITestResult>;
-
-    property Fixture      : ITestFixtureInfo read GetFixture;
-    property HasFailures  : Boolean read GetHasFailures;
-    property ErrorCount   : integer read GetErrorCount;
-    property SuccessCount : integer read GetSuccessCount;
-    property ResultCount  : integer read GetCount;
-
-    property Result[index : integer] : ITestResult read GetResult;
-    property Results      : IEnumerable<ITestResult> read GetResults;
-    property Failures     : IEnumerable<ITestResult> read GetFailures;
-    property Errors       : IEnumerable<ITestError> read GetErrors;
-    property Successes    : IEnumerable<ITestResult> read GetWarnings;
-  end;
-
-  *)
 
   {$M+}
   IRunResults = interface(IResult)
@@ -709,6 +677,12 @@ end;
     function PointerToAddressInfo(Addrs: Pointer): string;
   end;
 
+  IMemoryLeakMonitor = interface
+  ['{A374A4D0-9BF6-4E01-8A29-647F92CBF41C}']
+
+  end;
+
+
   ETestFrameworkException = class(Exception);
 
   ENotImplemented = class(ETestFrameworkException);
@@ -730,13 +704,12 @@ uses
   DUnitX.TestRunner,
   DUnitX.Utils,
   DUnitX.Commandline,
+  DUnitX.IoC,
+  DUnitX.MemoryLeakMonitor.Default,
   Variants,
   Math,
   StrUtils,
   Types,
-  {$IFDEF MSWINDOWS}
-  ActiveX,
-  {$ENDIF}
   {$IFDEF SUPPORTS_REGEX}
   RegularExpressions,
   {$ENDIF}
@@ -1386,6 +1359,11 @@ end;
 class constructor TDUnitX.Create;
 begin
   RegisteredFixtures := TDictionary<TClass,string>.Create;
+
+  //Make sure we have at least a dummy memory leak monitor registered.
+  if not TDUnitXIoC.DefaultContainer.HasService<IMemoryLeakMonitor> then
+    DUnitX.MemoryLeakMonitor.Default.RegisterDefaultProvider;
+
 end;
 
 class function TDUnitX.CreateRunner(const useCommandLineOptions: boolean; const ALogger: ITestLogger): ITestRunner;
@@ -1500,8 +1478,5 @@ end;
 { IgnoreAttribute }
 
 initialization
-{$IFDEF MSWINDOWS}
-  CoInitialize(nil);
-{$ENDIF}
 
 end.

@@ -69,6 +69,7 @@ type
   protected
     function GetInterfaceKey<TInterface>(const AName: string = ''): string;
     function InternalResolve<TInterface: IInterface>(out AInterface: TInterface; const AName: string = ''): TResolveResult;
+    procedure InternalRegisterType<TInterface : IInterface>(const singleton : boolean; const AImplementation : TClass; const delegate : TActivatorDelegate<TInterface>; const name : string = '');
   public
     constructor Create;
     destructor Destroy;override;
@@ -162,15 +163,17 @@ end;
 {$IFDEF DELPHI_XE_UP}
 
 procedure TDUnitXIoC.RegisterType<TInterface, TImplementation>(const name: string);
-var
-  newName : string;
 begin
-  newName := name;
-
-  Self.RegisterType<TInterface, TImplementation>(false, newName);
+  InternalRegisterType<TInterface>(false,TImplementation,nil,name);
 end;
 
 procedure TDUnitXIoC.RegisterType<TInterface, TImplementation>(const singleton: boolean; const name: string);
+begin
+  Self.InternalRegisterType<TInterface>(singleton,TImplementation,nil,name);
+end;
+{$ENDIF}
+
+procedure TDUnitXIoC.InternalRegisterType<TInterface>(const singleton : boolean; const AImplementation : TClass; const delegate : TActivatorDelegate<TInterface>; const name : string = '');
 var
   key   : string;
   pInfo : PTypeInfo;
@@ -193,20 +196,29 @@ begin
   begin
     rego := TIoCRegistration<TInterface>.Create;
     rego.IInterface := pInfo;
-    rego.ActivatorDelegate := nil;
-    rego.ImplClass := TImplementation;
+    rego.ActivatorDelegate := delegate;
+    rego.ImplClass := AImplementation;
     rego.IsSingleton := newSingleton;
     FContainerInfo.Add(key,rego);
   end
   else
-    raise EIoCException.Create(Format('An implementation for type %s with name %s is already registered with IoC',[pInfo.Name, newName]));
+  begin
+    rego := TIoCRegistration<TInterface>(o);
+    //cannot replace a singleton that has already been instanciated.
+    if rego.IsSingleton and (rego.Instance <> nil)  then
+      raise EIoCException.Create(Format('An implementation for type %s with name %s is already registered with IoC',[pInfo.Name, newName]));
+    rego.IInterface := pInfo;
+    rego.ActivatorDelegate := delegate;
+    rego.ImplClass := AImplementation;
+    rego.IsSingleton := newSingleton;
+    FContainerInfo.AddOrSetValue(key,rego);
+  end;
 end;
-{$ENDIF}
 
 
 procedure TDUnitXIoC.RegisterType<TInterface>(const delegate: TActivatorDelegate<TInterface>; const name: string);
 begin
-  Self.RegisterType<TInterface>(false, delegate, name);
+  Self.InternalRegisterType<TInterface>(false, nil,delegate, name);
 end;
 
 
@@ -380,28 +392,8 @@ begin
 end;
 
 procedure TDUnitXIoC.RegisterType<TInterface>(const singleton: boolean; const delegate: TActivatorDelegate<TInterface>; const name: string);
-var
-  key   : string;
-  pInfo : PTypeInfo;
-  rego  : TIoCRegistration<TInterface>;
-  o     : TObject;
-  newName : string;
 begin
-  newName := name;
-
-  pInfo := TypeInfo(TInterface);
-  key := GetInterfaceKey<TInterface>(name);
-  if not FContainerInfo.TryGetValue(key,o) then
-  begin
-    rego := TIoCRegistration<TInterface>.Create;
-    rego.IInterface := pInfo;
-    rego.ActivatorDelegate := delegate;
-    rego.ImplClass := nil;
-    rego.IsSingleton := singleton;
-    FContainerInfo.Add(key,rego);
-  end
-  else
-    raise EIoCException.Create(Format('An implementation for type %s with name %s is already registered with IoC',[pInfo.Name, newName]));
+  Self.InternalRegisterType<TInterface>(singleton,nil,delegate,name);
 end;
 
 function TDUnitXIoC.Resolve<TInterface>(const name: string = ''): TInterface;
