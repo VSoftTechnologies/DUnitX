@@ -131,6 +131,7 @@
 			<DCCReference Include="..\DUnitX.Loggers.XML.NUnit.pas"/>
 			<DCCReference Include="..\DUnitX.FixtureResult.pas"/>
 			<DCCReference Include="..\DUnitX.Loggers.Null.pas"/>
+			<DCCReference Include="..\DUnitX.MemoryLeakMonitor.Default.pas"/>
 			<BuildConfiguration Include="Debug">
 				<Key>Cfg_2</Key>
 				<CfgParent>Base</CfgParent>

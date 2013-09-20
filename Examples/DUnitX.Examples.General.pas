@@ -91,6 +91,17 @@ type
     procedure IAmATest;
   end;
 
+  [TestFixture]
+  TExampleFixture3 = class
+  public
+    //will be used as SetupFixture
+    constructor Create;
+    //will be used as TeardownFixture
+    destructor Destroy;override;
+  published
+    procedure ATest;
+  end;
+
 implementation
 
 uses
@@ -175,6 +186,24 @@ begin
   TDUnitX.CurrentRunner.Log('Tearing down');
 end;
 
+{ TExampleFixture3 }
+
+procedure TExampleFixture3.ATest;
+begin
+  Assert.IsTrue(true);
+end;
+
+constructor TExampleFixture3.Create;
+begin
+
+end;
+
+destructor TExampleFixture3.Destroy;
+begin
+
+  inherited;
+end;
+
 initialization
 //I was hoping to use RTTI to discover the TestFixture classes, however unlike .NET
 //if we don't touch the class somehow then the linker will remove
@@ -192,5 +221,5 @@ initialization
 //Register the test fixtures
   TDUnitX.RegisterTestFixture(TMyExampleTests);
   TDUnitX.RegisterTestFixture(TExampleFixture2);
-
+  TDUnitX.RegisterTestFixture(TExampleFixture3);
 end.
