@@ -209,6 +209,8 @@ begin
     FDescription := fixtureAttrib.Description;
 
   ignoreFixtureSetup := false;
+  {$IFDEF DELPHI_XE_UP}
+  //NOTE: Causes Delphi 2010 to be inconsistent with produced exe. Will sometimes crash with AV when generating fixtures.
   //If there is a parameterless constructor declared then we will use that as the
   //fixture Setup method.
   if rType.TryGetConstructor(method) then
@@ -217,6 +219,7 @@ begin
     FFixtureInstance := method.Invoke(TRttiInstanceType(rtype).MetaclassType, []).AsObject;
   end
   else
+  {$ENDIF}
     FFixtureInstance := FTestClass.Create;
 
   //important to use declared here.. otherwise we are looking at TObject as well.
@@ -226,6 +229,7 @@ begin
     meth.Code := method.CodeAddress;
     meth.Data := FFixtureInstance;
 
+    {$IFDEF DELPHI_XE_UP}
     //if there is a Destructor then we will use it as the fixture
     //Teardown method.
     if method.IsDestructor and (Length(method.GetParameters) = 0) then
@@ -234,6 +238,7 @@ begin
       FTearDownFixtureMethodName := method.Name;
       FTearDownFixtureIsDestructor := True;
     end;
+    {$ENDIF}
 
     attributes := method.GetAttributes;
     if Length(attributes) > 0 then
