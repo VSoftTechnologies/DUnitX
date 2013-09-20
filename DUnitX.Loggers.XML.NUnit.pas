@@ -44,6 +44,57 @@ implementation
 uses
   TypInfo;
 
+function IsValidXMLChar(wc: WideChar): Boolean;
+begin
+  case Word(wc) of
+    $0009, $000A, $000C, $000D,
+      $0020..$D7FF,
+      $E000..$FFFD, // Standard Unicode chars below $FFFF
+      $D800..$DBFF, // High surrogate of Unicode character  = $10000 - $10FFFF
+      $DC00..$DFFF: // Low surrogate of Unicode character  = $10000 - $10FFFF
+      result := True;
+  else
+    result := False;
+  end;
+end;
+
+function StripInvalidXML(const s: string): string;
+var
+  i, count: Integer;
+begin
+  count := Length(s);
+  setLength(result, count);
+  for i := 1 to Count do // Iterate
+  begin
+    if IsValidXMLChar(WideChar(s[i])) then
+      result[i] := s[i]
+    else
+      result[i] := ' ';
+  end; // for}
+end;
+
+function EscapeForXML(const value: string; const isAttribute: boolean = True; const isCDATASection : Boolean = False): string;
+begin
+  result := StripInvalidXML(value);
+  if isCDATASection  then
+  begin
+    Result := StringReplace(Result, ']]>', ']>',[rfReplaceAll]);
+    exit;
+  end;
+
+  //note we are avoiding replacing &amp; with &amp;amp; !!
+  Result := StringReplace(result, '&amp;', '[[-xy-amp--]]',[rfReplaceAll]);
+  Result := StringReplace(result, '&', '&amp;',[rfReplaceAll]);
+  Result := StringReplace(result, '[[-xy-amp--]]', '&amp;amp;',[rfReplaceAll]);
+  Result := StringReplace(result, '<', '&lt;',[rfReplaceAll]);
+  Result := StringReplace(result, '>', '&gt;',[rfReplaceAll]);
+
+  if isAttribute then
+  begin
+    Result := StringReplace(result, '''', '&#39;',[rfReplaceAll]);
+    Result := StringReplace(result, '"', '&quot;',[rfReplaceAll]);
+  end;
+end;
 
 { TDUnitXXMLNUnitLogger }
 
@@ -115,6 +166,7 @@ begin
   sDate := FormatDateTime('yyyy-MM-dd',RunResults.StartTime);
   WriteXMLLine('<?xml version="1.0" encoding="utf-8" ?>');
 
+  WriteXMLLine('<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>');
   WriteXMLLine(Format('<test-results name="%s" total="%d" errors="%d" failures="%d" ignored="%d" inconclusive="0" not-run="%d" skipped="0" invalid="0" date="%s" time="%s">',
                       [sExeName,RunResults.TestCount,RunResults.ErrorCount,RunResults.FailureCount,RunResults.IgnoredCount,RunResults.IgnoredCount,sDate,sTime]));
   sExeName := ExtractFileName(sExeName);
@@ -259,14 +311,14 @@ begin
           Indent;
             WriteXMLLine('<message>');
             Indent;
-              WriteXMLLine(Format('<![CDATA[ %s ]]>',[testResult.Message]));
+              WriteXMLLine(Format('<![CDATA[ %s ]]>',[EscapeForXML(testResult.Message, False, True)]));
             Outdent;
             WriteXMLLine('</message>');
           Outdent;
           Indent;
             WriteXMLLine('<stack-trace>');
             Indent;
-              WriteXMLLine(Format('<![CDATA[ %s ]]>',[testResult.StackTrace]));
+              WriteXMLLine(Format('<![CDATA[ %s ]]>',[EscapeForXML(testResult.StackTrace, False, True)]));
             Outdent;
             WriteXMLLine('</stack-trace>');
           Outdent;
@@ -280,7 +332,7 @@ begin
           Indent;
             WriteXMLLine('<message>');
             Indent;
-              WriteXMLLine(Format('<![CDATA[ %s ]]>',[testResult.Message]));
+              WriteXMLLine(Format('<![CDATA[ %s ]]>',[EscapeForXML(testResult.Message, False, True)]));
             Outdent;
             WriteXMLLine('</message>');
           Outdent;
