@@ -54,10 +54,14 @@ type
     function GetTestDuration : TTimeSpan;
     function GetEnabled : boolean;
     procedure SetEnabled(const value : boolean);
+    function GetIgnored : boolean;
+    function GetIgnoreReason : string;
 
     property Name : string read GetName;
     property Enabled : boolean read GetEnabled write SetEnabled;
     property Fixture : ITestFixture read GetTestFixture;
+    property Ignored : boolean read GetIgnored;
+    property IgnoreReason : string read GetIgnoreReason;
     property TestMethod : TTestMethod read GetTestMethod;
   end;
 
@@ -96,6 +100,8 @@ type
     function GetChildren : ITestFixtureList;
     function GetHasChildren : boolean;
     function GetNameSpace : string;
+    function GetHasTests : boolean;
+    procedure OnMethodExecuted(const AMethod : TTestMethod);
 
     property Name                       : string read GetName;
     property NameSpace                  : string read GetNameSpace;
@@ -104,6 +110,7 @@ type
     property Description                : string read GetDescription;
     property Enabled                    : boolean read GetEnabled write SetEnabled;
     property HasChildFixtures           : boolean read GetHasChildren;
+    property HasTests                   : boolean read GetHasTests;
     property TestClass                  : TClass read GetTestClass;
     property Tests                      : IEnumerable<ITest> read GetTests;
     property SetupMethod                : TTestMethod read GetSetupMethod;
@@ -135,7 +142,9 @@ type
   //Used by the TestExecute method.
   ITestExecuteContext = interface
     ['{DE4ADB3F-3B5B-4B90-8659-0BFA578977CC}']
-    procedure RecordResult(const testResult : ITestResult);
+    procedure RecordFixture(const fixtureResult : IFixtureResult);
+    procedure RecordResult(const fixtureResult : IFixtureResult; const testResult : ITestResult);
+    procedure RollupResults;
   end;
 
   ITestFixtureContext = interface
@@ -150,6 +159,16 @@ type
   ITestCaseExecute = interface(ITestExecute)
     ['{49781E22-C127-4BED-A9D5-84F9AAACE96C}']
     function GetCaseName : string;
+  end;
+
+
+  IFixtureResultBuilder = interface
+    ['{2604E655-349D-4379-9796-1C708CAD7307}']
+    procedure AddTestResult(const AResult : ITestResult);
+    procedure AddChild(const AFixtureResult : IFixtureResult);
+    procedure RollUpResults;
+   // function Combine(const AFixtureResult : IFixtureResult) : IFixtureResult;
+   // function AreEqual(const AFixtureResult : IFixtureResult) : boolean;
   end;
 
 

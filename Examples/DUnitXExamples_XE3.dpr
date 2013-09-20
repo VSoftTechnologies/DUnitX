@@ -1,9 +1,10 @@
-program DUnitXExamples_XE2;
+program DUnitXExamples_XE3;
 
 {$APPTYPE CONSOLE}
 
 uses
   SysUtils,
+  DUnitX.Examples.EqualityAsserts in 'DUnitX.Examples.EqualityAsserts.pas',
   DUnitX.Examples.General in 'DUnitX.Examples.General.pas',
   DUnitX.CommandLine in '..\DUnitX.CommandLine.pas',
   DUnitX.ConsoleWriter.Base in '..\DUnitX.ConsoleWriter.Base.pas',
@@ -15,28 +16,25 @@ uses
   DUnitX.IoC in '..\DUnitX.IoC.pas',
   DUnitX.Loggers.Console in '..\DUnitX.Loggers.Console.pas',
   DUnitX.Loggers.Text in '..\DUnitX.Loggers.Text.pas',
+  DUnitX.Loggers.XML.NUnit in '..\DUnitX.Loggers.XML.NUnit.pas',
   DUnitX.Loggers.XML.xUnit in '..\DUnitX.Loggers.XML.xUnit.pas',
   DUnitX.MacOS.Console in '..\DUnitX.MacOS.Console.pas',
   DUnitX.Test in '..\DUnitX.Test.pas',
   DUnitX.TestFixture in '..\DUnitX.TestFixture.pas',
   DUnitX.TestFramework in '..\DUnitX.TestFramework.pas',
   DUnitX.TestResult in '..\DUnitX.TestResult.pas',
-  DUnitX.RunResults in '..\DUnitX.RunResults.pas',
+  DUnitX.TestResults in '..\DUnitX.TestResults.pas',
   DUnitX.TestRunner in '..\DUnitX.TestRunner.pas',
   DUnitX.Utils in '..\DUnitX.Utils.pas',
   DUnitX.Utils.XML in '..\DUnitX.Utils.XML.pas',
   DUnitX.WeakReference in '..\DUnitX.WeakReference.pas',
   DUnitX.Windows.Console in '..\DUnitX.Windows.Console.pas',
   DUnitX.StackTrace.EurekaLog7 in '..\DUnitX.StackTrace.EurekaLog7.pas',
-  DUnitX.Examples.EqualityAsserts in 'DUnitX.Examples.EqualityAsserts.pas',
-  DUnitX.Loggers.XML.NUnit in '..\DUnitX.Loggers.XML.NUnit.pas',
-  DUnitX.FixtureResult in '..\DUnitX.FixtureResult.pas',
-  DUnitX.Loggers.Null in '..\DUnitX.Loggers.Null.pas',
-  DUnitX.MemoryLeakMonitor.Default in '..\DUnitX.MemoryLeakMonitor.Default.pas';
+  NonNamespacedExample in 'NonNamespacedExample.pas';
 
 var
   runner : ITestRunner;
-  results : IRunResults;
+  results : ITestResults;
   logger : ITestLogger;
   nunitLogger : ITestLogger;
 begin

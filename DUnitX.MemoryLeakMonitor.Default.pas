@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2012 Vincent Parrett                              }
+{           Copyright (C) 2013 Vincent Parrett                              }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -24,50 +24,39 @@
 {                                                                           }
 {***************************************************************************}
 
-unit DUnitX.Tests.TestFixture;
+unit DUnitX.MemoryLeakMonitor.Default;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
-  DUnitX.TestFramework,
-  DUnitX.TestFixture;
+  classes,
+  DUnitX.TestFramework;
 
 type
-  {$M+}
-  [TestFixture]
-  TTestClassWithNonPublicSetup = class
-  private
-    FSetupRun : Boolean;
-  protected
-    [Setup]
-    procedure Setup;
-  public
-    constructor Create;
-    property SetupRun : Boolean read FSetupRun;
-  end;
-  {$M-}
+  TDUnitXDefaultMemoryLeakMonitor = class(TInterfacedObject,IMemoryLeakMonitor)
 
+  end;
+
+
+
+  procedure RegisterDefaultProvider;
 
 implementation
 
 uses
-  SysUtils;
-{ TDUnitXTestFixtureTests }
+  DUnitX.IoC;
 
-{ TTestClassWithNonPublicSetup }
 
-constructor TTestClassWithNonPublicSetup.Create;
+procedure RegisterDefaultProvider;
 begin
-  inherited Create;
-  FSetupRun := False;
+  TDUnitXIoC.DefaultContainer.RegisterType<IMemoryLeakMonitor>(
+    function : IMemoryLeakMonitor
+    begin
+      result := TDUnitXDefaultMemoryLeakMonitor.Create;
+    end);
 end;
 
-procedure TTestClassWithNonPublicSetup.Setup;
-begin
-  //Optimised out as the method is not used internally;
-  FSetupRun := True;
-end;
 
-initialization
-  TDUnitX.RegisterTestFixture(TTestClassWithNonPublicSetup);
 end.

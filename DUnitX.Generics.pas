@@ -37,17 +37,34 @@ uses
 
 type
   //Delphi does not have reference counted collection types.. so we created one here.
+  //This will typically be used where we return IEnumerbable<T> from a function
   //TODO: need unit tests!!!
-  IList<T> = interface(IEnumerable<T>)
-    function GetCapacity : integer;
-    procedure SetCapacity(const value : integer);
-    function GetCount : integer;
-    procedure SetCount(const value : integer);
-    function GetItem(index : integer) : T;
-    procedure SetItem(index : integer; value : T);
 
+  IReadOnlyList<T> = interface(IEnumerable<T>)
+    function GetCapacity : integer;
+    function GetCount : integer;
+    function GetItem(index : integer) : T;
     function GetOnNotify : TCollectionNotifyEvent<T>;
     procedure SetOnNotify(value : TCollectionNotifyEvent<T>);
+    function First: T;
+    function Last: T;
+    function Contains(const Value: T): Boolean;
+    function IndexOf(const Value: T): Integer;
+    function LastIndexOf(const Value: T): Integer;
+    function BinarySearch(const Item: T; out Index: Integer): Boolean; overload;
+    function BinarySearch(const Item: T; out Index: Integer; const AComparer: IComparer<T>): Boolean; overload;
+    property Capacity: Integer read GetCapacity;
+    property Count: Integer read GetCount;
+    property Items[Index: Integer]: T read GetItem; default;
+    property OnNotify: TCollectionNotifyEvent<T> read GetOnNotify write SetOnNotify;
+
+  end;
+
+  IList<T> = interface(IReadOnlyList<T>)
+    procedure SetCapacity(const value : integer);
+    procedure SetCount(const value : integer);
+    procedure SetItem(index : integer; value : T);
+
 
     function Add(const Value: T): Integer;
     procedure AddRange(const Values: array of T); overload;
@@ -68,21 +85,14 @@ type
     procedure Exchange(Index1, Index2: Integer);
     procedure Move(CurIndex, NewIndex: Integer);
 
-    function First: T;
-    function Last: T;
 
     procedure Clear;
 
-    function Contains(const Value: T): Boolean;
-    function IndexOf(const Value: T): Integer;
-    function LastIndexOf(const Value: T): Integer;
 
     procedure Reverse;
 
     procedure Sort; overload;
     procedure Sort(const AComparer: IComparer<T>); overload;
-    function BinarySearch(const Item: T; out Index: Integer): Boolean; overload;
-    function BinarySearch(const Item: T; out Index: Integer; const AComparer: IComparer<T>): Boolean; overload;
 
     procedure TrimExcess;
 
@@ -104,7 +114,7 @@ type
     function GetNonGenEnumerator: IEnumerator; virtual; abstract;
   end;
 
-  TDUnitXList<T> = class(TDUnitXEnumerable, IList<T>)
+  TDUnitXList<T> = class(TDUnitXEnumerable, IList<T>,IEnumerable<T>)
   private
     FList : TList<T>;
   protected

@@ -69,6 +69,12 @@ type
     procedure TearDown;
 
     procedure TestMeAnyway;
+
+  published
+
+    [Ignore('Because I said so!!!')]
+    procedure IgnoreMe;
+
   end;
 
   [TestFixture]
@@ -85,6 +91,17 @@ type
     procedure IAmATest;
   end;
 
+  [TestFixture]
+  TExampleFixture3 = class
+  public
+    //will be used as SetupFixture
+    constructor Create;
+    //will be used as TeardownFixture
+    destructor Destroy;override;
+  published
+    procedure ATest;
+  end;
+
 implementation
 
 uses
@@ -99,6 +116,13 @@ procedure TMyExampleTests.DontCallMe;
 begin
   TDUnitX.CurrentRunner.Status('DontCallMe called');
   raise Exception.Create('DontCallMe was called!!!!');
+end;
+
+procedure TMyExampleTests.IgnoreMe;
+begin
+  TDUnitX.CurrentRunner.Status('IgnoreMe called');
+  raise Exception.Create('IgnoreMe was called when it has IgnoreAttibute !!!!');
+
 end;
 
 procedure TMyExampleTests.Setup;
@@ -128,16 +152,17 @@ end;
 
 
 procedure TMyExampleTests.TestTwo;
+{$IFDEF DELPHI_XE_UP}
 var
   x : TMyExampleTests;
+{$ENDIF}
 begin
   TDUnitX.CurrentRunner.Status('TestTwo called');
-  x := TMyExampleTests.Create;
-  //CheckIs(x,TObject); //DUnit compatibility.
   TDUnitX.CurrentRunner.Status('hello world');
 
   //No longer compatible for Delphi2010
 {$IFDEF DELPHI_XE_UP}
+  x := TMyExampleTests.Create;
   Assert.IsType<TObject>(x); /// a bit pointless since it's strongly typed.
 {$ENDIF}
 end;
@@ -161,6 +186,24 @@ begin
   TDUnitX.CurrentRunner.Log('Tearing down');
 end;
 
+{ TExampleFixture3 }
+
+procedure TExampleFixture3.ATest;
+begin
+  Assert.IsTrue(true);
+end;
+
+constructor TExampleFixture3.Create;
+begin
+
+end;
+
+destructor TExampleFixture3.Destroy;
+begin
+
+  inherited;
+end;
+
 initialization
 //I was hoping to use RTTI to discover the TestFixture classes, however unlike .NET
 //if we don't touch the class somehow then the linker will remove
@@ -178,5 +221,5 @@ initialization
 //Register the test fixtures
   TDUnitX.RegisterTestFixture(TMyExampleTests);
   TDUnitX.RegisterTestFixture(TExampleFixture2);
-
+  TDUnitX.RegisterTestFixture(TExampleFixture3);
 end.
