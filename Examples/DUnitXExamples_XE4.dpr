@@ -23,7 +23,7 @@ uses
   DUnitX.TestFixture in '..\DUnitX.TestFixture.pas',
   DUnitX.TestFramework in '..\DUnitX.TestFramework.pas',
   DUnitX.TestResult in '..\DUnitX.TestResult.pas',
-  DUnitX.TestResults in '..\DUnitX.TestResults.pas',
+  DUnitX.RunResults in '..\DUnitX.RunResults.pas',
   DUnitX.TestRunner in '..\DUnitX.TestRunner.pas',
   DUnitX.Utils in '..\DUnitX.Utils.pas',
   DUnitX.Utils.XML in '..\DUnitX.Utils.XML.pas',
