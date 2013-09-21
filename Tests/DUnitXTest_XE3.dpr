@@ -20,12 +20,10 @@ uses
   DUnitX.Test in '..\DUnitX.Test.pas',
   DUnitX.TestFixture in '..\DUnitX.TestFixture.pas',
   DUnitX.TestResult in '..\DUnitX.TestResult.pas',
-  DUnitX.RunResults in '..\DUnitX.RunResults.pas',
   DUnitX.TestRunner in '..\DUnitX.TestRunner.pas',
   DUnitX.InternalInterfaces in '..\DUnitX.InternalInterfaces.pas',
   DUnitX.TestFramework in '..\DUnitX.TestFramework.pas',
   DUnitX.DUnitCompatibility in '..\DUnitX.DUnitCompatibility.pas',
-  DUnitX.IoC.Internal in '..\DUnitX.IoC.Internal.pas',
   DUnitX.IoC in '..\DUnitX.IoC.pas',
   DUnitX.Tests.Assert in 'DUnitX.Tests.Assert.pas',
   DUnitX.Tests.DUnitCompatibility in 'DUnitX.Tests.DUnitCompatibility.pas',
@@ -38,7 +36,12 @@ uses
   DUnitX.StackTrace.MadExcept3 in '..\DUnitX.StackTrace.MadExcept3.pas',
   DUnitX.StackTrace.MadExcept4 in '..\DUnitX.StackTrace.MadExcept4.pas',
   DUnitX.Loggers.GUI in '..\DUnitX.Loggers.GUI.pas' {Form1},
-  DUnitX.StackTrace.EurekaLog7 in '..\DUnitX.StackTrace.EurekaLog7.pas';
+  DUnitX.StackTrace.EurekaLog7 in '..\DUnitX.StackTrace.EurekaLog7.pas',
+  DUnitX.FixtureResult in '..\DUnitX.FixtureResult.pas',
+  DUnitX.RunResults in '..\DUnitX.RunResults.pas',
+  DUnitX.MemoryLeakMonitor.Default in '..\DUnitX.MemoryLeakMonitor.Default.pas',
+  DUnitX.MemoryLeakMonitor.FastMM4 in '..\DUnitX.MemoryLeakMonitor.FastMM4.pas',
+  DUnitX.Loggers.Null in '..\DUnitX.Loggers.Null.pas';
 
 var
   runner : ITestRunner;

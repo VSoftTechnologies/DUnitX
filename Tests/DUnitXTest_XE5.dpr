@@ -25,7 +25,6 @@ uses
   DUnitX.InternalInterfaces in '..\DUnitX.InternalInterfaces.pas',
   DUnitX.TestFramework in '..\DUnitX.TestFramework.pas',
   DUnitX.DUnitCompatibility in '..\DUnitX.DUnitCompatibility.pas',
-  DUnitX.IoC.Internal in '..\DUnitX.IoC.Internal.pas',
   DUnitX.IoC in '..\DUnitX.IoC.pas',
   DUnitX.Tests.Assert in 'DUnitX.Tests.Assert.pas',
   DUnitX.Tests.DUnitCompatibility in 'DUnitX.Tests.DUnitCompatibility.pas',

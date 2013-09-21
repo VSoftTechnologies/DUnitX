@@ -55,7 +55,6 @@
 			<DCCReference Include="..\DUnitX.DUnitCompatibility.pas"/>
 			<DCCReference Include="..\DUnitX.Generics.pas"/>
 			<DCCReference Include="..\DUnitX.InternalInterfaces.pas"/>
-			<DCCReference Include="..\DUnitX.IoC.Internal.pas"/>
 			<DCCReference Include="..\DUnitX.IoC.pas"/>
 			<DCCReference Include="..\DUnitX.Loggers.Console.pas"/>
 			<DCCReference Include="..\DUnitX.Loggers.Text.pas"/>

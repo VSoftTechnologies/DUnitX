@@ -12,7 +12,6 @@ uses
   DUnitX.DUnitCompatibility in '..\DUnitX.DUnitCompatibility.pas',
   DUnitX.Generics in '..\DUnitX.Generics.pas',
   DUnitX.InternalInterfaces in '..\DUnitX.InternalInterfaces.pas',
-  DUnitX.IoC.Internal in '..\DUnitX.IoC.Internal.pas',
   DUnitX.IoC in '..\DUnitX.IoC.pas',
   DUnitX.Loggers.Console in '..\DUnitX.Loggers.Console.pas',
   DUnitX.Loggers.Text in '..\DUnitX.Loggers.Text.pas',
