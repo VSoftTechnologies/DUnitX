@@ -1336,19 +1336,17 @@ end;
 
 class function TDUnitX.CreateRunner: ITestRunner;
 begin
-  result := TDUnitXTestRunner.Create(false,nil);
+  result := CreateRunner(false,nil);
 end;
 
 class function TDUnitX.CreateRunner(const ALogger: ITestLogger): ITestRunner;
 begin
-  result := TDUnitXTestRunner.Create(false,ALogger);
-
+  result := CreateRunner(false,ALogger);
 end;
 
 class function TDUnitX.CreateRunner(const useCommandLineOptions: boolean): ITestRunner;
 begin
-  result := TDUnitXTestRunner.Create(useCommandLineOptions,nil);
-
+  result := CreateRunner(useCommandLineOptions,nil);
 end;
 
 class function TDUnitX.CommandLine: ICommandLine;

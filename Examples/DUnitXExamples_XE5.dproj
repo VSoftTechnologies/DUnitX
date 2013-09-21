@@ -122,7 +122,7 @@
         <DCCReference Include="..\DUnitX.TestFixture.pas"/>
         <DCCReference Include="..\DUnitX.TestFramework.pas"/>
         <DCCReference Include="..\DUnitX.TestResult.pas"/>
-        <DCCReference Include="..\DUnitX.TestResults.pas"/>
+        <DCCReference Include="..\DUnitX.RunResults.pas"/>
         <DCCReference Include="..\DUnitX.TestRunner.pas"/>
         <DCCReference Include="..\DUnitX.Utils.pas"/>
         <DCCReference Include="..\DUnitX.Utils.XML.pas"/>
