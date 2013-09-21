@@ -42,7 +42,7 @@ uses
 
 var
   runner : ITestRunner;
-  results : ITestResults;
+  results : IRunResults;
   logger : ITestLogger;
   nunitLogger : ITestLogger;
 begin
