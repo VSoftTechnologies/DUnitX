@@ -105,13 +105,6 @@ implementation
 
 uses
   TypInfo,
-  {$IFDEF MSWINDOWS}
-    {$if CompilerVersion < 23 }
-      Windows,
-    {$else}
-      WinAPI.Windows, // Delphi XE2 (CompilerVersion 23) added scopes in front of unit names
-    {$ifend}
-  {$ENDIF}
   SysUtils,
   DUnitX.Test,
   DUnitX.Utils;
@@ -153,26 +146,6 @@ begin
   inherited;
 end;
 
-{$IFDEF MSWINDOWS}
-procedure PatchCodeDWORD(Code: PDWORD; Value: DWORD);
-// Self-modifying code - change one DWORD in the code segment
-var
-  RestoreProtection, Ignore: DWORD;
-begin
-  if VirtualProtect(Code, SizeOf(Code^), PAGE_EXECUTE_READWRITE,
-    RestoreProtection) then
-  begin
-    Code^ := Value;
-    VirtualProtect(Code, SizeOf(Code^), RestoreProtection, Ignore);
-    FlushInstructionCache(GetCurrentProcess, Code, SizeOf(Code^));
-  end;
-end;
-
-const
-  vmtRunnerIndex = System.vmtAutoTable;
-
-
-{$ENDIF}
 
 
 procedure TDUnitXTestFixture.GenerateFixtureFromClass;
