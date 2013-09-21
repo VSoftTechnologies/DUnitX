@@ -315,7 +315,7 @@ begin
   end;
 
   SetConsoleSummaryColor();
-  FConsoleWriter.WriteLn(Format('Tests Run     : %d',[RunResults.TestCount]));
+  FConsoleWriter.WriteLn(Format('Tests Found   : %d',[RunResults.TestCount]));
 
   if RunResults.IgnoredCount > 0 then
     SetConsoleWarningColor()

@@ -143,11 +143,12 @@ end;
 
 
 var
-  fixtureRes : IFixtureResult;
-  sExeName : string;
-  sResult : string;
-  sTime   : string;
-  sDate   : string;
+  fixtureRes  : IFixtureResult;
+  sExeName    : string;
+  sResult     : string;
+  sTime       : string;
+  sDate       : string;
+  totalTests  : integer;
 begin
 
 { first things first, rollup the namespaces.
@@ -159,6 +160,8 @@ begin
 //    LogFixture(fixtureRes,0);
   end;
 
+  //NUnit reports the total without the Ignored.
+  totalTests := RunResults.TestCount - RunResults.IgnoredCount;
 
   sExeName := ParamStr(0);
   FIndent := 0;
@@ -167,7 +170,7 @@ begin
 
   WriteXMLLine('<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>');
   WriteXMLLine(Format('<test-results name="%s" total="%d" errors="%d" failures="%d" ignored="%d" inconclusive="0" not-run="%d" skipped="0" invalid="0" date="%s" time="%s">',
-                      [sExeName,RunResults.TestCount,RunResults.ErrorCount,RunResults.FailureCount,RunResults.IgnoredCount,RunResults.IgnoredCount,sDate,sTime]));
+                      [sExeName,totalTests,RunResults.ErrorCount,RunResults.FailureCount,RunResults.IgnoredCount,RunResults.IgnoredCount,sDate,sTime]));
   sExeName := ExtractFileName(sExeName);
 
   if RunResults.AllPassed then
