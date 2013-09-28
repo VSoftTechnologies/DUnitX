@@ -202,9 +202,6 @@ type
     class procedure Pass(const message : string = '');
     class procedure Fail(const message : string = ''; const errorAddrs : pointer = nil);
 
-    //TODO: Make more use of warnings. Currently none in use.
-    class procedure Warn(const message : string = ''; const errorAddrs : pointer = nil);
-
     class procedure AreEqual(const left : string; const right : string; const ignoreCase : boolean; const message : string);overload;
     class procedure AreEqual(const left : string; const right : string; const message : string = '');overload;
     class procedure AreEqual(const left, right : Extended; const tolerance : Extended; const message : string = '');overload;
@@ -366,22 +363,33 @@ type
   ITestFixtureInfoList = interface(IList<ITestFixtureInfo>)
     ['{DEE229E7-1450-4DC1-BEEA-562461439084}']
   end;
-
-  TTestFixtureInfoList = class(TDUnitXList<ITestFixtureInfo>, ITestFixtureInfoList);
   {$M-}
-
-  TTestResultType = (Pass,Failure,Warning,Error,Ignored);
+  TTestFixtureInfoList = class(TDUnitXList<ITestFixtureInfo>, ITestFixtureInfoList);
 
   {$M+}
-  ITestResult = interface
+  IResult = interface
+  ['{AEA1E458-157B-4B3A-9474-44EDFB3EE7A1}']
+    function GetStartTime : TDateTime;
+    function GetFinishTime : TDateTime;
+    function GetDuration : TTimeSpan;
+
+    //Timing
+    property StartTime : TDateTime read GetStartTime;
+    property FinishTime : TDateTime read GetFinishTime;
+    property Duration : TTimeSpan read GetDuration;
+end;
+  {$M-}
+
+
+  TTestResultType = (Pass,Failure,Error,Ignored);
+  {$M+}
+  ITestResult = interface(IResult)
   ['{EFD44ABA-4F3E-435C-B8FC-1F8EB4B35A3B}']
     function GetTest : ITestInfo;
     function GetResult : boolean;
     function GetResultType : TTestResultType;
     function GetMessage : string;
-    function GetTestStartTime : TDateTime;
-    function GetTestEndTime : TDateTime;
-    function GetTestDuration : TTimeSpan;
+    function GetStackTrace : string;
 
     //Test
     property Test : ITestInfo read GetTest;
@@ -390,15 +398,13 @@ type
     property Result : boolean read GetResult;
     property ResultType : TTestResultType read GetResultType;
     property Message : string read GetMessage;
+    property StackTrace : string read GetStackTrace;
 
-    //Timing
-    property TestStartTime : TDateTime read GetTestStartTime;
-    property TestEndTime : TDateTime read GetTestEndTime;
-    property TestDuration : TTimeSpan read GetTestDuration;
   end;
   {$M-}
 
   ITestError = interface(ITestResult)
+  ['{375941C6-CEFD-44E5-9646-30D7915B8A71}']
     function GetExceptionClass : ExceptClass;
     function GetExceptionMessage : string;
     function GetExceptionLocationInfo : string;
@@ -410,72 +416,79 @@ type
     property ExceptionAddressInfo : string read GetExceptionAddressInfo;
   end;
 
-  IFixtureResult = interface(IEnumerable<ITestResult>)
-  ['{2ED7CD6D-AF17-4A56-9ECF-7528A1583B30}']
-    function GetErrorCount : integer;
-    function GetFailureCount : integer;
-    function GetWarningCount : integer;
-    function GetSuccessCount : integer;
-    function GetHasFailures : boolean;
-    function GetFixture : ITestFixtureInfo;
-    function GetResult(index : integer) : ITestResult;
-    function GetCount : integer;
+  IFixtureResult = interface(IResult)
+  ['{7264579D-495E-4E00-A15D-751E6A65BEF6}']
+    function GetErrorCount        : integer;
+    function GetFailureCount      : integer;
+    function GetIgnoredCount      : integer;
+    function GetPassCount      : integer;
+    function GetHasFailures       : boolean;
+    function GetTestResultCount   : integer;
+    function GetChildCount        : integer;
 
-    function GetFailures  : IEnumerable<ITestResult>;
-    function GetWarnings  : IEnumerable<ITestResult>;
-    function GetErrors    : IEnumerable<ITestError>;
-    function GetSuccesses : IEnumerable<ITestResult>;
+    function GetFixture           : ITestFixtureInfo;
+    function GetTestResults       : IList<ITestResult>;
+    function GetChildren          : IList<IFixtureResult>;
+    function GetFailures  : IList<ITestResult>;
+    function GetErrors    : IList<ITestError>;
+    function GetPasses : IList<ITestResult>;
+    function GetName : string;
+    function GetNamespace : string;
+    procedure Reduce;
 
-    function GetResults   : IEnumerable<ITestResult>;
-
-    property Fixture      : ITestFixtureInfo read GetFixture;
     property HasFailures  : Boolean read GetHasFailures;
+    property FailureCount : integer read GetFailureCount;
     property ErrorCount   : integer read GetErrorCount;
-    property WarningCount : integer read GetWarningCount;
-    property SuccessCount : integer read GetSuccessCount;
-    property ResultCount  : integer read GetCount;
+    property IgnoredCount : integer read GetIgnoredCount;
+    property PassCount    : integer read GetPassCount;
+    property ResultCount  : integer read GetTestResultCount;
+    property ChildCount   : integer read GetChildCount;
 
-    property Result[index : integer] : ITestResult read GetResult;
-    property Results      : IEnumerable<ITestResult> read GetResults;
-    property Failures     : IEnumerable<ITestResult> read GetFailures;
-    property Warnings     : IEnumerable<ITestResult> read GetWarnings;
-    property Errors       : IEnumerable<ITestError> read GetErrors;
-    property Successes    : IEnumerable<ITestResult> read GetWarnings;
+    property Name         : string read GetName;
+    property Namespace    : string read GetNamespace;
+    property Fixture      : ITestFixtureInfo read GetFixture;
+    property Children     : IList<IFixtureResult> read GetChildren;
+    property TestResults  : IList<ITestResult> read GetTestResults;
+    property Failures     : IList<ITestResult> read GetFailures;
+    property Errors       : IList<ITestError> read GetErrors;
+    property Pesses       : IList<ITestResult> read GetPasses;
   end;
 
+
   {$M+}
-  ITestResults = interface
+  IRunResults = interface(IResult)
   ['{4A335B76-33E3-48FD-87DF-9462428C60DA}']
-    function GetCount : integer;
+    function GetFixtureCount : integer;
+    function GetTestCount : integer;
     function GetAllPassed : boolean;
     function GetFailureCount : integer;
     function GetErrorCount : integer;
-    function GetWarningCount : integer;
     function GetPassCount : integer;
     function GetIgnoredCount : integer;
     function GetSuccessRate : integer;
-    function GetStartTime: TDateTime;
-    function GetFinishTime: TDateTime;
-    function GetTestDuration: TTimeSpan;
 
     function GetFixtures : IEnumerable<ITestFixtureInfo>;
-    function GetResults  : IEnumerable<ITestResult>;
+
+    function GetFixtureResults : IEnumerable<IFixtureResult>;
+
+    function GetAllTestResults : IEnumerable<ITestResult>;
 
     function ToString : string;
 
-    property Count : integer read GetCount;
+    property TestCount : integer read GetTestCount;
+    property FixtureCount : integer read GetFixtureCount;
+
     property FailureCount : integer read GetFailureCount;
     property ErrorCount : integer read GetErrorCount;
     property IgnoredCount : integer read GetIgnoredCount;
-    property WarningCount : integer read GetWarningCount;
     property PassCount : integer read GetPassCount;
 
-    property StartTime : TDateTime read GetStartTime;
-    property FinishTime: TDateTime read GetFinishTime;
-    property TestDuration : TTimeSpan read GetTestDuration;
-
     property SuccessRate : integer read GetSuccessRate;
+    //means all enabled/not ingored tests passed.
     property AllPassed : boolean read GetAllPassed;
+
+    property Fixtures : IEnumerable<ITestFixtureInfo> read GetFixtures;
+    property FixtureResults : IEnumerable<IFixtureResult> read GetFixtureResults;
   end;
   {$M-}
 
@@ -539,11 +552,6 @@ type
     procedure OnTestFailure(const threadId : Cardinal;const  Failure: ITestError);
 
     ///	<summary>
-    ///	  //called when a test results in a warning.
-    ///	</summary>
-    procedure OnTestWarning(const threadId : Cardinal;const  AWarning: ITestResult);
-
-    ///	<summary>
     ///	  //called when a test is ignored.
     ///	</summary>
     procedure OnTestIgnored(const threadId : Cardinal; const AIgnored: ITestResult);
@@ -587,7 +595,7 @@ type
     ///	<summary>
     ///	  //called after all fixtures have run.
     ///	</summary>
-    procedure OnTestingEnds(const TestResults: ITestResults);
+    procedure OnTestingEnds(const RunResults: IRunResults);
   end;
 
   TRunnerExitBehavior = (Continue, //The runner will exit normally
@@ -608,7 +616,7 @@ type
     //This is exposed for the GUI Runner cast as ITestFixtureList.
     function BuildFixtures : IInterface;
 
-    function Execute : ITestResults;
+    function Execute : IRunResults;
 
     property ExitBehavior : TRunnerExitBehavior read GetExitBehavior write SetExitBehavior;
     property UseCommandLineOptions : boolean read GetUseCommandLineOptions write SetUseCommandLineOptions;
@@ -648,7 +656,7 @@ type
 
   TDUnitX = class
   public class var
-    RegisteredFixtures : TDictionary<string,TClass>;
+    RegisteredFixtures : TDictionary<TClass,string>;
   public
     class constructor Create;
     class destructor Destroy;
@@ -669,6 +677,12 @@ type
     function PointerToAddressInfo(Addrs: Pointer): string;
   end;
 
+  IMemoryLeakMonitor = interface
+  ['{A374A4D0-9BF6-4E01-8A29-647F92CBF41C}']
+
+  end;
+
+
   ETestFrameworkException = class(Exception);
 
   ENotImplemented = class(ETestFrameworkException);
@@ -678,7 +692,6 @@ type
 
   ETestFailure = class(EAbort);
   ETestPass = class(EAbort);
-  ETestWarning = class(EABort);
   ENoTestsRegistered = class(ETestFrameworkException);
 
 {$IFDEF DELPHI_XE_DOWN}
@@ -691,6 +704,8 @@ uses
   DUnitX.TestRunner,
   DUnitX.Utils,
   DUnitX.Commandline,
+  DUnitX.IoC,
+  DUnitX.MemoryLeakMonitor.Default,
   Variants,
   Math,
   StrUtils,
@@ -1210,13 +1225,6 @@ begin
   Fail('Method did not throw any exceptions.' + GetMsg, ReturnAddress);
 end;
 
-class procedure Assert.Warn(const message : string; const errorAddrs : pointer);
-begin
-  if errorAddrs = nil then
-    raise ETestWarning.Create(message) at ReturnAddress
-  else
-    raise ETestWarning.Create(message) at errorAddrs;
-end;
 
 class procedure Assert.WillNotRaise(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass; const msg : string);
   function GetMsg : string;
@@ -1328,19 +1336,17 @@ end;
 
 class function TDUnitX.CreateRunner: ITestRunner;
 begin
-  result := TDUnitXTestRunner.Create(false,nil);
+  result := CreateRunner(false,nil);
 end;
 
 class function TDUnitX.CreateRunner(const ALogger: ITestLogger): ITestRunner;
 begin
-  result := TDUnitXTestRunner.Create(false,ALogger);
-
+  result := CreateRunner(false,ALogger);
 end;
 
 class function TDUnitX.CreateRunner(const useCommandLineOptions: boolean): ITestRunner;
 begin
-  result := TDUnitXTestRunner.Create(useCommandLineOptions,nil);
-
+  result := CreateRunner(useCommandLineOptions,nil);
 end;
 
 class function TDUnitX.CommandLine: ICommandLine;
@@ -1350,7 +1356,12 @@ end;
 
 class constructor TDUnitX.Create;
 begin
-  RegisteredFixtures := TDictionary<string,TClass>.Create;
+  RegisteredFixtures := TDictionary<TClass,string>.Create;
+
+  //Make sure we have at least a dummy memory leak monitor registered.
+  if not TDUnitXIoC.DefaultContainer.HasService<IMemoryLeakMonitor> then
+    DUnitX.MemoryLeakMonitor.Default.RegisterDefaultProvider;
+
 end;
 
 class function TDUnitX.CreateRunner(const useCommandLineOptions: boolean; const ALogger: ITestLogger): ITestRunner;
@@ -1398,11 +1409,8 @@ begin
 
   end;
 
-
-
-
-  if not RegisteredFixtures.ContainsValue(AClass) then
-    RegisteredFixtures.Add(sName, AClass);
+  if not RegisteredFixtures.ContainsKey(AClass) then
+      RegisteredFixtures.Add(AClass,sName );
 end;
 
 { TestCaseAttribute }
@@ -1467,5 +1475,6 @@ end;
 
 { IgnoreAttribute }
 
+initialization
 
 end.

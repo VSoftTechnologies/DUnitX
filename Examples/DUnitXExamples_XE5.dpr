@@ -12,7 +12,6 @@ uses
   DUnitX.DUnitCompatibility in '..\DUnitX.DUnitCompatibility.pas',
   DUnitX.Generics in '..\DUnitX.Generics.pas',
   DUnitX.InternalInterfaces in '..\DUnitX.InternalInterfaces.pas',
-  DUnitX.IoC.Internal in '..\DUnitX.IoC.Internal.pas',
   DUnitX.IoC in '..\DUnitX.IoC.pas',
   DUnitX.Loggers.Console in '..\DUnitX.Loggers.Console.pas',
   DUnitX.Loggers.Text in '..\DUnitX.Loggers.Text.pas',
@@ -23,7 +22,7 @@ uses
   DUnitX.TestFixture in '..\DUnitX.TestFixture.pas',
   DUnitX.TestFramework in '..\DUnitX.TestFramework.pas',
   DUnitX.TestResult in '..\DUnitX.TestResult.pas',
-  DUnitX.TestResults in '..\DUnitX.TestResults.pas',
+  DUnitX.RunResults in '..\DUnitX.RunResults.pas',
   DUnitX.TestRunner in '..\DUnitX.TestRunner.pas',
   DUnitX.Utils in '..\DUnitX.Utils.pas',
   DUnitX.Utils.XML in '..\DUnitX.Utils.XML.pas',
@@ -34,7 +33,7 @@ uses
 
 var
   runner : ITestRunner;
-  results : ITestResults;
+  results : IRunResults;
   logger : ITestLogger;
   nunitLogger : ITestLogger;
 begin

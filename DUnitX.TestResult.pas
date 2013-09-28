@@ -44,21 +44,22 @@ type
     FMessage : string;
     FResultType : TTestResultType;
     FTest : IWeakReference<ITestInfo>;
+    FStackTrace : string;
   protected
     function GetMessage: string;
     function GetResult: Boolean;
     function GetResultType: TTestResultType;
     function GetTest: ITestInfo;
-    function GetTestStartTime : TDateTime;
-    function GetTestEndTime : TDateTime;
-    function GetTestDuration : TTimeSpan;
+    function GetStartTime : TDateTime;
+    function GetFinishTime : TDateTime;
+    function GetDuration : TTimeSpan;
+    function GetStackTrace : string;
   public
     constructor Create(const ATestInfo : ITestInfo; const AType : TTestResultType; const AMessage : string = '');
   end;
 
   TDUnitXTestError = class(TDUnitXTestResult, ITestError)
   private
-    FStackTrace : string;
     FExceptionClass : ExceptClass;
     FExceptionMessage : string;
     FExceptionAddress : Pointer;
@@ -88,7 +89,6 @@ uses
 constructor TDUnitXTestResult.Create(const ATestInfo : ITestInfo; const AType: TTestResultType; const AMessage: string);
 begin
   FTest := TWeakReference<ITestInfo>.Create(ATestInfo);
-
   FResultType := AType;
   FMessage := AMessage;
 end;
@@ -116,7 +116,7 @@ begin
     result := nil;
 end;
 
-function TDUnitXTestResult.GetTestDuration: TTimeSpan;
+function TDUnitXTestResult.GetDuration: TTimeSpan;
 begin
   if FTest.IsAlive then
     Result := FTest.Data.GetTestDuration
@@ -124,7 +124,7 @@ begin
     Result := TTimeSpan.Zero;
 end;
 
-function TDUnitXTestResult.GetTestEndTime: TDateTime;
+function TDUnitXTestResult.GetFinishTime: TDateTime;
 begin
   if FTest.IsAlive then
     Result := FTest.Data.GetTestEndTime
@@ -132,7 +132,12 @@ begin
     Result := 0;
 end;
 
-function TDUnitXTestResult.GetTestStartTime: TDateTime;
+function TDUnitXTestResult.GetStackTrace: string;
+begin
+  result := FStackTrace;
+end;
+
+function TDUnitXTestResult.GetStartTime: TDateTime;
 begin
   if FTest.IsAlive then
     Result := FTest.Data.GetTestStartTime

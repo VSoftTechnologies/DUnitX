@@ -53,7 +53,7 @@ type
   protected
     //ITest
     function GetName: string; virtual;
-    function GetFullName : string;
+    function GetFullName : string;virtual;
     function GetTestFixture: ITestFixture;
     function GetTestMethod: TTestMethod;
     function GetTestStartTime : TDateTime;
@@ -145,7 +145,7 @@ end;
 
 function TDUnitXTest.GetFullName: string;
 begin
-  result := FFixture.Data.FullName + '.' + FName;
+  result := FFixture.Data.FullName + '.' + Self.GetName;
 end;
 
 function TDUnitXTest.GetIgnored: boolean;

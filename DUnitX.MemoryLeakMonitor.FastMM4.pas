@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2012 Vincent Parrett                              }
+{           Copyright (C) 2013 Vincent Parrett                              }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -24,50 +24,36 @@
 {                                                                           }
 {***************************************************************************}
 
-unit DUnitX.Tests.TestFixture;
+unit DUnitX.MemoryLeakMonitor.FastMM4;
 
 interface
 
+{$I DUnitX.inc}
+
+
 uses
-  DUnitX.TestFramework,
-  DUnitX.TestFixture;
-
-type
-  {$M+}
-  [TestFixture]
-  TTestClassWithNonPublicSetup = class
-  private
-    FSetupRun : Boolean;
-  protected
-    [Setup]
-    procedure Setup;
-  public
-    constructor Create;
-    property SetupRun : Boolean read FSetupRun;
-  end;
-  {$M-}
-
+  classes,
+  DUnitX.TestFramework;
 
 implementation
-
 uses
-  SysUtils;
-{ TDUnitXTestFixtureTests }
+  DUnitX.MemoryLeakMonitor.Default,
+  DUnitX.IoC;
 
-{ TTestClassWithNonPublicSetup }
+type
+  TDUnitXFastMM4MemoryLeakMonitor = class(TDUnitXDefaultMemoryLeakMonitor)
 
-constructor TTestClassWithNonPublicSetup.Create;
-begin
-  inherited Create;
-  FSetupRun := False;
-end;
+  end;
 
-procedure TTestClassWithNonPublicSetup.Setup;
-begin
-  //Optimised out as the method is not used internally;
-  FSetupRun := True;
-end;
+
 
 initialization
-  TDUnitX.RegisterTestFixture(TTestClassWithNonPublicSetup);
+{$IFDEF USE_FASTMM4_LEAK_MONITOR}
+  TDUnitXIoC.DefaultContainer.RegisterType<IMemoryLeakMonitor>(
+    function : IMemoryLeakMonitor
+    begin
+      result := TDUnitXFastMM4MemoryLeakMonitor.Create;
+    end);
+
+{$ENDIF}
 end.

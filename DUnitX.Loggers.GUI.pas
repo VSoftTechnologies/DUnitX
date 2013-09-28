@@ -83,9 +83,8 @@ type
     procedure OnTestError(const threadId: Cardinal; const Error: ITestError);
     procedure OnTestFailure(const threadId: Cardinal; const Failure: ITestError);
     procedure OnTestSuccess(const threadId: Cardinal; const Test: ITestResult);
-    procedure OnTestWarning(const threadId: Cardinal; const Warning: ITestResult);
     procedure OnTestIgnored(const threadId: Cardinal; const Ignored: ITestResult);
-    procedure OnTestingEnds(const TestResults: ITestResults);
+    procedure OnTestingEnds(const RunResults: IRunResults);
     procedure OnTestingStarts(const threadId: Cardinal; const testCount: Cardinal; const testActiveCount: Cardinal);
 
     procedure WMLoadTests(var message : TMessage); message WM_LOAD_TESTS;
@@ -203,7 +202,7 @@ begin
 
 end;
 
-procedure TDUnitXGuiLoggerForm.OnTestingEnds(const TestResults: ITestResults);
+procedure TDUnitXGuiLoggerForm.OnTestingEnds(const RunResults: IRunResults);
 begin
 
 end;
@@ -218,17 +217,12 @@ begin
 
 end;
 
-procedure TDUnitXGuiLoggerForm.OnTestWarning(const threadId: Cardinal; const Warning: ITestResult);
-begin
-
-end;
 
 procedure TDUnitXGuiLoggerForm.BuildTree(parentNode : TTreeNode; const fixtureList : ITestFixtureList);
 var
   fixture : ITestFixture;
   test : ITest;
   fixtureNode : TTreeNode;
-  testNode : TTreeNode;
 begin
   for fixture in fixtureList do
   begin
@@ -237,7 +231,7 @@ begin
       BuildTree(fixtureNode,fixture.Children);
     for test in fixture.Tests do
     begin
-      testNode := TestTree.Items.AddChild(fixtureNode,test.Name);
+      TestTree.Items.AddChild(fixtureNode,test.Name);
     end;
   end;
 end;

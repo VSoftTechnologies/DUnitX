@@ -35,6 +35,8 @@
 # Testing Output  #
 ###################
 Tests/dunit-report.xml
+Tests/dunitx-results.xml
+Examples/dunitx-results.xml
 *.fb7lck
 *.fbl7
 *.fbpInf

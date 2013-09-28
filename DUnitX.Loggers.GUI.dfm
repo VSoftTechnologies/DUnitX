@@ -69,7 +69,6 @@ object DUnitXGuiLoggerForm: TDUnitXGuiLoggerForm
       BevelOuter = bvNone
       TabOrder = 0
       Text = 'Edit1'
-      ExplicitTop = 90
     end
   end
   object Panel2: TPanel
@@ -103,7 +102,6 @@ object DUnitXGuiLoggerForm: TDUnitXGuiLoggerForm
     BevelOuter = bvNone
     ParentColor = True
     TabOrder = 4
-    ExplicitHeight = 264
     object TestTree: TTreeView
       Left = 0
       Top = 0
@@ -126,10 +124,6 @@ object DUnitXGuiLoggerForm: TDUnitXGuiLoggerForm
         00010A530075006200540065007300740031002E003200280000000000000000
         0000002080DB4100000000FFFFFFFF0000000000000000010554006500730074
         003200}
-      ExplicitLeft = 2
-      ExplicitTop = 50
-      ExplicitWidth = 476
-      ExplicitHeight = 146
     end
   end
   object ActionManager1: TActionManager

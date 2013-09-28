@@ -60,6 +60,7 @@ type
     FTearDownMethodName     : string;
     FTearDownFixtureMethodName  : string;
     FChildren : ITestFixtureList;
+    FTearDownFixtureIsDestructor : boolean;
   protected
     //uses RTTI to buid the fixture & tests
     procedure GenerateFixtureFromClass;
@@ -90,6 +91,8 @@ type
 
     function GetChildren: ITestFixtureList;
     function GetHasChildren : boolean;
+    function GetHasTests : boolean;
+    procedure OnMethodExecuted(const AMethod : TTestMethod);
   public
     constructor Create(const AName : string; const AClass : TClass);
     destructor Destroy;override;
@@ -102,13 +105,6 @@ implementation
 
 uses
   TypInfo,
-  {$IFDEF MSWINDOWS}
-    {$if CompilerVersion < 23 }
-      Windows,
-    {$else}
-      WinAPI.Windows, // Delphi XE2 (CompilerVersion 23) added scopes in front of unit names
-    {$ifend}
-  {$ENDIF}
   SysUtils,
   DUnitX.Test,
   DUnitX.Utils;
@@ -150,26 +146,6 @@ begin
   inherited;
 end;
 
-{$IFDEF MSWINDOWS}
-procedure PatchCodeDWORD(Code: PDWORD; Value: DWORD);
-// Self-modifying code - change one DWORD in the code segment
-var
-  RestoreProtection, Ignore: DWORD;
-begin
-  if VirtualProtect(Code, SizeOf(Code^), PAGE_EXECUTE_READWRITE,
-    RestoreProtection) then
-  begin
-    Code^ := Value;
-    VirtualProtect(Code, SizeOf(Code^), RestoreProtection, Ignore);
-    FlushInstructionCache(GetCurrentProcess, Code, SizeOf(Code^));
-  end;
-end;
-
-const
-  vmtRunnerIndex = System.vmtAutoTable;
-
-
-{$ENDIF}
 
 
 procedure TDUnitXTestFixture.GenerateFixtureFromClass;
@@ -182,6 +158,8 @@ var
   meth : TMethod;
   newTest : ITest;
 
+  ignoreFixtureSetup : boolean;
+
   fixtureAttrib   : TestFixtureAttribute;
   testCases       : TArray<TestCaseAttribute>;
   testCaseAttrib  : TestCaseAttribute;
@@ -190,19 +168,50 @@ var
 begin
   rType := FRttiContext.GetType(FTestClass);
   System.Assert(rType <> nil);
-  FFixtureInstance := FTestClass.Create;
+
+  //it's a dummy namespace fixture, don't bother with the rest.
+  if rType.Handle = TypeInfo(TObject) then
+  begin
+    FFixtureInstance := FTestClass.Create;
+    exit;
+  end;
 
   //If the fixture class was decorated with [TestFixture] then use it for the description.
   fixtureAttrib := nil;
   if rType.TryGetAttributeOfType<TestFixtureAttribute>(fixtureAttrib) then
     FDescription := fixtureAttrib.Description;
 
+  ignoreFixtureSetup := false;
+  {$IFDEF DELPHI_XE_UP}
+  //NOTE: Causes Delphi 2010 to be inconsistent with produced exe. Will sometimes crash with AV when generating fixtures.
+  //If there is a parameterless constructor declared then we will use that as the
+  //fixture Setup method.
+  if rType.TryGetConstructor(method) then
+  begin
+    ignoreFixtureSetup := true;
+    FFixtureInstance := method.Invoke(TRttiInstanceType(rtype).MetaclassType, []).AsObject;
+  end
+  else
+  {$ENDIF}
+    FFixtureInstance := FTestClass.Create;
 
-  methods := rType.GetMethods;
+  //important to use declared here.. otherwise we are looking at TObject as well.
+  methods := rType.GetDeclaredMethods;
   for method in methods do
   begin
     meth.Code := method.CodeAddress;
     meth.Data := FFixtureInstance;
+
+    {$IFDEF DELPHI_XE_UP}
+    //if there is a Destructor then we will use it as the fixture
+    //Teardown method.
+    if method.IsDestructor and (Length(method.GetParameters) = 0) then
+    begin
+      FTearDownFixtureMethod := TTestMethod(meth);
+      FTearDownFixtureMethodName := method.Name;
+      FTearDownFixtureIsDestructor := True;
+    end;
+    {$ENDIF}
 
     attributes := method.GetAttributes;
     if Length(attributes) > 0 then
@@ -215,7 +224,8 @@ begin
           FSetupMethod := TTestMethod(meth);
           FSetupMethodName := method.Name;
         end
-        else if attribute.ClassType = SetupFixtureAttribute then
+        //If we found a parameterless constructor then that was used.
+        else if (not ignoreFixtureSetup) and (attribute.ClassType = SetupFixtureAttribute) then
         begin
           FSetupFixtureMethod := TTestMethod(meth);
           FSetupFixtureMethodName := method.Name;
@@ -225,7 +235,7 @@ begin
           FTearDownMethod := TTestMethod(meth);
           FTearDownMethodName := method.Name;
         end
-        else if attribute.ClassType = TearDownFixtureAttribute then
+        else if (not FTearDownFixtureIsDestructor) and (attribute.ClassType = TearDownFixtureAttribute) then
         begin
           FTearDownFixtureMethod := TTestMethod(meth);
           FTearDownFixtureMethodName := method.Name;
@@ -240,8 +250,6 @@ begin
           if attribute.ClassType = TestAttribute then
           begin
             testEnabled := TestAttribute(attribute).Enabled;
-
-
 
             if testEnabled and (ignoredAttrib = nil) then
               //find out if the test fixture has test cases.
@@ -323,6 +331,11 @@ begin
   result := (FChildren <> nil) and (FChildren.Count > 0);
 end;
 
+
+function TDUnitXTestFixture.GetHasTests: boolean;
+begin
+  result := (FTests <> nil) and (FTests.Count > 0);
+end;
 
 function TDUnitXTestFixture.GetName: string;
 begin
@@ -408,6 +421,16 @@ begin
   result := FTestInfos;
 end;
 
+
+procedure TDUnitXTestFixture.OnMethodExecuted(const AMethod: TTestMethod);
+begin
+  if FTearDownFixtureIsDestructor then
+  begin
+    if TMethod(AMethod).Code = TMethod(FTearDownFixtureMethod).Code then
+      FFixtureInstance := nil;
+  end;
+  
+end;
 
 procedure TDUnitXTestFixture.SetEnabled(const value: Boolean);
 begin

@@ -66,7 +66,6 @@ type
     procedure OnExecuteTest(const threadId : Cardinal; const Test: ITestInfo);
 
     procedure OnTestIgnored(const threadId: Cardinal;const  AIgnored: ITestResult);
-    procedure OnTestWarning(const threadId: Cardinal;const  AWarning: ITestResult);
     procedure OnTestError(const threadId: Cardinal; const Error: ITestError);
     procedure OnTestFailure(const threadId: Cardinal; const Failure: ITestError);
     procedure OnTestSuccess(const threadId: Cardinal; const Test: ITestResult);
@@ -82,7 +81,7 @@ type
 
     procedure OnEndTestFixture(const threadId: Cardinal; const results: IFixtureResult);
 
-    procedure OnTestingEnds(const TestResults: ITestResults);
+    procedure OnTestingEnds(const RunResults: IRunResults);
   public
     constructor Create(const quietMode : boolean = false);
     destructor Destroy;override;
@@ -300,7 +299,7 @@ begin
   FConsoleWriter.Outdent(1);
 end;
 
-procedure TDUnitXConsoleLogger.OnTestingEnds(const TestResults: ITestResults);
+procedure TDUnitXConsoleLogger.OnTestingEnds(const RunResults: IRunResults);
 var
   testResult: ITestResult;
 begin
@@ -316,35 +315,35 @@ begin
   end;
 
   SetConsoleSummaryColor();
-  FConsoleWriter.WriteLn(Format('Tests Run     : %d',[TestResults.Count]));
+  FConsoleWriter.WriteLn(Format('Tests Found   : %d',[RunResults.TestCount]));
 
-  if TestResults.IgnoredCount > 0 then
+  if RunResults.IgnoredCount > 0 then
     SetConsoleWarningColor()
   else
     SetConsoleDefaultColor();
-  FConsoleWriter.WriteLn(Format('Tests Ignored : %d',[TestResults.IgnoredCount]));
+  FConsoleWriter.WriteLn(Format('Tests Ignored : %d',[RunResults.IgnoredCount]));
 
 
-  if TestResults.PassCount > 0 then
+  if RunResults.PassCount > 0 then
     SetConsolePassColor()
   else
     SetConsoleDefaultColor();
-  FConsoleWriter.WriteLn(Format('Tests Passed  : %d',[TestResults.PassCount]));
+  FConsoleWriter.WriteLn(Format('Tests Passed  : %d',[RunResults.PassCount]));
 
-  if TestResults.FailureCount > 0 then
+  if RunResults.FailureCount > 0 then
     SetConsoleErrorColor()
   else
     SetConsoleDefaultColor();
-  FConsoleWriter.WriteLn(Format('Tests Failed  : %d',[TestResults.FailureCount]));
+  FConsoleWriter.WriteLn(Format('Tests Failed  : %d',[RunResults.FailureCount]));
 
-  if TestResults.ErrorCount > 0 then
+  if RunResults.ErrorCount > 0 then
     SetConsoleErrorColor()
   else
     SetConsoleDefaultColor();
-  FConsoleWriter.WriteLn(Format('Tests Errored : %d',[TestResults.ErrorCount]));
+  FConsoleWriter.WriteLn(Format('Tests Errored : %d',[RunResults.ErrorCount]));
 
 
-  if TestResults.FailureCount > 0  then
+  if RunResults.FailureCount > 0  then
   begin
     SetConsoleErrorColor();
     FConsoleWriter.WriteLn;
@@ -352,7 +351,8 @@ begin
     FConsoleWriter.WriteLn;
     SetConsoleDefaultColor();
 
-    for testResult in TestResults.GetResults do
+
+    for testResult in RunResults.GetAllTestResults do
     begin
       if testResult.ResultType = TTestResultType.Failure then
       begin
@@ -363,11 +363,10 @@ begin
         FConsoleWriter.WriteLn;
       end;
     end;
-
     FConsoleWriter.WriteLn;
   end;
 
-  if TestResults.ErrorCount > 0  then
+  if RunResults.ErrorCount > 0  then
   begin
     SetConsoleErrorColor();
     FConsoleWriter.WriteLn;
@@ -375,7 +374,7 @@ begin
     FConsoleWriter.WriteLn;
     SetConsoleDefaultColor();
 
-    for testResult in TestResults.GetResults do
+    for testResult in RunResults.GetAllTestResults do
     begin
       if testResult.ResultType = TTestResultType.Error then
       begin
@@ -386,7 +385,6 @@ begin
         FConsoleWriter.WriteLn;
       end;
     end;
-
     FConsoleWriter.WriteLn;
   end;
 
@@ -417,11 +415,6 @@ begin
   FConsoleWriter.Indent(1);
 end;
 
-procedure TDUnitXConsoleLogger.OnTestWarning(const threadId: Cardinal; const AWarning: ITestResult);
-begin
-  if FQuietMode then
-    FConsoleWriter.Write('W');
-end;
 
 procedure TDUnitXConsoleLogger.SetConsoleDefaultColor();
 begin

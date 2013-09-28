@@ -65,6 +65,10 @@ type
     [Test(false)]
     procedure DontCallMe;
 
+    [Test]
+    [Ignore('I was told to ignore me')]
+    procedure IgnoreMe;
+
     [Setup]
     procedure Setup;
 
@@ -72,6 +76,9 @@ type
     procedure TearDown;
   published
     procedure TestMeAnyway;
+
+    [Ignore('I was told to ignore me anyway')]
+    procedure IgnoreMeAnyway;
   end;
 
   [TestFixture]
@@ -87,6 +94,24 @@ type
     procedure Published_Procedures_Are_Included_As_Tests;
   end;
 
+  [TestFixture]
+  TExampleFixture3 = class
+  private
+    FSetupCalled : boolean;
+  public
+
+    [SetupFixture]
+    procedure SetupFixture;
+
+    //testing constructor/destructor as fixture setup/teardown
+    constructor Create;
+    destructor Destroy;override;
+  published
+    procedure ATest;
+
+  end;
+
+
 implementation
 
 uses
@@ -101,6 +126,16 @@ procedure TMyExampleTests.DontCallMe;
 begin
   TDUnitX.CurrentRunner.Status('DontCallMe called');
   raise Exception.Create('DontCallMe was called!!!!');
+end;
+
+procedure TMyExampleTests.IgnoreMe;
+begin
+  Assert.IsTrue(false,'I should not have been called!');
+end;
+
+procedure TMyExampleTests.IgnoreMeAnyway;
+begin
+  Assert.IsTrue(false,'I should not have been called!');
 end;
 
 procedure TMyExampleTests.Setup;
@@ -161,6 +196,29 @@ begin
   Assert.IsTrue(FPublished_Procedures_Are_Included_As_Tests_Called);
 end;
 
+{ TExampleFixture3 }
+
+procedure TExampleFixture3.ATest;
+begin
+  Assert.IsTrue(FSetupCalled);
+end;
+
+constructor TExampleFixture3.Create;
+begin
+  FSetupCalled := True;
+end;
+
+destructor TExampleFixture3.Destroy;
+begin
+
+  inherited;
+end;
+
+procedure TExampleFixture3.SetupFixture;
+begin
+  Assert.IsTrue(False,'I should not be called!');
+end;
+
 initialization
 
 //I was hoping to use RTTI to discover the TestFixture classes, however unlike .NET
@@ -179,5 +237,5 @@ initialization
 //Register the test fixtures
   TDUnitX.RegisterTestFixture(TMyExampleTests);
   TDUnitX.RegisterTestFixture(TExampleFixture2);
-
+  TDUnitX.RegisterTestFixture(TExampleFixture3);
 end.

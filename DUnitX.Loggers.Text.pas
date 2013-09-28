@@ -56,7 +56,6 @@ type
 
 
     procedure OnTestSuccess(const threadId: Cardinal; const Test: ITestResult);
-    procedure OnTestWarning(const threadId: Cardinal; const AWarning: ITestResult);
     procedure OnTestError(const threadId: Cardinal; const Error: ITestError);
     procedure OnTestFailure(const threadId: Cardinal; const Failure: ITestError);
     procedure OnTestIgnored(const threadId: Cardinal; const AIgnored: ITestResult);
@@ -74,7 +73,7 @@ type
 
     procedure OnEndTestFixture(const threadId: Cardinal; const results: IFixtureResult);
 
-    procedure OnTestingEnds(const TestResult: ITestResults);
+    procedure OnTestingEnds(const RunResults: IRunResults);
   public
     constructor Create(const AFileName: string; const overwrite : boolean = true);
   end;
@@ -180,7 +179,7 @@ begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnTestingEnds(const TestResult: ITestResults);
+procedure TDUnitXTextFileLogger.OnTestingEnds(const RunResults: IRunResults);
 begin
 
 end;
@@ -190,9 +189,5 @@ begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnTestWarning(const threadId: Cardinal; const AWarning: ITestResult);
-begin
-
-end;
 
 end.

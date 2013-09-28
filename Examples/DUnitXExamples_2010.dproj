@@ -55,7 +55,6 @@
 			<DCCReference Include="..\DUnitX.DUnitCompatibility.pas"/>
 			<DCCReference Include="..\DUnitX.Generics.pas"/>
 			<DCCReference Include="..\DUnitX.InternalInterfaces.pas"/>
-			<DCCReference Include="..\DUnitX.IoC.Internal.pas"/>
 			<DCCReference Include="..\DUnitX.IoC.pas"/>
 			<DCCReference Include="..\DUnitX.Loggers.Console.pas"/>
 			<DCCReference Include="..\DUnitX.Loggers.Text.pas"/>
@@ -66,13 +65,17 @@
 			<DCCReference Include="..\DUnitX.TestFixture.pas"/>
 			<DCCReference Include="..\DUnitX.TestFramework.pas"/>
 			<DCCReference Include="..\DUnitX.TestResult.pas"/>
-			<DCCReference Include="..\DUnitX.TestResults.pas"/>
 			<DCCReference Include="..\DUnitX.TestRunner.pas"/>
 			<DCCReference Include="..\DUnitX.Utils.pas"/>
 			<DCCReference Include="..\DUnitX.Utils.XML.pas"/>
 			<DCCReference Include="..\DUnitX.WeakReference.pas"/>
 			<DCCReference Include="..\DUnitX.Windows.Console.pas"/>
 			<DCCReference Include="..\DUnitX.StackTrace.EurekaLog7.pas"/>
+			<DCCReference Include="..\DUnitX.RunResults.pas"/>
+			<DCCReference Include="..\DUnitX.FixtureResult.pas"/>
+			<DCCReference Include="..\DUnitX.MemoryLeakMonitor.Default.pas"/>
+			<DCCReference Include="..\DUnitX.MemoryLeakMonitor.FastMM4.pas"/>
+			<DCCReference Include="..\DUnitX.Loggers.Null.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
