@@ -12,6 +12,7 @@
 :: the for loop will strip leading spaces
   for /f "tokens=1,2,*" %%l in (Dependencies.txt) do (
     call :forOneRepository %%l %%m %%n %1 %2
+    echo .
   )
   popd
   goto :eof
@@ -98,12 +99,19 @@
 
 :ensureExesExist
   set Found=TRUE
-  for %%s in (git, hg, svn) do call :ensureExeExist %%s
+  for %%s in (git, hg, svn) do set %%sExists=FALSE
+  call :forAllRepositories :ensureExeExistSpecific %1
+  goto :eof
+
+:ensureExeExistSpecific
+:: optimization: only call when not found for a specific VCS yet.
+  if "%1Exists"=="FALSE" call :ensureExeExist %1
   goto :eof
 
 :ensureExeExist
   where %1
   if errorlevel 1 goto :fail
+  set %1Exists=TRUE
   goto :eof
 :fail
   echo Failure: %1 is missing on the PATH
