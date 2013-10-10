@@ -44,7 +44,7 @@ uses
 type
   ///	<summary>
   ///	  A class decorated with this attribute will be tested. The parameters
-  ///	  allow you to control which methods are treated as tests. By default 
+  ///	  allow you to control which methods are treated as tests. By defaultï¿½
   ///	  only methods decorated with the Test attribute are run as tests.
   ///	</summary>
   TestFixtureAttribute = class(TCustomAttribute)
@@ -62,7 +62,7 @@ type
 
   ///	<summary>
   ///	  A TestFixture decorated with this attribute will be tested using it's
-  ///	  own thread.  This can speed up unit testing when fixtures do not
+  ///	  own thread. ï¿½This can speed up unit testing when fixtures do not
   ///	  compete for resources and the test machine has enough cores to service
   ///	  the tests.
   ///	</summary>
@@ -72,8 +72,8 @@ type
   TestInOwnThreadAttribute = class(TCustomAttribute);
 
   ///	<summary>
-  ///	  A method marked with this attribute will run before any tests in.  Note
-  ///	  that if more than one method is decorated with this attribute the first
+  ///	  A method marked with this attribute will run before any tests in.ï¿½ Note
+  ///	  that if more than one method is decorated with this attributeï¿½the first
   ///	  method found will be executed (not recommended!).
   ///	</summary>
   SetupFixtureAttribute = class(TCustomAttribute)
@@ -102,7 +102,7 @@ type
 
   ///	<summary>
   ///	  A method marked with this attribute can contain a teardown method that
-  ///	  will be run after each all tests in the fixture have executed.  Note
+  ///	  will be run after each all tests in the fixture have executed.ï¿½ Note
   ///	  that if more than one method is decorated with this attribute the first
   ///	  method found will be executed (not recommended!).
   ///	</summary>
@@ -153,7 +153,7 @@ type
   ///	  The TestCaseAttribute allows you to specify the name of a function that
   ///	  returns a TValueArray which will be passed into a function that takes
   ///	  parameters. This is really only needed to work around the problens with
-  ///	  the TestCaseAttribute. 
+  ///	  the TestCaseAttribute.ï¿½
   ///	</summary>
   ///	<remarks>
   ///	  Note that the types in the TConstArray should match the parameters of
@@ -632,7 +632,7 @@ end;
 
     ///	<summary>
     ///	  When true, test fixtures will be found by using RTTI to search for
-    ///	  classes decorated as TestFixtures.  Note for this to work you may
+    ///	  classes decorated as TestFixtures.ï¿½ Note for this to work you may
     ///	  need to use {$STRONGLINKTYPES ON} otherwise the classes may not get
     ///	  linked as they are not referenced. When False you will need to
     ///	  register the fixtures using TDUnitX.RegisterTestFixture
@@ -848,7 +848,7 @@ end;
 
 class procedure Assert.AreNotEqual(const left, right, tolerance: Extended; const message: string);
 begin
-  if not Math.SameValue(left, right, tolerance) then
+  if Math.SameValue(left, right, tolerance) then
     Fail(Format('%g equals right %g %s' ,[left,right,message]), ReturnAddress);
 end;
 
