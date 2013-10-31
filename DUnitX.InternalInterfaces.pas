@@ -56,6 +56,8 @@ type
     procedure SetEnabled(const value : boolean);
     function GetIgnored : boolean;
     function GetIgnoreReason : string;
+    function GetIgnoreMemoryLeaks() : Boolean;
+    procedure SetIgnoreMemoryLeaks(const AValue : Boolean);
 
     property Name : string read GetName;
     property Enabled : boolean read GetEnabled write SetEnabled;
@@ -63,6 +65,7 @@ type
     property Ignored : boolean read GetIgnored;
     property IgnoreReason : string read GetIgnoreReason;
     property TestMethod : TTestMethod read GetTestMethod;
+    property IgnoreMemoryLeaks : Boolean read GetIgnoreMemoryLeaks write SetIgnoreMemoryLeaks;
   end;
 
   ITestList = interface(IList<ITest>)

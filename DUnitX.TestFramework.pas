@@ -44,7 +44,7 @@ uses
 type
   ///	<summary>
   ///	  A class decorated with this attribute will be tested. The parameters
-  ///	  allow you to control which methods are treated as tests. By default�
+  ///	  allow you to control which methods are treated as tests. By default 
   ///	  only methods decorated with the Test attribute are run as tests.
   ///	</summary>
   TestFixtureAttribute = class(TCustomAttribute)
@@ -62,7 +62,7 @@ type
 
   ///	<summary>
   ///	  A TestFixture decorated with this attribute will be tested using it's
-  ///	  own thread. �This can speed up unit testing when fixtures do not
+  ///	  own thread.  This can speed up unit testing when fixtures do not
   ///	  compete for resources and the test machine has enough cores to service
   ///	  the tests.
   ///	</summary>
@@ -72,8 +72,8 @@ type
   TestInOwnThreadAttribute = class(TCustomAttribute);
 
   ///	<summary>
-  ///	  A method marked with this attribute will run before any tests in.� Note
-  ///	  that if more than one method is decorated with this attribute�the first
+  ///	  A method marked with this attribute will run before any tests in.  Note
+  ///	  that if more than one method is decorated with this attribute the first
   ///	  method found will be executed (not recommended!).
   ///	</summary>
   SetupFixtureAttribute = class(TCustomAttribute)
@@ -102,13 +102,20 @@ type
 
   ///	<summary>
   ///	  A method marked with this attribute can contain a teardown method that
-  ///	  will be run after each all tests in the fixture have executed.� Note
+  ///	  will be run after each all tests in the fixture have executed.  Note
   ///	  that if more than one method is decorated with this attribute the first
   ///	  method found will be executed (not recommended!).
   ///	</summary>
   TearDownFixtureAttribute = class(TCustomAttribute)
   end;
 
+  IgnoreMemoryLeaks = class(TCustomAttribute)
+  private
+    FIgnoreMemoryLeaks : Boolean;
+  public
+    constructor Create(const AIgnoreMemoryLeaks : Boolean = True);
+    property IgnoreMemoryLeaks : Boolean read FIgnoreMemoryLeaks;
+  end;
 
 
   ///	<summary>
@@ -153,7 +160,7 @@ type
   ///	  The TestCaseAttribute allows you to specify the name of a function that
   ///	  returns a TValueArray which will be passed into a function that takes
   ///	  parameters. This is really only needed to work around the problens with
-  ///	  the TestCaseAttribute.�
+  ///	  the TestCaseAttribute. 
   ///	</summary>
   ///	<remarks>
   ///	  Note that the types in the TConstArray should match the parameters of
@@ -377,11 +384,12 @@ type
     property StartTime : TDateTime read GetStartTime;
     property FinishTime : TDateTime read GetFinishTime;
     property Duration : TTimeSpan read GetDuration;
-end;
+  end;
   {$M-}
 
 
-  TTestResultType = (Pass,Failure,Error,Ignored);
+  {$SCOPEDENUMS ON}
+  TTestResultType = (Pass,Failure,Error,Ignored,MemoryLeak);
   {$M+}
   ITestResult = interface(IResult)
   ['{EFD44ABA-4F3E-435C-B8FC-1F8EB4B35A3B}']
@@ -463,6 +471,7 @@ end;
     function GetAllPassed : boolean;
     function GetFailureCount : integer;
     function GetErrorCount : integer;
+    function GetMemoryLeakCount : Integer;
     function GetPassCount : integer;
     function GetIgnoredCount : integer;
     function GetSuccessRate : integer;
@@ -482,6 +491,7 @@ end;
     property ErrorCount : integer read GetErrorCount;
     property IgnoredCount : integer read GetIgnoredCount;
     property PassCount : integer read GetPassCount;
+    property MemoryLeakCount : integer read GetMemoryLeakCount;
 
     property SuccessRate : integer read GetSuccessRate;
     //means all enabled/not ingored tests passed.
@@ -556,6 +566,10 @@ end;
     ///	</summary>
     procedure OnTestIgnored(const threadId : Cardinal; const AIgnored: ITestResult);
 
+    ///	<summary>
+    ///	  //called when a test memory leaks.
+    ///	</summary>
+    procedure OnTestMemoryLeak(const threadId : Cardinal; const AIgnored: ITestResult);
 
     ///	<summary>
     ///	  //allows tests to write to the log.
@@ -632,7 +646,7 @@ end;
 
     ///	<summary>
     ///	  When true, test fixtures will be found by using RTTI to search for
-    ///	  classes decorated as TestFixtures.� Note for this to work you may
+    ///	  classes decorated as TestFixtures.  Note for this to work you may
     ///	  need to use {$STRONGLINKTYPES ON} otherwise the classes may not get
     ///	  linked as they are not referenced. When False you will need to
     ///	  register the fixtures using TDUnitX.RegisterTestFixture
@@ -679,7 +693,16 @@ end;
 
   IMemoryLeakMonitor = interface
   ['{A374A4D0-9BF6-4E01-8A29-647F92CBF41C}']
+    procedure PreSetup;
+    procedure PostSetUp;
+    procedure PreTest;
+    procedure PostTest;
+    procedure PreTearDown;
+    procedure PostTearDown;
 
+    function SetUpMemoryAllocated: Int64;
+    function TearDownMemoryAllocated: Int64;
+    function TestMemoryAllocated: Int64;
   end;
 
 
@@ -1474,6 +1497,14 @@ begin
 end;
 
 { IgnoreAttribute }
+
+{ IgnoreMemoryLeaks }
+
+constructor IgnoreMemoryLeaks.Create(const AIgnoreMemoryLeaks: Boolean);
+begin
+  inherited Create;
+  FIgnoreMemoryLeaks := AIgnoreMemoryLeaks;
+end;
 
 initialization
 

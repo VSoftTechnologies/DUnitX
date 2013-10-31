@@ -72,6 +72,8 @@ type
     constructor Create(const ATestInfo : ITestInfo; const AType : TTestResultType; const AThrownException: Exception; const Addrs: Pointer; const AMessage : string = '');reintroduce;
   end;
 
+
+
 implementation
 
 uses
@@ -147,7 +149,7 @@ end;
 
 { TDUnitXTestError }
 
-constructor TDUnitXTestError.Create(const ATestInfo : ITestInfo; const AType: TTestResultType; const AThrownException: Exception; const Addrs: Pointer; const AMessage: string = '');
+constructor TDUnitXTestError.Create(const ATestInfo : ITestInfo; const AType: TTestResultType; const AThrownException: Exception; const Addrs: Pointer;  const AMessage: string = '');
 var
   stackTraceProvider : IStacktraceProvider;
 begin

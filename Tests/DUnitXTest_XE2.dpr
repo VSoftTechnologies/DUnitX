@@ -44,7 +44,8 @@ uses
   DUnitX.Loggers.XML.NUnit in '..\DUnitX.Loggers.XML.NUnit.pas',
   DUnitX.SingleNameSpace in 'DUnitX.SingleNameSpace.pas',
   DUnitX.MemoryLeakMonitor.Default in '..\DUnitX.MemoryLeakMonitor.Default.pas',
-  DUnitX.MemoryLeakMonitor.FastMM4 in '..\DUnitX.MemoryLeakMonitor.FastMM4.pas';
+  DUnitX.MemoryLeakMonitor.FastMM4 in '..\DUnitX.MemoryLeakMonitor.FastMM4.pas',
+  DUnitX.Tests.MemoryLeaks in 'DUnitX.Tests.MemoryLeaks.pas';
 
 var
   runner : ITestRunner;
@@ -57,7 +58,7 @@ begin
     runner := TDUnitX.CreateRunner;
     runner.UseRTTI := True;
     //tell the runner how we will log things
-    logger := TDUnitXConsoleLogger.Create(true);
+    logger := TDUnitXConsoleLogger.Create(false);
     nunitLogger := TDUnitXXMLNUnitFileLogger.Create;
     runner.AddLogger(logger);
     runner.AddLogger(nunitLogger);

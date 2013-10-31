@@ -61,6 +61,8 @@ type
     FTearDownFixtureMethodName  : string;
     FChildren : ITestFixtureList;
     FTearDownFixtureIsDestructor : boolean;
+    FIgnoreMemoryLeaks : Boolean;
+
   protected
     //uses RTTI to buid the fixture & tests
     procedure GenerateFixtureFromClass;
@@ -97,8 +99,6 @@ type
     constructor Create(const AName : string; const AClass : TClass);
     destructor Destroy;override;
     class constructor Create;
-
-
   end;
 
 implementation
@@ -113,6 +113,8 @@ uses
 
 constructor TDUnitXTestFixture.Create(const AName : string; const AClass : TClass);
 var
+  IgnoreMemoryLeak: IgnoreMemoryLeaks;
+  rType : TRttiType;
   i : integer;
 begin
   FTestClass := AClass;
@@ -130,8 +132,12 @@ begin
     FNameSpace := AName;
   end;
 
-
   FEnabled := True;
+
+  FIgnoreMemoryLeaks := False;
+  rType := FRttiContext.GetType(FTestClass);
+  if rType.TryGetAttributeOfType<IgnoreMemoryLeaks>(IgnoreMemoryLeak) then
+    FIgnoreMemoryLeaks := IgnoreMemoryLeak.IgnoreMemoryLeaks;
 
   //TODO: Constructor doing "work" makes this harder to test and handle errors if the class isn't of the correct structure
   GenerateFixtureFromClass;
@@ -165,6 +171,7 @@ var
   testCaseAttrib  : TestCaseAttribute;
   testEnabled     : boolean;
   ignoredAttrib   : IgnoreAttribute;
+  IgnoreMemoryLeak: IgnoreMemoryLeaks;
 begin
   rType := FRttiContext.GetType(FTestClass);
   System.Assert(rType <> nil);
@@ -261,6 +268,12 @@ begin
               begin
                 newTest := TDUnitXTestCase.Create(FFixtureInstance, Self, testCaseAttrib.Name, method.Name, method, testEnabled, testCaseAttrib.Values);
                 newTest.Enabled := testEnabled;
+
+                if method.TryGetAttributeOfType<IgnoreMemoryLeaks>(IgnoreMemoryLeak) then
+                  newTest.IgnoreMemoryLeaks := IgnoreMemoryLeak.IgnoreMemoryLeaks
+                else
+                  newTest.IgnoreMemoryLeaks := FIgnoreMemoryLeaks;
+
                 FTests.Add(newTest);
               end;
             end
@@ -270,6 +283,12 @@ begin
                 newTest := TDUnitXTest.Create(Self, method.Name, TTestMethod(meth),testEnabled,true,ignoredAttrib.Reason)
               else
                 newTest := TDUnitXTest.Create(Self, method.Name, TTestMethod(meth),testEnabled);
+
+              if method.TryGetAttributeOfType<IgnoreMemoryLeaks>(IgnoreMemoryLeak) then
+                newTest.IgnoreMemoryLeaks := IgnoreMemoryLeak.IgnoreMemoryLeaks
+              else
+                newTest.IgnoreMemoryLeaks := FIgnoreMemoryLeaks;
+
               FTests.Add(newTest);
             end;
           end
@@ -279,11 +298,14 @@ begin
               newTest := TDUnitXTest.Create(Self, method.Name, TTestMethod(meth),true,true,ignoredAttrib.Reason)
             else
               newTest := TDUnitXTest.Create(Self, method.Name, TTestMethod(meth),true);
+
+            if method.TryGetAttributeOfType<IgnoreMemoryLeaks>(IgnoreMemoryLeak) then
+              newTest.IgnoreMemoryLeaks := IgnoreMemoryLeak.IgnoreMemoryLeaks
+            else
+              newTest.IgnoreMemoryLeaks := FIgnoreMemoryLeaks;
+
             FTests.Add(newTest);
           end;
-
-
-
         end;
       end;
     end

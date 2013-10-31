@@ -65,6 +65,7 @@ type
 
     procedure OnExecuteTest(const threadId : Cardinal; const Test: ITestInfo);
 
+    procedure OnTestMemoryLeak(const threadId : Cardinal; const AIgnored: ITestResult);
     procedure OnTestIgnored(const threadId: Cardinal;const  AIgnored: ITestResult);
     procedure OnTestError(const threadId: Cardinal; const Error: ITestError);
     procedure OnTestFailure(const threadId: Cardinal; const Failure: ITestError);
@@ -330,6 +331,12 @@ begin
     SetConsoleDefaultColor();
   FConsoleWriter.WriteLn(Format('Tests Passed  : %d',[RunResults.PassCount]));
 
+  if RunResults.MemoryLeakCount > 0 then
+    SetConsoleWarningColor()
+  else
+    SetConsoleDefaultColor();
+  FConsoleWriter.WriteLn(Format('Tests Leaked  : %d',[RunResults.MemoryLeakCount]));
+
   if RunResults.FailureCount > 0 then
     SetConsoleErrorColor()
   else
@@ -415,6 +422,12 @@ begin
   FConsoleWriter.Indent(1);
 end;
 
+
+procedure TDUnitXConsoleLogger.OnTestMemoryLeak(const threadId: Cardinal; const AIgnored: ITestResult);
+begin
+  if FQuietMode then
+    FConsoleWriter.Write('M');
+end;
 
 procedure TDUnitXConsoleLogger.SetConsoleDefaultColor();
 begin

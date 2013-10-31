@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2013 Vincent Parrett                              }
+{           Copyright (C) 2012 Vincent Parrett                              }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -24,96 +24,68 @@
 {                                                                           }
 {***************************************************************************}
 
-unit DUnitX.MemoryLeakMonitor.Default;
+unit DUnitX.Tests.MemoryLeaks;
 
 interface
 
-{$I DUnitX.inc}
-
 uses
-  classes,
   DUnitX.TestFramework;
 
 type
-  TDUnitXDefaultMemoryLeakMonitor = class(TInterfacedObject,IMemoryLeakMonitor)
-  public
-    procedure PreSetup;
-    procedure PostSetUp;
-    procedure PreTest;
-    procedure PostTest;
-    procedure PreTearDown;
-    procedure PostTearDown;
-
-    function SetUpMemoryAllocated: Int64;
-    function TearDownMemoryAllocated: Int64;
-    function TestMemoryAllocated: Int64;
+  {$M+}
+  [TestFixture]
+  [IgnoreMemoryLeaks]
+  TTestsNoMemoryLeaksReported = class
+  published
+    [Test]
+    procedure No_Reporting_Of_Memory_Leaks;
+    [Test]
+    [IgnoreMemoryLeaks(False)]
+    procedure Override_Reporting_Of_Memory_Leaks;
   end;
 
+  [TestFixture]
+  // if the "IgnoreMemoryLeaks" attribute is not specified, then all memory leaks will be reported.
+  [IgnoreMemoryLeaks(False)]  // Report all leaks. This is the same as not specifying this attribute.
+  TTestsMemoryLeaksReported = class
+  published
+    [Test]
+    [IgnoreMemoryLeaks(True)]
+    procedure Override_No_Reporting_Of_Memory_Leaks;
 
-
-  procedure RegisterDefaultProvider;
+    [Test]
+    // if the "IgnoreMemoryLeaks" attribute is not specified, it will use the fixtures setting.
+    procedure Reporting_Of_Memory_Leaks;
+  end;
 
 implementation
 
-uses
-  DUnitX.IoC;
+{ TTestsNoMemoryLeaksReported }
 
-
-procedure RegisterDefaultProvider;
+procedure TTestsNoMemoryLeaksReported.No_Reporting_Of_Memory_Leaks;
 begin
-  TDUnitXIoC.DefaultContainer.RegisterType<IMemoryLeakMonitor>(
-    function : IMemoryLeakMonitor
-    begin
-      result := TDUnitXDefaultMemoryLeakMonitor.Create;
-    end);
+  AllocMem(1024);
 end;
 
-
-{ TDUnitXDefaultMemoryLeakMonitor }
-
-procedure TDUnitXDefaultMemoryLeakMonitor.PostSetUp;
+procedure TTestsNoMemoryLeaksReported.Override_Reporting_Of_Memory_Leaks;
 begin
-
+  AllocMem(512);
 end;
 
-procedure TDUnitXDefaultMemoryLeakMonitor.PostTearDown;
-begin
+{ TTestsMemoryLeaksReported }
 
+procedure TTestsMemoryLeaksReported.Override_No_Reporting_Of_Memory_Leaks;
+begin
+  AllocMem(256);
 end;
 
-procedure TDUnitXDefaultMemoryLeakMonitor.PostTest;
+procedure TTestsMemoryLeaksReported.Reporting_Of_Memory_Leaks;
 begin
-
+  AllocMem(128);
 end;
 
-procedure TDUnitXDefaultMemoryLeakMonitor.PreSetup;
-begin
-
-end;
-
-procedure TDUnitXDefaultMemoryLeakMonitor.PreTearDown;
-begin
-
-end;
-
-procedure TDUnitXDefaultMemoryLeakMonitor.PreTest;
-begin
-
-end;
-
-function TDUnitXDefaultMemoryLeakMonitor.SetUpMemoryAllocated: Int64;
-begin
-  Result := 0;
-end;
-
-function TDUnitXDefaultMemoryLeakMonitor.TearDownMemoryAllocated: Int64;
-begin
-  Result := 0;
-end;
-
-function TDUnitXDefaultMemoryLeakMonitor.TestMemoryAllocated: Int64;
-begin
-  Result := 0;
-end;
+initialization
+  TDUnitX.RegisterTestFixture(TTestsNoMemoryLeaksReported);
+  TDUnitX.RegisterTestFixture(TTestsMemoryLeaksReported);
 
 end.

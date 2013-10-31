@@ -273,7 +273,7 @@ end;
 function ResultTypeToString(const value : TTestResultType) : string;
 begin
   case value of
-    Pass: result := 'Success';
+    TTestResultType.Pass: result := 'Success';
   else
     result := GetEnumName(TypeInfo(TTestResultType),Ord(value));
   end;
@@ -294,10 +294,10 @@ begin
     sResult := ResultTypeToString(testResult.ResultType);
     if testResult.ResultType = TTestResultType.Pass then
       sLineEnd := '/';
-    sExecuted := BoolToStr(testResult.ResultType <> Ignored,true);
+    sExecuted := BoolToStr(testResult.ResultType <> TTestResultType.Ignored,true);
 
-    if testResult.ResultType <> Ignored then
-      sSuccess := Format('success="%s"',[BoolToStr(testResult.ResultType = Pass,true)])
+    if testResult.ResultType <> TTestResultType.Ignored then
+      sSuccess := Format('success="%s"',[BoolToStr(testResult.ResultType = TTestResultType.Pass,true)])
     else
       sSuccess := '';
 
@@ -306,7 +306,8 @@ begin
     begin
       Indent;
       case testResult.ResultType of
-        Failure, Error:
+        TTestResultType.Failure,
+        TTestResultType.Error:
         begin
           Indent;
           WriteXMLLine('<failure>');
@@ -327,7 +328,7 @@ begin
           WriteXMLLine('</failure>');
           Outdent;
         end;
-        Ignored:
+        TTestResultType.Ignored:
         begin
           Indent;
           WriteXMLLine('<reason>');
@@ -341,9 +342,21 @@ begin
           WriteXMLLine('</reason>');
           Outdent;
         end;
+        TTestResultType.MemoryLeak:
+          begin
+            Indent;
+            WriteXMLLine('<reason>');
+            Indent;
+              WriteXMLLine('<message>');
+              Indent;
+                WriteXMLLine(Format('<![CDATA[ %s ]]>',[EscapeForXML(testResult.Message, False, True)]));
+              Outdent;
+              WriteXMLLine('</message>');
+            Outdent;
+            WriteXMLLine('</reason>');
+            Outdent;
+          end;
       end;
-
-
 
       Outdent;
       WriteXMLLine('</test-case>');

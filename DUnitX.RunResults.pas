@@ -48,6 +48,7 @@ type
     FFailureCount : integer;
     FPassCount : integer;
     FIgnoredCount : integer;
+    FMemoryLeakCount : Integer;
     FTotalCount : integer;
 
     FStartTime: TDateTime;
@@ -61,6 +62,7 @@ type
     function GetTestCount: Integer;
     function GetErrorCount: Integer;
     function GetFailureCount: Integer;
+    function GetMemoryLeakCount : Integer;
     function GetFixtures: IEnumerable<ITestFixtureInfo>;
     function GetFixtureResults: IEnumerable<IFixtureResult>;
     function GetAllTestResults : IEnumerable<ITestResult>;
@@ -163,6 +165,11 @@ begin
   result := FIgnoredCount;
 end;
 
+function TDUnitXRunResults.GetMemoryLeakCount: Integer;
+begin
+  Result := FMemoryLeakCount;
+end;
+
 function TDUnitXRunResults.GetFixtureCount: Integer;
 begin
   result := FFixtureResults.Count;
@@ -214,9 +221,10 @@ begin
     TTestResultType.Failure : Inc(FFailureCount);
     TTestResultType.Error   : Inc(FErrorCount);
     TTestResultType.Ignored : Inc(FIgnoredCount);
+    TTestResultType.MemoryLeak : Inc(FMemoryLeakCount);
   end;
 
-  if testResult.ResultType <> Pass then
+  if testResult.ResultType <> TTestResultType.Pass then
     FAllPassed := False;
 
   (fixtureResult as IFixtureResultBuilder).AddTestResult(testResult);

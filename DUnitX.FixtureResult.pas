@@ -21,6 +21,7 @@ type
     FFailureCount : integer;
     FPassCount    : integer;
     FIgnoredCount : integer;
+    FMemoryLeakCount   : Integer;
     FTotalCount   : integer;
 
     FStartTime    : TDateTime;
@@ -259,9 +260,10 @@ begin
     TTestResultType.Failure : Inc(FFailureCount);
     TTestResultType.Error   : Inc(FErrorCount);
     TTestResultType.Ignored : Inc(FIgnoredCount);
+    TTestResultType.MemoryLeak : Inc(FMemoryLeakCount);
   end;
 
-  if AResult.ResultType <> Pass then
+  if AResult.ResultType <> TTestResultType.Pass then
     FAllPassed := False;
 end;
 
