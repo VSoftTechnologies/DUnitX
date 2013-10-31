@@ -107,7 +107,7 @@ begin
     BackupCode.Jump := 0;
   end;
 end;
-
+{$TYPEDADDRESS OFF}
 procedure WriteMem(const Location, Buffer: Pointer; const Size: Cardinal);
 var
   WrittenBytes: {$IF COMPILERVERSION > 22}NativeUInt;{$ELSE}Cardinal;{$IFEND}

@@ -1,7 +1,7 @@
 program DUnitXTest_XE2;
 
 {$APPTYPE CONSOLE}
-{\\$STRONGLINKTYPES ON}
+{$STRONGLINKTYPES ON}
 uses
   SysUtils,
   DUnitX.Loggers.Console in '..\DUnitX.Loggers.Console.pas',

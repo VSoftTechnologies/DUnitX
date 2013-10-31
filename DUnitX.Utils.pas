@@ -1874,12 +1874,12 @@ begin
   begin
     if Length(Args) > 1 then
     begin
-      Result := Result + TValue.ToString(@Args[1]);
+      Result := Result + TValue.ToString(Args[1]);
     end;
   end
   else
   begin
-    Result := Result + TValue.ToString(@Args[0])
+    Result := Result + TValue.ToString(Args[0])
   end;
   Result := Result + ')';
 end;
