@@ -205,6 +205,7 @@ end;
 procedure TGUIXTestRunner.FormDestroy(Sender: TObject);
 begin
   FFailedTests.Free;
+  FLastResult := nil;
   FFixtureList := nil;
   FTestRunner := nil;
 end;
