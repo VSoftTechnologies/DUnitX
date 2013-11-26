@@ -16,6 +16,7 @@ type
     FOutputStream : TStream;
     FOwnsStream   : boolean;
     FIndent       : integer;
+    FFormatSettings : TFormatSettings;
   protected
     procedure Indent;
     procedure Outdent;
@@ -27,7 +28,7 @@ type
     procedure WriteFixtureResult(const fixtureResult : IFixtureResult);
     procedure WriteTestResult(const testResult : ITestResult);
 
-
+    function Format(const Format: string; const Args: array of const): String;
   public
     constructor Create(const AOutputStream : TStream; const AOwnsStream : boolean = false);
     destructor Destroy;override;
@@ -102,6 +103,9 @@ constructor TDUnitXXMLNUnitLogger.Create(const AOutputStream: TStream; const AOw
 var
   preamble: TBytes;
 begin
+  FFormatSettings := TFormatSettings.Create;
+  FFormatSettings.ThousandSeparator := ',';
+  FFormatSettings.DecimalSeparator := '.';
   FOutputStream := AOutputStream;
   FOwnsStream   := AOwnsStream;
 
@@ -115,6 +119,12 @@ begin
   if FOwnsStream then
     FOutputStream.Free;
   inherited;
+end;
+
+function TDUnitXXMLNUnitLogger.Format(const Format: string;
+  const Args: array of const): String;
+begin
+  Result := SysUtils.Format(Format, Args, FFormatSettings);
 end;
 
 procedure TDUnitXXMLNUnitLogger.Indent;
