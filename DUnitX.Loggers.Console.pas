@@ -395,6 +395,28 @@ begin
     FConsoleWriter.WriteLn;
   end;
 
+  if RunResults.MemoryLeakCount > 0  then
+  begin
+    SetConsoleWarningColor();
+    FConsoleWriter.WriteLn;
+    FConsoleWriter.WriteLn('Tests With Memory Leak');
+    FConsoleWriter.WriteLn;
+    SetConsoleDefaultColor();
+
+    for testResult in RunResults.GetAllTestResults do
+    begin
+      if testResult.ResultType = TTestResultType.MemoryLeak then
+      begin
+        SetConsoleWarningColor();
+        FConsoleWriter.WriteLn('  ' + testResult.Test.FullName);
+        SetConsoleDefaultColor();
+        FConsoleWriter.WriteLn('  Message: ' + testResult.Message);
+        FConsoleWriter.WriteLn;
+      end;
+    end;
+    FConsoleWriter.WriteLn;
+  end;
+
   SetConsoleDefaultColor();
 end;
 
