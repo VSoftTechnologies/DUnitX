@@ -2,6 +2,8 @@ unit DUnitX.Loggers.XML.NUnit;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
   classes,
   SysUtils,
@@ -102,15 +104,33 @@ end;
 constructor TDUnitXXMLNUnitLogger.Create(const AOutputStream: TStream; const AOwnsStream : boolean = false);
 var
   preamble: TBytes;
+  {$IFNDEF DELPHI_XE_UP}
+  oldThousandSeparator: Char;
+  oldDecimalSeparator: Char;
+  {$ENDIF}
 begin
+  {$IFDEF DELPHI_XE_UP }
   FFormatSettings := TFormatSettings.Create;
   FFormatSettings.ThousandSeparator := ',';
   FFormatSettings.DecimalSeparator := '.';
+  {$ELSE}
+  oldThousandSeparator        := SysUtils.ThousandSeparator;
+  oldDecimalSeparator         := SysUtils.DecimalSeparator;
+  try
+    SysUtils.ThousandSeparator := ',';
+    SysUtils.DecimalSeparator := '.';
+  {$ENDIF}
   FOutputStream := AOutputStream;
   FOwnsStream   := AOwnsStream;
 
   Preamble := TEncoding.UTF8.GetPreamble;
   FOutputStream.WriteBuffer(preamble[0], Length(preamble));
+  {$IFNDEF DELPHI_XE_UP}
+  finally
+    SysUtils.ThousandSeparator := oldThousandSeparator;
+    SysUtils.DecimalSeparator  := oldDecimalSeparator;
+  end;
+  {$ENDIF}
 
 end;
 
