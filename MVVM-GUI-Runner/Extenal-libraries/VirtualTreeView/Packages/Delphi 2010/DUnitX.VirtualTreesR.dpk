@@ -1,0 +1,40 @@
+package DUnitX.VirtualTreesR;
+
+{$R *.res}
+{$ALIGN 8}
+{$ASSERTIONS OFF}
+{$BOOLEVAL OFF}
+{$DEBUGINFO OFF}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS OFF}
+{$LOCALSYMBOLS OFF}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION ON}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO OFF}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $30400000}
+{$DESCRIPTION 'Virtual Treeview runtime package'}
+{$RUNONLY}
+{$IMPLICITBUILD OFF}
+
+requires
+  vcl,
+  vclx;
+
+contains
+  DUnitX.VirtualTrees in '..\..\Source\DUnitX.VirtualTrees.pas',
+  DUnitX.VTHeaderPopup in '..\..\Source\DUnitX.VTHeaderPopup.pas',
+  DUnitX.VTAccessibilityFactory in '..\..\Source\DUnitX.VTAccessibilityFactory.pas',
+  DUnitX.VTAccessibility in '..\..\Source\DUnitX.VTAccessibility.pas';
+
+end.
+
