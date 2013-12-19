@@ -58,6 +58,8 @@ type
     function GetIgnoreReason : string;
     function GetIgnoreMemoryLeaks() : Boolean;
     procedure SetIgnoreMemoryLeaks(const AValue : Boolean);
+    function GetRepeatCount : Cardinal;
+
 
     property Name : string read GetName;
     property Enabled : boolean read GetEnabled write SetEnabled;
@@ -66,6 +68,7 @@ type
     property IgnoreReason : string read GetIgnoreReason;
     property TestMethod : TTestMethod read GetTestMethod;
     property IgnoreMemoryLeaks : Boolean read GetIgnoreMemoryLeaks write SetIgnoreMemoryLeaks;
+    property RepeatCount : Cardinal read GetRepeatCount;
   end;
 
   ITestList = interface(IList<ITest>)

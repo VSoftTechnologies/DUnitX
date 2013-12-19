@@ -48,11 +48,49 @@ type
   {$M-}
 
 
+type
+  {$M+}
+  [TestFixture]
+   TTestRepeatAttr3Times = class
+   private
+     FTimesRun : Cardinal;
+   public
+     [Setup]
+     procedure Setup;
+     [Teardown]
+     procedure TearDown;
+     [Test]
+     [RepeatTest(3)]
+     procedure TestRepeat3TimesNoAssert;
+     [Test]
+     [RepeatTest(3)]
+     procedure TestRepeat3TimesWithPassAssert;
+   end;
+
+   TTestRepeatAttrFailure = class
+   private
+     FTimesRun : Cardinal;
+   public
+     [Setup]
+     procedure Setup;
+     [Test]
+     [RepeatTest(3)]
+     procedure TestShouldFailOnFirst;
+     [Test]
+     [RepeatTest(3)]
+     procedure TestShouldFailOnLast;
+   end;
+
+  {$M-}
+
 implementation
 
 uses
   SysUtils;
 { TDUnitXTestFixtureTests }
+
+const
+   RUN_3TIMES : Cardinal = 3;
 
 { TTestClassWithNonPublicSetup }
 
@@ -68,6 +106,61 @@ begin
   FSetupRun := True;
 end;
 
+
+{ TTestRepeatAttr3Times }
+
+procedure TTestRepeatAttr3Times.Setup;
+begin
+  FTimesRun := 0;
+end;
+
+procedure TTestRepeatAttr3Times.TearDown;
+begin
+  Assert.AreEqual(RUN_3TIMES,FTimesRun);
+end;
+
+
+procedure TTestRepeatAttr3Times.TestRepeat3TimesNoAssert;
+begin
+  inc(FTimesRun);
+end;
+
+procedure TTestRepeatAttr3Times.TestRepeat3TimesWithPassAssert;
+begin
+  inc(FTimesRun);
+  Assert.Pass('Passed');
+end;
+
+
+{ TTestRepeatAttrFailure }
+
+procedure TTestRepeatAttrFailure.Setup;
+begin
+
+end;
+
+procedure TTestRepeatAttrFailure.TestShouldFailOnFirst;
+begin
+  inc(FTimesRun);
+  if FTimesRun = 1 then
+     Assert.Fail('EXPECTED Failure')
+  else
+     Assert.Fail('Ran More Times that expected.')
+end;
+
+procedure TTestRepeatAttrFailure.TestShouldFailOnLast;
+begin
+  inc(FTimesRun);
+  if FTimesRun = 3 then
+     Assert.Fail('EXPECTED Failure')
+end;
+
 initialization
   TDUnitX.RegisterTestFixture(TTestClassWithNonPublicSetup);
+  TDUnitX.RegisterTestFixture(TTestRepeatAttr3Times);
+  {$IFNDEF CI}
+  TDUnitX.RegisterTestFixture(TTestRepeatAttrFailure);
+  {$ENDIF}
+
+
 end.
