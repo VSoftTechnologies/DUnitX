@@ -65,7 +65,7 @@ type
 
     procedure OnExecuteTest(const threadId : Cardinal; const Test: ITestInfo);
 
-    procedure OnTestMemoryLeak(const threadId : Cardinal; const AIgnored: ITestResult);
+    procedure OnTestMemoryLeak(const threadId : Cardinal; const Test: ITestResult);
     procedure OnTestIgnored(const threadId: Cardinal;const  AIgnored: ITestResult);
     procedure OnTestError(const threadId: Cardinal; const Error: ITestError);
     procedure OnTestFailure(const threadId: Cardinal; const Failure: ITestError);
@@ -445,7 +445,7 @@ begin
 end;
 
 
-procedure TDUnitXConsoleLogger.OnTestMemoryLeak(const threadId: Cardinal; const AIgnored: ITestResult);
+procedure TDUnitXConsoleLogger.OnTestMemoryLeak(const threadId: Cardinal; const Test: ITestResult);
 begin
   if FQuietMode then
     FConsoleWriter.Write('M');
