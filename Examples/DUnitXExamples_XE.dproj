@@ -7,8 +7,7 @@
 			<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
 			<FrameworkType>None</FrameworkType>
 			<Base>True</Base>
-			<Platform Condition="'$(Platform)'==''">Win64</Platform>
-			<TargetedPlatforms>3</TargetedPlatforms>
+			<Platform Condition="'$(Platform)'==''">Debug</Platform>
 			<AppType>Console</AppType>
 			<Platform>Win32</Platform>
 		</PropertyGroup>
@@ -25,13 +24,11 @@
 			<CfgParent>Base</CfgParent>
 			<Base>true</Base>
 		</PropertyGroup>
-		<PropertyGroup Condition="'$(Base)'!=''">
-			<DCC_UsePackage>rtl;vcl;vclx;vclactnband;xmlrtl;vclimg;dbrtl;vcldb;vcldbx;bdertl;vcltouch;dsnap;dsnapcon;vclie;webdsnap;inet;inetdbbde;inetdbxpress;soaprtl;DbxCommonDriver;DbxClientDriver;DBXInterBaseDriver;DBXMySQLDriver;dbexpress;dbxcds;FBDream2010;SynEdit_R2010;NxCommonRun;NxGridRun;KWizardD2010R;GFDLIB2009;dclRouteMapD2010;tb2k_d12;SpTBXLib_d12;dwWin7Controls_2010;IndyCore140;IndySystem140;IndyProtocols140;lmddocking11rt_140;lmdrtl11rt_140;RaizeComponentsVcl;FBMiscComponents;FBFormDesigner;FBSynEditHighlighters;VSPageR;madBasic_;madDisAsm_;madExcept_;adortl;TeeWorld814;TeeImage814;TeeLanguage814;TeePro814;TeeGL814;TeeUI814;TeeDB814;Tee814;VirtualTreesR;VSMessageAPIDesign;VSMessageAPIRun</DCC_UsePackage>
-			<Manifest_File>None</Manifest_File>
+		<PropertyGroup Condition="'$(Base)'!=''">			<Manifest_File>None</Manifest_File>
 			<DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;$(DCC_Namespace)</DCC_Namespace>
 			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
 			<VerInfo_Locale>3081</VerInfo_Locale>
-			<DCC_DependencyCheckOutputName>DUnitXExamples_2010.exe</DCC_DependencyCheckOutputName>
+			<DCC_DependencyCheckOutputName>DUnitXExamples_XE.exe</DCC_DependencyCheckOutputName>
 			<DCC_ImageBase>00400000</DCC_ImageBase>
 			<DCC_Platform>x86</DCC_Platform>
 		</PropertyGroup>
@@ -128,10 +125,9 @@
 						<VersionInfoKeys Name="Comments"/>
 					</VersionInfoKeys>
 					<Excluded_Packages/>
+
 				</Delphi.Personality>
 				<Platforms>
-					<Platform value="OSX32">False</Platform>
-					<Platform value="Win64">True</Platform>
 					<Platform value="Win32">True</Platform>
 				</Platforms>
 			</BorlandProject>
