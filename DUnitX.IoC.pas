@@ -65,7 +65,7 @@ type
 
     private
       class var FDefault : TDUnitXIoC;
-      class destructor ClassDestroy;
+
   protected
     function GetInterfaceKey<TInterface>(const AName: string = ''): string;
     function InternalResolve<TInterface: IInterface>(out AInterface: TInterface; const AName: string = ''): TResolveResult;
@@ -73,6 +73,7 @@ type
   public
     constructor Create;
     destructor Destroy;override;
+    class destructor ClassDestroy;
     //Default Container - used internally by DUnitX
     class function DefaultContainer : TDUnitXIoC;
     {$IFDEF DELPHI_XE_UP}

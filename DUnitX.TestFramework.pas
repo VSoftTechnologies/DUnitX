@@ -1,4 +1,4 @@
-{***************************************************************************}
+﻿{***************************************************************************}
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
@@ -109,6 +109,12 @@ type
   TearDownFixtureAttribute = class(TCustomAttribute)
   end;
 
+  ///	<summary>
+  ///	    This attribue is applied to test methods.
+  ///	    If a test is successful and produces a memory leak it will be
+  ///	    reported.   If you do not want the leak reported, then you can add
+  ///	    this attribute to the test method.
+  ///	</summary>
   IgnoreMemoryLeaks = class(TCustomAttribute)
   private
     FIgnoreMemoryLeaks : Boolean;
@@ -130,6 +136,13 @@ type
     property Enabled : boolean read FEnabled;
   end;
 
+  ///	<summary>
+  ///	  This attribute will prevent a test from being run.   It will still show
+  ///	  up in the lists of tests, and reported as an Ignored test
+  ///	</summary>
+  ///	<remarks>
+  ///	  This is useful when you need to temporarily stop a test from running.
+  ///	</remarks>
   IgnoreAttribute = class(TCustomAttribute)
   private
     FReason : string;
@@ -569,7 +582,7 @@ type
     ///	<summary>
     ///	  //called when a test memory leaks.
     ///	</summary>
-    procedure OnTestMemoryLeak(const threadId : Cardinal; const AIgnored: ITestResult);
+    procedure OnTestMemoryLeak(const threadId : Cardinal; const Test: ITestResult);
 
     ///	<summary>
     ///	  //allows tests to write to the log.

@@ -78,7 +78,7 @@ type
     procedure Loggers_AddError(const threadId : Cardinal; const Error: ITestError);
     procedure Loggers_AddFailure(const threadId : Cardinal; const Failure: ITestError);
     procedure Loggers_AddIgnored(const threadId : Cardinal; const AIgnored: ITestResult);
-    procedure Loggers_AddMemoryLeak(const threadId: Cardinal; const AIgnored: ITestResult);
+    procedure Loggers_AddMemoryLeak(const threadId: Cardinal; const Test: ITestResult);
 
     procedure Loggers_EndTest(const threadId : Cardinal; const Test: ITestResult);
     procedure Loggers_TeardownTest(const threadId : Cardinal; const Test: ITestInfo);
@@ -192,13 +192,13 @@ begin
   end;
 end;
 
-procedure TDUnitXTestRunner.Loggers_AddMemoryLeak(const threadId: Cardinal; const AIgnored: ITestResult);
+procedure TDUnitXTestRunner.Loggers_AddMemoryLeak(const threadId: Cardinal; const Test: ITestResult);
 var
   logger : ITestLogger;
 begin
   for logger in FLoggers do
   begin
-    logger.OnTestMemoryLeak(threadId,AIgnored);
+    logger.OnTestMemoryLeak(threadId,Test);
   end;
 end;
 
