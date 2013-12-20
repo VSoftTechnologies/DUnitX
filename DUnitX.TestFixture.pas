@@ -66,6 +66,14 @@ type
   protected
     //uses RTTI to buid the fixture & tests
     procedure GenerateFixtureFromClass;
+    //used by GenerateFixtureFromClass to be tests from TestCaseInfo
+    function CreateTestFromTestCase(ACaseInfo : TestCaseInfo; AMethod : TRttiMethod; ATestEnabled : Boolean) : ITest;
+    //used by GenerateFixtureFromClass to be tests from a method with out test cases
+    function CreateTestFromMethod(AMethod : TRttiMethod; ATestEnabled : Boolean;AIgnored : Boolean;AIgnoredReason: String) : ITest;
+    // Check overriding attribute, other wise uses returns fixture value
+    function GetIgnoreMemoryLeaksForMethod(AMethod : TRttiMethod) : Boolean;
+
+
     function GetEnabled: Boolean;
     procedure SetEnabled(const value: Boolean);
 
@@ -167,11 +175,15 @@ var
   ignoreFixtureSetup : boolean;
 
   fixtureAttrib   : TestFixtureAttribute;
-  testCases       : TArray<TestCaseAttribute>;
-  testCaseAttrib  : TestCaseAttribute;
+  testCases       : TArray<CustomTestCaseAttribute>;
+  testCaseAttrib  : CustomTestCaseAttribute;
+  testCaseSources : TArray<CustomTestCaseSourceAttribute>;
+  testCaseSourceAttrb : CustomTestCaseSourceAttribute;
+  testCaseData    : TestCaseInfo;
   testEnabled     : boolean;
   ignoredAttrib   : IgnoreAttribute;
-  IgnoreMemoryLeak: IgnoreMemoryLeaks;
+  ignoredTest     : boolean;
+  ignoredReason   : string;
 begin
   rType := FRttiContext.GetType(FTestClass);
   System.Assert(rType <> nil);
@@ -254,56 +266,59 @@ begin
                 ((attribute.ClassType <> TestAttribute) and (method.Visibility = TMemberVisibility.mvPublished) and (not method.HasAttributeOfType<TestAttribute>)) then
         begin
           ignoredAttrib := method.GetAttributeOfType<IgnoreAttribute>;
+          // Determine if test should be ignored and why
+          if (ignoredAttrib <> nil) then
+          begin
+            ignoredTest   := true;
+            ignoredReason := ignoredAttrib.Reason;
+          end
+          else
+          begin
+            ignoredTest   := false;
+            ignoredReason := '';
+          end;
+
           if attribute.ClassType = TestAttribute then
           begin
             testEnabled := TestAttribute(attribute).Enabled;
 
             if testEnabled and (ignoredAttrib = nil) then
-              //find out if the test fixture has test cases.
-              testCases := method.GetAttributesOfType<TestCaseAttribute>;
-
-            if Length(testCases) > 0 then
             begin
+              //find out if the test fixture has test cases.
+              testCases := method.GetAttributesOfType<CustomTestCaseAttribute>;
+              //find out if the test has test sources
+              testCaseSources := method.GetAttributesOfType<CustomTestCaseSourceAttribute>;
+            end;
+
+            if (Length(testCases) > 0) or (Length(testCaseSources) > 0) then
+            begin
+              // Add individual test cases first
               for testCaseAttrib in testCases do
               begin
-                newTest := TDUnitXTestCase.Create(FFixtureInstance, Self, testCaseAttrib.Name, method.Name, method, testEnabled, testCaseAttrib.Values);
-                newTest.Enabled := testEnabled;
-
-                if method.TryGetAttributeOfType<IgnoreMemoryLeaks>(IgnoreMemoryLeak) then
-                  newTest.IgnoreMemoryLeaks := IgnoreMemoryLeak.IgnoreMemoryLeaks
-                else
-                  newTest.IgnoreMemoryLeaks := FIgnoreMemoryLeaks;
-
+                newTest := CreateTestFromTestCase(testCaseAttrib.CaseInfo, method, testEnabled );
                 FTests.Add(newTest);
+              end;
+              // Add test case from test case sources
+              for testCaseSourceAttrb in testCaseSources do
+              begin
+                for testCaseData in testCaseSourceAttrb.CaseInfoArray do
+                begin
+                  newTest := CreateTestFromTestCase(TestCaseData, method, testEnabled );
+                  FTests.Add(newTest);
+                end;
               end;
             end
             else
             begin
-              if ignoredAttrib <> nil then
-                newTest := TDUnitXTest.Create(Self, method.Name, TTestMethod(meth),testEnabled,true,ignoredAttrib.Reason)
-              else
-                newTest := TDUnitXTest.Create(Self, method.Name, TTestMethod(meth),testEnabled);
-
-              if method.TryGetAttributeOfType<IgnoreMemoryLeaks>(IgnoreMemoryLeak) then
-                newTest.IgnoreMemoryLeaks := IgnoreMemoryLeak.IgnoreMemoryLeaks
-              else
-                newTest.IgnoreMemoryLeaks := FIgnoreMemoryLeaks;
-
+              // Add Test annotated with TestAttribute and no test cases or test case sources;
+              newTest := CreateTestFromMethod(method,testEnabled,ignoredTest,ignoredReason);
               FTests.Add(newTest);
             end;
           end
           else
           begin
-            if ignoredAttrib <> nil then
-              newTest := TDUnitXTest.Create(Self, method.Name, TTestMethod(meth),true,true,ignoredAttrib.Reason)
-            else
-              newTest := TDUnitXTest.Create(Self, method.Name, TTestMethod(meth),true);
-
-            if method.TryGetAttributeOfType<IgnoreMemoryLeaks>(IgnoreMemoryLeak) then
-              newTest.IgnoreMemoryLeaks := IgnoreMemoryLeak.IgnoreMemoryLeaks
-            else
-              newTest.IgnoreMemoryLeaks := FIgnoreMemoryLeaks;
-
+           // Add Published Method that has no attributes
+            newTest := CreateTestFromMethod(method,true,ignoredTest,ignoredReason);
             FTests.Add(newTest);
           end;
         end;
@@ -311,6 +326,7 @@ begin
     end
     else if method.Visibility = TMemberVisibility.mvPublished then
     begin
+      // Add Published Method that has no Attributes
       newTest := TDUnitXTest.Create(Self,method.Name,TTestMethod(meth),true);
       FTests.Add(newTest);
     end;
@@ -357,6 +373,17 @@ end;
 function TDUnitXTestFixture.GetHasTests: boolean;
 begin
   result := (FTests <> nil) and (FTests.Count > 0);
+end;
+
+function TDUnitXTestFixture.GetIgnoreMemoryLeaksForMethod(
+  AMethod: TRttiMethod): Boolean;
+var
+ IgnoreMemoryLeak: IgnoreMemoryLeaks;
+begin
+  if AMethod.TryGetAttributeOfType<IgnoreMemoryLeaks>(IgnoreMemoryLeak) then
+    result := IgnoreMemoryLeak.IgnoreMemoryLeaks
+  else
+    result := FIgnoreMemoryLeaks;
 end;
 
 function TDUnitXTestFixture.GetName: string;
@@ -451,7 +478,7 @@ begin
     if TMethod(AMethod).Code = TMethod(FTearDownFixtureMethod).Code then
       FFixtureInstance := nil;
   end;
-  
+
 end;
 
 procedure TDUnitXTestFixture.SetEnabled(const value: Boolean);
@@ -462,6 +489,23 @@ end;
 class constructor TDUnitXTestFixture.Create;
 begin
   FRttiContext := TRttiContext.Create;
+end;
+
+function TDUnitXTestFixture.CreateTestFromMethod(AMethod: TRttiMethod;
+  ATestEnabled, AIgnored: Boolean; AIgnoredReason: String): ITest;
+var
+  Meth : TMethod;
+begin
+  meth.Code := AMethod.CodeAddress;
+  meth.Data := FFixtureInstance;
+  result  := TDUnitXTest.Create(Self, AMethod.Name, TTestMethod(meth),ATestEnabled,AIgnored,AIgnoredReason);
+  result.IgnoreMemoryLeaks := GetIgnoreMemoryLeaksForMethod(AMethod);
+end;
+
+function TDUnitXTestFixture.CreateTestFromTestCase(ACaseInfo : TestCaseInfo; AMethod : TRttiMethod; ATestEnabled : Boolean) : ITest;
+begin
+  result := TDUnitXTestCase.Create(FFixtureInstance, Self, ACaseInfo.Name, AMethod.Name, AMethod, ATestEnabled, ACaseInfo.Values);
+  result.IgnoreMemoryLeaks := getIgnoreMemoryLeaksForMethod(AMethod);
 end;
 
 end.

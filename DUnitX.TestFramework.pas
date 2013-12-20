@@ -170,23 +170,77 @@ type
 
 
   ///	<summary>
-  ///	  The TestCaseAttribute allows you to specify the name of a function that
-  ///	  returns a TValueArray which will be passed into a function that takes
-  ///	  parameters. This is really only needed to work around the problens with
-  ///	  the TestCaseAttribute. 
+  ///	  Internal Structure used for those implementing CustomTestCase or
+  ///	  CustomTestCaseSource descendants.
+  ///	</summary>
+  TestCaseInfo = record
+
+    ///	<summary>
+    ///	  Name of the Test Case
+    ///	</summary>
+    Name : string;
+
+    ///	<summary>
+    ///	  Values that will be passed to the method being tested.
+    ///	</summary>
+    Values : TValueArray;
+  end;
+
+  TestCaseInfoArray = array of TestCaseInfo;
+
+
+  ///	<summary>
+  ///	  Base class for all Test Case Attributes.   
   ///	</summary>
   ///	<remarks>
-  ///	  Note that the types in the TConstArray should match the parameters of
-  ///	  the method we are testing.
+  ///	  Class is abstract and should never be, used to annotate a class as a
+  ///	  attribute.   Instead use a descendant, that implements the GetCaseInfo
+  ///	  method.
   ///	</remarks>
-  TestCaseAttribute = class(TCustomAttribute)
-  private
-    FCaseName : string;
-    FValues : TValueArray;
+  CustomTestCaseAttribute = class abstract(TCustomAttribute)
+  protected
+    function GetCaseInfo : TestCaseInfo;  virtual; abstract;
   public
-    constructor Create(const ACaseName : string; const AValues : string);overload;
-    property Name : string read FCaseName;
-    property Values : TValueArray read FValues;
+    property CaseInfo : TestCaseInfo read GetCaseInfo;
+  end;
+
+  ///	<summary>
+  ///	  Base class for all Test Case Source Attributes.   
+  ///	</summary>
+  ///	<remarks>
+  ///	  <para>
+  ///	    Class is abstract and should never be, used to annotate a class as a
+  ///	    attribute.   Instead use a descendant, that implements the
+  ///	    GetCaseInfoArray method.    
+  ///	  </para>
+  ///	  <para>
+  ///	    Note: If a method is annotated with a decendant of
+  ///	    TestCaseSourceAttribute and returns an empty TestCaseInfoArray, then
+  ///	    no test will be shown for the method.
+  ///	  </para>
+  ///	</remarks>
+  CustomTestCaseSourceAttribute = class abstract(TCustomAttribute)
+  protected
+    function GetCaseInfoArray : TestCaseInfoArray; virtual; abstract;
+  public
+    property CaseInfoArray : TestCaseInfoArray read GetCaseInfoArray;
+  end;
+
+
+  ///	<summary>
+  ///	  The TestCaseAttribute allows you to pass values to a test function.
+  ///	  Each value is delimited in the string, by default the delimiter is ','
+  ///	</summary>
+  TestCaseAttribute = class(CustomTestCaseAttribute)
+  protected
+    FCaseInfo : TestCaseInfo;
+    function GetCaseInfo : TestCaseInfo; Override;
+    function GetName: String;
+    function GetValues: TValueArray;
+  public
+    constructor Create(const ACaseName : string; const AValues : string;const ASeperator : string = ',');overload;
+    property Name : String read GetName;
+    property Values : TValueArray read GetValues;
   end;
 
   TTestMethod = procedure of object;
@@ -1452,18 +1506,18 @@ end;
 { TestCaseAttribute }
 
 
-constructor TestCaseAttribute.Create(const ACaseName: string; const AValues: string);
+constructor TestCaseAttribute.Create(const ACaseName: string; const AValues: string;const ASeperator : string);
 var
   i: Integer;
   l : integer;
   lValues : TStringDynArray;
 begin
-  FCaseName := ACaseName;
-  lValues := SplitString(AValues,',');
+  FCaseInfo.Name := ACaseName;
+  lValues := SplitString(AValues,ASeperator);
   l := Length(lValues);
-  SetLength(FValues,l);
+  SetLength(FCaseInfo.Values,l);
   for i := 0 to l -1 do
-    FValues[i] := TValue.From<string>(lValues[i]);
+    FCaseInfo.Values[i] := TValue.From<string>(lValues[i]);
 end;
 
 
@@ -1501,6 +1555,21 @@ begin
   Self.Log(TLogLevel.ltInformation,msg);
 end;
 {$ENDIF}
+
+function TestCaseAttribute.GetCaseInfo: TestCaseInfo;
+begin
+  result := FCaseInfo;
+end;
+
+function TestCaseAttribute.GetName: String;
+begin
+  result := FCaseInfo.Name;
+end;
+
+function TestCaseAttribute.GetValues: TValueArray;
+begin
+  result := FCaseInfo.Values;
+end;
 
 { RepeatAttribute }
 
