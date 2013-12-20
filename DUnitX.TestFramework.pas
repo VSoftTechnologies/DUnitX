@@ -586,7 +586,7 @@ type
     ///	<summary>
     ///	  //called when a test memory leaks.
     ///	</summary>
-    procedure OnTestMemoryLeak(const threadId : Cardinal; const AIgnored: ITestResult);
+    procedure OnTestMemoryLeak(const threadId : Cardinal; const Test: ITestResult);
 
     ///	<summary>
     ///	  //allows tests to write to the log.

@@ -304,6 +304,10 @@ function ResultTypeToString(const value : TTestResultType) : string;
 begin
   case value of
     TTestResultType.Pass: result := 'Success';
+    TTestResultType.Failure : result := 'Failure';
+    TTestResultType.Error   : result := 'Error';
+    TTestResultType.Ignored : result := 'Ignored';
+    TTestResultType.MemoryLeak : result := 'Failure'; //NUnit xml doesn't understand memory leak
   else
     result := GetEnumName(TypeInfo(TTestResultType),Ord(value));
   end;
@@ -336,6 +340,7 @@ begin
     begin
       Indent;
       case testResult.ResultType of
+        TTestResultType.MemoryLeak,
         TTestResultType.Failure,
         TTestResultType.Error:
         begin
@@ -372,20 +377,6 @@ begin
           WriteXMLLine('</reason>');
           Outdent;
         end;
-        TTestResultType.MemoryLeak:
-          begin
-            Indent;
-            WriteXMLLine('<reason>');
-            Indent;
-              WriteXMLLine('<message>');
-              Indent;
-                WriteXMLLine(Format('<![CDATA[ %s ]]>',[EscapeForXML(testResult.Message, False, True)]));
-              Outdent;
-              WriteXMLLine('</message>');
-            Outdent;
-            WriteXMLLine('</reason>');
-            Outdent;
-          end;
       end;
 
       Outdent;

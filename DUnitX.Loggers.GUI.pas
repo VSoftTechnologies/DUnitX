@@ -83,7 +83,7 @@ type
     procedure OnTestError(const threadId: Cardinal; const Error: ITestError);
     procedure OnTestFailure(const threadId: Cardinal; const Failure: ITestError);
     procedure OnTestSuccess(const threadId: Cardinal; const Test: ITestResult);
-    procedure OnTestMemoryLeak(const threadId : Cardinal; const AIgnored: ITestResult);
+    procedure OnTestMemoryLeak(const threadId : Cardinal; const Test: ITestResult);
     procedure OnTestIgnored(const threadId: Cardinal; const Ignored: ITestResult);
     procedure OnTestingEnds(const RunResults: IRunResults);
     procedure OnTestingStarts(const threadId: Cardinal; const testCount: Cardinal; const testActiveCount: Cardinal);
@@ -213,7 +213,7 @@ begin
 
 end;
 
-procedure TDUnitXGuiLoggerForm.OnTestMemoryLeak(const threadId: Cardinal; const AIgnored: ITestResult);
+procedure TDUnitXGuiLoggerForm.OnTestMemoryLeak(const threadId: Cardinal; const Test: ITestResult);
 begin
 
 end;
