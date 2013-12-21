@@ -174,7 +174,6 @@ var
   testEnabled     : boolean;
   ignoredAttrib   : IgnoreAttribute;
   IgnoreMemoryLeak: IgnoreMemoryLeaks;
-  inheritanceStack: TStack<TRttiType>;
 begin
   rType := FRttiContext.GetType(FTestClass);
   System.Assert(rType <> nil);
@@ -206,51 +205,6 @@ begin
     FFixtureInstance := FTestClass.Create;
 
 
-  inheritanceStack := TStack<TRttiType>.Create;
-
-  rBaseType := rType.BaseType;
-  while Assigned(rBaseType) do begin
-    inheritanceStack.Push(rBaseType);
-    rBaseType := rBaseType.BaseType;
-  end;
-
-  while inheritanceStack.Count > 0 do begin
-    rBaseType := inheritanceStack.Pop();
-    if rBaseType.TryGetAttributeOfType<TestFixtureAttribute>(fixtureAttrib) then
-    begin
-      methods := rBaseType.GetDeclaredMethods;
-      for method in methods do
-      begin
-        meth.Code := method.CodeAddress;
-        meth.Data := FFixtureInstance;
-
-        attribute := method.GetAttributeOfType<SetupAttribute>;
-        if Assigned(attribute) then begin
-          FSetupMethod := TTestMethod(meth);
-          FSetupMethodName := method.Name;
-        end;
-
-        attribute := method.GetAttributeOfType<SetupFixtureAttribute>;
-        if Assigned(attribute) then begin
-          FSetupMethod := TTestMethod(meth);
-          FSetupMethodName := method.Name;
-        end;
-
-        attribute := method.GetAttributeOfType<TearDownAttribute>;
-        if Assigned(attribute) then begin
-          FTearDownMethod := TTestMethod(meth);
-          FTearDownMethodName := method.Name;
-        end;
-
-        attribute := method.GetAttributeOfType<TearDownFixtureAttribute>;
-        if Assigned(attribute) then begin
-          FTearDownFixtureMethod := TTestMethod(meth);
-          FTearDownFixtureMethodName := method.Name;
-        end;
-      end;
-    end;
-  end;
-  inheritanceStack.Free;
 
   //important to use declared here.. otherwise we are looking at TObject as well.
   methods := rType.GetDeclaredMethods;
@@ -363,6 +317,58 @@ begin
     begin
       newTest := TDUnitXTest.Create(Self,method.Name,TTestMethod(meth),true);
       FTests.Add(newTest);
+    end;
+  end;
+
+
+  if (not Assigned(FSetupMethod)) or (not Assigned(FSetupFixtureMethod))
+     or (not Assigned(FTearDownMethod))  or (not Assigned(FTearDownFixtureMethod))then begin
+
+    rBaseType := rType.BaseType;
+    while Assigned(rBaseType) do begin
+      if not rBaseType.TryGetAttributeOfType<TestFixtureAttribute>(fixtureAttrib) then
+      begin
+        methods := rBaseType.GetDeclaredMethods;
+        for method in methods do
+        begin
+          meth.Code := method.CodeAddress;
+          meth.Data := FFixtureInstance;
+
+
+          if not Assigned(FSetupMethod) then begin
+            attribute := method.GetAttributeOfType<SetupAttribute>;
+            if Assigned(attribute) then begin
+              FSetupMethod := TTestMethod(meth);
+              FSetupMethodName := method.Name;
+            end;
+          end;
+
+          if not Assigned(FSetupFixtureMethod) then begin
+            attribute := method.GetAttributeOfType<SetupFixtureAttribute>;
+            if Assigned(attribute) then begin
+              FSetupFixtureMethod := TTestMethod(meth);
+              FSetupFixtureMethodName := method.Name;
+            end;
+          end;
+
+          if not Assigned(FTearDownMethod) then begin
+            attribute := method.GetAttributeOfType<TearDownAttribute>;
+            if Assigned(attribute) then begin
+              FTearDownMethod := TTestMethod(meth);
+              FTearDownMethodName := method.Name;
+            end;
+          end;
+
+          if not Assigned(FTearDownFixtureMethod) then begin
+            attribute := method.GetAttributeOfType<TearDownFixtureAttribute>;
+            if Assigned(attribute) then begin
+              FTearDownFixtureMethod := TTestMethod(meth);
+              FTearDownFixtureMethodName := method.Name;
+            end;
+          end;
+        end;
+      end;
+      rBaseType := rBaseType.BaseType;
     end;
   end;
 end;

@@ -102,7 +102,6 @@ type
     procedure ATest;
   end;
 
-  [TestFixture]
   TExampleFixture4 = class
   protected
     FObject: TObject;
