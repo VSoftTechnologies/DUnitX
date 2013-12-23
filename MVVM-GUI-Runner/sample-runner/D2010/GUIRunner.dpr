@@ -7,8 +7,6 @@ uses
   DUnitX.GUIRunnerForm in '..\..\run-time\view\DUnitX.GUIRunnerForm.pas' {mfmGUIRunner},
   DUnitX.BaseExecutive in '..\..\run-time\backplane\DUnitX.BaseExecutive.pas',
   DUnitX.uExecutive in '..\DUnitX.uExecutive.pas',
-  DUnitX.SBD.uServiceProvider in '..\..\Extenal-libraries\SBD-DependencyInjection\DUnitX.SBD.uServiceProvider.pas',
-  DUnitX.SBD.uServiceProviderImpl in '..\..\Extenal-libraries\SBD-DependencyInjection\DUnitX.SBD.uServiceProviderImpl.pas',
   DUnitX.ViewModel_VCLForms in '..\..\run-time\view-model\DUnitX.ViewModel_VCLForms.pas',
   DUnitX.ViewModel_Tree in '..\..\run-time\view-model\DUnitX.ViewModel_Tree.pas',
   DUnitX.viewModel_LoggerContainer in '..\..\run-time\view-model\DUnitX.viewModel_LoggerContainer.pas',
@@ -27,12 +25,12 @@ uses
   DUnitX.RunResults in '..\..\..\DUnitX.RunResults.pas',
   DUnitX.FixtureResult in '..\..\..\DUnitX.FixtureResult.pas',
   DUnitX.CommandLine in '..\..\..\DUnitX.CommandLine.pas',
-  DUnitX.SBD.uXMLUtils in '..\..\Extenal-libraries\SBD-XML-Utils\DUnitX.SBD.uXMLUtils.pas',
   DUnitX.Examples.General in '..\..\..\Examples\DUnitX.Examples.General.pas',
   DUnitX.DUnitCompatibility in '..\..\..\DUnitX.DUnitCompatibility.pas',
   DUnitX.VirtualTrees in '..\..\Extenal-libraries\VirtualTreeView\Source\DUnitX.VirtualTrees.pas',
   DUnitX.VTAccessibility in '..\..\Extenal-libraries\VirtualTreeView\Source\DUnitX.VTAccessibility.pas',
-  DUnitX.VTAccessibilityFactory in '..\..\Extenal-libraries\VirtualTreeView\Source\DUnitX.VTAccessibilityFactory.pas';
+  DUnitX.VTAccessibilityFactory in '..\..\Extenal-libraries\VirtualTreeView\Source\DUnitX.VTAccessibilityFactory.pas',
+  DUnitX.Utils.XML2 in '..\..\..\DUnitX.Utils.XML2.pas';
 
 {$R *.res}
 

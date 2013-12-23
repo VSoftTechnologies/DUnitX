@@ -32,7 +32,7 @@
 			<DCC_Optimize>false</DCC_Optimize>
 			<DCC_DependencyCheckOutputName>product\GUIRunner.exe</DCC_DependencyCheckOutputName>
 			<DCC_ExeOutput>.\product</DCC_ExeOutput>
-			<DCC_DcuOutput>..\..\dcu\D2010\$(Platform)</DCC_DcuOutput>
+			<DCC_DcuOutput>..\..\..\dcu\D2010\$(Platform)</DCC_DcuOutput>
 			<DCC_ImageBase>00400000</DCC_ImageBase>
 			<DCC_Platform>x86</DCC_Platform>
 		</PropertyGroup>
@@ -55,8 +55,6 @@
 			</DCCReference>
 			<DCCReference Include="..\..\run-time\backplane\DUnitX.BaseExecutive.pas"/>
 			<DCCReference Include="..\DUnitX.uExecutive.pas"/>
-			<DCCReference Include="..\..\Extenal-libraries\SBD-DependencyInjection\DUnitX.SBD.uServiceProvider.pas"/>
-			<DCCReference Include="..\..\Extenal-libraries\SBD-DependencyInjection\DUnitX.SBD.uServiceProviderImpl.pas"/>
 			<DCCReference Include="..\..\run-time\view-model\DUnitX.ViewModel_VCLForms.pas"/>
 			<DCCReference Include="..\..\run-time\view-model\DUnitX.ViewModel_Tree.pas"/>
 			<DCCReference Include="..\..\run-time\view-model\DUnitX.viewModel_LoggerContainer.pas"/>
@@ -78,12 +76,12 @@
 			<DCCReference Include="..\..\..\DUnitX.RunResults.pas"/>
 			<DCCReference Include="..\..\..\DUnitX.FixtureResult.pas"/>
 			<DCCReference Include="..\..\..\DUnitX.CommandLine.pas"/>
-			<DCCReference Include="..\..\Extenal-libraries\SBD-XML-Utils\DUnitX.SBD.uXMLUtils.pas"/>
 			<DCCReference Include="..\..\..\Examples\DUnitX.Examples.General.pas"/>
 			<DCCReference Include="..\..\..\DUnitX.DUnitCompatibility.pas"/>
 			<DCCReference Include="..\..\Extenal-libraries\VirtualTreeView\Source\DUnitX.VirtualTrees.pas"/>
 			<DCCReference Include="..\..\Extenal-libraries\VirtualTreeView\Source\DUnitX.VTAccessibility.pas"/>
 			<DCCReference Include="..\..\Extenal-libraries\VirtualTreeView\Source\DUnitX.VTAccessibilityFactory.pas"/>
+			<DCCReference Include="..\..\..\DUnitX.Utils.XML2.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

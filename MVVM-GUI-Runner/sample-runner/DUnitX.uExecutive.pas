@@ -8,7 +8,7 @@ function AcquireExecutive: IExecutive;
 implementation
 
 
-uses Classes, DUnitX.SBD.uServiceProvider, DUnitX.TestFramework, DUnitX.TestRunner,
+uses Classes, DUnitX.IoC, DUnitX.TestFramework, DUnitX.TestRunner,
      DUnitX.ViewModel_Tree, DUnitX.viewModel_LoggerContainer,
      DUnitX.uTestSuiteVirtualTree,
      DUnitX.Examples.General
@@ -29,11 +29,14 @@ end;
 
 procedure TExecutive.RegisterServices;
 begin
-// Dynamic content
-FServices.RegisterServiceClass( TTestSuiteVirtualTreeObj, IVisualTestSuiteTree);
+inherited;
 
-// FServices.RegisterServiceClass( ILoggerContainerFactory, ?)
-// FServices.ServiceAffinity[ ILoggerContainerFactory, ''] := afCooperative
+// Dynamic content
+FServices.RegisterType<IVisualTestSuiteTreeFactory>(
+  TTestSuiteVirtualTreeObj.IoCActivator(), '');
+
+// FServices.Resolve<ILoggerCentral>( '').Loggers.Add(
+//   TMyConcreteLoggerContainerFactory.Create)
 end;
 
 procedure TExecutive.RegisterTestFixtures;

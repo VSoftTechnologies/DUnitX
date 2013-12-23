@@ -11,6 +11,7 @@ object mfmGUIRunner: TmfmGUIRunner
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  OnCreate = FormCreate
   OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
@@ -31,9 +32,9 @@ object mfmGUIRunner: TmfmGUIRunner
     Height = 23
     ActionManager = actmngrMain
     Caption = 'Main ToolBar'
-    ColorMap.HighlightColor = clWhite
+    ColorMap.HighlightColor = 15660791
     ColorMap.BtnSelectedColor = clBtnFace
-    ColorMap.UnusedColor = clWhite
+    ColorMap.UnusedColor = 15660791
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
@@ -47,7 +48,21 @@ object mfmGUIRunner: TmfmGUIRunner
     Top = 592
     Width = 898
     Height = 19
-    Panels = <>
+    Panels = <
+      item
+        Alignment = taCenter
+        Text = 'Idle'
+        Width = 200
+      end
+      item
+        Alignment = taRightJustify
+        Text = 'Test cases = 0'
+        Width = 100
+      end
+      item
+        Text = 'of 1'
+        Width = 100
+      end>
   end
   object memoLog: TRichEdit
     Left = 0
@@ -136,27 +151,34 @@ object mfmGUIRunner: TmfmGUIRunner
       Category = 'Operation'
       Caption = 'Run'
       OnExecute = actRunExecute
-      OnUpdate = actRunUpdate
     end
     object actAbort: TAction
       Category = 'Operation'
       Caption = 'Abort'
+      OnExecute = actAbortExecute
+      OnUpdate = actAbortUpdate
     end
     object actSelectAll: TAction
       Category = 'Selection'
       Caption = 'Select all'
+      OnExecute = actSelectAllExecute
     end
     object actSelectFailed: TAction
       Category = 'Selection'
       Caption = 'Select failed'
+      OnExecute = actSelectFailedExecute
+      OnUpdate = actSelectFailedUpdate
     end
     object actClear: TAction
       Category = 'Selection'
       Caption = 'Clear selections'
+      OnExecute = actClearExecute
+      OnUpdate = actClearUpdate
     end
     object actToggleSelection: TAction
       Category = 'Selection'
       Caption = 'Toggle selections'
+      OnExecute = actToggleSelectionExecute
     end
     object actAttachLogger: TAction
       Category = 'Attach'
@@ -217,6 +239,11 @@ object mfmGUIRunner: TmfmGUIRunner
     object actAbout: TAction
       Category = 'Options'
       Caption = 'About ...'
+    end
+    object actClearLog: TAction
+      Category = 'Log'
+      Caption = 'Clear'
+      OnExecute = actClearLogExecute
     end
   end
   object coloursXP: TXPColorMap
@@ -372,5 +399,8 @@ object mfmGUIRunner: TmfmGUIRunner
   object popupLogMemo: TPopupActionBar
     Left = 400
     Top = 184
+    object miClearLog: TMenuItem
+      Action = actClearLog
+    end
   end
 end

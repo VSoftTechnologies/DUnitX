@@ -4,6 +4,8 @@ uses DUnitX.TestFramework, Forms, DUnitX.BaseExecutive, DUnitX.ViewModel_Tree,
      Classes, Controls, DUnitX.viewModel_LoggerContainer, Generics.Collections;
 
 type
+TPutLevel = (lvDebug, lvNormal, lvHighLight);
+
 IViewModel_VCLForms = interface( ITestLogger)
   ['{B9BF01AA-1877-4073-9E43-C4A72F8FA8FC}']
     procedure FormLoaded( Form: TCustomForm);
@@ -13,21 +15,69 @@ IViewModel_VCLForms = interface( ITestLogger)
     function  Model: ITestRunner;
     procedure Run;
     procedure AttachSecondaryLogger( const Addend: ITestLogger);
+    procedure ClearLog;
+    procedure Put( Level: TPutLevel; const Line: string);
+    procedure ToggleSelections;
+    procedure ClearSelections;
+    function  CanClearSelections: boolean;
+    procedure SelectAll;
+    procedure SelectFailed;
+    function  CanSelectFailed: boolean;
   end;
 
-TViewModel_VCLForms = class( TInterfacedObject, ITestLogger, IViewModel_VCLForms, IComponentContext)
+TSuiteRunnerState = (rsIdle, rsSettingUp, rsExecuting, rsTearingDown, rsBetweenTests);
+
+TViewModel_VCLForms = class( TInterfacedObject, ITestLogger, IViewModel_VCLForms)
   private
     FExecutive: IExecutive;
-    FModel: ITestRunner;
     FTree: IVisualTestSuiteTree;
+    FTestCaseCount: integer;
 
     function  Executive: IExecutive;
     function  Model: ITestRunner;
 
+  protected type
+    TNode = class abstract( TInterfacedObject, INodeRenderer)
+      protected
+        FToken: IVisualTestSuiteNode;
+        FModel: TViewModel_VCLForms;
+        FState: TVisualTestSuiteNodeState;
+
+        procedure Attached( const Node: IVisualTestSuiteNode);
+        procedure Detach;                                        virtual;
+        function  GetState: TVisualTestSuiteNodeState;           virtual;
+        function  GetKind: TVisualTestSuiteNodeKind;             virtual; abstract;
+        function  GetDisplayName: string;                        virtual; abstract;
+        function  GetFullCycleCount: integer;                    virtual; abstract;
+        function  GetDoneCycleCount: integer;                    virtual; abstract;
+        procedure SetChecked( Value: boolean; Source: TSetCheckedSource);  virtual; abstract;
+        function  IsChecked: boolean;                            virtual;
+      public
+        constructor Create( Model1: TViewModel_VCLForms);
+      end;
+
+
   protected
     FForm: TCustomForm;
     FSecondaryLoggerContainerFactories: TList<ILoggerContainerFactory>;
+    FModel: ITestRunner;
+    FState: TSuiteRunnerState;
+    FisInOperation: boolean;
 
+    function  FindFixtureNode( const Fixture: ITestFixtureInfo; var Finding: TNode): boolean;
+    function  FindTestCaseNode( const TestCase: ITestInfo; var Finding: TNode): boolean;
+
+    procedure FixtureStateChange(
+      const Fixture: ITestFixtureInfo;
+      ListeningOnStates: TVisualTestSuiteNodeStateSet;
+      NewState: TVisualTestSuiteNodeState);
+
+    procedure TestCaseStateChange(
+      const TestCase: ITestInfo;
+      ListeningOnStates: TVisualTestSuiteNodeStateSet;
+      NewState: TVisualTestSuiteNodeState);
+
+    procedure EnterOperation( isEntering: boolean);                                                   virtual;
     procedure FormLoaded( Form: TCustomForm);                                                         virtual;
     procedure FirstIdleEvent;                                                                         virtual;
     procedure FormDestroyed;                                                                          virtual;
@@ -54,17 +104,19 @@ TViewModel_VCLForms = class( TInterfacedObject, ITestLogger, IViewModel_VCLForms
     procedure OnTestingEnds( const RunResults: IRunResults);                                          virtual;
     function  AcquireExecutive: IExecutive;                                                           virtual;
 
-    // IComponentContext = interface
     function TreeOwner: TComponent;         virtual; abstract;
-    function IComponentContext.Owner = TreeOwner;
     function TreeParent: TWinControl;       virtual; abstract;
-    function IComponentContext.Parent = TreeParent;
     function TreeName: string;              virtual; abstract;
-    function IComponentContext.Name = TreeName;
 
     procedure IntegrateSecondariesIntoMenus;              virtual; abstract;
     procedure AttachVisualTree;                           virtual; abstract;
     procedure AttachSecondaryLogger( const Addend: ITestLogger);
+
+    procedure ClearLog;                                           virtual; abstract;
+    procedure Put( Level: TPutLevel; const Line: string);         virtual; abstract;
+    procedure SetDisplayState( Value: TSuiteRunnerState);         virtual;
+    procedure Breathe;                                            virtual; abstract;
+    procedure InitiateView( TestCaseCount: integer);              virtual;
 
   public
     constructor Create;
@@ -79,6 +131,18 @@ TViewModel_VCLForms = class( TInterfacedObject, ITestLogger, IViewModel_VCLForms
     procedure AcquireVisualTree;
     procedure PopulateTree;
     procedure Run;
+    procedure ToggleSelections;
+    procedure ClearSelections;
+    function  CanClearSelections: boolean;
+    procedure SelectAll;
+    procedure SelectFailed;
+    function  CanSelectFailed: boolean;
+    procedure SetClearAll( Value: boolean);
+
+  private type
+    TPerNode = reference to procedure( Leaf: TNode; var doBreak: boolean);
+  private
+    function  PerLeafNode( Proc: TPerNode): boolean; // Returns True if exit via PerNode break.
   end;
 
 
@@ -96,49 +160,35 @@ implementation
 
 
 
-uses DUnitX.uExecutive, DUnitX.SBD.uServiceProvider, DUnitX.InternalInterfaces;
+uses DUnitX.uExecutive, DUnitX.IoC, DUnitX.InternalInterfaces, SysUtils, Math;
 
 type
-TNode = class abstract( TInterfacedObject, INodeRenderer)
-  protected
-    FToken: IVisualTestSuiteNode;
-    FModel: TViewModel_VCLForms;
-
-    procedure Attached( const Node: IVisualTestSuiteNode);
-    procedure Detach;                                        virtual;
-    function  GetState: TVisualTestSuiteNodeState;           virtual; abstract;
-    function  GetKind: TVisualTestSuiteNodeKind;             virtual; abstract;
-    function  GetDisplayName: string;                        virtual; abstract;
-    function  GetFullCycleCount: integer;                    virtual; abstract;
-    function  GetDoneCycleCount: integer;                    virtual; abstract;
-  public
-    constructor Create( Model1: TViewModel_VCLForms);
-  end;
-
-TFixtureNode = class( TNode)
+TFixtureNode = class( TViewModel_VCLForms.TNode)
   protected
     FFixture: ITestFixture;
 
     procedure Detach;                                        override;
-    function  GetState: TVisualTestSuiteNodeState;           override;
     function  GetKind: TVisualTestSuiteNodeKind;             override;
     function  GetDisplayName: string;                        override;
     function  GetFullCycleCount: integer;                    override;
     function  GetDoneCycleCount: integer;                    override;
+    procedure SetChecked( Value: boolean; Source: TSetCheckedSource);  override;
+    function  IsChecked: boolean;                            override;
   public
     constructor Create( Model1: TViewModel_VCLForms; const Fixture1: ITestFixture);
   end;
 
-TTestCaseNode = class( TNode)
+TTestCaseNode = class( TViewModel_VCLForms.TNode)
   protected
     FTestCase: ITest;
 
     procedure Detach;                                        override;
-    function  GetState: TVisualTestSuiteNodeState;           override;
     function  GetKind: TVisualTestSuiteNodeKind;             override;
     function  GetDisplayName: string;                        override;
     function  GetFullCycleCount: integer;                    override;
     function  GetDoneCycleCount: integer;                    override;
+    procedure SetChecked( Value: boolean; Source: TSetCheckedSource);  override;
+    function  IsChecked: boolean;                            override;
   public
     constructor Create( Model1: TViewModel_VCLForms; const TestCase1: ITest);
   end;
@@ -156,6 +206,12 @@ end;
 procedure TViewModel_VCLForms.FormLoaded( Form: TCustomForm);
 begin
 AttachVCLForm( Form)
+end;
+
+
+procedure TViewModel_VCLForms.InitiateView( TestCaseCount: integer);
+begin
+SetDisplayState( rsIdle)
 end;
 
 
@@ -183,6 +239,7 @@ IntegrateSecondariesIntoMenus;              // Overriden in view
 AcquireVisualTree;
 AttachVisualTree;                           // Overriden in view
 PopulateTree;
+InitiateView( FTestCaseCount);
 FExecutive.StartUp
 end;
 
@@ -205,20 +262,17 @@ FModel.AddLogger( Addend)
 end;
 
 procedure TViewModel_VCLForms.AcquireVisualTree;
-var
-  InjectionOverride: IServiceProvider;
 begin
-InjectionOverride := StandardServiceProvider;
-InjectionOverride.RegisterLiveService( IComponentContext, self as IComponentContext);
-// The above sets up the tree's form owner, parent and component name.
-FExecutive.Services.Acquire( self, IVisualTestSuiteTree, FTree, '', InjectionOverride)
+FTree := FExecutive.Services.Resolve<IVisualTestSuiteTreeFactory>('')
+  .MakeVisualTestSuiteTree( TreeOwner, TreeParent, TreeName)
 end;
 
 procedure TViewModel_VCLForms.PopulateTree;
 var
   Fixture: ITestFixture;
+  TestCaseCount: integer;
 
-  procedure PopulateSubTree( const RootFixture: ITestFixture; const ParentVisualNode: IVisualTestSuiteNode);
+  procedure PopulateSubTree( const Fixture1: ITestFixture; const ParentVisualNode: IVisualTestSuiteNode);
   var
     FixtureContext : IVisualTestSuiteTreeChangeContext;
     TestCaseContext: IVisualTestSuiteTreeChangeContext;
@@ -226,31 +280,35 @@ var
     Addend: TNode;
     TestCase: ITest;
     Child: ITestFixture;
-    s: string;
   begin
-  s := RootFixture.Name;
   FixtureContext := FTree.Change( ParentVisualNode);
   for Newbie in FixtureContext.Append( 1) do
     begin
-    Addend := TFixtureNode.Create( self, RootFixture);
+    Addend := TFixtureNode.Create( self, Fixture1);
     Newbie.Datum := Pointer( Addend);
     FixtureContext.AttachRenderer( Newbie, Addend);
-    for Child in RootFixture.Children do
+    FTree.SetChecked( Newbie, False, csPopulation);
+    for Child in Fixture1.Children do
       PopulateSubTree( Child, Newbie);
-    for TestCase in RootFixture.Tests do
+    for TestCase in Fixture1.Tests do
       begin
       TestCaseContext := FTree.Change( Newbie);
       for TestCaseNewbs in TestCaseContext.Append(1) do
         begin
         Addend := TTestCaseNode.Create( self, TestCase);
+        if TestCase.Enabled then
+          Inc( FTestCaseCount);
         TestCaseNewbs.Datum := Pointer( Addend);
-        TestCaseContext.AttachRenderer( TestCaseNewbs, Addend)
+        TestCaseContext.AttachRenderer( TestCaseNewbs, Addend);
+        FTree.SetChecked( TestCaseNewbs, TestCase.Enabled, csPopulation);
         end
-      end
+      end;
+    FTree.SetChecked( Newbie, Fixture1.Enabled, csPostPopulate);
     end;
   end;
 
 begin
+FTestCaseCount := 0;
 FTree.BeforePopulate;
 for Fixture in FModel.BuildFixtures as ITestFixtureList do
   PopulateSubTree( Fixture, nil);
@@ -264,8 +322,31 @@ FExecutive.RegisterTestFixtures
 end;
 
 procedure TViewModel_VCLForms.Run;
+var
+  GenericNode: IVisualTestSuiteNode;
 begin
-FModel.Execute
+EnterOperation( True);
+try
+  for GenericNode in FTree.AllNodes do
+    begin
+    TNode( GenericNode.Datum).FState := sNeutral;
+    FTree.InvalidateRendering( GenericNode)
+    end;
+  Breathe;
+  FModel.Execute
+finally
+  EnterOperation( False)
+  end
+end;
+
+procedure TViewModel_VCLForms.SetDisplayState( Value: TSuiteRunnerState);
+begin
+FState := Value
+end;
+
+procedure TViewModel_VCLForms.EnterOperation( isEntering: boolean);
+begin
+FisInOperation := isEntering
 end;
 
 function TViewModel_VCLForms.Executive: IExecutive;
@@ -288,13 +369,11 @@ end;
 
 procedure TViewModel_VCLForms.LoadSecondaryLoggerContainerFactories;
 var
-  Gang: IInterfaceList;
-  Member: IInterface;
+  Factory: ILoggerContainerFactory;
 begin
 FSecondaryLoggerContainerFactories := TList<ILoggerContainerFactory>.Create;
-if FExecutive.Services.AcquireGang( Self, ILoggerContainerFactory, Gang) then
-  for Member in (Gang as IInterfaceListEx) do
-    FSecondaryLoggerContainerFactories.Add( Member as ILoggerContainerFactory)
+for Factory in FExecutive.Services.Resolve<ILoggerCentral>( '').Loggers do
+  FSecondaryLoggerContainerFactories.Add( Factory)
 end;
 
 function TViewModel_VCLForms.Model: ITestRunner;
@@ -302,148 +381,378 @@ begin
 result := FModel
 end;
 
-procedure TViewModel_VCLForms.OnBeginTest(const threadId: Cardinal;
-  const Test: ITestInfo);
-begin
 
+procedure TViewModel_VCLForms.OnTestingStarts(
+  const threadId, testCount, testActiveCount: Cardinal);
+begin
+Put( lvDebug, Format( 'Testing started. Test case count = %d. Active tests = %d.', [testCount, testActiveCount]));
+SetDisplayState( rsBetweenTests);
+Breathe
 end;
 
-procedure TViewModel_VCLForms.OnEndSetupFixture(const threadId: Cardinal;
-  const fixture: ITestFixtureInfo);
+function TViewModel_VCLForms.FindFixtureNode( const Fixture: ITestFixtureInfo; var Finding: TNode): boolean;
+var
+  GenericNode: IVisualTestSuiteNode;
+  Node: TNode;
+  AsInfo: ITestFixtureInfo;
 begin
-
+Finding := nil;
+for GenericNode in FTree.AllNodes do
+  begin
+  if assigned( GenericNode) then
+      Node := TNode( GenericNode.Datum)
+    else
+      Node := nil;
+  if (not assigned( Node)) or
+     (not (Node is TFixtureNode)) or
+     (not Supports( TFixtureNode( Node).FFixture, ITestFixtureInfo, AsInfo)) or
+     (AsInfo <> Fixture) then continue;
+  Finding := Node;
+  break
+  end;
+result := assigned( Finding)
 end;
 
-procedure TViewModel_VCLForms.OnEndSetupTest(const threadId: Cardinal;
-  const Test: ITestInfo);
-begin
 
+function TViewModel_VCLForms.FindTestCaseNode(
+  const TestCase: ITestInfo; var Finding: TNode): boolean;
+var
+  GenericNode: IVisualTestSuiteNode;
+  Node: TNode;
+  AsInfo: ITestInfo;
+begin
+Finding := nil;
+for GenericNode in FTree.AllNodes do
+  begin
+  if assigned( GenericNode) then
+      Node := TNode( GenericNode.Datum)
+    else
+      Node := nil;
+  if (not assigned( Node)) or
+     (not (Node is TTestCaseNode)) or
+     (not Supports( TTestCaseNode( Node).FTestCase, ITestInfo, AsInfo)) or
+     (AsInfo <> TestCase) then continue;
+  Finding := Node;
+  break
+  end;
+result := assigned( Finding)
 end;
 
-procedure TViewModel_VCLForms.OnEndTearDownFixture(const threadId: Cardinal;
-  const fixture: ITestFixtureInfo);
+procedure TViewModel_VCLForms.FixtureStateChange(
+  const Fixture: ITestFixtureInfo;
+  ListeningOnStates: TVisualTestSuiteNodeStateSet;
+  NewState: TVisualTestSuiteNodeState);
+var
+  Finding: TNode;
 begin
-
+if FindFixtureNode( Fixture, Finding) and
+  (Finding.FState in ListeningOnStates) then
+  begin
+  Finding.FState := NewState;
+  FTree.InvalidateRendering( Finding.FToken)
+  end;
+Breathe
 end;
 
-procedure TViewModel_VCLForms.OnEndTeardownTest(const threadId: Cardinal;
-  const Test: ITestInfo);
-begin
 
+procedure TViewModel_VCLForms.TestCaseStateChange(
+  const TestCase: ITestInfo;
+  ListeningOnStates: TVisualTestSuiteNodeStateSet;
+  NewState: TVisualTestSuiteNodeState);
+var
+  Finding: TNode;
+begin
+if FindTestCaseNode( TestCase, Finding) and
+  (Finding.FState in ListeningOnStates) then
+  begin
+  Finding.FState := NewState;
+  FTree.InvalidateRendering( Finding.FToken)
+  end;
+Breathe
 end;
 
-procedure TViewModel_VCLForms.OnEndTest(const threadId: Cardinal;
-  const Test: ITestResult);
-begin
 
+procedure TViewModel_VCLForms.OnStartTestFixture(
+  const threadId: Cardinal; const fixture: ITestFixtureInfo);
+begin
 end;
 
-procedure TViewModel_VCLForms.OnEndTestFixture(const threadId: Cardinal;
-  const results: IFixtureResult);
+procedure TViewModel_VCLForms.OnSetupFixture(
+  const threadId: Cardinal; const fixture: ITestFixtureInfo);
 begin
-
+FixtureStateChange( Fixture, [sNeutral, sRunning, sTearingDown, sPassed, sFailed, sWarned], sSettingUp)
 end;
 
-procedure TViewModel_VCLForms.OnExecuteTest(const threadId: Cardinal;
-  const Test: ITestInfo);
+procedure TViewModel_VCLForms.OnEndSetupFixture(
+  const threadId: Cardinal; const fixture: ITestFixtureInfo);
 begin
-
+FixtureStateChange( Fixture, [sSettingUp], sNeutral)
 end;
 
-procedure TViewModel_VCLForms.OnLog(const logType: TLogLevel;
-  const msg: string);
-begin
 
+
+procedure TViewModel_VCLForms.OnTearDownFixture(
+  const threadId: Cardinal; const fixture: ITestFixtureInfo);
+begin
+FixtureStateChange( Fixture, [sNeutral, sRunning, sSettingUp], sTearingDown)
 end;
 
-procedure TViewModel_VCLForms.OnSetupFixture(const threadId: Cardinal;
-  const fixture: ITestFixtureInfo);
+procedure TViewModel_VCLForms.OnEndTearDownFixture(
+  const threadId: Cardinal; const fixture: ITestFixtureInfo);
 begin
-
+FixtureStateChange( Fixture, [sTearingDown], sNeutral)
 end;
 
-procedure TViewModel_VCLForms.OnSetupTest(const threadId: Cardinal;
-  const Test: ITestInfo);
-begin
 
+
+procedure TViewModel_VCLForms.OnEndTestFixture(
+  const threadId: Cardinal; const results: IFixtureResult);
+var
+  NextState: TVisualTestSuiteNodeState;
+
+  function WorstResultOfChildren( const Fixture: IFixtureResult): TVisualTestSuiteNodeState;
+  var
+    Child: IFixtureResult;
+  begin
+  result := sNeutral;
+  for Child in Fixture.Children do
+    begin
+    if Child.ErrorCount > 0 then
+        begin
+        result := sError;
+        break
+        end
+      else if Child.FailureCount > 0 then
+        result := sFailed
+      else if (Child.PassCount > 0) and (result <> sFailed) then
+        result := sPassed;
+    result := TVisualTestSuiteNodeState( Math.Max( Ord( result), Ord( WorstResultOfChildren( Child))))
+    end;
+  end;
+
+begin
+if results.ErrorCount > 0 then
+    NextState := sError
+  else if results.FailureCount > 0 then
+    NextState := sFailed
+  else if results.PassCount > 0 then
+    NextState := sPassed
+  else
+    NextState := WorstResultOfChildren( results);
+FixtureStateChange( results.Fixture, [sNeutral, sRunning, sSettingUp, sTearingDown, sPassed, sFailed, sWarned], NextState)
 end;
 
-procedure TViewModel_VCLForms.OnStartTestFixture(const threadId: Cardinal;
-  const fixture: ITestFixtureInfo);
+procedure TViewModel_VCLForms.OnLog( const logType: TLogLevel; const msg: string);
+var
+  Lv: TPutLevel;
 begin
-
+case logType of
+  ltInformation: Lv := lvNormal;
+  ltWarning:     Lv := lvNormal;
+  ltError:       Lv := lvHighLight;
+  end;
+Put( lvDebug, msg)
 end;
 
-procedure TViewModel_VCLForms.OnTearDownFixture(const threadId: Cardinal;
-  const fixture: ITestFixtureInfo);
+procedure TViewModel_VCLForms.OnBeginTest(
+  const threadId: Cardinal; const Test: ITestInfo);
 begin
-
 end;
 
-procedure TViewModel_VCLForms.OnTeardownTest(const threadId: Cardinal;
-  const Test: ITestInfo);
+procedure TViewModel_VCLForms.OnSetupTest(
+  const threadId: Cardinal; const Test: ITestInfo);
 begin
-
+TestCaseStateChange( Test, [sSettingUp, sRunning, sTearingDown, sPassed, sFailed, sWarned, sError], sNeutral)
 end;
 
-procedure TViewModel_VCLForms.OnTestError(const threadId: Cardinal;
-  const Error: ITestError);
+procedure TViewModel_VCLForms.OnEndSetupTest(
+  const threadId: Cardinal; const Test: ITestInfo);
 begin
-
 end;
 
-procedure TViewModel_VCLForms.OnTestFailure(const threadId: Cardinal;
-  const Failure: ITestError);
+procedure TViewModel_VCLForms.OnExecuteTest(
+  const threadId: Cardinal; const Test: ITestInfo);
 begin
+TestCaseStateChange( Test, [sNeutral, sSettingUp, sTearingDown, sPassed, sFailed, sWarned, sError], sRunning)
+end;
 
+procedure TViewModel_VCLForms.OnTeardownTest(
+  const threadId: Cardinal; const Test: ITestInfo);
+begin
+TestCaseStateChange( Test, [sNeutral, sSettingUp, sRunning, sPassed, sFailed, sWarned, sError], sTearingDown)
+end;
+
+procedure TViewModel_VCLForms.OnEndTeardownTest(
+  const threadId: Cardinal; const Test: ITestInfo);
+begin
+end;
+
+procedure TViewModel_VCLForms.OnEndTest(
+  const threadId: Cardinal; const Test: ITestResult);
+var
+  Finding: TNode;
+  NewState: TVisualTestSuiteNodeState;
+begin
+if not FindTestCaseNode( Test.Test, Finding) then exit;
+case Test.ResultType of
+  TTestResultType.Pass      : NewState := sPassed;
+  TTestResultType.Failure   : NewState := sFailed;
+  TTestResultType.Error     : NewState := sError;
+  TTestResultType.Ignored   : NewState := sNeutral;
+  TTestResultType.MemoryLeak: NewState := sWarned;
+  end;
+TestCaseStateChange( Test.Test, [sNeutral, sSettingUp, sRunning, sTearingDown, sPassed, sFailed, sWarned, sError, sMessage], NewState)
+end;
+
+procedure TViewModel_VCLForms.OnTestError(
+  const threadId: Cardinal; const Error: ITestError);
+begin
+end;
+
+procedure TViewModel_VCLForms.OnTestFailure(
+  const threadId: Cardinal; const Failure: ITestError);
+begin
 end;
 
 procedure TViewModel_VCLForms.OnTestIgnored(const threadId: Cardinal;
   const AIgnored: ITestResult);
 begin
-
 end;
 
-procedure TViewModel_VCLForms.OnTestingEnds(const RunResults: IRunResults);
+procedure TViewModel_VCLForms.OnTestingEnds( const RunResults: IRunResults);
 begin
-
+Put( lvDebug, Format( 'Test count = %d', [RunResults.TestCount]));
+Put( lvDebug, Format( 'Failure count = %d', [RunResults.FailureCount]));
+Put( lvDebug, Format( 'Error count = %d', [RunResults.ErrorCount]));
+Put( lvDebug, Format( 'Ignored count = %d', [RunResults.IgnoredCount]));
+Put( lvDebug, Format( 'Pass count = %d', [RunResults.PassCount]));
+Put( lvDebug, Format( 'Memory leak count = %d', [RunResults.MemoryLeakCount]));
+Put( lvDebug, Format( 'Success rate = %d', [RunResults.SuccessRate]));
+Put( lvNormal, 'Testing finished. ');
+SetDisplayState( rsIdle)
 end;
 
-procedure TViewModel_VCLForms.OnTestingStarts(const threadId, testCount,
-  testActiveCount: Cardinal);
+procedure TViewModel_VCLForms.OnTestMemoryLeak(
+  const threadId: Cardinal; const AIgnored: ITestResult);
 begin
-
 end;
 
-procedure TViewModel_VCLForms.OnTestMemoryLeak(const threadId: Cardinal;
-  const AIgnored: ITestResult);
+procedure TViewModel_VCLForms.OnTestSuccess(
+  const threadId: Cardinal; const Test: ITestResult);
 begin
-
 end;
 
-procedure TViewModel_VCLForms.OnTestSuccess(const threadId: Cardinal;
-  const Test: ITestResult);
+function TViewModel_VCLForms.PerLeafNode( Proc: TPerNode): boolean;
+var
+  GenericNode: IVisualTestSuiteNode;
+  Child: IVisualTestSuiteNode;
+  Node: TNode;
+  isLeaf: boolean;
+  doBreak: boolean;
 begin
+result := False;
+for GenericNode in FTree.AllNodes do
+  begin
+  isLeaf := True;
+  for Child in FTree.Nodes( GenericNode) do
+    begin
+    isLeaf := False;
+    break
+    end;
+  if not isLeaf then continue;
+  Node := TNode( GenericNode.Datum);
+  Proc( Node, result);
+  if result then break
+  end
+end;
 
+
+function TViewModel_VCLForms.CanClearSelections: boolean;
+begin
+result := PerLeafNode( procedure( Leaf: TNode; var doBreak: boolean)
+  begin
+  doBreak := Leaf.IsChecked
+  end)
+end;
+
+function TViewModel_VCLForms.CanSelectFailed: boolean;
+begin
+result := PerLeafNode( procedure( Leaf: TNode; var doBreak: boolean)
+  begin
+  doBreak := Leaf.FState in [sError, sFailed]
+  end)
+end;
+
+procedure TViewModel_VCLForms.SetClearAll( Value: boolean);
+begin
+PerLeafNode( procedure( Leaf: TNode; var doBreak: boolean)
+  begin
+  doBreak := False;
+  Leaf.SetChecked( Value, csUser);
+  FTree.SetChecked( Leaf.FToken, Leaf.IsChecked, csUser)
+  end)
+end;
+
+procedure TViewModel_VCLForms.ClearSelections;
+begin
+SetClearAll( False)
+end;
+
+procedure TViewModel_VCLForms.SelectAll;
+begin
+SetClearAll( True)
+end;
+
+procedure TViewModel_VCLForms.SelectFailed;
+begin
+PerLeafNode( procedure( Leaf: TNode; var doBreak: boolean)
+  begin
+  doBreak := False;
+  if Leaf.FState in [sError, sFailed] then
+    begin
+    Leaf.SetChecked( True, csUser);
+    FTree.SetChecked( Leaf.FToken, Leaf.IsChecked, csUser)
+    end
+  end)
+end;
+
+procedure TViewModel_VCLForms.ToggleSelections;
+begin
+PerLeafNode( procedure( Leaf: TNode; var doBreak: boolean)
+  begin
+  doBreak := False;
+  Leaf.SetChecked( not Leaf.IsChecked, csUser);
+  FTree.SetChecked( Leaf.FToken, Leaf.IsChecked, csUser)
+  end)
 end;
 
 
 { TNode }
 
-procedure TNode.Attached( const Node: IVisualTestSuiteNode);
+procedure TViewModel_VCLForms.TNode.Attached( const Node: IVisualTestSuiteNode);
 begin
 FToken := Node
 end;
 
-constructor TNode.Create( Model1: TViewModel_VCLForms);
+constructor TViewModel_VCLForms.TNode.Create( Model1: TViewModel_VCLForms);
 begin
 FModel := Model1
 end;
 
-procedure TNode.Detach;
+procedure TViewModel_VCLForms.TNode.Detach;
 begin
 FModel := nil;
 FToken := nil
+end;
+
+function TViewModel_VCLForms.TNode.GetState: TVisualTestSuiteNodeState;
+begin
+result := FState
+end;
+
+function TViewModel_VCLForms.TNode.IsChecked: boolean;
+begin
+result := True
 end;
 
 { TFixtureNode }
@@ -452,7 +761,8 @@ constructor TFixtureNode.Create(
   Model1: TViewModel_VCLForms; const Fixture1: ITestFixture);
 begin
 inherited Create( Model1);
-FFixture := Fixture1
+FFixture := Fixture1;
+FState   := sNeutral
 end;
 
 procedure TFixtureNode.Detach;
@@ -482,10 +792,18 @@ begin
 result := nkTestFixture
 end;
 
-function TFixtureNode.GetState: TVisualTestSuiteNodeState;
+
+function TFixtureNode.IsChecked: boolean;
 begin
-// TODO:
-result := sNeutral
+result := FFixture.Enabled
+end;
+
+procedure TFixtureNode.SetChecked( Value: boolean; Source: TSetCheckedSource);
+begin
+if (Source = csUser) and (FFixture.Enabled <> Value) then
+  FFixture.Enabled := Value
+  // Assume it is successful.
+  // If not, we must test for failure and propagate back to the view
 end;
 
 { TTestCaseNode }
@@ -525,10 +843,18 @@ begin
 result := nkTestCase
 end;
 
-function TTestCaseNode.GetState: TVisualTestSuiteNodeState;
+
+function TTestCaseNode.IsChecked: boolean;
 begin
-// TODO:
-result := sNeutral
+result := FTestCase.Enabled
+end;
+
+procedure TTestCaseNode.SetChecked( Value: boolean; Source: TSetCheckedSource);
+begin
+if (Source = csUser) and (FTestCase.Enabled <> Value) then
+  FTestCase.Enabled := Value
+  // Assume it is successful.
+  // If not, we must test for failure and propagate back to the view
 end;
 
 end.

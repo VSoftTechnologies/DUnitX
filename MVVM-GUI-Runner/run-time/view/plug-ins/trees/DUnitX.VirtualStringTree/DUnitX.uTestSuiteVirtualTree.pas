@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
-  Dialogs, VirtualTrees, DUnitX.ViewModel_Tree, DUnitX.SBD.uServiceProvider,
+  Dialogs, VirtualTrees, DUnitX.ViewModel_Tree, DUnitX.IoC,
   ImgList;
 
 type
@@ -20,6 +20,7 @@ type
       Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
     procedure TreeInitNode(Sender: TBaseVirtualTree; ParentNode,
       Node: PVirtualNode; var InitialStates: TVirtualNodeInitStates);
+    procedure TreeChecked(Sender: TBaseVirtualTree; Node: PVirtualNode);
   private
      FObj:  TTestSuiteVirtualTreeObj;
   private const
@@ -27,20 +28,23 @@ type
       // nkNeutral, nkMessage, nkTestCase, nkTestFixture, nkGroup
                 -1,        -1,          0,             1,      -1);
     StateImages: array[ TVisualTestSuiteNodeState] of integer = (
-      // sNeutral, sSettingUp, sRunning, sTearingDown, sPassed, sFailed, sWarned, sMessage
-               -1,          -1,      -1,           -1,      -1,      -1,      -1,       -1);
+      // sNeutral, sSettingUp, sRunning, sTearingDown, sPassed, sFailed, sWarned, sError, sMessage
+               -1,          5,      7,           6,      2,      4,      3,            9,        8);
   end;
 
   TTestSuiteVirtualTreeObj = class( TInterfacedObject, IVisualTestSuiteTree)
   private
     FFrame: TTestSuiteVirtualTree;
     FTree: TVirtualStringTree;
+    FPopulating: boolean;
     function  FactoryDisplayName: string;
     function  Nodes( const Parent: IVisualTestSuiteNode): IEnumerable<IVisualTestSuiteNode>;
+    function  AllNodes: IEnumerable<IVisualTestSuiteNode>;
     function  Change( const Parent: IVisualTestSuiteNode): IVisualTestSuiteTreeChangeContext;
     procedure InvalidateRendering( const DeltaNode: IVisualTestSuiteNode);
     procedure BeforePopulate;
     procedure AfterPopulate;
+    procedure SetChecked( const Node: IVisualTestSuiteNode; Value: boolean; Source: TSetCheckedSource);
 
   private type
     TChangeContext = class( TInterfacedObject, IVisualTestSuiteTreeChangeContext)
@@ -58,11 +62,9 @@ type
         destructor Destroy; override;
       end;
 
-  private
-    [Injection] Context: IComponentContext;
-
   public
-    [Configuration] constructor ServiceModeCreate;
+    constructor CreateFromFactory( AOwner: TComponent; AParent: TWinControl; const AName: string);
+    class function IoCActivator: TActivatorDelegate<IVisualTestSuiteTreeFactory>;
     destructor Destroy; override;
   end;
 
@@ -129,33 +131,25 @@ TTestSuiteNodeCursor = class( TInterfacedObject, IEnumerator, IEnumerator<IVisua
   end;
 
 
-constructor TTestSuiteVirtualTreeObj.ServiceModeCreate;
+constructor TTestSuiteVirtualTreeObj.CreateFromFactory( AOwner: TComponent; AParent: TWinControl; const AName: string);
 var
   Owner: TComponent;
   Parent: TWinControl;
 begin
+FPopulating := False;
 FFrame := TTestSuiteVirtualTree.Create( nil);
 FFrame.FObj := self;
 FTree := FFrame.Tree;
 FFrame.RemoveComponent( FTree);
 FFrame.RemoveControl( FTree);
 FTree.NodeDataSize := SizeOf( RNodeDatum);
-if assigned( Context) then
-    begin
-    Owner := Context.Owner;
-    Parent := Context.Parent;
-    FTree.Name := Context.Name;
-    if assigned( Owner) and (Owner is TWinControl) and (not assigned( Parent)) then
-      Parent := Owner as TWinControl;
-    if assigned( Parent) and (not assigned( Owner)) then
-      Owner := Parent;
-    Context := nil
-    end
-  else
-    begin
-    Owner  := nil;
-    Parent := nil
-    end;
+Owner := AOwner;
+Parent := AParent;
+FTree.Name := AName;
+if assigned( Owner) and (Owner is TWinControl) and (not assigned( Parent)) then
+  Parent := Owner as TWinControl;
+if assigned( Parent) and (not assigned( Owner)) then
+  Owner := Parent;
 if assigned( Owner) then
   Owner.InsertComponent( FTree);
 if assigned( Parent) then
@@ -185,6 +179,25 @@ begin
 FTree.InvalidateNode( (DeltaNode as IVisualTestSuiteNodeEx).GetNode)
 end;
 
+type
+TVisualTestSuiteTreeFactory = class( TInterfacedObject, IVisualTestSuiteTreeFactory)
+  private
+    function MakeVisualTestSuiteTree( AOwner: TComponent; AParent: TWinControl; const AName: string): IVisualTestSuiteTree;
+  end;
+
+function TVisualTestSuiteTreeFactory.MakeVisualTestSuiteTree( AOwner: TComponent; AParent: TWinControl; const AName: string): IVisualTestSuiteTree;
+begin
+result := TTestSuiteVirtualTreeObj.CreateFromFactory( AOwner, AParent, AName)
+end;
+
+class function TTestSuiteVirtualTreeObj.IoCActivator: TActivatorDelegate<IVisualTestSuiteTreeFactory>;
+begin
+result := function: IVisualTestSuiteTreeFactory
+  begin
+  result := TVisualTestSuiteTreeFactory.Create
+  end
+end;
+
 function TTestSuiteVirtualTreeObj.Nodes(
   const Parent: IVisualTestSuiteNode): IEnumerable<IVisualTestSuiteNode>;
 var
@@ -197,8 +210,67 @@ if assigned( Parent) then
 result := TTestSuiteNodeList.Create( FTree, ParentV, nil, MaxInt)
 end;
 
+type
+TTestSuiteAllNodes = class( TInterfacedObject, IEnumerable<IVisualTestSuiteNode>)
+  private
+    FNodesRec: TVTVirtualNodeEnumeration;
+    FTree: TBaseVirtualTree;
+    function GetEnumerator: IEnumerator;
+    function GetEnumeratorIntf: IEnumerator<IVisualTestSuiteNode>;
+    function IEnumerable<IVisualTestSuiteNode>.GetEnumerator = GetEnumeratorIntf;
+
+  private type
+    TTestSuiteAllNodesCursor = class( TInterfacedObject, IEnumerator, IEnumerator<IVisualTestSuiteNode>)
+      private
+        FEnumaratorRec: TVTVirtualNodeEnumerator;
+        FTree: TBaseVirtualTree;
+        function  GetCurrent: TObject;
+        function  MoveNext: Boolean;
+        procedure Reset;
+        function  GetCurrentIntf: IVisualTestSuiteNode;
+        function  IEnumerator<IVisualTestSuiteNode>.GetCurrent = GetCurrentIntf;
+      public
+        constructor Create( Tree1: TBaseVirtualTree; Enum: TVTVirtualNodeEnumerator);
+      end;
+
+  public
+    constructor Create( Tree1: TBaseVirtualTree; Nodes: TVTVirtualNodeEnumeration);
+  end;
+
+function TTestSuiteVirtualTreeObj.AllNodes: IEnumerable<IVisualTestSuiteNode>;
+begin
+result := TTestSuiteAllNodes.Create( FTree, FTree.Nodes(False))
+end;
 
 
+
+procedure TTestSuiteVirtualTreeObj.SetChecked(
+  const Node: IVisualTestSuiteNode;
+  Value: boolean; Source: TSetCheckedSource);
+var
+  InitialCheckState: TCheckState;
+  NextCheckState: TCheckState;
+  DemandedCheckState: TCheckState;
+begin
+InitialCheckState := FTree.CheckState[ (Node as IVisualTestSuiteNodeEx).GetNode];
+case Value of
+  False: DemandedCheckState := csUncheckedNormal;
+  True : DemandedCheckState := csCheckedNormal;
+  end;
+case Source of
+  csPopulation, csUser  :
+    NextCheckState := DemandedCheckState;
+  csPostPopulate:
+    begin
+    case InitialCheckState of
+      csMixedNormal, csMixedPressed: NextCheckState := InitialCheckState;
+      else                           NextCheckState := DemandedCheckState;
+      end
+    end;
+end;
+if NextCheckState <> InitialCheckState then
+  FTree.CheckState[ (Node as IVisualTestSuiteNodeEx).GetNode] := NextCheckState
+end;
 
 constructor TTestSuiteVirtualTreeObj.TChangeContext.Create(
   TreeObj1: TTestSuiteVirtualTreeObj; const Parent1: IVisualTestSuiteNode);
@@ -267,6 +339,7 @@ end;
 
 procedure TTestSuiteVirtualTreeObj.BeforePopulate;
 begin
+FPopulating := True;
 FTree.BeginUpdate;
 FTree.Clear
 end;
@@ -277,7 +350,20 @@ var
 begin
 for Node in FTree.Nodes do
   FTree.Expanded[ Node] := True;
-FTree.EndUpdate
+FTree.EndUpdate;
+FPopulating := False
+end;
+
+procedure TTestSuiteVirtualTree.TreeChecked(
+  Sender: TBaseVirtualTree; Node: PVirtualNode);
+var
+  DatumRec: PNodeDatum;
+begin
+if FObj.FPopulating then exit;
+DatumRec := Sender.GetNodeData( Node);
+if assigned( DatumRec^.FRenderer) then
+  DatumRec^.FRenderer.SetChecked( Node^.CheckState in
+   [csCheckedNormal, csCheckedPressed, csMixedNormal, csMixedPressed], csUser)
 end;
 
 procedure TTestSuiteVirtualTree.TreeFreeNode(
@@ -337,10 +423,9 @@ case Column of
   end;
 end;
 
-procedure TTestSuiteVirtualTree.TreeInitNode(Sender: TBaseVirtualTree; ParentNode,
+procedure TTestSuiteVirtualTree.TreeInitNode( Sender: TBaseVirtualTree; ParentNode,
   Node: PVirtualNode; var InitialStates: TVirtualNodeInitStates);
 begin
-//
 end;
 
 { TVisualTestSuiteNode }
@@ -425,12 +510,7 @@ end;
 function TTestSuiteNodeCursor.MoveNext: boolean;
 var
   NextV: PVirtualNode;
-  s: string;
 begin
-if FTree.ChildCount[ FParentV] >= 2 then
-  begin
-  s := '1';
-  end;
 if assigned( FCurrentV) then
     NextV := FCurrentV^.NextSibling
   else if (not assigned( FStartV)) and assigned( FParentV) then
@@ -445,5 +525,53 @@ FCurrentV := NextV;
 Inc( FIndex)
 end;
 
+
+{ TTestSuiteAllNodes }
+
+constructor TTestSuiteAllNodes.Create( Tree1: TBaseVirtualTree; Nodes: TVTVirtualNodeEnumeration);
+begin
+FTree     := Tree1;
+FNodesRec := Nodes
+end;
+
+function TTestSuiteAllNodes.GetEnumerator: IEnumerator;
+begin
+result := nil
+end;
+
+function TTestSuiteAllNodes.GetEnumeratorIntf: IEnumerator<IVisualTestSuiteNode>;
+begin
+result := TTestSuiteAllNodesCursor.Create( FTree, FNodesRec.GetEnumerator)
+end;
+
+{ TTestSuiteAllNodes.TTestSuiteAllNodesCursor }
+
+constructor TTestSuiteAllNodes.TTestSuiteAllNodesCursor.Create( Tree1: TBaseVirtualTree; Enum: TVTVirtualNodeEnumerator);
+begin
+FTree          := Tree1;
+FEnumaratorRec := Enum
+end;
+
+function TTestSuiteAllNodes.TTestSuiteAllNodesCursor.GetCurrent: TObject;
+begin
+result := nil
+end;
+
+function TTestSuiteAllNodes.TTestSuiteAllNodesCursor.GetCurrentIntf: IVisualTestSuiteNode;
+var
+  DatumRec: PNodeDatum;
+begin
+DatumRec := FTree.GetNodeData( FEnumaratorRec.Current);
+result   := DatumRec^.FToken
+end;
+
+function TTestSuiteAllNodes.TTestSuiteAllNodesCursor.MoveNext: Boolean;
+begin
+result := FEnumaratorRec.MoveNext
+end;
+
+procedure TTestSuiteAllNodes.TTestSuiteAllNodesCursor.Reset;
+begin
+end;
 
 end.

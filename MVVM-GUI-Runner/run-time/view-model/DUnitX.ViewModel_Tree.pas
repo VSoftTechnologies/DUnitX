@@ -4,15 +4,9 @@ uses Classes, Controls;
 
 type
 
-TVisualTestSuiteNodeState = (sNeutral, sSettingUp, sRunning, sTearingDown, sPassed, sFailed, sWarned, sMessage);
+TVisualTestSuiteNodeState = (sNeutral, sSettingUp, sRunning, sTearingDown, sPassed, sFailed, sWarned, sError, sMessage);
+TVisualTestSuiteNodeStateSet = set of TVisualTestSuiteNodeState;
 TVisualTestSuiteNodeKind = (nkNeutral, nkMessage, nkTestCase, nkTestFixture, nkGroup);
-
-IComponentContext = interface
-  ['{472CEC6B-C562-48B3-A797-EF26D96E8C05}']
-    function Owner: TComponent;
-    function Parent: TWinControl;
-    function Name: string;
-  end;
 
 IVisualTestSuiteNode = interface
   ['{660A0B5D-7DCC-4C62-B3A2-54CD873DCDC5}']
@@ -25,6 +19,7 @@ IVisualTestSuiteNode = interface
 
 TInserPosition = (iBefore, iAfter);
 
+TSetCheckedSource = (csPopulation, csPostPopulate, csUser);
 INodeRenderer = interface
   ['{1C46A49A-44C3-4505-B7A7-D46D7B1AFC51}']
     procedure Attached( const Node: IVisualTestSuiteNode);
@@ -34,6 +29,7 @@ INodeRenderer = interface
     function  GetDisplayName: string;
     function  GetFullCycleCount: integer;
     function  GetDoneCycleCount: integer;
+    procedure SetChecked( Value: boolean; Source: TSetCheckedSource);
   end;
 
 IVisualTestSuiteTreeChangeContext = interface
@@ -50,10 +46,17 @@ IVisualTestSuiteTree = interface
   // When constructed by a ServiceProvider, IComponentContext may be injected as a data member.
     function  FactoryDisplayName: string;
     function  Nodes( const Parent: IVisualTestSuiteNode): IEnumerable<IVisualTestSuiteNode>;
+    function  AllNodes: IEnumerable<IVisualTestSuiteNode>;
     function  Change( const Parent: IVisualTestSuiteNode): IVisualTestSuiteTreeChangeContext;
     procedure InvalidateRendering( const DeltaNode: IVisualTestSuiteNode);
     procedure BeforePopulate;
     procedure AfterPopulate;
+    procedure SetChecked( const Node: IVisualTestSuiteNode; Value: boolean; Source: TSetCheckedSource);
+  end;
+
+IVisualTestSuiteTreeFactory = interface
+  ['{991B77D7-E057-47FB-8B9B-0A2253AB1168}']
+    function MakeVisualTestSuiteTree( AOwner: TComponent; AParent: TWinControl; const AName: string): IVisualTestSuiteTree;
   end;
 
 implementation

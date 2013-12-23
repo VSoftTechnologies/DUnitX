@@ -1,6 +1,6 @@
 unit DUnitX.viewModel_LoggerContainer;
 interface
-uses DUnitX.TestFramework;
+uses DUnitX.TestFramework, Generics.Collections;
 
 type
 
@@ -11,6 +11,11 @@ ILoggerContainerFactory = interface
     procedure DisplayProperties( const Logger: ITestLogger; const Properties: IInterface);
   end;
 
+
+ILoggerCentral = interface
+  ['{CEE386E2-36D1-4D40-AB47-1AE1B2234A65}']
+    function Loggers: TList<ILoggerContainerFactory>;
+  end;
 
 implementation
 
