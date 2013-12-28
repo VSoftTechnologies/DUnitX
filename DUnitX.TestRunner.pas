@@ -100,9 +100,9 @@ type
     procedure ExecuteTests(const context : ITestExecuteContext; const threadId: Cardinal; const fixture: ITestFixture; const fixtureResult : IFixtureResult);
 
     function ExecuteTest(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const memoryAllocationProvider : IMemoryLeakMonitor) : ITestResult;
-    function ExecuteSuccessfulResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const message: string = '') : ITestResult;
-    function ExecuteFailureResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const exception : Exception) : ITestError;
-    function ExecuteErrorResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const exception : Exception) : ITestError;
+    function ExecuteSuccessfulResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const TimesRun : Cardinal;const message: string = '') : ITestResult;
+    function ExecuteFailureResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest;const TimesRun : Cardinal; const exception : Exception) : ITestError;
+    function ExecuteErrorResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const TimesRun : Cardinal;const exception : Exception) : ITestError;
     function ExecuteIgnoredResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const ignoreReason : string) : ITestResult;
 
     function CheckMemoryAllocations(const test: ITest; out errorResult: ITestResult; const memoryAllocationProvider : IMemoryLeakMonitor) : boolean;
@@ -343,19 +343,19 @@ begin
   begin
     // The leak occurred in the setup/teardown
     Result := False;
-    errorResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.MemoryLeak, Format('%d bytes were leaked in the setup/teardown methods', [LSetUpMemoryAllocated + LTearDownMemoryAllocated]));
+    errorResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.MemoryLeak,1, Format('%d bytes were leaked in the setup/teardown methods', [LSetUpMemoryAllocated + LTearDownMemoryAllocated]));
   end
   else if (LSetUpMemoryAllocated + LTearDownMemoryAllocated = 0) then
   begin
     // The leak occurred in the test only
     Result := False;
-    errorResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.MemoryLeak, Format('%d bytes were leaked in the test method', [LTestMemoryAllocated]));
+    errorResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.MemoryLeak,1, Format('%d bytes were leaked in the test method', [LTestMemoryAllocated]));
   end
   else
   begin
     // The leak occurred in the setup/teardown/test
     Result := False;
-    errorResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.MemoryLeak, Format('%d bytes were leaked in the setup/test/teardown methods', [LSetUpMemoryAllocated + LTestMemoryAllocated + LTearDownMemoryAllocated]));
+    errorResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.MemoryLeak,1, Format('%d bytes were leaked in the setup/test/teardown methods', [LSetUpMemoryAllocated + LTestMemoryAllocated + LTearDownMemoryAllocated]));
   end;
 end;
 
@@ -591,9 +591,9 @@ end;
 
 function TDUnitXTestRunner.ExecuteErrorResult(
   const context: ITestExecuteContext; const threadId: cardinal;
-  const test: ITest; const exception: Exception) : ITestError;
+  const test: ITest; const TimesRun : Cardinal;const exception: Exception) : ITestError;
 begin
-  Result := TDUnitXTestError.Create(test as ITestInfo, TTestResultType.Error, exception, ExceptAddr, exception.Message);
+  Result := TDUnitXTestError.Create(test as ITestInfo, TTestResultType.Error, exception, ExceptAddr, TimesRun, exception.Message);
 end;
 
 class function TDUnitXTestRunner.GetActiveRunner: ITestRunner;
@@ -604,10 +604,10 @@ end;
 
 function TDUnitXTestRunner.ExecuteFailureResult(
   const context: ITestExecuteContext; const threadId: cardinal;
-  const test: ITest; const exception : Exception) : ITestError;
+  const test: ITest; const TimesRun : Cardinal; const exception : Exception) : ITestError;
 begin
   //TODO: Does test failure require its own results interface and class?
-  Result := TDUnitXTestError.Create(test as ITestInfo, TTestResultType.Failure, exception, ExceptAddr, exception.Message);
+  Result := TDUnitXTestError.Create(test as ITestInfo, TTestResultType.Failure, exception, ExceptAddr, TimesRun, exception.Message);
 end;
 
 procedure TDUnitXTestRunner.ExecuteFixtures(const parentFixtureResult : IFixtureResult; const context: ITestExecuteContext; const threadId: Cardinal; const fixtures: ITestFixtureList);
@@ -648,7 +648,7 @@ end;
 
 function TDUnitXTestRunner.ExecuteIgnoredResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const ignoreReason: string): ITestResult;
 begin
-  result := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Ignored, ignoreReason);
+  result := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Ignored, 0,ignoreReason);
 end;
 
 procedure TDUnitXTestRunner.ExecuteSetupFixtureMethod(const threadid: cardinal; const fixture : ITestFixture);
@@ -668,9 +668,9 @@ begin
   end;
 end;
 
-function TDUnitXTestRunner.ExecuteSuccessfulResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const message: string) : ITestResult;
+function TDUnitXTestRunner.ExecuteSuccessfulResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const TimesRun : Cardinal;const message: string) : ITestResult;
 begin
-  Result := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Pass, message);
+  Result := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Pass, TimesRun,message);
 end;
 
 procedure TDUnitXTestRunner.ExecuteTearDownFixtureMethod(
@@ -705,7 +705,7 @@ begin
       memoryAllocationProvider.PostTest;
     end;
 
-    Result := ExecuteSuccessfulResult(context, threadId, test,FLogMessages.Text);
+    Result := ExecuteSuccessfulResult(context, threadId, test,1,FLogMessages.Text);
     FLogMessages.Clear;
   end
   else
@@ -724,6 +724,9 @@ var
   tearDownResult : ITestResult;
   memoryAllocationResult : ITestResult;
   memoryAllocationProvider : IMemoryLeakMonitor;
+  runCount : Cardinal;
+  runIndex : Cardinal;
+  successMsg : TStringBuilder;
 begin
   tests := fixture.Tests;
   for test in tests do
@@ -750,21 +753,45 @@ begin
         testResult := setupResult;
 
     try
+      runCount := 0;
+      successMsg := TStringBuilder.Create;
+      try
       try
         if test.Ignored then
             testResult :=  ExecuteIgnoredResult(context,threadId,test,test.IgnoreReason)
        //If we haven't already failed, then run the test.
         else if testResult = nil then
-           testResult := ExecuteTest(context, threadId, test, memoryAllocationProvider);
+        begin
+           for runIndex := 1 to test.RepeatCount do
+           begin
+              inc(runCount);
+              try
+                testResult := ExecuteTest(context, threadId, test, memoryAllocationProvider);
+                successMsg.Append(testResult.Message).AppendLine;
+              except
+                on e: ETestPass do
+                begin
+                   successMsg.Append(E.Message).AppendLine;
+                   // if last time through on sucess re-raise same message.
+                   if runIndex = test.RepeatCount then
+                       raise;
+                end
+                else raise;
+              end;
+           end;
+        end;
 
       except
         //Handle the results which are raised in the test.
         on e: ETestPass do
-          testResult := ExecuteSuccessfulResult(context, threadId, test, e.Message);
+          testResult := ExecuteSuccessfulResult(context, threadId, test,runCount, successMsg.ToString );
         on e: ETestFailure do
-          testResult := ExecuteFailureResult(context, threadId, test, e);
+          testResult := ExecuteFailureResult(context, threadId, test, runCount,e);
         on e: Exception do
-          testResult := ExecuteErrorResult(context, threadId, test, e);
+          testResult := ExecuteErrorResult(context, threadId, test,runCount, e);
+      end;
+      finally
+        successMsg.Free;
       end;
 
       //If the tear down fails then we need to show this as the test result.
@@ -804,7 +831,7 @@ begin
     except
       on e: SysUtils.Exception do
       begin
-        errorResult := ExecuteErrorResult(context, threadId, test, e);
+        errorResult := ExecuteErrorResult(context, threadId, test, 1, e);
       end;
     end;
   end;
@@ -829,7 +856,7 @@ begin
   except
     on e: SysUtils.Exception do
     begin
-      errorResult := ExecuteErrorResult(context, threadId, test, e);
+      errorResult := ExecuteErrorResult(context, threadId, test, 1, e);
     end;
   end;
 end;

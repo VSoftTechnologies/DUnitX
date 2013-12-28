@@ -156,9 +156,11 @@ type
   ///	  Marks a test method to be repeated count times.
   ///	</summary>
   ///	<remarks>
-  ///	  NOT IMPLEMENTED
+  ///   Note: Will not work with methods that have [TestCase] Attribute.
+  ///	  Note: If [RepeatTest(0]] used then then the test will be skipped
+  ///   and behaves similar to the IgnoreAttribute
   ///	</remarks>
-  RepeatAttribute = class(TCustomAttribute)
+  RepeatTestAttribute = class(TCustomAttribute)
   private
     FCount : Cardinal;
   public
@@ -411,6 +413,7 @@ type
     function GetResultType : TTestResultType;
     function GetMessage : string;
     function GetStackTrace : string;
+    function GetTimesRun : Cardinal;
 
     //Test
     property Test : ITestInfo read GetTest;
@@ -420,6 +423,7 @@ type
     property ResultType : TTestResultType read GetResultType;
     property Message : string read GetMessage;
     property StackTrace : string read GetStackTrace;
+    property TimesRun : Cardinal read GetTimesRun;
 
   end;
   {$M-}
@@ -1504,7 +1508,7 @@ end;
 
 { RepeatAttribute }
 
-constructor RepeatAttribute.Create(const ACount: Cardinal);
+constructor RepeatTestAttribute.Create(const ACount: Cardinal);
 begin
   FCount := ACount;
 end;

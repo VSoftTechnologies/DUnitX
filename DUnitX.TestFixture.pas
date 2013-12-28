@@ -156,6 +156,8 @@ end;
 
 
 procedure TDUnitXTestFixture.GenerateFixtureFromClass;
+const
+ REPEAT_ZERO_MSG = 'Repeat Set to 0 Test Ignored';
 var
   rType : TRttiType;
   rBaseType : TRttiType;
@@ -173,7 +175,12 @@ var
   testCaseAttrib  : TestCaseAttribute;
   testEnabled     : boolean;
   ignoredAttrib   : IgnoreAttribute;
+  ignoredTest     : boolean;
+  ignoredReason   : String;
   IgnoreMemoryLeak: IgnoreMemoryLeaks;
+  repeatAttrib    : RepeatTestAttribute;
+  repeatCount     : Cardinal;
+
 begin
   rType := FRttiContext.GetType(FTestClass);
   System.Assert(rType <> nil);
@@ -258,11 +265,38 @@ begin
                 ((attribute.ClassType <> TestAttribute) and (method.Visibility = TMemberVisibility.mvPublished) and (not method.HasAttributeOfType<TestAttribute>)) then
         begin
           ignoredAttrib := method.GetAttributeOfType<IgnoreAttribute>;
+          repeatAttrib := method.GetAttributeOfType<RepeatTestAttribute>;
+          if (repeatAttrib <> nil)  then
+            repeatCount := repeatAttrib.Count
+          else
+            repeatCount := 1;
+
+          // Determine if test should be ignored and why
+          if (ignoredAttrib <> nil) then
+          begin
+            ignoredTest := true;
+            ignoredReason := ignoredAttrib.Reason;
+            RepeatCount := 1; // If ignored, we don't want the ignore reason, x number of times in the log
+          end
+          else
+          begin
+            if repeatCount = 0 then
+            begin
+              ignoredTest := true;
+              ignoredReason := REPEAT_ZERO_MSG;
+            end
+            else
+            begin
+              ignoredTest := false;
+              ignoredReason := '';
+            end;
+          end;
+
           if attribute.ClassType = TestAttribute then
           begin
             testEnabled := TestAttribute(attribute).Enabled;
 
-            if testEnabled and (ignoredAttrib = nil) then
+            if testEnabled and (Not ignoredTest) then
               //find out if the test fixture has test cases.
               testCases := method.GetAttributesOfType<TestCaseAttribute>;
 
@@ -283,10 +317,7 @@ begin
             end
             else
             begin
-              if ignoredAttrib <> nil then
-                newTest := TDUnitXTest.Create(Self, method.Name, TTestMethod(meth),testEnabled,true,ignoredAttrib.Reason)
-              else
-                newTest := TDUnitXTest.Create(Self, method.Name, TTestMethod(meth),testEnabled);
+              newTest := TDUnitXTest.Create(Self, method.Name, TTestMethod(meth),testEnabled,RepeatCount, ignoredTest,ignoredReason);
 
               if method.TryGetAttributeOfType<IgnoreMemoryLeaks>(IgnoreMemoryLeak) then
                 newTest.IgnoreMemoryLeaks := IgnoreMemoryLeak.IgnoreMemoryLeaks
@@ -298,10 +329,7 @@ begin
           end
           else
           begin
-            if ignoredAttrib <> nil then
-              newTest := TDUnitXTest.Create(Self, method.Name, TTestMethod(meth),true,true,ignoredAttrib.Reason)
-            else
-              newTest := TDUnitXTest.Create(Self, method.Name, TTestMethod(meth),true);
+            newTest := TDUnitXTest.Create(Self, method.Name, TTestMethod(meth),true,repeatCount, ignoredTest, ignoredReason);
 
             if method.TryGetAttributeOfType<IgnoreMemoryLeaks>(IgnoreMemoryLeak) then
               newTest.IgnoreMemoryLeaks := IgnoreMemoryLeak.IgnoreMemoryLeaks
