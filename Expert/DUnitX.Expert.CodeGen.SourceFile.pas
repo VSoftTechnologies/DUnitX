@@ -29,7 +29,7 @@ unit DUnitX.Expert.CodeGen.SourceFile;
 interface
 
 uses
-  System.SysUtils, System.Classes, ToolsAPI;
+  SysUtils, Classes, ToolsAPI;
 
 type
   TSourceFile = class(TInterfacedObject, IOTAFile)

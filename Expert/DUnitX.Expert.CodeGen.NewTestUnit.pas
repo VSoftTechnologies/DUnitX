@@ -28,6 +28,7 @@ uses
 constructor TNewTestUnit.Create(ACreateSetupTearDown,
   ACreateSampleMethods: boolean;ATestFixureClassName : String);
 begin
+  Assert(Length(ATestFixureClassName) > 0);
   FAncestorName := '';
   FFormName := '';
   FImplFileName := '';
@@ -44,10 +45,10 @@ var
   lSetupTearDownImpl : string;
   lSampleIntf : string;
   lSampleImpl : string;
+  lUnitIdent, lFormName, lFileName : String;
 begin
    if FCreateSetupTearDown then
    begin
-     ShowMessage('1');
      lSetupTearDownIntf := SSetupTearDownIntf;
      lSetupTearDownImpl := Format(SSetupTearDownImpl,[FTestFixureClassName]);
    end
@@ -59,7 +60,6 @@ begin
 
    if FCreateSampleMethods then
    begin
-     ShowMessage('2');
      lSampleIntf := SSampleMethodsIntf;
      lSampleImpl := Format(SSampleMethodsImpl,[FTestFixureClassName]);
    end
@@ -69,10 +69,13 @@ begin
      lSampleImpl := '';
    end;
 
-   ShowMessage('3');
-   TSourceFile.Create(STestUnit,[ModuleIdent,FTestFixureClassName,lSetupTearDownIntf,
-                                 lSampleIntf,lSetupTearDownImpl,lSampleImpl]);
-   ShowMessage('4');
+   //ModuleIdent is blank for some reason.
+   // http://stackoverflow.com/questions/4196412/how-do-you-retrieve-a-new-unit-name-from-delphis-open-tools-api
+   // So using method mentioned by Marco Cantu.
+   (BorlandIDEServices as IOTAModuleServices).GetNewModuleAndClassName( '', lUnitIdent, lFormName, lFileName);
+   result := TSourceFile.Create(STestUnit,[lUnitIdent,FTestFixureClassName,lSetupTearDownIntf,
+                                           lSampleIntf,lSetupTearDownImpl,lSampleImpl]);
+
 end;
 
 end.

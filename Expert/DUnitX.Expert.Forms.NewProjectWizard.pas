@@ -3,8 +3,8 @@ unit DUnitX.Expert.Forms.NewProjectWizard;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls;
+  Windows, Messages, SysUtils, Variants, Classes, Graphics,
+  Controls, Forms, Dialogs, StdCtrls;
 
 type
   TfrmDunitXNewProject = class(TForm)
@@ -18,6 +18,7 @@ type
     edtClassName: TEdit;
     lblClassName: TLabel;
     procedure chkCreateTestUnitClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
   private
     { Private declarations }
     function GetAddToProjectGroup: boolean;
@@ -49,6 +50,12 @@ begin
   gbTestUnitOpt.Enabled := chkCreateTestUnit.Checked;
   chkCreateSetupTearDown.Enabled := chkCreateTestUnit.Checked;
   chkCreateSampleMethods.Enabled := chkCreateTestUnit.Checked;
+  edtClassName.Enabled := chkCreateTestUnit.Checked;
+end;
+
+procedure TfrmDunitXNewProject.FormCreate(Sender: TObject);
+begin
+  edtClassName.TextHint := SDefaultClassName;
 end;
 
 function TfrmDunitXNewProject.GetAddToProjectGroup: boolean;

@@ -62,8 +62,11 @@ type
 implementation
 
 uses
-  Vcl.Dialogs,
-  Winapi.Windows;
+  DUnitX.Expert.Forms.NewUnitWizard,
+  DUnitX.Expert.CodeGen.NewTestUnit,
+  Controls,
+  Forms,
+  Windows;
 
 { TNewBatchJobWizard }
 
@@ -80,8 +83,28 @@ begin
 end;
 
 procedure TDUnitXNewUnitWizard.Execute;
+var
+  WizardForm     : TfrmDunitXNewUnit;
+  ModuleServices : IOTAModuleServices;
+  Project        : IOTAProject;
+  Config         : IOTABuildConfiguration;
+  TestUnit       : IOTAModule;
 begin
-  ShowMessage('Create New Unit');
+  WizardForm := TfrmDunitXNewUnit.Create(Application);
+  try
+    if WizardForm.ShowModal = mrOk then
+    begin
+      ModuleServices := (BorlandIDEServices as IOTAModuleServices);
+      Project :=  GetActiveProject;
+      TestUnit := ModuleServices.CreateModule(
+                       TNewTestUnit.Create(WizardForm.CreateSetupTearDownMethods,
+                                           WizardForm.CreateSampleMethods,
+                                           WizardForm.TestFixtureClasaName ));
+      Project.AddFile(TestUnit.FileName,true);
+    end;
+  finally
+    WizardForm.Free;
+  end;
 end;
 
 function TDUnitXNewUnitWizard.GetAuthor: string;
@@ -122,7 +145,6 @@ end;
 
 function TDUnitXNewUnitWizard.GetPage: string;
 begin
-  // Results not used if IOTARepositoryWizard80.GetGalleryCategory implemented
   result := 'Delphi Files';
 end;
 

@@ -49,14 +49,13 @@ uses
 constructor TTestProjectFile.Create;
 begin
  //TODO: Figure out how to make this be TestProjectX where X is the next available.
-
- // Return Blank and the project will be 'ProjectX.dpr' where X is the next available number
+ //Return Blank and the project will be 'ProjectX.dpr' where X is the next available number
   FFileName := '';
 end;
 
 function TTestProjectFile.NewProjectSource(const ProjectName: string): IOTAFile;
 begin
-  result := TSourceFile.Create(SSimpleDPR,[ProjectName]);
+  result := TSourceFile.Create(STestDPR,[ProjectName]);
 end;
 
 end.
