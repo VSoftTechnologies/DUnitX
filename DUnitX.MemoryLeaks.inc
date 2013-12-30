@@ -27,6 +27,8 @@
 
 
 // Uncomment to use FastMM4 Memory Leak Tracking.
-{$DEFINE USE_FASTMM4_LEAK_MONITOR}
+//NOTE : Memory leak tracking does not work very well at the moment, as it's
+//reporting leaks when logging information during tests (calls to .Status etc).
+{.$DEFINE USE_FASTMM4_LEAK_MONITOR}
 
 
