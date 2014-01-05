@@ -29,7 +29,8 @@
 /Tests/Win32
 /Tests/Win64
 /Test/__history
-
+Expert/__history
+Expert/Win32/
 
 
 # Testing Output  #
@@ -42,3 +43,4 @@ Examples/dunitx-results.xml
 *.fbpInf
 Examples/Win32/
 Examples/Win64/
+

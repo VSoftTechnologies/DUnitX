@@ -116,7 +116,7 @@ uses
   SysUtils,
   DUnitX.Test,
   DUnitX.Utils,
-  System.Generics.Collections;
+  Generics.Collections;
 
 { TDUnitXTestFixture }
 

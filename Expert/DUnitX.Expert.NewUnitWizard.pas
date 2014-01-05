@@ -87,7 +87,6 @@ var
   WizardForm     : TfrmDunitXNewUnit;
   ModuleServices : IOTAModuleServices;
   Project        : IOTAProject;
-  Config         : IOTABuildConfiguration;
   TestUnit       : IOTAModule;
 begin
   WizardForm := TfrmDunitXNewUnit.Create(Application);
