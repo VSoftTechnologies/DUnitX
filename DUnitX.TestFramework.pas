@@ -1,4 +1,4 @@
-{***************************************************************************}
+﻿{***************************************************************************}
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
@@ -109,6 +109,12 @@ type
   TearDownFixtureAttribute = class(TCustomAttribute)
   end;
 
+  ///	<summary>
+  ///	    This attribue is applied to test methods.
+  ///	    If a test is successful and produces a memory leak it will be
+  ///	    reported.   If you do not want the leak reported, then you can add
+  ///	    this attribute to the test method.
+  ///	</summary>
   IgnoreMemoryLeaks = class(TCustomAttribute)
   private
     FIgnoreMemoryLeaks : Boolean;
@@ -130,6 +136,13 @@ type
     property Enabled : boolean read FEnabled;
   end;
 
+  ///	<summary>
+  ///	  This attribute will prevent a test from being run.   It will still show
+  ///	  up in the lists of tests, and reported as an Ignored test
+  ///	</summary>
+  ///	<remarks>
+  ///	  This is useful when you need to temporarily stop a test from running.
+  ///	</remarks>
   IgnoreAttribute = class(TCustomAttribute)
   private
     FReason : string;
@@ -145,35 +158,89 @@ type
   ///	<remarks>
   ///	  NOT IMPLEMENTED
   ///	</remarks>
-  RepeatAttribute = class(TCustomAttribute)
-  private
-    FCount : Cardinal;
-  public
-    constructor Create(const ACount : Cardinal);
-    property Count : Cardinal read FCount;
-  end;
+//  RepeatAttribute = class(TCustomAttribute)  // Deprecated. Use Repeats instead.
+//  private
+//    FCount : Cardinal;
+//  public
+//    constructor Create(const ACount : Cardinal);
+//    property Count : Cardinal read FCount;
+//  end;
 
   TValueArray = array of TValue;
 
 
   ///	<summary>
-  ///	  The TestCaseAttribute allows you to specify the name of a function that
-  ///	  returns a TValueArray which will be passed into a function that takes
-  ///	  parameters. This is really only needed to work around the problens with
-  ///	  the TestCaseAttribute. 
+  ///	  Internal Structure used for those implementing CustomTestCase or
+  ///	  CustomTestCaseSource descendants.
+  ///	</summary>
+  TestCaseInfo = record
+
+    ///	<summary>
+    ///	  Name of the Test Case
+    ///	</summary>
+    Name : string;
+
+    ///	<summary>
+    ///	  Values that will be passed to the method being tested.
+    ///	</summary>
+    Values : TValueArray;
+  end;
+
+  TestCaseInfoArray = array of TestCaseInfo;
+
+
+  ///	<summary>
+  ///	  Base class for all Test Case Attributes.   
   ///	</summary>
   ///	<remarks>
-  ///	  Note that the types in the TConstArray should match the parameters of
-  ///	  the method we are testing.
+  ///	  Class is abstract and should never be, used to annotate a class as a
+  ///	  attribute.   Instead use a descendant, that implements the GetCaseInfo
+  ///	  method.
   ///	</remarks>
-  TestCaseAttribute = class(TCustomAttribute)
-  private
-    FCaseName : string;
-    FValues : TValueArray;
+  CustomTestCaseAttribute = class abstract(TCustomAttribute)
+  protected
+    function GetCaseInfo : TestCaseInfo;  virtual; abstract;
   public
-    constructor Create(const ACaseName : string; const AValues : string);overload;
-    property Name : string read FCaseName;
-    property Values : TValueArray read FValues;
+    property CaseInfo : TestCaseInfo read GetCaseInfo;
+  end;
+
+  ///	<summary>
+  ///	  Base class for all Test Case Source Attributes.   
+  ///	</summary>
+  ///	<remarks>
+  ///	  <para>
+  ///	    Class is abstract and should never be, used to annotate a class as a
+  ///	    attribute.   Instead use a descendant, that implements the
+  ///	    GetCaseInfoArray method.    
+  ///	  </para>
+  ///	  <para>
+  ///	    Note: If a method is annotated with a decendant of
+  ///	    TestCaseSourceAttribute and returns an empty TestCaseInfoArray, then
+  ///	    no test will be shown for the method.
+  ///	  </para>
+  ///	</remarks>
+  CustomTestCaseSourceAttribute = class abstract(TCustomAttribute)
+  protected
+    function GetCaseInfoArray : TestCaseInfoArray; virtual; abstract;
+  public
+    property CaseInfoArray : TestCaseInfoArray read GetCaseInfoArray;
+  end;
+
+
+  ///	<summary>
+  ///	  The TestCaseAttribute allows you to pass values to a test function.
+  ///	  Each value is delimited in the string, by default the delimiter is ','
+  ///	</summary>
+  TestCaseAttribute = class(CustomTestCaseAttribute)
+  protected
+    FCaseInfo : TestCaseInfo;
+    function GetCaseInfo : TestCaseInfo; Override;
+    function GetName: String;
+    function GetValues: TValueArray;
+  public
+    constructor Create(const ACaseName : string; const AValues : string;const ASeperator : string = ',');overload;
+    property Name : String read GetName;
+    property Values : TValueArray read GetValues;
   end;
 
   TTestMethod = procedure of object;
@@ -185,6 +252,16 @@ const
   TLogLevelDesc : array[TLogLevel] of string = ('Info', 'Warn', 'Err');
 
 type
+TExecutionModulatorAttribute = class abstract( TCustomAttribute)
+  end;
+
+Repeats = class ( TExecutionModulatorAttribute )
+  public
+    FCount: integer;
+    constructor Create( ACount: integer);
+  end;
+
+ type
 {$IFDEF DELPHI_XE2_UP}
   ///	<summary>
   ///	  This helper class is intended to redirect the writeln method to a test
@@ -315,6 +392,7 @@ type
 
     function GetEnabled : boolean;
     procedure SetEnabled(const value : boolean);
+    function  GetCount: integer;
 
     property Name : string read GetName;
     property FullName : string read GetFullName;
@@ -322,6 +400,7 @@ type
 
     property Active : boolean read GetActive;
     property Fixture : ITestFixtureInfo read GetTestFixture;
+    property Count: integer read GetCount;
   end;
 
   ITestInfoList = interface(IList<ITestInfo>)
@@ -398,6 +477,7 @@ type
     function GetResultType : TTestResultType;
     function GetMessage : string;
     function GetStackTrace : string;
+    function GetPassIndex: integer;
 
     //Test
     property Test : ITestInfo read GetTest;
@@ -407,7 +487,12 @@ type
     property ResultType : TTestResultType read GetResultType;
     property Message : string read GetMessage;
     property StackTrace : string read GetStackTrace;
-
+    property PassIndex: integer read GetPassIndex;
+      // ^ Ranges from 0 to Test.Count-1
+      // For example if a test is decorated with [Repeat(3)],
+      //  then there will be 3 test results, with PassIndex = 0, 1 and 2
+      //  unless one fails or baulks. Upon failure/baulk, stop at the first
+      //  failure/baulk, irrespecitve of the ITestRunner.ExitBehavior
   end;
   {$M-}
 
@@ -569,7 +654,7 @@ type
     ///	<summary>
     ///	  //called when a test memory leaks.
     ///	</summary>
-    procedure OnTestMemoryLeak(const threadId : Cardinal; const AIgnored: ITestResult);
+    procedure OnTestMemoryLeak(const threadId : Cardinal; const Test: ITestResult);
 
     ///	<summary>
     ///	  //allows tests to write to the log.
@@ -1439,18 +1524,18 @@ end;
 { TestCaseAttribute }
 
 
-constructor TestCaseAttribute.Create(const ACaseName: string; const AValues: string);
+constructor TestCaseAttribute.Create(const ACaseName: string; const AValues: string;const ASeperator : string);
 var
   i: Integer;
   l : integer;
   lValues : TStringDynArray;
 begin
-  FCaseName := ACaseName;
-  lValues := SplitString(AValues,',');
+  FCaseInfo.Name := ACaseName;
+  lValues := SplitString(AValues,ASeperator);
   l := Length(lValues);
-  SetLength(FValues,l);
+  SetLength(FCaseInfo.Values,l);
   for i := 0 to l -1 do
-    FValues[i] := TValue.From<string>(lValues[i]);
+    FCaseInfo.Values[i] := TValue.From<string>(lValues[i]);
 end;
 
 
@@ -1489,6 +1574,21 @@ begin
 end;
 {$ENDIF}
 
+function TestCaseAttribute.GetCaseInfo: TestCaseInfo;
+begin
+  result := FCaseInfo;
+end;
+
+function TestCaseAttribute.GetName: String;
+begin
+  result := FCaseInfo.Name;
+end;
+
+function TestCaseAttribute.GetValues: TValueArray;
+begin
+  result := FCaseInfo.Values;
+end;
+
 { RepeatAttribute }
 
 constructor RepeatAttribute.Create(const ACount: Cardinal);
@@ -1504,6 +1604,13 @@ constructor IgnoreMemoryLeaks.Create(const AIgnoreMemoryLeaks: Boolean);
 begin
   inherited Create;
   FIgnoreMemoryLeaks := AIgnoreMemoryLeaks;
+end;
+
+constructor Repeats.Create( ACount: integer);
+begin
+  FCount := ACount;
+  if FCount < 1 then
+    FCount := 1
 end;
 
 initialization

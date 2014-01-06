@@ -88,7 +88,7 @@ type
     [TeardownFixture]
     procedure TearDownFixture;
   published
-    procedure IAmATest;
+    [Repeats(3)] procedure IAmATest;
   end;
 
   [TestFixture]
@@ -170,6 +170,8 @@ end;
 { TExampleFixture2 }
 
 procedure TExampleFixture2.IAmATest;
+var
+  x, y: double;
 begin
   Inc(FTestsRun);
 end;

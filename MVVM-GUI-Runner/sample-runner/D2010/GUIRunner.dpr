@@ -25,12 +25,13 @@ uses
   DUnitX.RunResults in '..\..\..\DUnitX.RunResults.pas',
   DUnitX.FixtureResult in '..\..\..\DUnitX.FixtureResult.pas',
   DUnitX.CommandLine in '..\..\..\DUnitX.CommandLine.pas',
-  DUnitX.Examples.General in '..\..\..\Examples\DUnitX.Examples.General.pas',
   DUnitX.DUnitCompatibility in '..\..\..\DUnitX.DUnitCompatibility.pas',
   DUnitX.VirtualTrees in '..\..\Extenal-libraries\VirtualTreeView\Source\DUnitX.VirtualTrees.pas',
   DUnitX.VTAccessibility in '..\..\Extenal-libraries\VirtualTreeView\Source\DUnitX.VTAccessibility.pas',
   DUnitX.VTAccessibilityFactory in '..\..\Extenal-libraries\VirtualTreeView\Source\DUnitX.VTAccessibilityFactory.pas',
-  DUnitX.Utils.XML2 in '..\..\..\DUnitX.Utils.XML2.pas';
+  DUnitX.Utils.XML2 in '..\..\..\DUnitX.Utils.XML2.pas',
+  DUnitX.Extensions in '..\..\..\DUnitX.Extensions.pas',
+  DUnitX.Examples.General in '..\..\..\Examples\DUnitX.Examples.General.pas';
 
 {$R *.res}
 

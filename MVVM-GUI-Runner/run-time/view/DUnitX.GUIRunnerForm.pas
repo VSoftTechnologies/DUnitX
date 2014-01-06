@@ -7,7 +7,8 @@ uses
   Dialogs, DUnitX.BaseExecutive, AppEvnts, DUnitX.TestFramework,
   DUnitX.ViewModel_VCLForms, PlatformDefaultStyleActnCtrls, Menus, ActnPopup,
   ComCtrls, ImgList, ActnMan, ActnColorMaps, ActnList, ExtCtrls, StdCtrls,
-  ToolWin, ActnCtrls, XPStyleActnCtrls, Generics.Collections, DUnitX.viewModel_LoggerContainer
+  ToolWin, ActnCtrls, XPStyleActnCtrls, Generics.Collections, DUnitX.viewModel_LoggerContainer,
+  System.Actions
   {$if RTLVersion >= 23.00}
     ,System.Actions
   {$ifend}	

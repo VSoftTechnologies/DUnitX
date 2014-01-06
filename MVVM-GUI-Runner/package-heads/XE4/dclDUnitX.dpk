@@ -1,0 +1,56 @@
+package dclDUnitX;
+
+{$R *.res}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO ON}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION OFF}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES ON}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DEFINE DEBUG}
+{$ENDIF IMPLICITBUILDING}
+{$DESCRIPTION 'DUnitX Wizard'}
+{$LIBSUFFIX '_XE4'}
+{$DESIGNONLY}
+{$IMPLICITBUILD OFF}
+
+requires
+  rtl,
+  designide,
+  inet,
+  DUnitX,
+  VclSmp;
+
+contains
+  DUnitX.DesignReg in '..\..\design-time\pascal\DUnitX.DesignReg.pas',
+  DUnitX.Wizard in '..\..\design-time\pascal\DUnitX.Wizard.pas',
+  DUnitX.Production.IDE_API in '..\..\design-time\pascal\DUnitX.Production.IDE_API.pas',
+  DUnitX.mfmWizardTester in '..\..\design-time\pascal\DUnitX.mfmWizardTester.pas' {mfmWizardTester},
+  DUnitX.fmProjectWizard in '..\..\design-time\pascal\DUnitX.fmProjectWizard.pas' {fmProjectWizard},
+  DUnitX.IoC in '..\..\..\DUnitX.IoC.pas',
+  DUnitX.Generics in '..\..\..\DUnitX.Generics.pas',
+  DUnitX.frmMainDetailsPage in '..\..\design-time\pascal\DUnitX.frmMainDetailsPage.pas' {frmMainDetailsPage: TFrame},
+  DUnitX.WizardPageIntf in '..\..\design-time\pascal\DUnitX.WizardPageIntf.pas',
+  DUnitX.LaunchWizardForm in '..\..\design-time\pascal\DUnitX.LaunchWizardForm.pas',
+  DUnitX.frmMultipleChoicePage in '..\..\design-time\pascal\DUnitX.frmMultipleChoicePage.pas' {frmMultipleChoice: TFrame},
+  DUnitX.WizardStates in '..\..\design-time\pascal\DUnitX.WizardStates.pas',
+  DUnitX.frmPathPage in '..\..\design-time\pascal\DUnitX.frmPathPage.pas' {frmPathPage: TFrame},
+  DUnitX.frmReadMemoPage in '..\..\design-time\pascal\DUnitX.frmReadMemoPage.pas' {frmReadMemo: TFrame};
+
+end.

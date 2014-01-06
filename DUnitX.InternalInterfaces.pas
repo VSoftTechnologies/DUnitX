@@ -58,6 +58,9 @@ type
     function GetIgnoreReason : string;
     function GetIgnoreMemoryLeaks() : Boolean;
     procedure SetIgnoreMemoryLeaks(const AValue : Boolean);
+    function  GetCount: integer;
+    function  GetPassIndex: integer;
+    procedure SetPassIndex( Value: integer);
 
     property Name : string read GetName;
     property Enabled : boolean read GetEnabled write SetEnabled;
@@ -66,7 +69,11 @@ type
     property IgnoreReason : string read GetIgnoreReason;
     property TestMethod : TTestMethod read GetTestMethod;
     property IgnoreMemoryLeaks : Boolean read GetIgnoreMemoryLeaks write SetIgnoreMemoryLeaks;
+    property CurrentPassIndex: integer  read GetPassIndex write SetPassIndex;
+    property Count: integer  read GetCount; // Number of times this test should be executed. Defaults to 1.
   end;
+
+
 
   ITestList = interface(IList<ITest>)
     ['{83ABC05F-5762-4FD2-9791-E32F5A9A4D06}']
@@ -154,9 +161,36 @@ type
     ['{C3B85C73-1FE8-4558-8AB0-7E8075821D35}']
   end;
 
+  ITestRunnerEx = interface( ITestRunner)
+    ['{32099133-9E48-48A1-B11E-CA587F576B6B}']
+      procedure UndecoratedExecuteEnabledTest(
+        const context : ITestExecuteContext; const test: ITest; const threadId: Cardinal;
+        const fixture: ITestFixture; const fixtureResult : IFixtureResult);
+    end;
+
+  IExecutionDecorator = interface
+    ['{DAC43C2C-C993-46EF-8391-90F9E1642853}']
+      {$REGION 'property accessors'}
+      function  GetRunner: ITestRunnerEx;
+      procedure SetRunner( const Value: ITestRunnerEx);
+      {$ENDREGION}
+      procedure ExecuteTest(
+        const context : ITestExecuteContext; const test: ITest; const threadId: Cardinal;
+        const fixture: ITestFixture; const fixtureResult : IFixtureResult);
+
+      procedure DecorateOn( const Subject: ITest);
+      function  ComputeWorkLoad( const test: ITest): integer;  // Typically the count of tests to run.
+      function  MeasureProgress( const test: ITest): integer;  // ... out of WorkLoad.
+
+      property Runner: ITestRunnerEx  read GetRunner write SetRunner;
+    end;
+
   ITestExecute = interface
     ['{C59443A9-8C7D-46CE-83A1-E40309A1B384}']
-    procedure Execute(const context : ITestExecuteContext);
+    procedure Execute( const context : ITestExecuteContext);
+    function  ExecutionDecorator: IExecutionDecorator;
+    procedure Decorate( const Addend: IExecutionDecorator);
+    procedure SetCount( const Value: integer);
   end;
 
   ITestCaseExecute = interface(ITestExecute)
@@ -182,7 +216,8 @@ implementation
 
 uses
   TypInfo,
-  SysUtils;
+  SysUtils,
+  DUnitX.Extensions;
 
 function TTestList.AsTestInfoList: ITestInfoList;
 var
@@ -213,5 +248,8 @@ begin
       result.Add(fixtureInfo);
   end;
 end;
+
+
+
 
 end.

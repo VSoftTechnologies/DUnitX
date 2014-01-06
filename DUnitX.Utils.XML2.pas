@@ -3219,7 +3219,6 @@ begin
   result := StringHash( Value.sName, result)
 end;
 
-{ TStyleSheetParameterSet.TParameter }
 
 constructor TParameter.Create(
   const poParamName: RParamKey);

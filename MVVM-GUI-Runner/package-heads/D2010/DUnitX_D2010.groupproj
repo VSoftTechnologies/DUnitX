@@ -1,0 +1,60 @@
+﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+		<PropertyGroup>
+			<ProjectGuid>{217FB0DA-30BD-464F-BD14-3C1D842AA997}</ProjectGuid>
+		</PropertyGroup>
+		<ItemGroup>
+			<Projects Include="DUnitX.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="dclDUnitX.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="DUnitX.WizardTester.dproj">
+				<Dependencies/>
+			</Projects>
+		</ItemGroup>
+		<ProjectExtensions>
+			<Borland.Personality>Default.Personality.12</Borland.Personality>
+			<Borland.ProjectType/>
+			<BorlandProject>
+				<Default.Personality/>
+			</BorlandProject>
+		</ProjectExtensions>
+		<Target Name="DUnitX">
+			<MSBuild Projects="DUnitX.dproj"/>
+		</Target>
+		<Target Name="DUnitX:Clean">
+			<MSBuild Targets="Clean" Projects="DUnitX.dproj"/>
+		</Target>
+		<Target Name="DUnitX:Make">
+			<MSBuild Targets="Make" Projects="DUnitX.dproj"/>
+		</Target>
+		<Target Name="dclDUnitX">
+			<MSBuild Projects="dclDUnitX.dproj"/>
+		</Target>
+		<Target Name="dclDUnitX:Clean">
+			<MSBuild Targets="Clean" Projects="dclDUnitX.dproj"/>
+		</Target>
+		<Target Name="dclDUnitX:Make">
+			<MSBuild Targets="Make" Projects="dclDUnitX.dproj"/>
+		</Target>
+		<Target Name="DUnitX_WizardTester">
+			<MSBuild Projects="DUnitX.WizardTester.dproj"/>
+		</Target>
+		<Target Name="DUnitX_WizardTester:Clean">
+			<MSBuild Targets="Clean" Projects="DUnitX.WizardTester.dproj"/>
+		</Target>
+		<Target Name="DUnitX_WizardTester:Make">
+			<MSBuild Targets="Make" Projects="DUnitX.WizardTester.dproj"/>
+		</Target>
+		<Target Name="Build">
+			<CallTarget Targets="DUnitX;dclDUnitX;DUnitX_WizardTester"/>
+		</Target>
+		<Target Name="Clean">
+			<CallTarget Targets="DUnitX:Clean;dclDUnitX:Clean;DUnitX_WizardTester:Clean"/>
+		</Target>
+		<Target Name="Make">
+			<CallTarget Targets="DUnitX:Make;dclDUnitX:Make;DUnitX_WizardTester:Make"/>
+		</Target>
+		<Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+	</Project>

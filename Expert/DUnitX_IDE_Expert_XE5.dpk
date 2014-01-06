@@ -1,0 +1,50 @@
+package DUnitX_IDE_Expert_XE5;
+
+{$R *.res}
+{$R *.dres}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO ON}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION OFF}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES ON}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DEFINE DEBUG}
+{$ENDIF IMPLICITBUILDING}
+{$DESCRIPTION 'DUnitX IDE Expert'}
+{$DESIGNONLY}
+{$IMPLICITBUILD ON}
+
+requires
+  rtl,
+  designide;
+
+contains
+  DUnitX.Expert.CodeGen.SourceFile in 'DUnitX.Expert.CodeGen.SourceFile.pas',
+  DUnitX.Expert.ProjectWizard in 'DUnitX.Expert.ProjectWizard.pas',
+  DUnitX.Expert.Registration in 'DUnitX.Expert.Registration.pas',
+  DUnitX.Expert.NewUnitWizard in 'DUnitX.Expert.NewUnitWizard.pas',
+  DUnitX.Expert.Forms.NewUnitWizard in 'DUnitX.Expert.Forms.NewUnitWizard.pas' {frmDunitXNewUnit},
+  DUnitX.Expert.Forms.NewProjectWizard in 'DUnitX.Expert.Forms.NewProjectWizard.pas' {frmDunitXNewProject},
+  DUnitX.Expert.CodeGen.NewUnit in 'DUnitX.Expert.CodeGen.NewUnit.pas',
+  DUnitX.Expert.CodeGen.NewTestProject in 'DUnitX.Expert.CodeGen.NewTestProject.pas',
+  DUnitX.Expert.CodeGen.Templates in 'DUnitX.Expert.CodeGen.Templates.pas',
+  DUnitX.Expert.CodeGen.NewProject in 'DUnitX.Expert.CodeGen.NewProject.pas',
+  DUnitX.Expert.CodeGen.NewTestUnit in 'DUnitX.Expert.CodeGen.NewTestUnit.pas';
+
+end.

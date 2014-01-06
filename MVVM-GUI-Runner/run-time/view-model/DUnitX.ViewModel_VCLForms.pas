@@ -834,8 +834,7 @@ end;
 
 function TTestCaseNode.GetFullCycleCount: integer;
 begin
-// TODO:
-result := 1
+result := FTestCase.Count
 end;
 
 function TTestCaseNode.GetKind: TVisualTestSuiteNodeKind;
