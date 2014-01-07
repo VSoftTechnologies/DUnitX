@@ -85,6 +85,9 @@
 			</DCCReference>
 			<None Include="..\..\design-time\xslt-stylesheets\IOTAConstruct.xsl"/>
 			<None Include="..\..\design-time\templates\GUIRunner.dpr.template"/>
+			<None Include="..\..\design-time\templates\DUnitX.uExecutive.pas.template">
+				<ContainerId>WebFile</ContainerId>
+			</None>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

@@ -3182,6 +3182,7 @@ end;
 
 function TStyleSheetParameterSet.Param(
   const URI, Name: string): IStyleSheetParameter;
+// Parameter existance is defined by the style-sheet, not by the client.
 var
   Key: RParamKey;
 begin
@@ -3219,6 +3220,7 @@ begin
   result := StringHash( Value.sName, result)
 end;
 
+{ TStyleSheetParameterSet.TParameter }
 
 constructor TParameter.Create(
   const poParamName: RParamKey);

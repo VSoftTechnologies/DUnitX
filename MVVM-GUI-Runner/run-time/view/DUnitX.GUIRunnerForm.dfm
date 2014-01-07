@@ -32,9 +32,9 @@ object mfmGUIRunner: TmfmGUIRunner
     Height = 23
     ActionManager = actmngrMain
     Caption = 'Main ToolBar'
-    ColorMap.HighlightColor = clWhite
+    ColorMap.HighlightColor = 15660791
     ColorMap.BtnSelectedColor = clBtnFace
-    ColorMap.UnusedColor = clWhite
+    ColorMap.UnusedColor = 15660791
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11

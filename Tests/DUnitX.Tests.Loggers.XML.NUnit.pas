@@ -51,7 +51,15 @@ type
 implementation
 
 uses
-  Rtti,
+  {$REGION 'Rtti'}
+  {$if CompilerVersion = 23}
+    DUnitX.Rtti.XE2,
+  {$elseif CompilerVersion = 24}
+    DUnitX.Rtti.XE3,
+  {$else}
+    Rtti,
+  {$ifend}
+  {$ENDREGION}
   SysUtils,
   TimeSpan,
   DateUtils,

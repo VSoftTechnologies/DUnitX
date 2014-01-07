@@ -32,7 +32,15 @@ uses
   classes,
   SysUtils,
   TypInfo,
-  Rtti,
+  {$REGION 'Rtti'}
+  {$if CompilerVersion = 23}
+    DUnitX.Rtti.XE2,
+  {$elseif CompilerVersion = 24}
+    DUnitX.Rtti.XE3,
+  {$else}
+    Rtti,
+  {$ifend}
+  {$ENDREGION}
   TimeSpan,
   DUnitX.Generics,
   Generics.Collections;
@@ -1589,14 +1597,6 @@ begin
   result := FCaseInfo.Values;
 end;
 
-{ RepeatAttribute }
-
-constructor RepeatAttribute.Create(const ACount: Cardinal);
-begin
-  FCount := ACount;
-end;
-
-{ IgnoreAttribute }
 
 { IgnoreMemoryLeaks }
 

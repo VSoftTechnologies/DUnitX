@@ -36,7 +36,7 @@ uses
   DUnitX.WeakReference,
   classes,
   SysUtils,
-  Rtti;
+  Rtti;   // TODO: Switch to DUnitX.Rtti.XE2/3 for those compilers
 
 {$I DUnitX.inc}
 

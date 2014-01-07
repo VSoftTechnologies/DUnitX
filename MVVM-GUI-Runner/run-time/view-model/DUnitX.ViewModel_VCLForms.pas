@@ -773,7 +773,6 @@ end;
 
 function TFixtureNode.GetDisplayName: string;
 begin
-// TODO:
 result := FFixture.Name
 end;
 

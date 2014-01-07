@@ -51,9 +51,23 @@
 			<DCCReference Include="xmlrtl.dcp"/>
 			<DCCReference Include="soaprtl.dcp"/>
 			<DCCReference Include="dbrtl.dcp"/>
-			<DCCReference Include="..\..\..\DUnitX.IoC.pas"/>
-			<DCCReference Include="..\..\..\DUnitX.Generics.pas"/>
 			<DCCReference Include="..\..\..\DUnitX.Utils.XML2.pas"/>
+			<DCCReference Include="..\..\..\DUnitX.Utils.pas"/>
+			<DCCReference Include="..\..\..\DUnitX.Generics.pas"/>
+			<DCCReference Include="..\..\..\DUnitX.Detour.pas"/>
+			<DCCReference Include="..\..\..\DUnitX.Extensions.pas"/>
+			<DCCReference Include="..\..\..\DUnitX.InternalInterfaces.pas"/>
+			<DCCReference Include="..\..\..\DUnitX.FixtureResult.pas"/>
+			<DCCReference Include="..\..\..\DUnitX.IoC.pas"/>
+			<DCCReference Include="..\..\..\DUnitX.RunResults.pas"/>
+			<DCCReference Include="..\..\..\DUnitX.TestFramework.pas"/>
+			<DCCReference Include="..\..\..\DUnitX.Test.pas"/>
+			<DCCReference Include="..\..\..\DUnitX.TestRunner.pas"/>
+			<DCCReference Include="..\..\..\DUnitX.WeakReference.pas"/>
+			<DCCReference Include="..\..\..\DUnitX.TestFixture.pas"/>
+			<DCCReference Include="..\..\..\DUnitX.TestResult.pas"/>
+			<DCCReference Include="..\..\..\DUnitX.CommandLine.pas"/>
+			<DCCReference Include="..\..\..\DUnitX.MemoryLeakMonitor.Default.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

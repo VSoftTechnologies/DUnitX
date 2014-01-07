@@ -88,5 +88,14 @@
 <xsl:template match="t:plugin-units[@mode='pas']">
   <!-- xsl:value-of select="concat('  ,',$unit-name,'&#x0A;'" / -->
 </xsl:template>  
-    
+
+<xsl:template match="t:plugin-view-units">
+   TO BE DEVELOPED !
+</xsl:template>
+
+<xsl:template match="t:plugin-view-registration">
+   TO BE DEVELOPED !
+</xsl:template>
+
+
 </xsl:stylesheet>

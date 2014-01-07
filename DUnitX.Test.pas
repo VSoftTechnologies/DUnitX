@@ -33,7 +33,7 @@ uses
   DUnitX.InternalInterfaces,
   DUnitX.WeakReference,
   TimeSpan,
-  Rtti;
+  Rtti;  // TODO: Switch to DUnitX.Rtti.XE2/3 for those compilers
 
 {$I DUnitX.inc}
 
@@ -51,7 +51,12 @@ type
     FIgnored      : boolean;
     FIgnoreReason : string;
     FIgnoreMemoryLeaks : Boolean;
-  protected
+    FExecutionDecorator: IExecutionDecorator;
+
+protected
+    FCount        : integer;
+    FCurrentIndex : integer;
+
     //ITest
     function GetName: string; virtual;
     function GetFullName : string;virtual;
@@ -62,6 +67,9 @@ type
     function GetTestDuration: TTimeSpan;
     function GetIgnoreMemoryLeaks() : Boolean;
     procedure SetIgnoreMemoryLeaks(const AValue : Boolean);
+    function  GetCount: integer;
+    function  GetPassIndex: integer;
+    procedure SetPassIndex( Value: integer);
 
     //ITestInfo
     function GetActive : boolean;
@@ -75,8 +83,12 @@ type
     //ISetTestResult
     procedure SetResult(const value: ITestResult);
 
-    //ITestExecute
-    procedure Execute(const context : ITestExecuteContext);virtual;
+    // ITestExecute
+    procedure Execute(const context : ITestExecuteContext); virtual;
+    function  ExecutionDecorator: IExecutionDecorator;
+    procedure Decorate( const Addend: IExecutionDecorator);
+    procedure SetCount( const Value: integer);
+
   public
     constructor Create(const AFixture : ITestFixture; const AName : string; const AMethod : TTestMethod; const AEnabled : boolean;
                        const AIgnored : boolean = false; const AIgnoreReason : string = '');
@@ -105,11 +117,43 @@ type
   end;
 
 
+  TAbstractExecutionDecorator = class abstract( TInterfacedObject, IExecutionDecorator)
+    protected
+      function  GetRunner: ITestRunnerEx;                       virtual; abstract;
+      procedure SetRunner( const Value: ITestRunnerEx);         virtual; abstract;
+      function  ComputeWorkLoad( const test: ITest): integer;   virtual; abstract;
+      function  MeasureProgress( const test: ITest): integer;   virtual; abstract;
+      procedure DecorateOn( const Subject: ITest);              virtual;
+      procedure ExecuteTest(
+        const context : ITestExecuteContext; const test: ITest; const threadId: Cardinal;
+        const fixture: ITestFixture; const fixtureResult : IFixtureResult);  virtual; abstract;
+    end;
+
+
+
 implementation
 
 uses
   SysUtils,
   DUnitX.Utils;
+
+
+
+
+
+type
+  TTransparentExcDecrtr = class sealed( TAbstractExecutionDecorator)
+    private
+      FRunner: ITestRunnerEx;
+    protected
+      function  GetRunner: ITestRunnerEx;                       override;
+      procedure SetRunner( const Value: ITestRunnerEx);         override;
+      function  ComputeWorkLoad( const test: ITest): integer;   override;
+      function  MeasureProgress( const test: ITest): integer;   override;
+      procedure ExecuteTest(
+        const context : ITestExecuteContext; const test: ITest; const threadId: Cardinal;
+        const fixture: ITestFixture; const fixtureResult : IFixtureResult);  override;
+    end;
 
 { TDUnitXTest }
 
@@ -121,6 +165,15 @@ begin
   FEnabled := AEnabled;
   FIgnored := AIgnored;
   FIgnoreReason := AIgnoreReason;
+  FCurrentIndex := 0;
+  FCount := 1;
+  FExecutionDecorator := TTransparentExcDecrtr.Create
+end;
+
+procedure TDUnitXTest.Decorate( const Addend: IExecutionDecorator);
+begin
+  FExecutionDecorator := Addend;
+  Addend.DecorateOn( self as ITest)
 end;
 
 procedure TDUnitXTest.Execute(const context : ITestExecuteContext);
@@ -135,10 +188,20 @@ begin
   end;
 end;
 
+function TDUnitXTest.ExecutionDecorator: IExecutionDecorator;
+begin
+  result := FExecutionDecorator
+end;
+
 function TDUnitXTest.GetActive: boolean;
 begin
   //TODO: Need to set the internal active state
   result := True;
+end;
+
+function TDUnitXTest.GetCount: integer;
+begin
+  result := FCount
 end;
 
 function TDUnitXTest.GetEnabled: Boolean;
@@ -169,6 +232,11 @@ end;
 function TDUnitXTest.GetName: string;
 begin
   result := FName;
+end;
+
+function TDUnitXTest.GetPassIndex: integer;
+begin
+  result := FCurrentIndex
 end;
 
 function TDUnitXTest.GetTestDuration: TTimeSpan;
@@ -208,17 +276,27 @@ begin
 
 end;
 
-procedure TDUnitXTest.SetEnabled(const value: Boolean);
+procedure TDUnitXTest.SetCount( const Value: integer);
+begin
+  FCount := Value
+end;
+
+procedure TDUnitXTest.SetEnabled( const value: Boolean);
 begin
   FEnabled := value;
 end;
 
-procedure TDUnitXTest.SetIgnoreMemoryLeaks(const AValue: Boolean);
+procedure TDUnitXTest.SetIgnoreMemoryLeaks( const AValue: Boolean);
 begin
   FIgnoreMemoryLeaks := AValue;
 end;
 
-procedure TDUnitXTest.SetResult(const value: ITestResult);
+procedure TDUnitXTest.SetPassIndex( Value: integer);
+begin
+  FCurrentIndex := Value
+end;
+
+procedure TDUnitXTest.SetResult( const value: ITestResult);
 begin
 
 end;
@@ -286,6 +364,43 @@ begin
   end;
 
   Result := Format(TESTCASE_NAME_FORMAT, [FName, printableArgsList, FCaseName]);
+end;
+
+
+{ TTransparentExcDecrtr }
+
+function TTransparentExcDecrtr.ComputeWorkLoad( const test: ITest): integer;
+begin
+  result := 1
+end;
+
+procedure TTransparentExcDecrtr.ExecuteTest( const context: ITestExecuteContext;
+  const test: ITest; const threadId: Cardinal; const fixture: ITestFixture;
+  const fixtureResult: IFixtureResult);
+begin
+  FRunner.UndecoratedExecuteEnabledTest( context, test, threadId, fixture, fixtureResult)
+end;
+
+function TTransparentExcDecrtr.GetRunner: ITestRunnerEx;
+begin
+  result := FRunner
+end;
+
+function TTransparentExcDecrtr.MeasureProgress(const test: ITest): integer;
+begin
+  // TODO:
+  result := 0
+end;
+
+procedure TTransparentExcDecrtr.SetRunner( const Value: ITestRunnerEx);
+begin
+  FRunner := Value
+end;
+
+
+
+procedure TAbstractExecutionDecorator.DecorateOn( const Subject: ITest);
+begin
 end;
 
 end.

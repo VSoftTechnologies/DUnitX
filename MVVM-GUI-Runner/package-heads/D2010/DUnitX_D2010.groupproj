@@ -3,6 +3,9 @@
 			<ProjectGuid>{217FB0DA-30BD-464F-BD14-3C1D842AA997}</ProjectGuid>
 		</PropertyGroup>
 		<ItemGroup>
+			<Projects Include="..\..\sample-runner\D2010\GUIRunner.dproj">
+				<Dependencies/>
+			</Projects>
 			<Projects Include="DUnitX.dproj">
 				<Dependencies/>
 			</Projects>
@@ -20,6 +23,15 @@
 				<Default.Personality/>
 			</BorlandProject>
 		</ProjectExtensions>
+		<Target Name="GUIRunner">
+			<MSBuild Projects="..\..\sample-runner\D2010\GUIRunner.dproj"/>
+		</Target>
+		<Target Name="GUIRunner:Clean">
+			<MSBuild Targets="Clean" Projects="..\..\sample-runner\D2010\GUIRunner.dproj"/>
+		</Target>
+		<Target Name="GUIRunner:Make">
+			<MSBuild Targets="Make" Projects="..\..\sample-runner\D2010\GUIRunner.dproj"/>
+		</Target>
 		<Target Name="DUnitX">
 			<MSBuild Projects="DUnitX.dproj"/>
 		</Target>
@@ -48,13 +60,13 @@
 			<MSBuild Targets="Make" Projects="DUnitX.WizardTester.dproj"/>
 		</Target>
 		<Target Name="Build">
-			<CallTarget Targets="DUnitX;dclDUnitX;DUnitX_WizardTester"/>
+			<CallTarget Targets="GUIRunner;DUnitX;dclDUnitX;DUnitX_WizardTester"/>
 		</Target>
 		<Target Name="Clean">
-			<CallTarget Targets="DUnitX:Clean;dclDUnitX:Clean;DUnitX_WizardTester:Clean"/>
+			<CallTarget Targets="GUIRunner:Clean;DUnitX:Clean;dclDUnitX:Clean;DUnitX_WizardTester:Clean"/>
 		</Target>
 		<Target Name="Make">
-			<CallTarget Targets="DUnitX:Make;dclDUnitX:Make;DUnitX_WizardTester:Make"/>
+			<CallTarget Targets="GUIRunner:Make;DUnitX:Make;dclDUnitX:Make;DUnitX_WizardTester:Make"/>
 		</Target>
 		<Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 	</Project>

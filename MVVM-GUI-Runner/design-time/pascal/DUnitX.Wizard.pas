@@ -253,14 +253,22 @@ if assigned( Wiz) then
         View,
         LibraryRelativePath);
 if not Ok then exit;
-// (BorlandIDEServices as IOTAModuleServices).CloseAll; ??
 if isNewProjectGroup then
-    Group := nil
+    begin
+    Group := nil;
+    (BorlandIDEServices as IOTAModuleServices).CloseAll
+    end
   else
     Group := GetProjectGroup;
+
 Creator := TIOTACreator.Create( FIDE, LibraryAbsolutePath, 'GUIRunner.dpr.template',
                                 UnitTestingLocation, UnitTestingProjectName, 'IOTAConstruct.xsl', Group);
-Creator.CreateModules
+Creator.CreateModules;
+
+// TODO: Uncomment this when it is working ...
+//Creator := TIOTACreator.Create( FIDE, LibraryAbsolutePath, 'DUnitX.uExecutive.pas.template',
+//                                UnitTestingLocation, UnitTestingProjectName, 'IOTAConstruct.xsl', Proj);
+//Creator.CreateModules
 end;
 
 function TProjectWizard.GetAuthor: string;
@@ -359,6 +367,21 @@ FStyleSheet.Content.LoadFromFile( FDUnitXLibraryPath + '\MVVM-GUI-Runner\design-
 end;
 
 
+function ReadUTF8File( const FN: string): string;
+// IOUtils.TFile.ReadAllText( FN, TEncoding.UTF8) is broken for files without a BOM,
+//  so use this custom code.
+var
+  Lines: TStrings;
+begin
+Lines := TStringList.Create;
+try
+  Lines.LoadFromFile( FN);
+  result := Lines.Text
+finally
+  Lines.Free
+  end
+end;
+
 function TIOTACreator.Transform( const SourceType, ModuleName, ProjectDirectories, PlugInUnits, PlugInPath: string; var Output: string): boolean;
 var
   sOutFN: string;
@@ -369,6 +392,7 @@ var
 begin
 try
   sOutFN := TPath.GetTempFileName;
+  SetLength( sOutFN, StrLen( PChar( sOutFN)));
   Params := FStyleSheet.Parameters;
   Params.Param( '', 'CompilerVersion').ParameterValue := Format( '%.1f', [CompilerVersion]);
   Params.Param( '', 'SourceType').ParameterValue := SourceType;
@@ -382,6 +406,7 @@ try
     sPathTranslations := sPathTranslations + '|' + sDUnitXRelativePath + '=' +
       AbsPathToRelPath( FDUnitXLibraryPath + '\' + sDUnitXRelativePath, FProjectLocation);
   DUnitXProjectDirs.Free;
+  // TODO: Add paramters for t:plugin-view-units and t:plugin-view-registration
   Params.Param( '', 'path-translations').ParameterValue := sPathTranslations;
   Params.Param( '', 'plugin-units').ParameterValue := PlugInUnits;
   if PlugInUnits <> '' then
@@ -393,7 +418,7 @@ try
     FDUnitXLibraryPath + '\MVVM-GUI-Runner\design-time\templates\' + FTemplateFileName,
     sOutFN, sError, Params);
   if result then
-      Output := TFile.ReadAllText( sOutFN, TEncoding.UTF8)
+      Output := ReadUTF8File( sOutFN)
     else
       Output := sError;
   TFile.Delete( sOutFN)
@@ -472,7 +497,6 @@ end;
 function TIOTACreator.GetIntfFileName: string;
 // IOTAModuleCreator
 begin
-// Deferred TODO:
 result := ''
 end;
 
@@ -504,24 +528,25 @@ function TIOTACreator.NewFormFile( const FormIdent,
   AncestorIdent: string): IOTAFile;
 // IOTAModuleCreator
 begin
-// Deferred TODO:
-result := StringToIOTAFile( 'TODO')
+result := nil
 end;
 
 function TIOTACreator.NewImplSource( const ModuleIdent, FormIdent,
   AncestorIdent: string): IOTAFile;
 // IOTAModuleCreator
+var
+  sStringResult: string;
 begin
-// Deferred TODO:
-result := StringToIOTAFile( 'TODO')
+self.Transform( 'Unit', 'DUnitX.uExecutive', '', sStringResult);
+   // TODO: Add parameters for t:plugin-view-units etc.
+result := StringToIOTAFile( sStringResult)
 end;
 
 function TIOTACreator.NewIntfSource( const ModuleIdent, FormIdent,
   AncestorIdent: string): IOTAFile;
 // IOTAModuleCreator
 begin
-// Deferred TODO:
-result := StringToIOTAFile( 'TODO')
+result := nil
 end;
 
 function TIOTACreator.NewOptionSource( const ProjectName: string): IOTAFile;
@@ -617,8 +642,7 @@ end;
 function TIOTACreator.GetOwner: IOTAModule;
 // IOTACreator
 begin
-//result := FGroup as IOTAModule
-result := (BorlandIDEServices as IOTAModuleServices).MainProjectGroup;
+result := FGroup as IOTAModule
 end;
 
 function TIOTACreator.GetProjectPersonality: string;
@@ -656,5 +680,21 @@ self.Transform( 'ProjectSource', FUnitTestingProjectName,
 result := StringToIOTAFile( sStringResult)
 end;
 
+//    TO DO List for DUnitX Wizard
+//    ==============================
+//     1. Impement the dynamic generate of the unit DUnitX.uExecutive from TIOTACreator.
+//         This unit has dynamic parts
+//     2. Create DUnitX.uTestSuiteVirtualTree version for bundled VTrees
+//     3. Implement TTestCaseNode.GetDoneCycleCount()
+//     4. Implement procedure TTestSuiteVirtualTreeObj.TChangeContext.Delete/Insert();
+//     5. Implement TBaseExecutionDecorator.MeasureProgress()
+//     6. Implement TRepeatDecorator.MeasureProgress()
+//     7. Select directory dialog component
+//     8. implement a design-time component library to support dclUnitX. So there will be
+//         1 run-time and 2 design-time packages within the grou.
+//     9. TTreeView impl
+//     10. Console impl
+//     11. Create Package Heads for XE2, XE3 and XE4. Some code adjustments
+//          may also be necessary to support these compilers.
 
 end.

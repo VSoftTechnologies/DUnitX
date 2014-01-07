@@ -34,8 +34,22 @@ requires
   dbrtl;
 
 contains
-  DUnitX.IoC in '..\..\..\DUnitX.IoC.pas',
+  DUnitX.Utils.XML2 in '..\..\..\DUnitX.Utils.XML2.pas',
+  DUnitX.Utils in '..\..\..\DUnitX.Utils.pas',
   DUnitX.Generics in '..\..\..\DUnitX.Generics.pas',
-  DUnitX.Utils.XML2 in '..\..\..\DUnitX.Utils.XML2.pas';
+  DUnitX.Detour in '..\..\..\DUnitX.Detour.pas',
+  DUnitX.Extensions in '..\..\..\DUnitX.Extensions.pas',
+  DUnitX.InternalInterfaces in '..\..\..\DUnitX.InternalInterfaces.pas',
+  DUnitX.FixtureResult in '..\..\..\DUnitX.FixtureResult.pas',
+  DUnitX.IoC in '..\..\..\DUnitX.IoC.pas',
+  DUnitX.RunResults in '..\..\..\DUnitX.RunResults.pas',
+  DUnitX.TestFramework in '..\..\..\DUnitX.TestFramework.pas',
+  DUnitX.Test in '..\..\..\DUnitX.Test.pas',
+  DUnitX.TestRunner in '..\..\..\DUnitX.TestRunner.pas',
+  DUnitX.WeakReference in '..\..\..\DUnitX.WeakReference.pas',
+  DUnitX.TestFixture in '..\..\..\DUnitX.TestFixture.pas',
+  DUnitX.TestResult in '..\..\..\DUnitX.TestResult.pas',
+  DUnitX.CommandLine in '..\..\..\DUnitX.CommandLine.pas',
+  DUnitX.MemoryLeakMonitor.Default in '..\..\..\DUnitX.MemoryLeakMonitor.Default.pas';
 
 end.
