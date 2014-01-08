@@ -32,9 +32,9 @@ object mfmGUIRunner: TmfmGUIRunner
     Height = 23
     ActionManager = actmngrMain
     Caption = 'Main ToolBar'
-    ColorMap.HighlightColor = 15660791
+    ColorMap.HighlightColor = clWhite
     ColorMap.BtnSelectedColor = clBtnFace
-    ColorMap.UnusedColor = 15660791
+    ColorMap.UnusedColor = clWhite
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
@@ -257,7 +257,7 @@ object mfmGUIRunner: TmfmGUIRunner
     Left = 296
     Top = 184
     Bitmap = {
-      494C010102000800240010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010102000800280010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001000000001002000000000000010
       0000000000000000000000000000000000000000000000000000000000000000
       000000000000733A2D00733A2D00783C2A00793D2A00753B2B00693531000000

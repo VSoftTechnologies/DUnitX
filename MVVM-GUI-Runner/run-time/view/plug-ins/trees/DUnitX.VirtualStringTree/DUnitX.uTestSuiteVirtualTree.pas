@@ -3,9 +3,9 @@ unit DUnitX.uTestSuiteVirtualTree;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
-  Dialogs, VirtualTrees, DUnitX.ViewModel_Tree, DUnitX.IoC,
-  ImgList;
+  Windows, Messages, SysUtils, Variants, Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms,
+  Vcl.Dialogs, VirtualTrees, DUnitX.ViewModel_Tree, DUnitX.IoC,
+  Vcl.ImgList;
 
 type
   TTestSuiteVirtualTreeObj = class;

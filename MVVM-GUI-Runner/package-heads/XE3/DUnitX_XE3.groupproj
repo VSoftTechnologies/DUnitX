@@ -3,6 +3,9 @@
         <ProjectGuid>{10DF7258-906B-4D0D-8A83-58520E05E4BE}</ProjectGuid>
     </PropertyGroup>
     <ItemGroup>
+        <Projects Include="..\..\sample-runner\DXE3\GUIRunner.dproj">
+            <Dependencies/>
+        </Projects>
         <Projects Include="DUnitX.dproj">
             <Dependencies/>
         </Projects>
@@ -17,6 +20,15 @@
             <Default.Personality/>
         </BorlandProject>
     </ProjectExtensions>
+    <Target Name="GUIRunner">
+        <MSBuild Projects="..\..\sample-runner\DXE3\GUIRunner.dproj"/>
+    </Target>
+    <Target Name="GUIRunner:Clean">
+        <MSBuild Projects="..\..\sample-runner\DXE3\GUIRunner.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="GUIRunner:Make">
+        <MSBuild Projects="..\..\sample-runner\DXE3\GUIRunner.dproj" Targets="Make"/>
+    </Target>
     <Target Name="DUnitX">
         <MSBuild Projects="DUnitX.dproj"/>
     </Target>
@@ -36,13 +48,13 @@
         <MSBuild Projects="dclDUnitX.dproj" Targets="Make"/>
     </Target>
     <Target Name="Build">
-        <CallTarget Targets="DUnitX;dclDUnitX"/>
+        <CallTarget Targets="GUIRunner;DUnitX;dclDUnitX"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="DUnitX:Clean;dclDUnitX:Clean"/>
+        <CallTarget Targets="GUIRunner:Clean;DUnitX:Clean;dclDUnitX:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="DUnitX:Make;dclDUnitX:Make"/>
+        <CallTarget Targets="GUIRunner:Make;DUnitX:Make;dclDUnitX:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

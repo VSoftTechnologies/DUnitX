@@ -3,15 +3,14 @@ unit DUnitX.GUIRunnerForm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, DUnitX.BaseExecutive, AppEvnts, DUnitX.TestFramework,
+  Windows, Messages, SysUtils, Variants, Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms,
+  Vcl.Dialogs, DUnitX.BaseExecutive, Vcl.AppEvnts, DUnitX.TestFramework,
   DUnitX.ViewModel_VCLForms, PlatformDefaultStyleActnCtrls, Menus, ActnPopup,
-  ComCtrls, ImgList, ActnMan, ActnColorMaps, ActnList, ExtCtrls, StdCtrls,
-  ToolWin, ActnCtrls, XPStyleActnCtrls, Generics.Collections, DUnitX.viewModel_LoggerContainer
-  {$if RTLVersion >= 23.00}
-    ,System.Actions
-  {$ifend}
-  ;
+  ComCtrls, ImgList, ActnMan, ActnColorMaps, ActnList, ExtCtrls, StdCtrls
+  {$if RTLVersion >= 23.00} , System.Actions  {$ifend}
+  // Keep the edit buffer of this file marked as read-only to prevent the IDE
+  //  from creating extraneous references to System.Actions
+  , ToolWin, ActnCtrls, XPStyleActnCtrls, Generics.Collections, DUnitX.viewModel_LoggerContainer;
 
 type
   TmfmGUIRunner = class(TForm)

@@ -78,8 +78,6 @@ TIOTACreator = class( TNotifierObject, IInterface, IOTACreator,
     FTemplateFileName: string; // like 'GUIRunner.dpr.template'
     FStyleSheetFileName: string; // like 'IOTAConstruct.xsl'
     FProjectLocation: string; // Path to where the generated dpr will be located.
-    FPlugUnits: string; // Like 'DUnitX.VirtualTrees DUnitX.VTAccessibility DUnitX.VTAccessibilityFactory'
-    FPluginPath: string; // Like '..\..\Extenal-libraries\VirtualTreeView\Source'. Path relative to ProjectLocation
     FIDE: IIDE_API;
     FDoc: IXMLDocument;
     FUnitTestingProjectName: string;
@@ -385,7 +383,6 @@ var
   DUnitXProjectDirs: TStrings;
   sPathTranslations, sDUnitXRelativePath: string;
   sError: string;
-  P: IStyleSheetParameter;
 begin
 try
   sOutFN := TPath.GetTempFileName;
