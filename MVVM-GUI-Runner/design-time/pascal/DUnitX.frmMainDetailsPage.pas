@@ -6,12 +6,12 @@ uses
   {$if CompilerVersion >= 23}
     // XE2+
     Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ActnMan, Vcl.ImgList,
-    Vcl.StdCtrls, Vcl.FileCtrl, Vcl.ExtCtrls, Vcl.Grids, Vcl.Outline,
-    Vcl.Samples.DirOutln,
+    Vcl.StdCtrls, Vcl.FileCtrl, Vcl.ExtCtrls, Vcl.Grids,
+
   {$else}
     // D2010, XE
     Graphics, Controls, Forms, Dialogs, ActnMan, ImgList,
-    StdCtrls, FileCtrl, ExtCtrls, Grids, Outline, DirOutln,
+    StdCtrls, FileCtrl, ExtCtrls, Grids,
   {$ifend}
     Windows, Messages, SysUtils, Variants, Classes, DUnitX.WizardStates,
     DUnitX.WizardPageIntf;
@@ -26,9 +26,7 @@ type
     imglstButtons16x16: TImageList;
     lblTitle: TStaticText;
     lblInstruction: TStaticText;
-    lstbxSelectDirectory: TDirectoryOutline;
     procedure edtLocationRightButtonClick(Sender: TObject);
-    procedure lstbxSelectDirectoryExit(Sender: TObject);
   private
     FState: IWizardIntermediateState;
     function  Frame: TFrame;
@@ -144,14 +142,13 @@ result := True
 end;
 
 procedure TfrmMainDetailsPage.edtLocationRightButtonClick(Sender: TObject);
+var
+  Directory: string;
 begin
-try
-  lstbxSelectDirectory.Directory := Location;
-  lstbxSelectDirectory.Visible   := True
-except
-  lstbxSelectDirectory.Directory := TDirectory.GetCurrentDirectory;
-  lstbxSelectDirectory.Visible   := True
-  end
+Directory := Location;
+if SelectDirectory( 'Select the location for the new unit-testing project', '', Directory,
+  [sdNewFolder, sdShowEdit, sdShowShares, sdNewUI], Self) then
+  Location := Directory
 end;
 
 function TfrmMainDetailsPage.Frame: TFrame;
@@ -187,14 +184,7 @@ end;
 function TfrmMainDetailsPage.IsValid(
   const PageId: string; Level: TValidationLevel; const State: IInterface): boolean;
 begin
-// TODO:
-result := not lstbxSelectDirectory.Visible
-end;
-
-procedure TfrmMainDetailsPage.lstbxSelectDirectoryExit(Sender: TObject);
-begin
-Location := lstbxSelectDirectory.Directory;
-lstbxSelectDirectory.Visible := False
+result := DirectoryExists( Location)
 end;
 
 function TfrmMainDetailsPage.Post(

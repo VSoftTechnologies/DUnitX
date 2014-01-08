@@ -22,8 +22,14 @@
 <xsl:param name="plugin-units" select="'DUnitX.VirtualTrees DUnitX.VTAccessibility DUnitX.VTAccessibilityFactory'" />
 <xsl:param name="plugin-unit-path" select="'..\..\Extenal-libraries\VirtualTreeView\Source'" />
 
+<xsl:param name="plugin-view-units" select="', DUnitX.uTestSuiteVirtualTree'" />
+<xsl:param name="plugin-view-registration"
+  select="'FServices.RegisterType&lt;IVisualTestSuiteTreeFactory&gt;(
+  TTestSuiteVirtualTreeObj.IoCActivator(), );
+'" />
+
 <xsl:variable name="apos">'</xsl:variable>
-    
+
 <xsl:template match="@*|node()" />
 
 <xsl:template match="/">
@@ -90,11 +96,11 @@
 </xsl:template>  
 
 <xsl:template match="t:plugin-view-units">
-   TO BE DEVELOPED !
+   <xsl:value-of select="$plugin-view-units" />
 </xsl:template>
 
 <xsl:template match="t:plugin-view-registration">
-   TO BE DEVELOPED !
+   <xsl:value-of select="$plugin-view-registration" />
 </xsl:template>
 
 

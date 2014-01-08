@@ -324,7 +324,13 @@ try
           begin
           if Supports( PassInState, IWizardIntermediateState, State) then
               begin
-              MemoText := 'Read-me to be developed';
+              MemoText :=
+'Before you can run your Unit Testing Runner program, you will need to ...'#13#10 +
+'  (1) Write your unit tests;'#13#10 +
+'  (2) Write code for factories (ILoggerContainerFactory) for any secondary logger instances that you might want to attach to your runner. This is an optional step.'#13#10 +
+'  (3) Edit unit DUnitX.uExecutive.pas in two places ...'#13#10 +
+'    (3.1) Within method TExecutive.RegisterTestFixtures(), register your test fixtures as per comments.'#13#10 +
+'    (3.2) Within method TExecutive.RegisterServices(), acquire the ILoggerCentralRegister instance and add your secondary logger factories to this list.';
               end
           end));
 

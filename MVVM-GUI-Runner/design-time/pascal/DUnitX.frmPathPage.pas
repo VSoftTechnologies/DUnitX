@@ -6,11 +6,11 @@ uses
  {$if CompilerVersion >= 23}
     // XE2+
     Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ActnMan, Vcl.Grids,
-    Vcl.Outline,  Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ImgList, Vcl.Samples.DirOutln,
+    Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ImgList, Vcl.FileCtrl,
   {$else}
     // D2010, XE
     Graphics, Controls, Forms, Dialogs, ActnMan, Grids,
-    Outline,  StdCtrls, ExtCtrls, ImgList, DirOutln,
+    StdCtrls, ExtCtrls, ImgList, FileCtrl,
   {$ifend}
     Windows, Messages, SysUtils, Variants, Classes,
     DUnitX.WizardPageIntf, DUnitX.WizardStates;
@@ -19,12 +19,10 @@ type
   TfrmPathPage = class( TFrame, IWizardPage)
     lblLocation: TLabel;
     edtLocation: TButtonedEdit;
-    lstbxSelectDirectory: TDirectoryOutline;
     imglstButtons16x16: TImageList;
     lblTitle: TStaticText;
     lblInstruction: TStaticText;
     procedure edtLocationRightButtonClick(Sender: TObject);
-    procedure lstbxSelectDirectoryExit(Sender: TObject);
   public const
     PageId = 'library';
     NextPage = 'read-me';
@@ -87,14 +85,13 @@ result := True
 end;
 
 procedure TfrmPathPage.edtLocationRightButtonClick(Sender: TObject);
+var
+  Directory: string;
 begin
-try
-  lstbxSelectDirectory.Directory := Path;
-  lstbxSelectDirectory.Visible   := True
-except
-  lstbxSelectDirectory.Directory := TDirectory.GetCurrentDirectory;
-  lstbxSelectDirectory.Visible   := True
-  end
+Directory := Path;
+if SelectDirectory( 'Select the DUnitX source base directory', '', Directory,
+  [sdShowShares, sdNewUI, sdShowFiles, sdValidateDir], Self) then
+  Path := Directory
 end;
 
 function TfrmPathPage.Frame: TFrame;
@@ -116,12 +113,6 @@ function TfrmPathPage.IsValid(
   const PageId: string; Level: TValidationLevel; const State: IInterface): boolean;
 begin
 result := (Path <> '') and TFile.Exists( Path + '\' + LitmusFile)
-end;
-
-procedure TfrmPathPage.lstbxSelectDirectoryExit(Sender: TObject);
-begin
-Path := lstbxSelectDirectory.Directory;
-lstbxSelectDirectory.Visible := False
 end;
 
 function TfrmPathPage.Post(

@@ -32,15 +32,7 @@ uses
   classes,
   SysUtils,
   TypInfo,
-  {$REGION 'Rtti'}
-  {$if CompilerVersion = 23}
-    DUnitX.Rtti.XE2,
-  {$elseif CompilerVersion = 24}
-    DUnitX.Rtti.XE3,
-  {$else}
-    Rtti,
-  {$ifend}
-  {$ENDREGION}
+  Rtti,
   TimeSpan,
   DUnitX.Generics,
   Generics.Collections;

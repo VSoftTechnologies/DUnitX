@@ -33,7 +33,8 @@ uses
   DUnitX.InternalInterfaces,
   DUnitX.WeakReference,
   TimeSpan,
-  Rtti;  // TODO: Switch to DUnitX.Rtti.XE2/3 for those compilers
+  Rtti
+  ;
 
 {$I DUnitX.inc}
 

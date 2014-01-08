@@ -83,7 +83,7 @@ TIOTACreator = class( TNotifierObject, IInterface, IOTACreator,
     FIDE: IIDE_API;
     FDoc: IXMLDocument;
     FUnitTestingProjectName: string;
-    FGroup: IOTAProjectGroup;
+    FOwner: IOTAModule;
 
   protected
     function QueryInterface( const IID: TGUID; out Obj): HResult; stdcall;
@@ -127,7 +127,7 @@ TIOTACreator = class( TNotifierObject, IInterface, IOTACreator,
           const IDE1: IIDE_API;
           const DUnitXLibraryPath1, TemplateFileName1, UnitTestingLocation1,
                 UnitTestingProjectName1, StyleSheetName1: string;
-          const Group1: IOTAProjectGroup);
+          const Owner1: IOTAModule);
    destructor  Destroy; override;
 
  public
@@ -262,26 +262,22 @@ if isNewProjectGroup then
     Group := GetProjectGroup;
 
 Creator := TIOTACreator.Create( FIDE, LibraryAbsolutePath, 'GUIRunner.dpr.template',
-                                UnitTestingLocation, UnitTestingProjectName, 'IOTAConstruct.xsl', Group);
+                                UnitTestingLocation, UnitTestingProjectName, 'IOTAConstruct.xsl', Group as IOTAModule);
 Creator.CreateModules;
 
-// TODO: Uncomment this when it is working ...
-//Creator := TIOTACreator.Create( FIDE, LibraryAbsolutePath, 'DUnitX.uExecutive.pas.template',
-//                                UnitTestingLocation, UnitTestingProjectName, 'IOTAConstruct.xsl', Proj);
-//Creator.CreateModules
+Creator := TIOTACreator.Create( FIDE, LibraryAbsolutePath, 'DUnitX.uExecutive.pas.template',
+                                UnitTestingLocation, UnitTestingProjectName, 'IOTAConstruct.xsl', CurrentProject as IOTAModule);
+Creator.CreateModules
 end;
 
 function TProjectWizard.GetAuthor: string;
 begin
-// Override as required.
 result := 'Sean B. Durkin'
 end;
 
 function TProjectWizard.GetComment: string;
 begin
-// Override as required.
-result := 'This wizard is based off the DUnitX.TWizard class.'#13#10 +
-          'Please override these comments.'
+result := 'This wizard will generate a project to unit test your application.'
 end;
 
 function TProjectWizard.GetDesigner: string;
@@ -295,8 +291,8 @@ result := FIDE.IOTAGalleryCategoryManager.FindCategory( GetGalleryCategoryString
 end;
 
 function TProjectWizard.GetGalleryCategoryStringId: string;
-// Override as required.
 begin
+// File | New | Other | Unit Test | DUnitX Project Wizard
 result := sCategoryNewUnitTest
 end;
 
@@ -334,7 +330,7 @@ end;
 
 function TProjectWizard.GetState: TWizardState;
 begin
-// Only used by menu wizards.
+// Only used by menu wizards. Setting it to [wsEnabled] is just wrong.
 result := []
 end;
 
@@ -349,7 +345,7 @@ constructor TIOTACreator.Create(
           const IDE1: IIDE_API;
           const DUnitXLibraryPath1, TemplateFileName1, UnitTestingLocation1,
                 UnitTestingProjectName1, StyleSheetName1: string;
-          const Group1: IOTAProjectGroup);
+          const Owner1: IOTAModule);
 begin
 FIDE := IDE1;
 FStyleSheetFileName := StyleSheetName1;
@@ -389,6 +385,7 @@ var
   DUnitXProjectDirs: TStrings;
   sPathTranslations, sDUnitXRelativePath: string;
   sError: string;
+  P: IStyleSheetParameter;
 begin
 try
   sOutFN := TPath.GetTempFileName;
@@ -406,13 +403,16 @@ try
     sPathTranslations := sPathTranslations + '|' + sDUnitXRelativePath + '=' +
       AbsPathToRelPath( FDUnitXLibraryPath + '\' + sDUnitXRelativePath, FProjectLocation);
   DUnitXProjectDirs.Free;
-  // TODO: Add paramters for t:plugin-view-units and t:plugin-view-registration
   Params.Param( '', 'path-translations').ParameterValue := sPathTranslations;
   Params.Param( '', 'plugin-units').ParameterValue := PlugInUnits;
   if PlugInUnits <> '' then
       Params.Param( '', 'plugin-unit-path').ParameterValue := AbsPathToRelPath( FDUnitXLibraryPath + '\' + PlugInPath, FProjectLocation)
     else
       Params.Param( '', 'plugin-unit-path').ParameterValue := '';
+  Params.Param( '', 'plugin-view-units').ParameterValue := ', DUnitX.uTestSuiteVirtualTree';
+  Params.Param( '', 'plugin-view-registration').ParameterValue :=
+    'FServices.RegisterType<IVisualTestSuiteTreeFactory>('#$0A +
+    '  TTestSuiteVirtualTreeObj.IoCActivator(), '''');'#$0A;
   FStyleSheet.LoadedAtRunTime;
   result := FStyleSheet.Transform(
     FDUnitXLibraryPath + '\MVVM-GUI-Runner\design-time\templates\' + FTemplateFileName,
@@ -433,7 +433,7 @@ end;
 function TIOTACreator.CreateModules: IInterface;
 begin
 result := self;
-FIDE.IOTAModuleServices.CreateModule( result as IOTACreator)
+FIDE.IOTAModuleServices.CreateModule( result as IOTACreator)  //
 end;
 
 destructor TIOTACreator.Destroy;
@@ -456,7 +456,7 @@ end;
 function TIOTACreator.GetCreatorType: string;
 // IOTACreator
 begin
-result := TXPath.SelectedString( TemplateDocNode, 't:IOTACreation/t:IOTACreator/@CreatorType')
+result := TXPath.SelectedString( TemplateDocNode, 't:IOTACreation/t:IOTACreator/@CreatorType');
 end;
 
 function TIOTACreator.GetExisting: boolean;
@@ -468,11 +468,11 @@ end;
 function TIOTACreator.GetFileName: string;
 // IOTAProjectCreator
 begin
-if FUnitTestingProjectName = '' then
-  FUnitTestingProjectName := TXPath.SelectedString( TemplateDocNode,
-        't:IOTACreation/t:IOTACreator' + PredicateToSupportCompiler +
-        '/t:IOTAFile[t:ProjectSource/@val=''true'']/@filename');
 result := FProjectLocation + '\' + FUnitTestingProjectName + '.dpr';
+// This is equal to ...
+//  FProjectLocation + '\' + TXPath.SelectedString( TemplateDocNode,
+ //         't:IOTACreation/t:IOTACreator' + PredicateToSupportCompiler +
+ //         '/t:IOTAFile[t:ProjectSource/@val=''true'']/@filename')
 end;
 
 function TIOTACreator.GetFileSystem: string;
@@ -490,20 +490,20 @@ end;
 function TIOTACreator.GetImplFileName: string;
 // IOTAModuleCreator
 begin
-// Deferred TODO:
-result := ''
+result := FProjectLocation + '\' + TXPath.SelectedString( TemplateDocNode,
+        't:IOTACreation/t:IOTACreator' + PredicateToSupportCompiler +
+        '/t:IOTAFile[t:ImplSource/@val=''true'']/@filename');
 end;
 
 function TIOTACreator.GetIntfFileName: string;
 // IOTAModuleCreator
 begin
-result := ''
+result := '';
 end;
 
 function TIOTACreator.GetMainForm: boolean;
 // IOTAModuleCreator
 begin
-// Deferred TODO:
 result := False
 end;
 
@@ -537,8 +537,7 @@ function TIOTACreator.NewImplSource( const ModuleIdent, FormIdent,
 var
   sStringResult: string;
 begin
-self.Transform( 'Unit', 'DUnitX.uExecutive', '', sStringResult);
-   // TODO: Add parameters for t:plugin-view-units etc.
+self.Transform( 'ImplSource', 'DUnitX.uExecutive', '', '', '', sStringResult);
 result := StringToIOTAFile( sStringResult)
 end;
 
@@ -553,27 +552,6 @@ function TIOTACreator.NewOptionSource( const ProjectName: string): IOTAFile;
 // IOTAProjectCreator
 begin
 result := nil
-end;
-
-function TIOTACreator.QueryInterface( const IID: TGUID; out Obj): HResult;
-// IInterface/IUnknown
-const
-  E_NOINTERFACE = HRESULT( $80004002);
-var
-  doInherited: boolean;
-begin
-if IsEqualGuid( IID, IOTAProjectCreator) or
-   IsEqualGuid( IID, IOTAProjectCreator50) or
-   IsEqualGuid( IID, IOTAProjectCreator80) then
-     doInherited := SupportsProjectCreator
-  else if IsEqualGuid( IID, IOTAModuleCreator) then
-     doInherited := SupportsModuleCreator
-  else
-     doInherited := True;
-if doInherited then
-    result := inherited QueryInterface( IID, Obj)
-  else
-    result := E_NOINTERFACE
 end;
 
 function TIOTACreator.PredicateToSupportCompiler: string;
@@ -642,7 +620,7 @@ end;
 function TIOTACreator.GetOwner: IOTAModule;
 // IOTACreator
 begin
-result := FGroup as IOTAModule
+result := FOwner
 end;
 
 function TIOTACreator.GetProjectPersonality: string;
@@ -680,16 +658,35 @@ self.Transform( 'ProjectSource', FUnitTestingProjectName,
 result := StringToIOTAFile( sStringResult)
 end;
 
+function TIOTACreator.QueryInterface( const IID: TGUID; out Obj): HResult;
+// IInterface/IUnknown
+const
+  E_NOINTERFACE = HRESULT( $80004002);
+var
+  doInherited: boolean;
+begin
+if IsEqualGuid( IID, IOTAProjectCreator) or
+   IsEqualGuid( IID, IOTAProjectCreator50) or
+   IsEqualGuid( IID, IOTAProjectCreator80) then
+     doInherited := SupportsProjectCreator
+  else if IsEqualGuid( IID, IOTAModuleCreator) then
+     doInherited := SupportsModuleCreator
+  else // including IOTACreator
+     doInherited := True;
+if doInherited then
+    result := inherited QueryInterface( IID, Obj)
+  else
+    result := E_NOINTERFACE
+end;
+
+
 //    TO DO List for DUnitX Wizard
 //    ==============================
-//     1. Impement the dynamic generate of the unit DUnitX.uExecutive from TIOTACreator.
-//         This unit has dynamic parts
 //     2. Create DUnitX.uTestSuiteVirtualTree version for bundled VTrees
 //     3. Implement TTestCaseNode.GetDoneCycleCount()
 //     4. Implement procedure TTestSuiteVirtualTreeObj.TChangeContext.Delete/Insert();
 //     5. Implement TBaseExecutionDecorator.MeasureProgress()
 //     6. Implement TRepeatDecorator.MeasureProgress()
-//     7. Select directory dialog component
 //     8. implement a design-time component library to support dclUnitX. So there will be
 //         1 run-time and 2 design-time packages within the grou.
 //     9. TTreeView impl

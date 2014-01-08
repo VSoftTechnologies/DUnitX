@@ -10,7 +10,7 @@ uses
   ToolWin, ActnCtrls, XPStyleActnCtrls, Generics.Collections, DUnitX.viewModel_LoggerContainer
   {$if RTLVersion >= 23.00}
     ,System.Actions
-  {$ifend}	
+  {$ifend}
   ;
 
 type
