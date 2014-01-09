@@ -51,7 +51,6 @@ type
     FIgnored      : boolean;
     FIgnoreReason : string;
     FIgnoreMemoryLeaks : Boolean;
-    FRepeatCount  : Cardinal;
   protected
     //ITest
     function GetName: string; virtual;
@@ -63,7 +62,6 @@ type
     function GetTestDuration: TTimeSpan;
     function GetIgnoreMemoryLeaks() : Boolean;
     procedure SetIgnoreMemoryLeaks(const AValue : Boolean);
-    function GetRepeatCount : Cardinal;
 
     //ITestInfo
     function GetActive : boolean;
@@ -80,7 +78,7 @@ type
     //ITestExecute
     procedure Execute(const context : ITestExecuteContext);virtual;
   public
-    constructor Create(const AFixture : ITestFixture; const AName : string; const AMethod : TTestMethod; const AEnabled : boolean; const ARepeatCount : Cardinal = 1;
+    constructor Create(const AFixture : ITestFixture; const AName : string; const AMethod : TTestMethod; const AEnabled : boolean;
                        const AIgnored : boolean = false; const AIgnoreReason : string = '');
 
     //property Name : string read GetName;
@@ -115,7 +113,7 @@ uses
 
 { TDUnitXTest }
 
-constructor TDUnitXTest.Create(const AFixture: ITestFixture; const AName: string; const AMethod: TTestMethod; const AEnabled : boolean;const ARepeatCount : Cardinal; const AIgnored : boolean; const AIgnoreReason : string);
+constructor TDUnitXTest.Create(const AFixture: ITestFixture; const AName: string; const AMethod: TTestMethod; const AEnabled : boolean; const AIgnored : boolean; const AIgnoreReason : string);
 begin
   FFixture := TWeakReference<ITestFixture>.Create(AFixture);
   FName := AName;
@@ -123,14 +121,13 @@ begin
   FEnabled := AEnabled;
   FIgnored := AIgnored;
   FIgnoreReason := AIgnoreReason;
-  FRepeatCount := ARepeatCount;
 end;
 
 procedure TDUnitXTest.Execute(const context : ITestExecuteContext);
 begin
   FStartTime := Now();
   try
-     FMethod();
+    FMethod();
   finally
     FEndTime := Now();
 
@@ -172,11 +169,6 @@ end;
 function TDUnitXTest.GetName: string;
 begin
   result := FName;
-end;
-
-function TDUnitXTest.GetRepeatCount: Cardinal;
-begin
-  result := FRepeatCount;
 end;
 
 function TDUnitXTest.GetTestDuration: TTimeSpan;
@@ -243,7 +235,6 @@ var
   tmp : TValue;
 begin
   inherited Create(AFixture, AName, nil,AEnabled);
-  FRepeatCount := 1;
   FInstance := AInstance;
   FRttiMethod := AMethod;
   FCaseName := ACaseName;

@@ -111,16 +111,6 @@ type
 
   end;
 
-  [TestFixture]
-  TExampleFixture4 = class
-  private
-  public
-
-    [Test]
-    [RepeatTest(4)]
-    procedure RepeatingTest;
-  end;
-
 
 implementation
 
@@ -229,14 +219,6 @@ begin
   Assert.IsTrue(False,'I should not be called!');
 end;
 
-{ TExampleFixture4 }
-
-procedure TExampleFixture4.RepeatingTest;
-begin
-  // This test is called multiple times.
-  Assert.Pass('Repeat Test');
-end;
-
 initialization
 
 //I was hoping to use RTTI to discover the TestFixture classes, however unlike .NET
@@ -256,5 +238,4 @@ initialization
   TDUnitX.RegisterTestFixture(TMyExampleTests);
   TDUnitX.RegisterTestFixture(TExampleFixture2);
   TDUnitX.RegisterTestFixture(TExampleFixture3);
-  TDUnitX.RegisterTestFixture(TExampleFixture4);
 end.

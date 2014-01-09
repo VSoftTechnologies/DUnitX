@@ -45,7 +45,6 @@ type
     FResultType : TTestResultType;
     FTest : IWeakReference<ITestInfo>;
     FStackTrace : string;
-    FTimesRun : Cardinal;
   protected
     function GetMessage: string;
     function GetResult: Boolean;
@@ -55,9 +54,8 @@ type
     function GetFinishTime : TDateTime;
     function GetDuration : TTimeSpan;
     function GetStackTrace : string;
-    function GetTimesRun : Cardinal;
   public
-    constructor Create(const ATestInfo : ITestInfo; const AType : TTestResultType; const ATimesRun : Cardinal; const AMessage : string = '');
+    constructor Create(const ATestInfo : ITestInfo; const AType : TTestResultType; const AMessage : string = '');
   end;
 
   TDUnitXTestError = class(TDUnitXTestResult, ITestError)
@@ -71,7 +69,7 @@ type
     function GetExceptionAddressInfo : string;
     function GetExceptionMessage : string;
   public
-    constructor Create(const ATestInfo : ITestInfo; const AType : TTestResultType; const AThrownException: Exception; const Addrs: Pointer; const ATimesRun : Cardinal; const AMessage : string = '');reintroduce;
+    constructor Create(const ATestInfo : ITestInfo; const AType : TTestResultType; const AThrownException: Exception; const Addrs: Pointer; const AMessage : string = '');reintroduce;
   end;
 
 
@@ -90,12 +88,11 @@ uses
 
 { TDUnitXTestResult }
 
-constructor TDUnitXTestResult.Create(const ATestInfo : ITestInfo; const AType: TTestResultType; const ATimesRun : Cardinal;  const AMessage: string);
+constructor TDUnitXTestResult.Create(const ATestInfo : ITestInfo; const AType: TTestResultType; const AMessage: string);
 begin
   FTest := TWeakReference<ITestInfo>.Create(ATestInfo);
   FResultType := AType;
   FMessage := AMessage;
-  FTimesRun := ATimesRun;
 end;
 
 function TDUnitXTestResult.GetMessage: string;
@@ -119,11 +116,6 @@ begin
     result := FTest.Data
   else
     result := nil;
-end;
-
-function TDUnitXTestResult.GetTimesRun: Cardinal;
-begin
-  result := FTimesRun;
 end;
 
 function TDUnitXTestResult.GetDuration: TTimeSpan;
@@ -157,11 +149,11 @@ end;
 
 { TDUnitXTestError }
 
-constructor TDUnitXTestError.Create(const ATestInfo : ITestInfo; const AType: TTestResultType; const AThrownException: Exception; const Addrs: Pointer; const ATimesRun : Cardinal; const AMessage: string = '');
+constructor TDUnitXTestError.Create(const ATestInfo : ITestInfo; const AType: TTestResultType; const AThrownException: Exception; const Addrs: Pointer;  const AMessage: string = '');
 var
   stackTraceProvider : IStacktraceProvider;
 begin
-  inherited Create(ATestInfo, AType, ATimesRun, AMessage);
+  inherited Create(ATestInfo, AType, AMessage);
 
   FExceptionClass := ExceptClass(AThrownException.ClassType);
 
