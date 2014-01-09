@@ -108,7 +108,6 @@
         <DCCReference Include="DUnitX.Examples.General.pas"/>
         <DCCReference Include="..\DUnitX.CommandLine.pas"/>
         <DCCReference Include="..\DUnitX.ConsoleWriter.Base.pas"/>
-        <DCCReference Include="..\DUnitX.Detour.pas"/>
         <DCCReference Include="..\DUnitX.DUnitCompatibility.pas"/>
         <DCCReference Include="..\DUnitX.Generics.pas"/>
         <DCCReference Include="..\DUnitX.InternalInterfaces.pas"/>
