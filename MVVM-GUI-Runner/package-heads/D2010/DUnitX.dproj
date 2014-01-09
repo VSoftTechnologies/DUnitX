@@ -68,6 +68,8 @@
 			<DCCReference Include="..\..\..\DUnitX.TestResult.pas"/>
 			<DCCReference Include="..\..\..\DUnitX.CommandLine.pas"/>
 			<DCCReference Include="..\..\..\DUnitX.MemoryLeakMonitor.Default.pas"/>
+			<DCCReference Include="..\..\..\DUnitX.Loggers.Text.pas"/>
+			<DCCReference Include="..\..\..\DUnitX.Loggers.Console.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

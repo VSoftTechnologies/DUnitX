@@ -18,7 +18,9 @@ implementation
 
 uses Classes, DUnitX.IoC, DUnitX.TestFramework, DUnitX.TestRunner,
      DUnitX.ViewModel_Tree, DUnitX.viewModel_LoggerContainer
-     <t:plugin-view-units mode="pas"/><!-- like ... , DUnitX.uTestSuiteVirtualTree -->
+     <t:tree id="DxVTree">, DUnitX.uTestSuiteDxVirtualTree </t:tree>
+     <t:tree id="VTree"  >, DUnitX.uTestSuiteVirtualTree </t:tree>
+     <t:tree id="WinTree">, DUnitX.uTestSuiteTreeView </t:tree>
      // , DUnitX.Examples.General
      ;
 
@@ -40,9 +42,21 @@ begin
 inherited;
 
 // Dynamic content
-<t:plugin-view-registration/><!--
-FServices.RegisterType<IVisualTestSuiteTreeFactory>(
-  TTestSuiteVirtualTreeObj.IoCActivator(), '');  -->
+<t:tree id="DxVTree">
+FServices.RegisterType&lt;IVisualTestSuiteTreeFactory&gt;(
+  TTestSuiteVirtualTreeObj.IoCActivator(), &apos;&apos;);
+
+</t:tree>
+<t:tree id="VTree">
+FServices.RegisterType&lt;IVisualTestSuiteTreeFactory&gt;(
+  TTestSuiteVirtualTreeObj.IoCActivator(), &apos;&apos;);
+
+</t:tree>
+<t:tree id="WinTree">
+FServices.RegisterType&lt;IVisualTestSuiteTreeFactory&gt;(
+  TTestSuiteTreeViewObj.IoCActivator(), &apos;&apos;);
+
+</t:tree>
 
 // FServices.Resolve&lt;ILoggerCentral&gt;( &apos;&apos;).Loggers.Add(
 //   TMyConcreteLoggerContainerFactory.Create)

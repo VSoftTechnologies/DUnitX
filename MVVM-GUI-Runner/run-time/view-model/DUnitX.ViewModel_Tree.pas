@@ -1,6 +1,6 @@
 unit DUnitX.ViewModel_Tree;
 interface
-uses Classes, Vcl.Controls;
+uses Classes, Controls;
 
 type
 

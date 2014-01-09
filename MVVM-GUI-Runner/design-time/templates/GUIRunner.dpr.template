@@ -23,9 +23,11 @@ uses
   DUnitX.uExecutive in &apos;DUnitX.uExecutive.pas&apos;,
   DUnitX.ViewModel_VCLForms in &apos;<t:DUnitX-path plus="MVVM-GUI-Runner\run-time\view-model"/>\DUnitX.ViewModel_VCLForms.pas&apos;,
   DUnitX.ViewModel_Tree in &apos;<t:DUnitX-path plus="MVVM-GUI-Runner\run-time\view-model"/>\DUnitX.ViewModel_Tree.pas&apos;,
-  DUnitX.viewModel_LoggerContainer in &apos;<t:DUnitX-path plus="MVVM-GUI-Runner\run-time\view-model"/>\DUnitX.viewModel_LoggerContainer.pas&apos;,
-  DUnitX.uTestSuiteVirtualTree in &apos;<t:DUnitX-path plus="MVVM-GUI-Runner\run-time\view\plug-ins\trees\DUnitX.VirtualStringTree"/>\DUnitX.uTestSuiteVirtualTree.pas&apos; {TestSuiteVirtualTree: TFrame},
-  DUnitX.WeakReference in &apos;<t:DUnitX-path />\DUnitX.WeakReference.pas&apos;,
+  DUnitX.viewModel_LoggerContainer in &apos;<t:DUnitX-path plus="MVVM-GUI-Runner\run-time\view-model"/>\DUnitX.viewModel_LoggerContainer.pas&apos;,<t:tree id="DxVTree">
+  DUnitX.uTestSuiteDxVirtualTree in &apos;<t:DUnitX-path plus="MVVM-GUI-Runner\run-time\view\plug-ins\trees\DUnitX.DxVirtualStringTree"/>\DUnitX.uTestSuiteDxVirtualTree.pas&apos; {TestSuiteVirtualTree: TFrame},</t:tree><t:tree id="VTree">
+  DUnitX.uTestSuiteVirtualTree in &apos;<t:DUnitX-path plus="MVVM-GUI-Runner\run-time\view\plug-ins\trees\DUnitX.VirtualStringTree"/>\DUnitX.uTestSuiteVirtualTree.pas&apos; {TestSuiteVirtualTree: TFrame},</t:tree><t:tree id="WinTree">
+  DUnitX.uTestSuiteTreeView in &apos;<t:DUnitX-path plus="MVVM-GUI-Runner\run-time\view\plug-ins\trees\TTreeView"/>\DUnitX.uTestSuiteTreeView.pas&apos;,</t:tree>
+  DUnitX.WeakReference in &apos;<t:DUnitX-path plus=""/>\DUnitX.WeakReference.pas&apos;,
   DUnitX.InternalInterfaces in &apos;<t:DUnitX-path />\DUnitX.InternalInterfaces.pas&apos;,
   DUnitX.MemoryLeakMonitor.Default in &apos;<t:DUnitX-path/>\DUnitX.MemoryLeakMonitor.Default.pas&apos;,
   DUnitX.IoC in &apos;<t:DUnitX-path />\DUnitX.IoC.pas&apos;,
@@ -38,10 +40,18 @@ uses
   DUnitX.Detour in &apos;<t:DUnitX-path />\DUnitX.Detour.pas&apos;,
   DUnitX.RunResults in &apos;<t:DUnitX-path />\DUnitX.RunResults.pas&apos;,
   DUnitX.FixtureResult in &apos;<t:DUnitX-path />\DUnitX.FixtureResult.pas&apos;,
+  DUnitX.uStockSecondaryLoggerFactories in &apos;<t:DUnitX-path plus="MVVM-GUI-Runner\run-time\view"/>\DUnitX.uStockSecondaryLoggerFactories.pas&apos;,
+  DUnitX.Loggers.Console in &apos;<t:DUnitX-path />\DUnitX.Loggers.Console.pas&apos;,
+  DUnitX.ConsoleWriter.Base in &apos;<t:DUnitX-path />\DUnitX.ConsoleWriter.pas&apos;,
+  DUnitX.Loggers.Text in &apos;<t:DUnitX-path />\DUnitX.Loggers.Text.pas&apos;,
   DUnitX.CommandLine in &apos;<t:DUnitX-path />\DUnitX.CommandLine.pas&apos;,
-  DUnitX.DUnitCompatibility in &apos;<t:DUnitX-path />\DUnitX.DUnitCompatibility.pas&apos;,
-<t:plugin-units mode="dpr"/>  DUnitX.Utils.XML2 in &apos;<t:DUnitX-path />\DUnitX.Utils.XML2.pas&apos;,
-  DUnitX.Extensions in &apos;<t:DUnitX-path />\DUnitX.Extensions.pas&apos;;
+  DUnitX.DUnitCompatibility in &apos;<t:DUnitX-path />\DUnitX.DUnitCompatibility.pas&apos;,<t:tree id="DxVTree">
+  DUnitX.VirtualTrees in &apos;<t:DUnitX-path plus="MVVM-GUI-Runner\External-libraries\VirtualTreeView\Source" />\DUnitX.VirtualTrees.pas&apos;,
+  DUnitX.VTAccessibility in &apos;<t:DUnitX-path plus="MVVM-GUI-Runner\External-libraries\VirtualTreeView\Source" />\DUnitX.VTAccessibility.pas&apos;,
+  DUnitX.VTAccessibilityFactory in &apos;<t:DUnitX-path plus="MVVM-GUI-Runner\External-libraries\VirtualTreeView\Source" />\DUnitX.VTAccessibilityFactory.pas&apos;,</t:tree>
+  DUnitX.Utils.XML2 in &apos;<t:DUnitX-path />\DUnitX.Utils.XML2.pas&apos;,
+  DUnitX.Extensions in &apos;<t:DUnitX-path />\DUnitX.Extensions.pas&apos;,
+  DUnitX.udmVirtualTreeNonVisualSupport in &apos;<t:DUnitX-path plus="MVVM-GUI-Runner\run-time\view\plug-ins\trees"/>\DUnitX.udmVirtualTreeNonVisualSupport.pas&apos; {dmVirtualTreeNonVisualSupport: TDataModule};
 
 {$R *.res}
 

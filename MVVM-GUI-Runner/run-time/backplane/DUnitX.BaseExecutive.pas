@@ -1,6 +1,6 @@
 unit DUnitX.BaseExecutive;
 interface
-uses DUnitX.TestFramework, Classes, DUnitX.IoC;
+uses DUnitX.TestFramework, Classes, DUnitX.IoC, DUnitX.viewModel_LoggerContainer;
 
 type
 
@@ -30,6 +30,7 @@ TBaseExecutive = class( TInterfacedObject, IExecutive)
 
     procedure RegisterTestFixtures;                       virtual; abstract;
     procedure RegisterServices;                           virtual;
+    procedure AddLoggerFactory( const Addend: ILoggerContainerFactory);
   public
     constructor Create;
     destructor Destroy; override;
@@ -43,9 +44,15 @@ implementation
 
 
 
-uses DUnitX.TestRunner, DUnitX.viewModel_LoggerContainer, Generics.Collections;
+uses DUnitX.TestRunner, Generics.Collections, DUnitX.uStockSecondaryLoggerFactories;
 
 
+
+procedure TBaseExecutive.AddLoggerFactory(
+  const Addend: ILoggerContainerFactory);
+begin
+FServices.Resolve<ILoggerCentral>.Loggers.Add( Addend)
+end;
 
 constructor TBaseExecutive.Create;
 begin
@@ -104,6 +111,7 @@ FServices.RegisterType<ILoggerCentral>( True,
   begin
   result := TLoggerCentral.Create
   end, '');
+DUnitX.uStockSecondaryLoggerFactories.AppendStockFactories( FServices.Resolve<ILoggerCentral>.Loggers)
 end;
 
 function TBaseExecutive.Services: TDUnitXIoC;

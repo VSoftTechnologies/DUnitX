@@ -58,9 +58,6 @@
 			<DCCReference Include="..\..\design-time\pascal\DUnitX.DesignReg.pas"/>
 			<DCCReference Include="..\..\design-time\pascal\DUnitX.Wizard.pas"/>
 			<DCCReference Include="..\..\design-time\pascal\DUnitX.IDE_API.pas"/>
-			<DCCReference Include="..\..\design-time\pascal\DUnitX.mfmWizardTester.pas">
-				<Form>mfmWizardTester</Form>
-			</DCCReference>
 			<DCCReference Include="..\..\design-time\pascal\DUnitX.fmProjectWizard.pas">
 				<Form>fmProjectWizard</Form>
 			</DCCReference>

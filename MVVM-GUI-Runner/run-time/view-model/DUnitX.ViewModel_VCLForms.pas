@@ -1,7 +1,7 @@
 unit DUnitX.ViewModel_VCLForms;
 interface
-uses DUnitX.TestFramework, Vcl.Forms, DUnitX.BaseExecutive, DUnitX.ViewModel_Tree,
-     Classes, Vcl.Controls, DUnitX.viewModel_LoggerContainer, Generics.Collections;
+uses DUnitX.TestFramework, Forms, DUnitX.BaseExecutive, DUnitX.ViewModel_Tree,
+     Classes, Controls, DUnitX.viewModel_LoggerContainer, Generics.Collections;
 
 type
 TPutLevel = (lvDebug, lvNormal, lvHighLight);

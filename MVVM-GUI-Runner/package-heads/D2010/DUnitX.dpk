@@ -50,6 +50,8 @@ contains
   DUnitX.TestFixture in '..\..\..\DUnitX.TestFixture.pas',
   DUnitX.TestResult in '..\..\..\DUnitX.TestResult.pas',
   DUnitX.CommandLine in '..\..\..\DUnitX.CommandLine.pas',
-  DUnitX.MemoryLeakMonitor.Default in '..\..\..\DUnitX.MemoryLeakMonitor.Default.pas';
+  DUnitX.MemoryLeakMonitor.Default in '..\..\..\DUnitX.MemoryLeakMonitor.Default.pas',
+  DUnitX.Loggers.Text in '..\..\..\DUnitX.Loggers.Text.pas',
+  DUnitX.Loggers.Console in '..\..\..\DUnitX.Loggers.Console.pas';
 
 end.

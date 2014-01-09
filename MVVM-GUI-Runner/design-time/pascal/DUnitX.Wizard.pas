@@ -24,13 +24,21 @@ TProjectWizard = class( TNotifierObject,
     function  IsVisible( Project: IOTAProject): boolean;
     function  CurrentProject: IOTAProject;
     function  GetProjectGroup: IOTAProjectGroup;
+    function  CreateModule( const TemplateFN, StylesheetFN: string; const Owner: IOTAModule): IOTAModule;
+
+  private
+    procedure FindLibrary( const sActivePlatform: string);
 
   protected
     function  GetGalleryCategoryStringId: string;        virtual;  // Frequently override
+    procedure AdjustUnitNamespaces;
 
   private
     FServices: TDUnitXIoC;
     FIDE: IIDE_API;
+    FLibraryAbsolutePath: string;
+    FUnitTestingLocation, FUnitTestingProjectName: string;
+    FTreeId: string;
 
   public
     constructor Create( Services1: TDUnitXIoC);
@@ -58,10 +66,9 @@ implementation
 uses
   {$if CompilerVersion >= 23}
     // XE2+
-    Vcl.Dialogs,
+    DCCStrs,
   {$else}
     // D2010, XE
-    Dialogs,
   {$ifend}
     SysUtils, HTTPProd, Classes, Windows, DUnitX.LaunchWizardForm, IOUtils,
     DUnitX.Utils.XML2, XmlIntf, DUnitX.WizardStates;
@@ -82,6 +89,7 @@ TIOTACreator = class( TNotifierObject, IInterface, IOTACreator,
     FDoc: IXMLDocument;
     FUnitTestingProjectName: string;
     FOwner: IOTAModule;
+    FTreeId: string;
 
   protected
     function QueryInterface( const IID: TGUID; out Obj): HResult; stdcall;
@@ -118,18 +126,32 @@ TIOTACreator = class( TNotifierObject, IInterface, IOTACreator,
     function SupportsModuleCreator: boolean;
     function TemplateDocNode: IXMLNode;
     function TemplateNodeExists( const XPathExpression: string): boolean;
-    function Transform( const SourceType, ModuleName, ProjectDirectories, PlugInUnits, PlugInPath: string; var Output: string): boolean;
+    function Transform( const SourceType, ModuleName: string; var Output: string): boolean;
+    function ComputeSource( const FileName, SourceType, ModuleName: string): IOTAFile;
+    function LookUpCreatorString( const PathFromt_IOTACreator: string): string;
 
  public
    constructor Create(
           const IDE1: IIDE_API;
           const DUnitXLibraryPath1, TemplateFileName1, UnitTestingLocation1,
                 UnitTestingProjectName1, StyleSheetName1: string;
+          const TreeId1: string;
           const Owner1: IOTAModule);
    destructor  Destroy; override;
 
  public
-   function CreateModules: IInterface;
+   function CreateModules: IOTAModule;
+
+ private type
+   TOTASavedFile = class( TInterfacedObject, IOTAFile)
+     private
+       FSource: string;
+       FAge: TDateTime;
+       function GetSource: string; virtual;
+       function GetAge: TDateTime; virtual;
+     public
+       constructor Create( const FileName, Source: string);
+     end;
  end;
 
 
@@ -168,6 +190,25 @@ FServices.Free; // Ownership was transferred, so need to destroy it.
 inherited
 end;
 
+procedure TProjectWizard.FindLibrary( const sActivePlatform: string);
+var
+  Paths: TStrings;
+  Path: string;
+begin;
+if FLibraryAbsolutePath <> '' then exit;
+Paths := TStringList.Create;
+try
+  FIDE.GetLibraryPaths( sActivePlatform, Paths);
+  for Path in Paths do
+    begin
+    if not TFile.Exists( Path + '\' + LitmusFile) then continue;
+    FLibraryAbsolutePath := Path;
+    break
+    end
+finally
+  Paths.Free
+  end;
+end;
 
 procedure TProjectWizard.Execute;
 var
@@ -178,20 +219,18 @@ var
   CurrentProjectPath: string;
   CurrentPlatform: TPlatform;
   BDSProjectPath: string;
-  LibraryAbsolutePath: string;
-  UnitTestingProjectName: string;
-  UnitTestingLocation: string;
   ApplicationTitle: string;
   Tree: TTreeViewChoice;
   View: TViewParadigm;
   LibraryRelativePath: string;
   Proj: IOTAProject;
   sActivePlatform: string;
-  {$if CompilerVersion >= 24}
+  {$if CompilerVersion >= 23}
     O: IOTAProjectOptionsConfigurations;
   {$ifend}
   Creator: TIOTACreator;
   Group: IOTAProjectGroup;
+  BaseConfig: IOTABuildConfiguration;
 begin
 isNewProjectGroup  := GetProjectGroup <> nil;
 Proj := CurrentProject;
@@ -221,6 +260,7 @@ if SameText( sActivePlatform, 'Win32') then
     CurrentPlatform := pWin64
   else
     CurrentPlatform := pWin32;
+FindLibrary( sActivePlatform);
 Wiz := FServices.Resolve<ILaunchWizardFormService>;
 if assigned( Wiz) then
     Ok := Wiz.LaunchWizardForm(
@@ -229,9 +269,9 @@ if assigned( Wiz) then
         CurrentProjectPath,
         CurrentPlatform,
         BDSProjectPath,
-        LibraryAbsolutePath,
-        UnitTestingProjectName,
-        UnitTestingLocation,
+        FLibraryAbsolutePath,
+        FUnitTestingProjectName,
+        FUnitTestingLocation,
         ApplicationTitle,
         Tree,
         View,
@@ -243,9 +283,9 @@ if assigned( Wiz) then
         CurrentProjectPath,
         CurrentPlatform,
         BDSProjectPath,
-        LibraryAbsolutePath,
-        UnitTestingProjectName,
-        UnitTestingLocation,
+        FLibraryAbsolutePath,
+        FUnitTestingProjectName,
+        FUnitTestingLocation,
         ApplicationTitle,
         Tree,
         View,
@@ -258,14 +298,47 @@ if isNewProjectGroup then
     end
   else
     Group := GetProjectGroup;
+case Tree of
+  tvDUnitXVTree: FTreeId := 'DxVTree';    // The DUnitX bundled TVirtualStringTree
+  tvUserVTree  : FTreeId := 'VTree';      // The users's pre-installed TVirtualStringTree
+  tvWinTreeView: FTreeId := 'WinTree';    // TreeView
+  end;
+CreateModule( 'GUIRunner.dpr.template'        , 'IOTAConstruct.xsl', Group as IOTAModule);
+CreateModule( 'DUnitX.uExecutive.pas.template', 'IOTAConstruct.xsl', CurrentProject as IOTAModule);
+AdjustUnitNamespaces;
+// TODO:
+//  Research. There doesn't appear to be a way in ToolsAPI to add a platform.
+//   I will post a question, either on StackOverflow or Embarcadero forums.
+end;
 
-Creator := TIOTACreator.Create( FIDE, LibraryAbsolutePath, 'GUIRunner.dpr.template',
-                                UnitTestingLocation, UnitTestingProjectName, 'IOTAConstruct.xsl', Group as IOTAModule);
-Creator.CreateModules;
+procedure TProjectWizard.AdjustUnitNamespaces;
+// TODO:
+//   Acquire the Namespace from the template, so we can support Fmx.
+const
+  sFrameworkNamespace = 'Vcl'; // This to become dynamic.
+var
+  sNamespaceList: string;
+begin
+{$if CompilerVersion >= 23} // XE2+
+//    This bit not finished yet. Our goal is to add Vcl. to the project namespaces,
+//      if not already on the list.
+if Supports( CurrentProject.ProjectOptions, IOTAProjectOptionsConfigurations, O) then
+   begin
+   BaseConfig := O.BaseConfiguration;
+   sNamespaceList := BaseConfig.GetValue( sNamespace);
+   if Pos(';' + sFrameworkNamespace + ';', ';' + sNamespaceList + ';') = -1 then
+     BaseConfig.SetValue( sNamespace, sNamespaceList + ';' + sFrameworkNamespace)
+   end
+{$ifend}
+end;
 
-Creator := TIOTACreator.Create( FIDE, LibraryAbsolutePath, 'DUnitX.uExecutive.pas.template',
-                                UnitTestingLocation, UnitTestingProjectName, 'IOTAConstruct.xsl', CurrentProject as IOTAModule);
-Creator.CreateModules
+function TProjectWizard.CreateModule( const TemplateFN, StylesheetFN: string; const Owner: IOTAModule): IOTAModule;
+var
+  Creator: TIOTACreator;
+begin
+Creator := TIOTACreator.Create( FIDE, FLibraryAbsolutePath, TemplateFN,
+     FUnitTestingLocation, FUnitTestingProjectName, StylesheetFN, FTreeId, Owner);
+result  := Creator.CreateModules as IOTAModule;
 end;
 
 function TProjectWizard.GetAuthor: string;
@@ -343,6 +416,7 @@ constructor TIOTACreator.Create(
           const IDE1: IIDE_API;
           const DUnitXLibraryPath1, TemplateFileName1, UnitTestingLocation1,
                 UnitTestingProjectName1, StyleSheetName1: string;
+          const TreeId1: string;
           const Owner1: IOTAModule);
 begin
 FIDE := IDE1;
@@ -352,6 +426,7 @@ FDUnitXLibraryPath := DUnitXLibraryPath1;
 FTemplateFileName  := TemplateFileName1;
 FProjectLocation := UnitTestingLocation1;
 FUnitTestingProjectName := UnitTestingProjectName1;
+FTreeId := TreeId1;
 FStyleSheet.Options := [oSimpleXSLT1];
 FStyleSheet.URI := 'https://github.com/SeanBDurkin/DUnitX/template';
 FStyleSheet.XMLVer := xml10;
@@ -376,13 +451,15 @@ finally
   end
 end;
 
-function TIOTACreator.Transform( const SourceType, ModuleName, ProjectDirectories, PlugInUnits, PlugInPath: string; var Output: string): boolean;
+function TIOTACreator.Transform( const SourceType, ModuleName: string; var Output: string): boolean;
 var
   sOutFN: string;
   Params: IStyleSheetParameterSet;
-  DUnitXProjectDirs: TStrings;
+  DistinctRelPaths: TStrings;
   sPathTranslations, sDUnitXRelativePath: string;
   sError: string;
+  sRelPath: string;
+  RelPathNode: IXMLNode;
 begin
 try
   sOutFN := TPath.GetTempFileName;
@@ -391,25 +468,21 @@ try
   Params.Param( '', 'CompilerVersion').ParameterValue := Format( '%.1f', [CompilerVersion]);
   Params.Param( '', 'SourceType').ParameterValue := SourceType;
   Params.Param( '', 'module-name').ParameterValue := ModuleName;
-  DUnitXProjectDirs := TStringList.Create;
-  DUnitXProjectDirs.StrictDelimiter := True;
-  DUnitXProjectDirs.Delimiter := '|';
-  DUnitXProjectDirs.DelimitedText := '|' + ProjectDirectories;
+
+  DistinctRelPaths := TStringList.Create;
   sPathTranslations := '';
-  for sDUnitXRelativePath in DUnitXProjectDirs do
-    sPathTranslations := sPathTranslations + '|' + sDUnitXRelativePath + '=' +
-      AbsPathToRelPath( FDUnitXLibraryPath + '\' + sDUnitXRelativePath, FProjectLocation);
-  DUnitXProjectDirs.Free;
+  for RelPathNode in TXPath.Select( TemplateDocNode,
+    't:IOTACreation/t:IOTACreator' + PredicateToSupportCompiler + '/t:IOTAFile/t:stream//t:DUnitX-path/@plus') do
+      begin
+      sRelPath := StringValue( RelPathNode);
+      if DistinctRelPaths.IndexOf( sRelPath) <> -1 then continue;
+      DistinctRelPaths.Add( sRelPath);
+      sPathTranslations := sPathTranslations + '|' + sRelPath +
+        '=' + AbsPathToRelPath( FDUnitXLibraryPath + '\' + sRelPath, FProjectLocation)
+      end;
+  DistinctRelPaths.Free;
+  Params.Param( '', 'tree').ParameterValue := FTreeId;
   Params.Param( '', 'path-translations').ParameterValue := sPathTranslations;
-  Params.Param( '', 'plugin-units').ParameterValue := PlugInUnits;
-  if PlugInUnits <> '' then
-      Params.Param( '', 'plugin-unit-path').ParameterValue := AbsPathToRelPath( FDUnitXLibraryPath + '\' + PlugInPath, FProjectLocation)
-    else
-      Params.Param( '', 'plugin-unit-path').ParameterValue := '';
-  Params.Param( '', 'plugin-view-units').ParameterValue := ', DUnitX.uTestSuiteVirtualTree';
-  Params.Param( '', 'plugin-view-registration').ParameterValue :=
-    'FServices.RegisterType<IVisualTestSuiteTreeFactory>('#$0A +
-    '  TTestSuiteVirtualTreeObj.IoCActivator(), '''');'#$0A;
   FStyleSheet.LoadedAtRunTime;
   result := FStyleSheet.Transform(
     FDUnitXLibraryPath + '\MVVM-GUI-Runner\design-time\templates\' + FTemplateFileName,
@@ -427,10 +500,9 @@ except on E: Exception do
   end
 end;
 
-function TIOTACreator.CreateModules: IInterface;
+function TIOTACreator.CreateModules: IOTAModule;
 begin
-result := self;
-FIDE.IOTAModuleServices.CreateModule( result as IOTACreator)  //
+result := FIDE.IOTAModuleServices.CreateModule( self as IOTACreator)
 end;
 
 destructor TIOTACreator.Destroy;
@@ -450,10 +522,15 @@ begin
 result := ''
 end;
 
+function TIOTACreator.LookUpCreatorString( const PathFromt_IOTACreator: string): string;
+begin
+result := TXPath.SelectedString( TemplateDocNode, 't:IOTACreation/t:IOTACreator' + PathFromt_IOTACreator)
+end;
+
 function TIOTACreator.GetCreatorType: string;
 // IOTACreator
 begin
-result := TXPath.SelectedString( TemplateDocNode, 't:IOTACreation/t:IOTACreator/@CreatorType');
+result := LookUpCreatorString( '/@CreatorType')
 end;
 
 function TIOTACreator.GetExisting: boolean;
@@ -467,8 +544,8 @@ function TIOTACreator.GetFileName: string;
 begin
 result := FProjectLocation + '\' + FUnitTestingProjectName + '.dpr';
 // This is equal to ...
-//  FProjectLocation + '\' + TXPath.SelectedString( TemplateDocNode,
- //         't:IOTACreation/t:IOTACreator' + PredicateToSupportCompiler +
+//  FProjectLocation + '\' + LookUpCreatorString(
+ //         PredicateToSupportCompiler +
  //         '/t:IOTAFile[t:ProjectSource/@val=''true'']/@filename')
 end;
 
@@ -487,9 +564,9 @@ end;
 function TIOTACreator.GetImplFileName: string;
 // IOTAModuleCreator
 begin
-result := FProjectLocation + '\' + TXPath.SelectedString( TemplateDocNode,
-        't:IOTACreation/t:IOTACreator' + PredicateToSupportCompiler +
-        '/t:IOTAFile[t:ImplSource/@val=''true'']/@filename');
+result := FProjectLocation + '\' + LookUpCreatorString(
+  PredicateToSupportCompiler +
+  '/t:IOTAFile[t:ImplSource/@val=''true'']/@filename');
 end;
 
 function TIOTACreator.GetIntfFileName: string;
@@ -531,11 +608,8 @@ end;
 function TIOTACreator.NewImplSource( const ModuleIdent, FormIdent,
   AncestorIdent: string): IOTAFile;
 // IOTAModuleCreator
-var
-  sStringResult: string;
 begin
-self.Transform( 'ImplSource', 'DUnitX.uExecutive', '', '', '', sStringResult);
-result := StringToIOTAFile( sStringResult)
+result := ComputeSource( GetImplFileName, 'ImplSource', 'DUnitX.uExecutive')
 end;
 
 function TIOTACreator.NewIntfSource( const ModuleIdent, FormIdent,
@@ -638,21 +712,26 @@ begin
 end;
 
 
-function TIOTACreator.NewProjectSource( const ProjectName: string): IOTAFile;
-// IOTAProjectCreator
+function TIOTACreator.ComputeSource( const FileName, SourceType, ModuleName: string): IOTAFile;
 var
   sStringResult: string;
 begin
-self.Transform( 'ProjectSource', FUnitTestingProjectName,
-  '|MVVM-GUI-Runner\run-time\view' +
-  '|MVVM-GUI-Runner\run-time\backplane' +
-  '|MVVM-GUI-Runner\run-time\view-model' +
-  '|MVVM-GUI-Runner\run-time\view\plug-ins\trees' +
-  '|MVVM-GUI-Runner\run-time\view\plug-ins\trees\DUnitX.VirtualStringTree',
-  'DUnitX.VirtualTrees DUnitX.VTAccessibility DUnitX.VTAccessibilityFactory',
-  'MVVM-GUI-Runner\Extenal-libraries\VirtualTreeView\Source',
-   sStringResult);
-result := StringToIOTAFile( sStringResult)
+try
+  Transform( SourceType, ModuleName, sStringResult)
+except on E: Exception do
+  sStringResult := E.Message
+  end;
+if FileName <> '' then
+    result := TOTASavedFile.Create( FileName, sStringResult)
+  else
+    result := StringToIOTAFile( sStringResult);
+end;
+
+
+function TIOTACreator.NewProjectSource( const ProjectName: string): IOTAFile;
+// IOTAProjectCreator
+begin
+result := ComputeSource( GetFileName, 'ProjectSource', FUnitTestingProjectName)
 end;
 
 function TIOTACreator.QueryInterface( const IID: TGUID; out Obj): HResult;
@@ -677,18 +756,47 @@ if doInherited then
 end;
 
 
+
+constructor TIOTACreator.TOTASavedFile.Create( const FileName, Source: string);
+var
+  Lines: TStrings;
+begin
+FSource := Source;
+try
+  Lines := TStringList.Create;
+  try
+    Lines.SaveToFile( FileName)
+  finally
+    Lines.Free
+    end;
+  FAge := Now
+except // It's ok to fail.
+  FAge := -1  // Mark it as unsaved
+  end
+end;
+
+function TIOTACreator.TOTASavedFile.GetAge: TDateTime;
+begin
+result := FAge
+end;
+
+function TIOTACreator.TOTASavedFile.GetSource: string;
+begin
+result := FSource
+end;
+
+
 //    TO DO List for DUnitX Wizard
 //    ==============================
-//     2. Create DUnitX.uTestSuiteVirtualTree version for bundled VTrees
-//     3. Implement TTestCaseNode.GetDoneCycleCount()
-//     4. Implement procedure TTestSuiteVirtualTreeObj.TChangeContext.Delete/Insert();
-//     5. Implement TBaseExecutionDecorator.MeasureProgress()
-//     6. Implement TRepeatDecorator.MeasureProgress()
-//     8. implement a design-time component library to support dclUnitX. So there will be
-//         1 run-time and 2 design-time packages within the grou.
-//     9. TTreeView impl
-//     10. Console impl
-//     11. Create Package Heads for XE2, XE3 and XE4. Some code adjustments
+//     1. For XE2+, add Win64 platform, if it is chosen.
+//     2. Implement TTestCaseNode.GetDoneCycleCount()
+//     3. Implement TBaseExecutionDecorator.MeasureProgress()
+//     4. Implement TRepeatDecorator.MeasureProgress()
+//     5. TTreeView impl
+//     6. Console impl
+//     7. Create Package Heads for XE2 and XE4. Some code adjustments
 //          may also be necessary to support these compilers.
+//     8. Implement the dialogs for the 2 stock secondary factories.
+//     9. Implement message acceptance filter on the main form.
 
 end.

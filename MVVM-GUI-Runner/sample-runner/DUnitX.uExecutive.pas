@@ -35,8 +35,7 @@ inherited;
 FServices.RegisterType<IVisualTestSuiteTreeFactory>(
   TTestSuiteVirtualTreeObj.IoCActivator(), '');
 
-// FServices.Resolve<ILoggerCentral>( '').Loggers.Add(
-//   TMyConcreteLoggerContainerFactory.Create)
+AddLoggerFactory( );
 end;
 
 procedure TExecutive.RegisterTestFixtures;

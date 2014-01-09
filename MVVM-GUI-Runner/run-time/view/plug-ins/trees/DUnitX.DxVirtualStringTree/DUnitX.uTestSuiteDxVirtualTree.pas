@@ -1,11 +1,11 @@
-unit DUnitX.uTestSuiteVirtualTree;
-// Native VirtualTree's version.
+unit DUnitX.uTestSuiteDxVirtualTree;
+// DUnitX  VirtualTree bundled version.
 
 interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, VirtualTrees, DUnitX.ViewModel_Tree, DUnitX.IoC,
+  Dialogs, DUnitX.VirtualTrees, DUnitX.ViewModel_Tree, DUnitX.IoC,
   ImgList, DUnitX.udmVirtualTreeNonVisualSupport;
 
 type
@@ -33,7 +33,7 @@ type
     StateImages: array[ TVisualTestSuiteNodeState] of integer = (
       // sNeutral, sSettingUp, sRunning, sTearingDown, sPassed, sFailed, sWarned, sError, sMessage
                -1,          5,      7,           6,      2,      4,      3,            9,        8);
-  end;
+   end;
 
   TTestSuiteVirtualTreeObj = class( TInterfacedObject, IVisualTestSuiteTree)
   private
@@ -145,7 +145,7 @@ FFrame.Loaded;
 FFrame.FObj := self;
 FTree := FFrame.Tree;
 FFrame.RemoveComponent( FTree);
-FFrame.RemoveControl( FTree);
+//FFrame.RemoveControl( FTree);
 FTree.NodeDataSize := SizeOf( RNodeDatum);
 Owner := AOwner;
 Parent := AParent;
@@ -345,7 +345,8 @@ var
   Idx: Integer;
 begin
 result := nil;
-Base := Sibling;
+Base := (Sibling as IVisualTestSuiteNodeEx).GetNode;
+FTreeObj.FTree.DeleteNode( Node);
 case Position of
   iBefore: Mode := amInsertBefore;
   iAfter : Mode := amInsertAfter;
@@ -353,7 +354,7 @@ case Position of
 for Idx := 1 to AddCount do
   begin
   FTreeObj.FTree.InsertNode( Base, Mode);
-  DatumRec := FTree.GetNodeData( Node);
+  DatumRec := FTreeObj.FTree.GetNodeData( Node);
   Include( Node.States, vsInitialUserData);
   Node.CheckType := ctTriStateCheckBox;
   DatumRec^.FToken := TVisualTestSuiteNode.Create( Node);

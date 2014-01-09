@@ -77,12 +77,14 @@
 			<DCCReference Include="..\..\..\DUnitX.FixtureResult.pas"/>
 			<DCCReference Include="..\..\..\DUnitX.CommandLine.pas"/>
 			<DCCReference Include="..\..\..\DUnitX.DUnitCompatibility.pas"/>
-			<DCCReference Include="..\..\Extenal-libraries\VirtualTreeView\Source\DUnitX.VirtualTrees.pas"/>
-			<DCCReference Include="..\..\Extenal-libraries\VirtualTreeView\Source\DUnitX.VTAccessibility.pas"/>
-			<DCCReference Include="..\..\Extenal-libraries\VirtualTreeView\Source\DUnitX.VTAccessibilityFactory.pas"/>
+			<DCCReference Include="..\..\External-libraries\VirtualTreeView\Source\DUnitX.VirtualTrees.pas"/>
 			<DCCReference Include="..\..\..\DUnitX.Utils.XML2.pas"/>
 			<DCCReference Include="..\..\..\DUnitX.Extensions.pas"/>
 			<DCCReference Include="..\..\..\Examples\DUnitX.Examples.General.pas"/>
+			<DCCReference Include="..\..\run-time\view\plug-ins\trees\DUnitX.udmVirtualTreeNonVisualSupport.pas">
+				<Form>dmVirtualTreeNonVisualSupport</Form>
+				<DesignClass>TDataModule</DesignClass>
+			</DCCReference>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

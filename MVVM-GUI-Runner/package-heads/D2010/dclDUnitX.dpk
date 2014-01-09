@@ -42,7 +42,6 @@ contains
   DUnitX.DesignReg in '..\..\design-time\pascal\DUnitX.DesignReg.pas',
   DUnitX.Wizard in '..\..\design-time\pascal\DUnitX.Wizard.pas',
   DUnitX.IDE_API in '..\..\design-time\pascal\DUnitX.IDE_API.pas',
-  DUnitX.mfmWizardTester in '..\..\design-time\pascal\DUnitX.mfmWizardTester.pas' {mfmWizardTester},
   DUnitX.fmProjectWizard in '..\..\design-time\pascal\DUnitX.fmProjectWizard.pas' {fmProjectWizard},
   DUnitX.frmMainDetailsPage in '..\..\design-time\pascal\DUnitX.frmMainDetailsPage.pas' {frmMainDetailsPage: TFrame},
   DUnitX.WizardPageIntf in '..\..\design-time\pascal\DUnitX.WizardPageIntf.pas',

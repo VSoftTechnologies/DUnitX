@@ -188,10 +188,12 @@ object mfmGUIRunner: TmfmGUIRunner
     object actDetachLogger: TAction
       Category = 'Per Secondary Logger'
       Caption = 'Detach'
+      OnExecute = actDetachLoggerExecute
     end
     object actEditLoggerProps: TAction
       Category = 'Per Secondary Logger'
-      Caption = 'Logger properties'
+      Caption = 'Properties...'
+      OnExecute = actEditLoggerPropsExecute
     end
     object actPrimaryLvlInformation: TAction
       Category = 'Primary Log Level'
@@ -208,18 +210,6 @@ object mfmGUIRunner: TmfmGUIRunner
       Category = 'Primary Log Level'
       Caption = 'Error'
       GroupIndex = 1
-    end
-    object actSecondaryLvlInformation: TAction
-      Category = 'Per Secondary Log Level'
-      Caption = 'Information'
-    end
-    object actSecondaryLvlWarning: TAction
-      Category = 'Per Secondary Log Level'
-      Caption = 'Warning'
-    end
-    object actSecondaryLvlError: TAction
-      Category = 'Per Secondary Log Level'
-      Caption = 'Error'
     end
     object actHaltOnFirstFailure: TAction
       Category = 'Options'
@@ -257,7 +247,7 @@ object mfmGUIRunner: TmfmGUIRunner
     Left = 296
     Top = 184
     Bitmap = {
-      494C010102000800280010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C0101020008002C0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001000000001002000000000000010
       0000000000000000000000000000000000000000000000000000000000000000
       000000000000733A2D00733A2D00783C2A00793D2A00753B2B00693531000000

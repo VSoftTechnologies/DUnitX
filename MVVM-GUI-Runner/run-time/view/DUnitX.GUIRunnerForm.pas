@@ -2,15 +2,22 @@ unit DUnitX.GUIRunnerForm;
 
 interface
 
+{$if RTLVersion < 23.00}
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms,
-  Vcl.Dialogs, DUnitX.BaseExecutive, Vcl.AppEvnts, DUnitX.TestFramework,
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, DUnitX.BaseExecutive, AppEvnts, DUnitX.TestFramework,
   DUnitX.ViewModel_VCLForms, PlatformDefaultStyleActnCtrls, Menus, ActnPopup,
-  ComCtrls, ImgList, ActnMan, ActnColorMaps, ActnList, ExtCtrls, StdCtrls
-  {$if RTLVersion >= 23.00} , System.Actions  {$ifend}
-  // Keep the edit buffer of this file marked as read-only to prevent the IDE
-  //  from creating extraneous references to System.Actions
-  , ToolWin, ActnCtrls, XPStyleActnCtrls, Generics.Collections, DUnitX.viewModel_LoggerContainer;
+  ComCtrls, ImgList, ActnMan, ActnColorMaps, ActnList, ExtCtrls, StdCtrls,
+  ToolWin, ActnCtrls, XPStyleActnCtrls, Generics.Collections, DUnitX.viewModel_LoggerContainer;
+{$else}
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, DUnitX.BaseExecutive, AppEvnts, DUnitX.TestFramework,
+  DUnitX.ViewModel_VCLForms, PlatformDefaultStyleActnCtrls, Menus, ActnPopup,
+  ComCtrls, ImgList, ActnMan, ActnColorMaps, ActnList, ExtCtrls, StdCtrls,
+  ToolWin, ActnCtrls, XPStyleActnCtrls, Generics.Collections, DUnitX.viewModel_LoggerContainer,
+  System.Actions;
+{$ifend}
 
 type
   TmfmGUIRunner = class(TForm)
@@ -36,9 +43,6 @@ type
     actPrimaryLvlInformation: TAction;
     actPrimaryLvlWarning: TAction;
     actPrimaryLvlError: TAction;
-    actSecondaryLvlInformation: TAction;
-    actSecondaryLvlWarning: TAction;
-    actSecondaryLvlError: TAction;
     actHaltOnFirstFailure: TAction;
     actFailOnLeak: TAction;
     actNotYetDeveloped: TAction;
@@ -60,6 +64,8 @@ type
     procedure actClearExecute(Sender: TObject);
     procedure actClearUpdate(Sender: TObject);
     procedure actToggleSelectionExecute(Sender: TObject);
+    procedure actEditLoggerPropsExecute(Sender: TObject);
+    procedure actDetachLoggerExecute(Sender: TObject);
 
   private
     FViewModel: IViewModel_VCLForms;
@@ -67,7 +73,7 @@ type
 
     procedure CreateDynamicMenuItems( SecondaryLoggers: TList<ILoggerContainerFactory>);
     function  CreateAttachLoggerAction( const Factory: ILoggerContainerFactory): TAction;
-    function  CreateLoggerAction( Template: TAction; const Logger: ITestLogger; const Properties: IInterface; const DisplayName: string): TAction;
+    function  CreateLoggerAction( Template: TAction; const Factory1: ILoggerContainerFactory; const Logger: ITestLogger; const Properties: IInterface; const DisplayName: string): TAction;
 
   protected
     procedure Loaded; override;
@@ -95,9 +101,10 @@ TFactoryAction = class( TAction)
 
 TLoggerAction = class( TAction)
   public
+    FFactory: ILoggerContainerFactory;
     FLogger: ITestLogger;
     FProps: IInterface;
-    constructor Create( AOwner: TComponent; const Logger: ITestLogger; const Props: IInterface);
+    constructor Create( AOwner: TComponent; const Factory1: ILoggerContainerFactory; const Logger: ITestLogger; const Props: IInterface);
   end;
 
 TConcreteView = class( TViewModel_VCLForms)
@@ -162,9 +169,9 @@ FViewModel.FormLoaded( self)
 end;
 
 
-function TmfmGUIRunner.CreateLoggerAction( Template: TAction; const Logger: ITestLogger; const Properties: IInterface; const DisplayName: string): TAction;
+function TmfmGUIRunner.CreateLoggerAction( Template: TAction; const Factory1: ILoggerContainerFactory; const Logger: ITestLogger; const Properties: IInterface; const DisplayName: string): TAction;
 begin
-result := TLoggerAction.Create( Template.Owner, Logger, Properties);
+result := TLoggerAction.Create( Template.Owner, Factory1, Logger, Properties);
 result.ActionList := Template.ActionList;
 AssignAction( result, Template);
 if Pos( '%s', result.Caption) > 0 then
@@ -189,27 +196,21 @@ var
   Properties: IInterface;
   Addend: TActionClientItem;
   DisplayName: string;
+  Secondary: TActionClientItem;
 begin
   // For each attached secondary logger, we will also have ...
   //   - Logger properties
   //   - Detach
-  //   - Secondary logger log level
-  //    -- Information   (group 2+)
-  //    -- Warning
-  //    -- Error
 with Sender as TFactoryAction do
   begin
   if not FFactory.CreateLogger( Logger, Properties, DisplayName) then exit;
   FViewModel.AttachSecondaryLogger( Logger);
-  Addend := FSecondaryLoggersItem.Items.Add;
-  Addend.Action := CreateLoggerAction( actEditLoggerProps, Logger, Properties, DisplayName);
-  Addend := FSecondaryLoggersItem.Items.Add;
-  Addend.Action := CreateLoggerAction( actDetachLogger, Logger, Properties, DisplayName);
-  Addend := FSecondaryLoggersItem.Items.Add;
-  Addend.Caption := 'Secondary logger log level';
-  Addend.Items.Add.Action := CreateLoggerAction( actPrimaryLvlInformation, Logger, Properties, DisplayName);
-  Addend.Items.Add.Action := CreateLoggerAction( actPrimaryLvlWarning    , Logger, Properties, DisplayName);
-  Addend.Items.Add.Action := CreateLoggerAction( actPrimaryLvlError      , Logger, Properties, DisplayName)
+  Secondary := FSecondaryLoggersItem.Items.Add;
+  Secondary.Caption := DisplayName;
+  Addend := Secondary.Items.Add;
+  Addend.Action := CreateLoggerAction( actEditLoggerProps, FFactory, Logger, Properties, DisplayName);
+  Addend := Secondary.Items.Add;
+  Addend.Action := CreateLoggerAction( actDetachLogger, FFactory, Logger, Properties, DisplayName)
   end;
 end;
 
@@ -226,6 +227,17 @@ end;
 procedure TmfmGUIRunner.actClearUpdate( Sender: TObject);
 begin
 (Sender as TAction).Enabled := FViewModel.CanClearSelections
+end;
+
+procedure TmfmGUIRunner.actDetachLoggerExecute(Sender: TObject);
+begin
+ShowMessage( 'Not implemented yet.')
+end;
+
+procedure TmfmGUIRunner.actEditLoggerPropsExecute( Sender: TObject);
+begin
+with Sender as TLoggerAction do
+  FFactory.DisplayProperties( FLogger, FProps)
 end;
 
 procedure TmfmGUIRunner.actRunExecute( Sender: TObject);
@@ -483,12 +495,13 @@ end;
 
 { TLoggerAction }
 
-constructor TLoggerAction.Create(AOwner: TComponent; const Logger: ITestLogger;
+constructor TLoggerAction.Create(AOwner: TComponent; const Factory1: ILoggerContainerFactory; const Logger: ITestLogger;
   const Props: IInterface);
 begin
 inherited Create( AOwner);
-FLogger := Logger;
-FProps  := Props
+FFactory := Factory1;
+FLogger  := Logger;
+FProps   := Props
 end;
 
 end.
