@@ -17,7 +17,6 @@ uses
   DUnitX.TestResult in '..\DUnitX.TestResult.pas',
   DUnitX.TestRunner in '..\DUnitX.TestRunner.pas',
   DUnitX.Utils in '..\DUnitX.Utils.pas',
-  DUnitX.Detour in '..\DUnitX.Detour.pas',
   DUnitX.IoC in '..\DUnitX.IoC.pas',
   DUnitX.CommandLine in '..\DUnitX.CommandLine.pas',
   DUnitX.MemoryLeakMonitor.Default in '..\DUnitX.MemoryLeakMonitor.Default.pas',

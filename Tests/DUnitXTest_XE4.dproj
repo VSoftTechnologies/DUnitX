@@ -1,13 +1,13 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{78AC97F9-EC37-4A68-8525-9C5EC2F94223}</ProjectGuid>
-        <MainSource>DUnitXTest_XE3.dpr</MainSource>
+        <MainSource>DUnitXTest_XE4.dpr</MainSource>
         <Config Condition="'$(Config)'==''">Debug</Config>
         <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
         <ProjectVersion>14.6</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
         <Base>True</Base>
-        <Platform Condition="'$(Platform)'==''">Win32</Platform>
+        <Platform Condition="'$(Platform)'==''">Win64</Platform>
         <TargetedPlatforms>3</TargetedPlatforms>
         <AppType>Console</AppType>
     </PropertyGroup>
@@ -68,7 +68,6 @@
         <DCCReference Include="..\DUnitX.ConsoleWriter.Base.pas"/>
         <DCCReference Include="..\DUnitX.Loggers.XML.NUnit.pas"/>
         <DCCReference Include="..\DUnitX.Loggers.XML.xUnit.pas"/>
-        <DCCReference Include="..\DUnitX.Detour.pas"/>
         <DCCReference Include="..\DUnitX.Generics.pas"/>
         <DCCReference Include="..\DUnitX.Utils.pas"/>
         <DCCReference Include="..\DUnitX.WeakReference.pas"/>
@@ -76,6 +75,7 @@
         <DCCReference Include="..\DUnitX.Test.pas"/>
         <DCCReference Include="..\DUnitX.TestFixture.pas"/>
         <DCCReference Include="..\DUnitX.TestResult.pas"/>
+        <DCCReference Include="..\DUnitX.RunResults.pas"/>
         <DCCReference Include="..\DUnitX.TestRunner.pas"/>
         <DCCReference Include="..\DUnitX.InternalInterfaces.pas"/>
         <DCCReference Include="..\DUnitX.TestFramework.pas"/>
@@ -95,11 +95,6 @@
             <Form>Form1</Form>
         </DCCReference>
         <DCCReference Include="..\DUnitX.StackTrace.EurekaLog7.pas"/>
-        <DCCReference Include="..\DUnitX.FixtureResult.pas"/>
-        <DCCReference Include="..\DUnitX.RunResults.pas"/>
-        <DCCReference Include="..\DUnitX.MemoryLeakMonitor.Default.pas"/>
-        <DCCReference Include="..\DUnitX.MemoryLeakMonitor.FastMM4.pas"/>
-        <DCCReference Include="..\DUnitX.Loggers.Null.pas"/>
         <None Include="..\DUnitX.inc"/>
         <None Include="..\DUnitX.Stacktrace.inc"/>
         <BuildConfiguration Include="Debug">
@@ -121,7 +116,7 @@
         <BorlandProject>
             <Delphi.Personality>
                 <Source>
-                    <Source Name="MainSource">DUnitXTest_XE3.dpr</Source>
+                    <Source Name="MainSource">DUnitXTest_XE4.dpr</Source>
                 </Source>
                 <Parameters>
                     <Parameters Name="UseLauncher">False</Parameters>
