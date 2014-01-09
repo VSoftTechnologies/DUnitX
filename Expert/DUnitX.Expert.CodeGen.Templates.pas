@@ -9,7 +9,7 @@ resourcestring
  '{$APPTYPE CONSOLE}'#13#10 +
  'uses'#13#10 +
  '  SysUtils,'#13#10 +
- '  DUnitX.Windows.Console,'#13#10 +
+ '  DUnitX.AutoDetect.Console,'#13#10 +
  '  DUnitX.Loggers.Console,'#13#10 +
  '  DUnitX.Loggers.Xml.NUnit,'#13#10 +
  '  DUnitX.TestRunner,'#13#10 +

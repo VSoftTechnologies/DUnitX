@@ -7,7 +7,6 @@ uses
   DUnitX.Examples.General in 'DUnitX.Examples.General.pas',
   DUnitX.CommandLine in '..\DUnitX.CommandLine.pas',
   DUnitX.ConsoleWriter.Base in '..\DUnitX.ConsoleWriter.Base.pas',
-  DUnitX.Detour in '..\DUnitX.Detour.pas',
   DUnitX.DUnitCompatibility in '..\DUnitX.DUnitCompatibility.pas',
   DUnitX.Generics in '..\DUnitX.Generics.pas',
   DUnitX.InternalInterfaces in '..\DUnitX.InternalInterfaces.pas',
