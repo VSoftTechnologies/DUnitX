@@ -24,11 +24,42 @@
 {                                                                           }
 {***************************************************************************}
 
+unit DUnitX.Expert.CodeGen.SourceFile;
 
+interface
 
-// Uncomment to use FastMM4 Memory Leak Tracking.
-//NOTE : Memory leak tracking does not work very well at the moment, as it's
-//reporting leaks when logging information during tests (calls to .Status etc).
-{.$DEFINE USE_FASTMM4_LEAK_MONITOR}
+uses
+  SysUtils, Classes, ToolsAPI;
 
+type
+  TSourceFile = class(TInterfacedObject, IOTAFile)
+  private
+    FSource: string;
+  public
+    function GetSource: string;
+    function GetAge: TDateTime;
+    constructor Create(const Source: string; const Args: array of const );
+  end;
+
+implementation
+
+{ TSourceFile }
+
+constructor TSourceFile.Create(const Source: string;
+  const Args: array of const );
+begin
+  FSource := Format(Source, Args);
+end;
+
+function TSourceFile.GetAge: TDateTime;
+begin
+  result := now;
+end;
+
+function TSourceFile.GetSource: string;
+begin
+  result := FSource;
+end;
+
+end.
 

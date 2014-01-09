@@ -24,11 +24,38 @@
 {                                                                           }
 {***************************************************************************}
 
+unit DUnitX.Expert.CodeGen.NewTestProject;
 
+interface
+uses
+  ToolsAPI,
+  DUnitX.Expert.CodeGen.NewProject;
 
-// Uncomment to use FastMM4 Memory Leak Tracking.
-//NOTE : Memory leak tracking does not work very well at the moment, as it's
-//reporting leaks when logging information during tests (calls to .Status etc).
-{.$DEFINE USE_FASTMM4_LEAK_MONITOR}
+type
+  TTestProjectFile = class(TNewProject)
+  protected
+    function NewProjectSource(const ProjectName: string): IOTAFile; override;
+  public
+    constructor Create;
+  end;
 
+implementation
+uses
+  DUnitX.Expert.CodeGen.SourceFile,
+  DunitX.Expert.CodeGen.Templates;
 
+{ TProjectFile }
+
+constructor TTestProjectFile.Create;
+begin
+ //TODO: Figure out how to make this be TestProjectX where X is the next available.
+ //Return Blank and the project will be 'ProjectX.dpr' where X is the next available number
+  FFileName := '';
+end;
+
+function TTestProjectFile.NewProjectSource(const ProjectName: string): IOTAFile;
+begin
+  result := TSourceFile.Create(STestDPR,[ProjectName]);
+end;
+
+end.

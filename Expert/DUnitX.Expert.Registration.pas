@@ -24,11 +24,24 @@
 {                                                                           }
 {***************************************************************************}
 
+unit DUnitX.Expert.Registration;
 
+interface
 
-// Uncomment to use FastMM4 Memory Leak Tracking.
-//NOTE : Memory leak tracking does not work very well at the moment, as it's
-//reporting leaks when logging information during tests (calls to .Status etc).
-{.$DEFINE USE_FASTMM4_LEAK_MONITOR}
+//Note: "Register" method name is case senstive.
+procedure Register;
 
+implementation
+uses
+  ToolsApi,
+  Dialogs,
+  DUnitX.Expert.ProjectWizard,
+  DUnitX.Expert.NewUnitWizard;
 
+procedure Register;
+begin
+  RegisterPackageWizard(TDUnitXNewProjectWizard.Create);
+  RegisterPackageWizard(TDUnitXNewUnitWizard.Create);
+end;
+
+end.
