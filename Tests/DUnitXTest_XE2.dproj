@@ -75,7 +75,6 @@
 			<DCCReference Include="..\DUnitX.Windows.Console.pas"/>
 			<DCCReference Include="..\DUnitX.ConsoleWriter.Base.pas"/>
 			<DCCReference Include="..\DUnitX.Loggers.XML.xUnit.pas"/>
-			<DCCReference Include="..\DUnitX.Detour.pas"/>
 			<DCCReference Include="..\DUnitX.Generics.pas"/>
 			<DCCReference Include="..\DUnitX.Utils.pas"/>
 			<DCCReference Include="..\DUnitX.WeakReference.pas"/>
@@ -181,8 +180,3 @@
 		</ProjectExtensions>
 		<Import Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')" Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj"/>
 	</Project>
-
-<!-- EurekaLog First Line
-[Exception Log]
-EurekaLog Version=7001
-EurekaLog Last Line -->
