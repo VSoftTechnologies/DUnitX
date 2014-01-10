@@ -34,8 +34,15 @@ implementation
 
 
 
-uses DUnitX.IoC, DUnitX.ConsoleWriter.Base, Dialogs, System.UITypes,
-     IOUtils, SysUtils;
+uses DUnitX.IoC, DUnitX.ConsoleWriter.Base, Dialogs, IOUtils, SysUtils
+  {$if CompilerVersion >= 23}
+    // XE2+
+    , System.UITypes
+  {$else}
+    // D2010, XE
+    , Controls
+  {$ifend}
+     ;
 
 procedure AppendStockFactories( Collection: TList<ILoggerContainerFactory>);
 begin

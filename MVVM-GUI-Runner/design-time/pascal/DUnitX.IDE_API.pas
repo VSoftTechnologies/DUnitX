@@ -14,6 +14,9 @@ type
       function  DecodeEnvironmentVariable( const PropName: string): string;
       procedure GetLibraryPaths( const sPlatform: string; var Paths: TStrings);
       function  GetDelphiSuffix: string;
+      procedure ReportError( const Msg: string);
+      procedure ReportInformation( const Msg: string);
+      function  Confirm( const Question, AutomationId: string): boolean;
     end;
 
 procedure RegisterStockDevEnviroService( const ServiceContainer: TDUnitXIoC);
@@ -25,7 +28,14 @@ implementation
 
 
 
-uses SysUtils, Windows, Registry, IOUtils;
+uses SysUtils, Windows, Registry, IOUtils
+  {$if CompilerVersion >= 23}
+    // XE2+
+   , Vcl.Dialogs, System.UITypes
+  {$else}
+   , Dialogs, Controls
+  {$ifend}
+   ;
 
 type
 TIDE = class( TInterfacedObject, IIDE_API)
@@ -40,6 +50,9 @@ TIDE = class( TInterfacedObject, IIDE_API)
     function  DecodeEnvironmentVariable( const PropName: string): string;
     procedure GetLibraryPaths( const sPlatform: string; var Paths: TStrings);
     function  GetDelphiSuffix: string;
+    procedure ReportError( const Msg: string);
+    procedure ReportInformation( const Msg: string);
+    function  Confirm( const Question, AutomationId: string): boolean;
   public
     constructor Create;
     destructor Destroy; override;
@@ -159,6 +172,12 @@ begin
 end;
 
 
+function TIDE.Confirm( const Question, AutomationId: string): boolean;
+begin
+result := {$if CompilerVersion >= 23}Vcl.{$ifend}Dialogs.MessageDlg(
+  Question, mtConfirmation, [mbYes, mbNo], 0) = mrYes
+end;
+
 constructor TIDE.Create;
 begin
 FEnviroVars := TStringList.Create;
@@ -174,6 +193,16 @@ end;
 procedure TIDE.RegisterPackageWizard( const Wizard: IOTAWizard);
 begin
 ToolsAPI.RegisterPackageWizard( Wizard)
+end;
+
+procedure TIDE.ReportError( const Msg: string);
+begin
+{$if CompilerVersion >= 23}Vcl.{$ifend}Dialogs.MessageDlg( Msg, mtError, [mbOK], 0)
+end;
+
+procedure TIDE.ReportInformation( const Msg: string);
+begin
+{$if CompilerVersion >= 23}Vcl.{$ifend}Dialogs.MessageDlg( Msg, mtInformation, [mbOK], 0)
 end;
 
 function TIDE.DecodeEnvironmentVariable( const PropName: string): string;

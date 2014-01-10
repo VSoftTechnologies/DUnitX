@@ -12,6 +12,7 @@ IExecutive = interface
     procedure DeclareMainForm( MainForm: TComponent);
     function  Services: TDUnitXIoC;
     procedure RegisterTestFixtures;
+    function  ApplicationTitle: string;
   end;
 
 TBaseExecutive = class( TInterfacedObject, IExecutive)
@@ -28,6 +29,7 @@ TBaseExecutive = class( TInterfacedObject, IExecutive)
     FServices: TDUnitXIoC;
     FModel: ITestRunner;
 
+    function  ApplicationTitle: string;                   virtual; abstract;
     procedure RegisterTestFixtures;                       virtual; abstract;
     procedure RegisterServices;                           virtual;
     procedure AddLoggerFactory( const Addend: ILoggerContainerFactory);

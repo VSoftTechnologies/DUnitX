@@ -26,11 +26,13 @@ object fmProjectWizard: TfmProjectWizard
     ActionManager = actmngrWizardActions
     Align = alBottom
     Caption = 'tlbarNav'
-    ColorMap.HighlightColor = 15660791
-    ColorMap.BtnSelectedColor = clBtnFace
-    ColorMap.UnusedColor = 15660791
+    Color = clMenuBar
+    ColorMap.DisabledFontColor = 7171437
+    ColorMap.HighlightColor = clWhite
+    ColorMap.BtnSelectedFont = clBlack
+    ColorMap.UnusedColor = clWhite
     Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
+    Font.Color = clBlack
     Font.Height = -11
     Font.Name = 'Tahoma'
     Font.Style = []

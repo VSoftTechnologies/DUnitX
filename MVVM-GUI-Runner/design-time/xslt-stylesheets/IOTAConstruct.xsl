@@ -11,6 +11,7 @@
 <xsl:param name="SourceType" select="'ProjectSource'" />
 <xsl:param name="module-name" select="'GUIRunner'" />
 <xsl:param name="tree" select="'DxVTree'" />
+<xsl:param name="app-title" select="'Unit testing application'" />
 <xsl:param name="path-translations"
 	select="
 		  '|=.\
@@ -61,16 +62,20 @@
 
 <xsl:template match="t:module-name">
   <xsl:value-of select="$module-name" />
-</xsl:template>  
-    
+</xsl:template>
+
 <xsl:template match="t:DUnitX-path">
   <xsl:variable name="key" select="concat('|',@plus,'=')" />
   <xsl:variable name="path2" select="substring-after( $path-translations, $key)" />
   <xsl:variable name="path3" select="normalize-space( substring-before( concat( $path2, '|'), '|'))" />
   <!-- Exclude trailing path delimter from $path3 to $path4 -->
   <xsl:variable name="path4" select="concat(substring($path3,1,string-length($path3)-1),
-                                    translate( substring($path3,string-length($path3),1), '\', ''))"/>
+									translate( substring($path3,string-length($path3),1), '\', ''))"/>
   <xsl:value-of select="$path4" />
-</xsl:template>  
-   
+</xsl:template>
+
+<xsl:template match="t:app-title">
+  <xsl:value-of select="$app-title" />
+</xsl:template>
+
 </xsl:stylesheet>

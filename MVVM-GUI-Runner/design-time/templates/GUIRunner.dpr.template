@@ -42,7 +42,7 @@ uses
   DUnitX.FixtureResult in &apos;<t:DUnitX-path />\DUnitX.FixtureResult.pas&apos;,
   DUnitX.uStockSecondaryLoggerFactories in &apos;<t:DUnitX-path plus="MVVM-GUI-Runner\run-time\view"/>\DUnitX.uStockSecondaryLoggerFactories.pas&apos;,
   DUnitX.Loggers.Console in &apos;<t:DUnitX-path />\DUnitX.Loggers.Console.pas&apos;,
-  DUnitX.ConsoleWriter.Base in &apos;<t:DUnitX-path />\DUnitX.ConsoleWriter.pas&apos;,
+  DUnitX.ConsoleWriter.Base in &apos;<t:DUnitX-path />\DUnitX.ConsoleWriter.Base.pas&apos;,
   DUnitX.Loggers.Text in &apos;<t:DUnitX-path />\DUnitX.Loggers.Text.pas&apos;,
   DUnitX.CommandLine in &apos;<t:DUnitX-path />\DUnitX.CommandLine.pas&apos;,
   DUnitX.DUnitCompatibility in &apos;<t:DUnitX-path />\DUnitX.DUnitCompatibility.pas&apos;,<t:tree id="DxVTree">
@@ -58,6 +58,7 @@ uses
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
+  Application.Title := &apos;<t:app-title/>&apos;;
   Application.CreateForm(TmfmGUIRunner, mfmGUIRunner);
   Application.Run;
 end.</t:stream>

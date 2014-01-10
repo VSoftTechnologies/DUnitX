@@ -24,7 +24,7 @@ TProjectWizard = class( TNotifierObject,
     function  IsVisible( Project: IOTAProject): boolean;
     function  CurrentProject: IOTAProject;
     function  GetProjectGroup: IOTAProjectGroup;
-    function  CreateModule( const TemplateFN, StylesheetFN: string; const Owner: IOTAModule): IOTAModule;
+    function  CreateModule( const TemplateFN, StylesheetFN: string; const Owner: IOTAModule; var FileName1: string): IOTAModule;
 
   private
     procedure FindLibrary( const sActivePlatform: string);
@@ -39,6 +39,7 @@ TProjectWizard = class( TNotifierObject,
     FLibraryAbsolutePath: string;
     FUnitTestingLocation, FUnitTestingProjectName: string;
     FTreeId: string;
+    FAppTitle: string;
 
   public
     constructor Create( Services1: TDUnitXIoC);
@@ -66,7 +67,7 @@ implementation
 uses
   {$if CompilerVersion >= 23}
     // XE2+
-    DCCStrs,
+    DCCStrs,   Vcl.Dialogs, PlatformAPI,
   {$else}
     // D2010, XE
   {$ifend}
@@ -90,6 +91,9 @@ TIOTACreator = class( TNotifierObject, IInterface, IOTACreator,
     FUnitTestingProjectName: string;
     FOwner: IOTAModule;
     FTreeId: string;
+    FAppTitle: string;
+    doOverwrite: boolean;
+    hasCached_doOverwrite: boolean;
 
   protected
     function QueryInterface( const IID: TGUID; out Obj): HResult; stdcall;
@@ -103,7 +107,7 @@ TIOTACreator = class( TNotifierObject, IInterface, IOTACreator,
     function  GetFileName: string;
     function  GetOptionFileName: string;
     function  GetShowSource: boolean;
-    procedure NewDefaultModule; deprecated;
+    procedure NewDefaultModule;
     function  NewOptionSource( const ProjectName: string): IOTAFile;
     procedure NewProjectResource( const Project: IOTAProject);
     function  NewProjectSource( const ProjectName: string): IOTAFile;
@@ -136,8 +140,10 @@ TIOTACreator = class( TNotifierObject, IInterface, IOTACreator,
           const DUnitXLibraryPath1, TemplateFileName1, UnitTestingLocation1,
                 UnitTestingProjectName1, StyleSheetName1: string;
           const TreeId1: string;
-          const Owner1: IOTAModule);
+          const Owner1: IOTAModule;
+          const AppTitle1: string);
    destructor  Destroy; override;
+   function GetMainFileName: string;
 
  public
    function CreateModules: IOTAModule;
@@ -150,7 +156,7 @@ TIOTACreator = class( TNotifierObject, IInterface, IOTACreator,
        function GetSource: string; virtual;
        function GetAge: TDateTime; virtual;
      public
-       constructor Create( const FileName, Source: string);
+       constructor Create( const IDE: IIDE_API; SaveToDisk: boolean; const FileName, Source: string);
      end;
  end;
 
@@ -219,18 +225,21 @@ var
   CurrentProjectPath: string;
   CurrentPlatform: TPlatform;
   BDSProjectPath: string;
-  ApplicationTitle: string;
   Tree: TTreeViewChoice;
   View: TViewParadigm;
   LibraryRelativePath: string;
   Proj: IOTAProject;
   sActivePlatform: string;
-  {$if CompilerVersion >= 23}
+  {$if CompilerVersion >= 24}
     O: IOTAProjectOptionsConfigurations;
   {$ifend}
-  Creator: TIOTACreator;
   Group: IOTAProjectGroup;
-  BaseConfig: IOTABuildConfiguration;
+  GuiRunner_dpr_FileName: string;
+  Executive_pas_FileName: string;
+{$if CompilerVersion >= 23}
+  PlatformServices: IOTAPlatformServices;
+  Platforms: IOTAProjectPlatforms;
+{$ifend}
 begin
 isNewProjectGroup  := GetProjectGroup <> nil;
 Proj := CurrentProject;
@@ -272,7 +281,7 @@ if assigned( Wiz) then
         FLibraryAbsolutePath,
         FUnitTestingProjectName,
         FUnitTestingLocation,
-        ApplicationTitle,
+        FAppTitle,
         Tree,
         View,
         LibraryRelativePath)
@@ -286,7 +295,7 @@ if assigned( Wiz) then
         FLibraryAbsolutePath,
         FUnitTestingProjectName,
         FUnitTestingLocation,
-        ApplicationTitle,
+        FAppTitle,
         Tree,
         View,
         LibraryRelativePath);
@@ -294,7 +303,7 @@ if not Ok then exit;
 if isNewProjectGroup then
     begin
     Group := nil;
-    (BorlandIDEServices as IOTAModuleServices).CloseAll
+    FIDE.IOTAModuleServices.CloseAll
     end
   else
     Group := GetProjectGroup;
@@ -303,21 +312,35 @@ case Tree of
   tvUserVTree  : FTreeId := 'VTree';      // The users's pre-installed TVirtualStringTree
   tvWinTreeView: FTreeId := 'WinTree';    // TreeView
   end;
-CreateModule( 'GUIRunner.dpr.template'        , 'IOTAConstruct.xsl', Group as IOTAModule);
-CreateModule( 'DUnitX.uExecutive.pas.template', 'IOTAConstruct.xsl', CurrentProject as IOTAModule);
+Proj := CreateModule( 'GUIRunner.dpr.template', 'IOTAConstruct.xsl', Group          as IOTAModule, GuiRunner_dpr_FileName) as IOTAProject;
+CreateModule( 'DUnitX.uExecutive.pas.template', 'IOTAConstruct.xsl', CurrentProject as IOTAModule, Executive_pas_FileName);
+{$if CompilerVersion >= 23}
+  if (not SameText( sActivePlatform, 'Win32')) and
+     Supports( FIDE.BorlandIDEServices, IOTAPlatformServices, PlatformServices) and
+     PlatformServices.PlatformAvailable( sActivePlatform, sDelphiPersonality) and
+     Supports( Proj, IOTAProjectPlatforms, Platforms) then
+    begin
+    Platforms.AddPlatform( sActivePlatform);
+    Platforms.Enabled[ sActivePlatform] := True
+    end;
+{$ifend}
 AdjustUnitNamespaces;
-// TODO:
-//  Research. There doesn't appear to be a way in ToolsAPI to add a platform.
-//   I will post a question, either on StackOverflow or Embarcadero forums.
+Proj.SetFileName( GuiRunner_dpr_FileName);
+Proj.Save( False, True);
 end;
 
 procedure TProjectWizard.AdjustUnitNamespaces;
 // TODO:
 //   Acquire the Namespace from the template, so we can support Fmx.
+{$if CompilerVersion >= 23}
 const
   sFrameworkNamespace = 'Vcl'; // This to become dynamic.
 var
   sNamespaceList: string;
+  O: IOTAProjectOptionsConfigurations;
+  BaseConfig: IOTABuildConfiguration;
+{$ifend}
+
 begin
 {$if CompilerVersion >= 23} // XE2+
 //    This bit not finished yet. Our goal is to add Vcl. to the project namespaces,
@@ -326,19 +349,22 @@ if Supports( CurrentProject.ProjectOptions, IOTAProjectOptionsConfigurations, O)
    begin
    BaseConfig := O.BaseConfiguration;
    sNamespaceList := BaseConfig.GetValue( sNamespace);
-   if Pos(';' + sFrameworkNamespace + ';', ';' + sNamespaceList + ';') = -1 then
+   if Pos(';' + sFrameworkNamespace + ';', ';' + sNamespaceList + ';') = 0 then
      BaseConfig.SetValue( sNamespace, sNamespaceList + ';' + sFrameworkNamespace)
    end
 {$ifend}
 end;
 
-function TProjectWizard.CreateModule( const TemplateFN, StylesheetFN: string; const Owner: IOTAModule): IOTAModule;
+function TProjectWizard.CreateModule( const TemplateFN, StylesheetFN: string; const Owner: IOTAModule; var FileName1: string): IOTAModule;
 var
   Creator: TIOTACreator;
+  Hold: IInterface;
 begin
 Creator := TIOTACreator.Create( FIDE, FLibraryAbsolutePath, TemplateFN,
-     FUnitTestingLocation, FUnitTestingProjectName, StylesheetFN, FTreeId, Owner);
-result  := Creator.CreateModules as IOTAModule;
+     FUnitTestingLocation, FUnitTestingProjectName, StylesheetFN, FTreeId, Owner, FAppTitle);
+Hold      := Creator;
+result    := Creator.CreateModules as IOTAModule;
+FileName1 := Creator.GetMainFilename
 end;
 
 function TProjectWizard.GetAuthor: string;
@@ -417,15 +443,19 @@ constructor TIOTACreator.Create(
           const DUnitXLibraryPath1, TemplateFileName1, UnitTestingLocation1,
                 UnitTestingProjectName1, StyleSheetName1: string;
           const TreeId1: string;
-          const Owner1: IOTAModule);
+          const Owner1: IOTAModule;
+          const AppTitle1: string);
 begin
 FIDE := IDE1;
+doOverwrite := False;
+hasCached_doOverwrite := False;
 FStyleSheetFileName := StyleSheetName1;
 FStyleSheet := TStyleSheet.Create( nil);
 FDUnitXLibraryPath := DUnitXLibraryPath1;
 FTemplateFileName  := TemplateFileName1;
 FProjectLocation := UnitTestingLocation1;
 FUnitTestingProjectName := UnitTestingProjectName1;
+FAppTitle := AppTitle1;
 FTreeId := TreeId1;
 FStyleSheet.Options := [oSimpleXSLT1];
 FStyleSheet.URI := 'https://github.com/SeanBDurkin/DUnitX/template';
@@ -456,7 +486,7 @@ var
   sOutFN: string;
   Params: IStyleSheetParameterSet;
   DistinctRelPaths: TStrings;
-  sPathTranslations, sDUnitXRelativePath: string;
+  sPathTranslations: string;
   sError: string;
   sRelPath: string;
   RelPathNode: IXMLNode;
@@ -468,7 +498,7 @@ try
   Params.Param( '', 'CompilerVersion').ParameterValue := Format( '%.1f', [CompilerVersion]);
   Params.Param( '', 'SourceType').ParameterValue := SourceType;
   Params.Param( '', 'module-name').ParameterValue := ModuleName;
-
+  Params.Param( '', 'app-title').ParameterValue := FAppTitle;
   DistinctRelPaths := TStringList.Create;
   sPathTranslations := '';
   for RelPathNode in TXPath.Select( TemplateDocNode,
@@ -535,8 +565,29 @@ end;
 
 function TIOTACreator.GetExisting: boolean;
 // IOTACreator
+var
+  sFN: string;
 begin
-result := False
+if SupportsProjectCreator then
+    result := False
+    // Don't save dpr source to disk via the IOTAFile.
+    // This would get Delphi very badly confused because it cannot find the
+    //  non-existant .dproj file and assumes that this is an upgrade
+    //  from Delphi 2007.
+  else
+    begin
+    // Save .pas and/or other files to disk at the IOTAFile stage, if permissible.
+    //  It is user friendly to save at this point.
+    sFN := GetImplFilename;
+    result := not TFile.Exists( sFN);
+    if result then exit;
+    result := doOverwrite;
+    if hasCached_doOverwrite then exit;
+    hasCached_doOverwrite := True;
+    result := FIDE.Confirm( Format( 'File %s already exists. Overwrite it?', [sFN]),
+      'TIOTACreator.GetExisting()');
+    doOverwrite := result
+    end;
 end;
 
 function TIOTACreator.GetFileName: string;
@@ -573,6 +624,14 @@ function TIOTACreator.GetIntfFileName: string;
 // IOTAModuleCreator
 begin
 result := '';
+end;
+
+function TIOTACreator.GetMainFileName: string;
+begin
+if SupportsProjectCreator then
+    result := GetFileName
+  else
+    result := GetImplFileName
 end;
 
 function TIOTACreator.GetMainForm: boolean;
@@ -722,7 +781,7 @@ except on E: Exception do
   sStringResult := E.Message
   end;
 if FileName <> '' then
-    result := TOTASavedFile.Create( FileName, sStringResult)
+    result := TOTASavedFile.Create( FIDE, GetExisting, FileName, sStringResult)
   else
     result := StringToIOTAFile( sStringResult);
 end;
@@ -757,22 +816,62 @@ end;
 
 
 
-constructor TIOTACreator.TOTASavedFile.Create( const FileName, Source: string);
+constructor TIOTACreator.TOTASavedFile.Create( const IDE: IIDE_API; SaveToDisk: boolean; const FileName, Source: string);
 var
   Lines: TStrings;
+  sCleanList: string;
+
+  procedure CleanUp( const Ext: string);
+  var
+    OldFN: string;
+    isDeleted: boolean;
+  begin
+  OldFN := TPath.ChangeExtension( FileName, Ext);
+  if not TFile.Exists( OldFN) then Exit;
+  try
+    TFile.Delete( OldFN);
+    isDeleted := True
+  except
+    isDeleted := False
+    end;
+  if not isDeleted then exit;
+  if sCleanList <> '' then
+    sCleanList := sCleanList + ', ';
+  sCleanList := sCleanList + TPath.GetFileName( OldFN)
+  end;
+
 begin
 FSource := Source;
-try
-  Lines := TStringList.Create;
+FAge    := -1;
+if SaveToDisk then
   try
-    Lines.SaveToFile( FileName)
-  finally
-    Lines.Free
+    Lines := TStringList.Create;
+    try
+      Lines.Text := Source;
+      Lines.SaveToFile( FileName)
+    finally
+      Lines.Free
+      end;
+    FAge := TFile.GetLastWriteTime( FileName)
+  except // It's ok to fail.
+      IDE.ReportError( 'Failed to save file ' + Filename)
     end;
-  FAge := Now
-except // It's ok to fail.
-  FAge := -1  // Mark it as unsaved
-  end
+if ((FAge <> -1) or (not SaveToDisk)) and SameText( TPath.GetExtension( FileName), '.dpr') then
+  begin
+    // Get rid of co-named files with extensions as shown.
+    // Left over from a previous project, these can interfere with the state of the project.
+  CleanUp( '.dproj');
+  CleanUp( '.dproj.local');
+  CleanUp( '.identcache');
+  end;
+if sCleanList = '' then exit;
+if Pos( ',', sCleanList) > 0 then
+    sCleanList := 'Deleted these old co-located files which may conflict with the new project:'#13#10 +
+                  '  ' + sCleanList
+  else
+    sCleanList := 'Deleted this old co-located file which may conflict with the new project:'#13#10 +
+                  '  ' + sCleanList;
+IDE.ReportInformation( sCleanList)
 end;
 
 function TIOTACreator.TOTASavedFile.GetAge: TDateTime;
@@ -794,9 +893,7 @@ end;
 //     4. Implement TRepeatDecorator.MeasureProgress()
 //     5. TTreeView impl
 //     6. Console impl
-//     7. Create Package Heads for XE2 and XE4. Some code adjustments
+//     7. Create Package Heads for XE4. Some code adjustments
 //          may also be necessary to support these compilers.
-//     8. Implement the dialogs for the 2 stock secondary factories.
-//     9. Implement message acceptance filter on the main form.
 
 end.

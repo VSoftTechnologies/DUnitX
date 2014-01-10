@@ -2,7 +2,7 @@ unit DUnitX.GUIRunnerForm;
 
 interface
 
-{$if RTLVersion < 23.00}
+{$if RTLVersion < 24.00}
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, DUnitX.BaseExecutive, AppEvnts, DUnitX.TestFramework,
@@ -40,9 +40,6 @@ type
     actAttachLogger: TAction;
     actDetachLogger: TAction;
     actEditLoggerProps: TAction;
-    actPrimaryLvlInformation: TAction;
-    actPrimaryLvlWarning: TAction;
-    actPrimaryLvlError: TAction;
     actHaltOnFirstFailure: TAction;
     actFailOnLeak: TAction;
     actNotYetDeveloped: TAction;
@@ -109,11 +106,11 @@ TLoggerAction = class( TAction)
 
 TConcreteView = class( TViewModel_VCLForms)
   protected
-    procedure OnTestingStarts(const threadId, testCount, testActiveCount : Cardinal);                 override;
-    procedure OnTestingEnds(const RunResults: IRunResults);                                           override;
-    function TreeOwner: TComponent;         override;
-    function TreeParent: TWinControl;       override;
-    function TreeName: string;              override;
+    procedure OnTestingStarts( const threadId, testCount, testActiveCount : Cardinal);                 override;
+    procedure OnTestingEnds( const RunResults: IRunResults);                                           override;
+    function  TreeOwner: TComponent;         override;
+    function  TreeParent: TWinControl;       override;
+    function  TreeName: string;              override;
     procedure IntegrateSecondariesIntoMenus;              override;
     procedure AttachVisualTree;                           override;
     procedure ClearLog;                                   override;
@@ -124,6 +121,7 @@ TConcreteView = class( TViewModel_VCLForms)
     procedure EnterOperation( isEntering: boolean);       override;
 
   private
+    FSensitivity: TPutLevel;
     function  GetShowProgressBar: boolean;
     procedure SetShowProgressBar( Value: boolean);
     function  GetProgressPosition: integer;
@@ -283,11 +281,6 @@ Addend.Action := actHaltOnFirstFailure;
 Addend := Options.Items.Add;
 Addend.Action := actFailOnLeak;
 Addend := Options.Items.Add;
-Addend.Caption := 'Primary logger';
-Addend.Items.Add.Action := actPrimaryLvlInformation;
-Addend.Items.Add.Action := actPrimaryLvlWarning;
-Addend.Items.Add.Action := actPrimaryLvlError;
-Addend := Options.Items.Add;
 Addend.Caption := 'Secondary loggers';
 FSecondaryLoggersItem := Addend;
 
@@ -318,8 +311,7 @@ end;
 
 procedure TmfmGUIRunner.FormCreate(Sender: TObject);
 begin
-memoLog.Clear;
-Caption := 'DUnitX Suite Runner: ' + '<variable part inserted here>'
+memoLog.Clear
 end;
 
 procedure TmfmGUIRunner.FormDestroy( Sender: TObject);
@@ -412,6 +404,7 @@ var
   Style1: TFontStyles;
   Colour1: TColor;
 begin
+if FSensitivity > Level then exit;
 case Level of
   lvDebug:      begin
                 Size1   := 8;

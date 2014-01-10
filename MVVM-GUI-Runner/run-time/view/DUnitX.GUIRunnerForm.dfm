@@ -195,22 +195,6 @@ object mfmGUIRunner: TmfmGUIRunner
       Caption = 'Properties...'
       OnExecute = actEditLoggerPropsExecute
     end
-    object actPrimaryLvlInformation: TAction
-      Category = 'Primary Log Level'
-      Caption = 'Information'
-      Checked = True
-      GroupIndex = 1
-    end
-    object actPrimaryLvlWarning: TAction
-      Category = 'Primary Log Level'
-      Caption = 'Warning'
-      GroupIndex = 1
-    end
-    object actPrimaryLvlError: TAction
-      Category = 'Primary Log Level'
-      Caption = 'Error'
-      GroupIndex = 1
-    end
     object actHaltOnFirstFailure: TAction
       Category = 'Options'
       AutoCheck = True
@@ -247,7 +231,7 @@ object mfmGUIRunner: TmfmGUIRunner
     Left = 296
     Top = 184
     Bitmap = {
-      494C0101020008002C0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010102000800300010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001000000001002000000000000010
       0000000000000000000000000000000000000000000000000000000000000000
       000000000000733A2D00733A2D00783C2A00793D2A00753B2B00693531000000

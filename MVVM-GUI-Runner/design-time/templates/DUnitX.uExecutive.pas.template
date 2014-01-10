@@ -27,8 +27,9 @@ uses Classes, DUnitX.IoC, DUnitX.TestFramework, DUnitX.TestRunner,
 type
 TExecutive = class( TBaseExecutive)
   protected
-    procedure RegisterTestFixtures;    override;
-    procedure RegisterServices;        override;
+    procedure RegisterTestFixtures;     override;
+    procedure RegisterServices;         override;
+    function  ApplicationTitle: string; override;
   end;
 
 
@@ -36,6 +37,12 @@ function AcquireExecutive: IExecutive;
 begin
 result := TExecutive.Create
 end;
+
+function TExecutive.ApplicationTitle: string;
+begin
+result := &apos;DUnitX Suite Runner: &apos; + &apos;<t:app-title/>&apos;
+end;
+
 
 procedure TExecutive.RegisterServices;
 begin

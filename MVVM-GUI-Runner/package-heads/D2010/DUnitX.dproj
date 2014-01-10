@@ -22,7 +22,7 @@
 		<PropertyGroup Condition="'$(Base)'!=''">
 			<DCC_UnitAlias>WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;$(DCC_UnitAlias)</DCC_UnitAlias>
 			<DesignOnlyPackage>false</DesignOnlyPackage>
-			<DCC_DependencyCheckOutputName>C:\Documents and Settings\All Users\Documents\RAD Studio\7.0\Bpl\DUnitX_D2010.bpl</DCC_DependencyCheckOutputName>
+			<DCC_DependencyCheckOutputName>C:\Users\Public\Documents\RAD Studio\7.0\Bpl\DUnitX_D2010.bpl</DCC_DependencyCheckOutputName>
 			<DCC_Description>DUnitX run-time library</DCC_Description>
 			<RuntimeOnlyPackage>true</RuntimeOnlyPackage>
 			<GenDll>true</GenDll>
@@ -70,6 +70,7 @@
 			<DCCReference Include="..\..\..\DUnitX.MemoryLeakMonitor.Default.pas"/>
 			<DCCReference Include="..\..\..\DUnitX.Loggers.Text.pas"/>
 			<DCCReference Include="..\..\..\DUnitX.Loggers.Console.pas"/>
+			<DCCReference Include="..\..\..\DUnitX.ConsoleWriter.Base.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

@@ -7,7 +7,10 @@ uses
     // XE2+
     Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ActnMan, Vcl.ActnColorMaps,
     Vcl.PlatformDefaultStyleActnCtrls, Vcl.ActnList, Vcl.ImgList, Vcl.ExtCtrls,
-    Vcl.ToolWin, Vcl.ActnCtrls, System.Actions,
+    Vcl.ToolWin, Vcl.ActnCtrls,
+    {$if CompilerVersion >= 24}
+      System.Actions,
+    {$ifend}
   {$else}
     // D2010, XE
     Graphics, Controls, Forms, Dialogs, ActnMan, ActnColorMaps,

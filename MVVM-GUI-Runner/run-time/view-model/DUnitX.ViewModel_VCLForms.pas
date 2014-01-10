@@ -117,6 +117,7 @@ TViewModel_VCLForms = class( TInterfacedObject, ITestLogger, IViewModel_VCLForms
     procedure SetDisplayState( Value: TSuiteRunnerState);         virtual;
     procedure Breathe;                                            virtual; abstract;
     procedure InitiateView( TestCaseCount: integer);              virtual;
+    procedure SetApplicationTitle( const Title: string);          virtual;
 
   public
     constructor Create;
@@ -218,7 +219,14 @@ end;
 procedure TViewModel_VCLForms.AttachVCLForm( Form: TCustomForm);
 begin
 FForm := Form;
-AttachExecutive
+AttachExecutive;
+SetApplicationTitle( FExecutive.ApplicationTitle)
+end;
+
+
+procedure TViewModel_VCLForms.SetApplicationTitle( const Title: string);
+begin
+FForm.Caption := Title
 end;
 
 procedure TViewModel_VCLForms.AttachExecutive;
