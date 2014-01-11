@@ -3,13 +3,13 @@
         <ProjectGuid>{10DF7258-906B-4D0D-8A83-58520E05E4BE}</ProjectGuid>
     </PropertyGroup>
     <ItemGroup>
-        <Projects Include="..\..\sample-runner\DXE3\GUIRunner.dproj">
-            <Dependencies/>
-        </Projects>
         <Projects Include="DUnitX.dproj">
             <Dependencies/>
         </Projects>
         <Projects Include="dclDUnitX.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="..\..\sample-runner\DXE3\GUIRunner2.dproj">
             <Dependencies/>
         </Projects>
     </ItemGroup>
@@ -20,15 +20,6 @@
             <Default.Personality/>
         </BorlandProject>
     </ProjectExtensions>
-    <Target Name="GUIRunner">
-        <MSBuild Projects="..\..\sample-runner\DXE3\GUIRunner.dproj"/>
-    </Target>
-    <Target Name="GUIRunner:Clean">
-        <MSBuild Projects="..\..\sample-runner\DXE3\GUIRunner.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="GUIRunner:Make">
-        <MSBuild Projects="..\..\sample-runner\DXE3\GUIRunner.dproj" Targets="Make"/>
-    </Target>
     <Target Name="DUnitX">
         <MSBuild Projects="DUnitX.dproj"/>
     </Target>
@@ -47,14 +38,23 @@
     <Target Name="dclDUnitX:Make">
         <MSBuild Projects="dclDUnitX.dproj" Targets="Make"/>
     </Target>
+    <Target Name="GUIRunner2">
+        <MSBuild Projects="..\..\sample-runner\DXE3\GUIRunner2.dproj"/>
+    </Target>
+    <Target Name="GUIRunner2:Clean">
+        <MSBuild Projects="..\..\sample-runner\DXE3\GUIRunner2.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="GUIRunner2:Make">
+        <MSBuild Projects="..\..\sample-runner\DXE3\GUIRunner2.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="GUIRunner;DUnitX;dclDUnitX"/>
+        <CallTarget Targets="DUnitX;dclDUnitX;GUIRunner2"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="GUIRunner:Clean;DUnitX:Clean;dclDUnitX:Clean"/>
+        <CallTarget Targets="DUnitX:Clean;dclDUnitX:Clean;GUIRunner2:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="GUIRunner:Make;DUnitX:Make;dclDUnitX:Make"/>
+        <CallTarget Targets="DUnitX:Make;dclDUnitX:Make;GUIRunner2:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

@@ -9,16 +9,19 @@ implementation
 
 
 uses Classes, DUnitX.IoC, DUnitX.TestFramework, DUnitX.TestRunner,
-     DUnitX.ViewModel_Tree, DUnitX.viewModel_LoggerContainer,
-     DUnitX.uTestSuiteVirtualTree,
-     DUnitX.Examples.General
+     DUnitX.ViewModel_Tree, DUnitX.viewModel_LoggerContainer
+     , DUnitX.uTestSuiteDxVirtualTree 
+     
+     
+     , DUnitX.Examples.General
      ;
 
 type
 TExecutive = class( TBaseExecutive)
   protected
-    procedure RegisterTestFixtures;    override;
-    procedure RegisterServices;        override;
+    procedure RegisterTestFixtures;     override;
+    procedure RegisterServices;         override;
+    function  ApplicationTitle: string; override;
   end;
 
 
@@ -27,23 +30,34 @@ begin
 result := TExecutive.Create
 end;
 
+function TExecutive.ApplicationTitle: string;
+begin
+result := 'DUnitX Suite Runner: ' + 'Unit Test Suite'
+end;
+
+
 procedure TExecutive.RegisterServices;
 begin
 inherited;
 
 // Dynamic content
+
 FServices.RegisterType<IVisualTestSuiteTreeFactory>(
   TTestSuiteVirtualTreeObj.IoCActivator(), '');
 
-AddLoggerFactory( );
+
+
+
+
+// FServices.Resolve<ILoggerCentral>( '').Loggers.Add(
+//   TMyConcreteLoggerContainerFactory.Create)
 end;
 
 procedure TExecutive.RegisterTestFixtures;
 begin
 // Dynamic content
-TDUnitX.RegisterTestFixture( TMyExampleTests);
+// TDUnitX.RegisterTestFixture( TMyExampleTests);
 
 end;
-
 
 end.

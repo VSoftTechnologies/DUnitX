@@ -1,0 +1,48 @@
+﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+		<PropertyGroup>
+			<ProjectGuid>{10DF7258-906B-4D0D-8A83-58520E05E4BE}</ProjectGuid>
+		</PropertyGroup>
+		<ItemGroup>
+			<Projects Include="DUnitX.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="dclDUnitX.dproj">
+				<Dependencies/>
+			</Projects>
+		</ItemGroup>
+		<ProjectExtensions>
+			<Borland.Personality>Default.Personality.12</Borland.Personality>
+			<Borland.ProjectType/>
+			<BorlandProject>
+				<Default.Personality/>
+			</BorlandProject>
+		</ProjectExtensions>
+		<Target Name="DUnitX">
+			<MSBuild Projects="DUnitX.dproj"/>
+		</Target>
+		<Target Name="DUnitX:Clean">
+			<MSBuild Projects="DUnitX.dproj" Targets="Clean"/>
+		</Target>
+		<Target Name="DUnitX:Make">
+			<MSBuild Projects="DUnitX.dproj" Targets="Make"/>
+		</Target>
+		<Target Name="dclDUnitX">
+			<MSBuild Projects="dclDUnitX.dproj"/>
+		</Target>
+		<Target Name="dclDUnitX:Clean">
+			<MSBuild Projects="dclDUnitX.dproj" Targets="Clean"/>
+		</Target>
+		<Target Name="dclDUnitX:Make">
+			<MSBuild Projects="dclDUnitX.dproj" Targets="Make"/>
+		</Target>
+		<Target Name="Build">
+			<CallTarget Targets="DUnitX;dclDUnitX"/>
+		</Target>
+		<Target Name="Clean">
+			<CallTarget Targets="DUnitX:Clean;dclDUnitX:Clean"/>
+		</Target>
+		<Target Name="Make">
+			<CallTarget Targets="DUnitX:Make;dclDUnitX:Make"/>
+		</Target>
+		<Import Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')" Project="$(BDS)\Bin\CodeGear.Group.Targets"/>
+	</Project>

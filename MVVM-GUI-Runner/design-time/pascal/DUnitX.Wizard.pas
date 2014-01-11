@@ -77,11 +77,17 @@ uses
 
 type
 
+TSetParamsProc = reference to procedure (const Params: IStyleSheetParameterSet);
+IWizardStylesheet = interface
+  ['{6E6A7346-8401-4F93-A72F-617BC56DD26A}']
+    function Transform( const TemplateFileName: string; SetParams: TSetParamsProc; var Output: string): boolean;
+  end;
+
 TIOTACreator = class( TNotifierObject, IInterface, IOTACreator,
     IOTAProjectCreator, IOTAProjectCreator50, IOTAProjectCreator80,
     IOTAModuleCreator)
   private
-    FStyleSheet: TStyleSheet;
+    FStyleSheet: IWizardStylesheet;
     FDUnitXLibraryPath: string; // Path to the DUnitX base directory.
     FTemplateFileName: string; // like 'GUIRunner.dpr.template'
     FStyleSheetFileName: string; // like 'IOTAConstruct.xsl'
@@ -93,7 +99,9 @@ TIOTACreator = class( TNotifierObject, IInterface, IOTACreator,
     FTreeId: string;
     FAppTitle: string;
     doOverwrite: boolean;
-    hasCached_doOverwrite: boolean;
+    FhasCached_doOverwrite: boolean;
+    FhasCached_ImplSource : boolean;
+    FCached_ImplSource    : string;
 
   protected
     function QueryInterface( const IID: TGUID; out Obj): HResult; stdcall;
@@ -133,6 +141,9 @@ TIOTACreator = class( TNotifierObject, IInterface, IOTACreator,
     function Transform( const SourceType, ModuleName: string; var Output: string): boolean;
     function ComputeSource( const FileName, SourceType, ModuleName: string): IOTAFile;
     function LookUpCreatorString( const PathFromt_IOTACreator: string): string;
+    function ImplSourceString: string;
+    function ComputeSourceString( const SourceType, ModuleName: string): string;
+    function MakeOTAFile( const FileName, Source: string): IOTAFile;
 
  public
    constructor Create(
@@ -159,6 +170,27 @@ TIOTACreator = class( TNotifierObject, IInterface, IOTACreator,
        constructor Create( const IDE: IIDE_API; SaveToDisk: boolean; const FileName, Source: string);
      end;
  end;
+
+
+TFileEx = class
+  // For all methods, assume the character data is persisted in UTF-8 encoding without BOM.
+    class function ReadFromFile( const FN: string; var Datum: string): boolean;
+    class function WriteToFile( const  FN, Datum: string): boolean;
+      // ^ Overwrites an existing file, or creates file. Both without prompt.
+    class function IsTheSameInFile( const  FN, Datum: string): boolean;
+  end;
+
+TWizardStylesheet = class( TInterfacedObject, IWizardStylesheet)
+  public
+    constructor Create( const DUnitXLibraryPath1, StyleSheetFileName1: string);
+    destructor Destroy; override;
+  private
+    FDUnitXLibraryPath: string;
+    FStyleSheetFileName: string;
+    FSSFullPathFN: string;
+    FStyleSheet: TStyleSheet;
+    function Transform( const DocumentFileName: string; SetParams: TSetParamsProc; var Output: string): boolean;
+  end;
 
 
 function TProjectWizard.GetProjectGroup: IOTAProjectGroup;
@@ -235,10 +267,14 @@ var
   {$ifend}
   Group: IOTAProjectGroup;
   GuiRunner_dpr_FileName: string;
+  GuiRunner_dproj_FileName: string;
   Executive_pas_FileName: string;
 {$if CompilerVersion >= 23}
   PlatformServices: IOTAPlatformServices;
   Platforms: IOTAProjectPlatforms;
+  ProjTransform: IWizardStylesheet;
+  sNewDProjSource: string;
+
 {$ifend}
 begin
 isNewProjectGroup  := GetProjectGroup <> nil;
@@ -312,6 +348,10 @@ case Tree of
   tvUserVTree  : FTreeId := 'VTree';      // The users's pre-installed TVirtualStringTree
   tvWinTreeView: FTreeId := 'WinTree';    // TreeView
   end;
+case CurrentPlatform of
+  pWin32: sActivePlatform := 'Win32';
+  pWin64: sActivePlatform := 'Win64'; // Only XE2+
+  end;
 Proj := CreateModule( 'GUIRunner.dpr.template', 'IOTAConstruct.xsl', Group          as IOTAModule, GuiRunner_dpr_FileName) as IOTAProject;
 CreateModule( 'DUnitX.uExecutive.pas.template', 'IOTAConstruct.xsl', CurrentProject as IOTAModule, Executive_pas_FileName);
 {$if CompilerVersion >= 23}
@@ -325,8 +365,28 @@ CreateModule( 'DUnitX.uExecutive.pas.template', 'IOTAConstruct.xsl', CurrentProj
     end;
 {$ifend}
 AdjustUnitNamespaces;
-Proj.SetFileName( GuiRunner_dpr_FileName);
+GuiRunner_dproj_FileName := TPath.ChangeExtension( GuiRunner_dpr_FileName, '.dproj');
+Proj.SetFileName( GuiRunner_dproj_FileName);
 Proj.Save( False, True);
+{$if CompilerVersion >= 23}
+  // Update the active platform in the dproj file because OTA is not doing it!
+  // The user will have to close and re-open the project to see the effect.
+  if not SameText( sActivePlatform, 'Win32') then
+    begin
+    ProjTransform := TWizardStylesheet.Create( FLibraryAbsolutePath, 'SetPlatform.xsl');
+    if ProjTransform.Transform( GuiRunner_dproj_FileName,
+      procedure ( const Params: IStyleSheetParameterSet)
+        begin
+        Params.Param( '', 'platform').ParameterValue := sActivePlatform
+        end,
+      sNewDProjSource) then
+        begin
+        TFileEx.WriteToFile( GuiRunner_dproj_FileName, sNewDProjSource);
+        FIDE.ReportInformation( Format('You may need to close and re-open'#13#10 +
+                                       'the project to see the %s platform.', [sActivePlatform]))
+        end
+    end
+{$ifend}
 end;
 
 procedure TProjectWizard.AdjustUnitNamespaces;
@@ -437,7 +497,6 @@ begin
 result := True
 end;
 
-
 constructor TIOTACreator.Create(
           const IDE1: IIDE_API;
           const DUnitXLibraryPath1, TemplateFileName1, UnitTestingLocation1,
@@ -448,86 +507,53 @@ constructor TIOTACreator.Create(
 begin
 FIDE := IDE1;
 doOverwrite := False;
-hasCached_doOverwrite := False;
+FhasCached_doOverwrite := False;
+FhasCached_ImplSource  := False;
+FCached_ImplSource     := '';
 FStyleSheetFileName := StyleSheetName1;
-FStyleSheet := TStyleSheet.Create( nil);
 FDUnitXLibraryPath := DUnitXLibraryPath1;
+FStyleSheet := TWizardStyleSheet.Create( FDUnitXLibraryPath, FStyleSheetFileName);
 FTemplateFileName  := TemplateFileName1;
 FProjectLocation := UnitTestingLocation1;
 FUnitTestingProjectName := UnitTestingProjectName1;
 FAppTitle := AppTitle1;
-FTreeId := TreeId1;
-FStyleSheet.Options := [oSimpleXSLT1];
-FStyleSheet.URI := 'https://github.com/SeanBDurkin/DUnitX/template';
-FStyleSheet.XMLVer := xml10;
-FStyleSheet.XSDVer := xsd11;
-FStyleSheet.WorkingDirectory := TPath.GetTempPath;
-FStyleSheet.Content.LoadFromFile( FDUnitXLibraryPath + '\MVVM-GUI-Runner\design-time\xslt-stylesheets\' + FStyleSheetFileName);
+FTreeId := TreeId1
 end;
 
 
-function ReadUTF8File( const FN: string): string;
-// IOUtils.TFile.ReadAllText( FN, TEncoding.UTF8) is broken for files without a BOM,
-//  so use this custom code.
-var
-  Lines: TStrings;
-begin
-Lines := TStringList.Create;
-try
-  Lines.LoadFromFile( FN);
-  result := Lines.Text
-finally
-  Lines.Free
-  end
-end;
 
 function TIOTACreator.Transform( const SourceType, ModuleName: string; var Output: string): boolean;
-var
-  sOutFN: string;
-  Params: IStyleSheetParameterSet;
-  DistinctRelPaths: TStrings;
-  sPathTranslations: string;
-  sError: string;
-  sRelPath: string;
-  RelPathNode: IXMLNode;
 begin
-try
-  sOutFN := TPath.GetTempFileName;
-  SetLength( sOutFN, StrLen( PChar( sOutFN)));
-  Params := FStyleSheet.Parameters;
+result := FStylesheet.Transform( FDUnitXLibraryPath + '\MVVM-GUI-Runner\design-time\templates\' + FTemplateFileName,
+  procedure (const Params: IStyleSheetParameterSet)
+  var
+    DistinctRelPaths: TStrings;
+    sPathTranslations: string;
+    sRelPath: string;
+    RelPathNode: IXMLNode;
+  begin
   Params.Param( '', 'CompilerVersion').ParameterValue := Format( '%.1f', [CompilerVersion]);
   Params.Param( '', 'SourceType').ParameterValue := SourceType;
   Params.Param( '', 'module-name').ParameterValue := ModuleName;
   Params.Param( '', 'app-title').ParameterValue := FAppTitle;
-  DistinctRelPaths := TStringList.Create;
   sPathTranslations := '';
-  for RelPathNode in TXPath.Select( TemplateDocNode,
-    't:IOTACreation/t:IOTACreator' + PredicateToSupportCompiler + '/t:IOTAFile/t:stream//t:DUnitX-path/@plus') do
-      begin
-      sRelPath := StringValue( RelPathNode);
-      if DistinctRelPaths.IndexOf( sRelPath) <> -1 then continue;
-      DistinctRelPaths.Add( sRelPath);
-      sPathTranslations := sPathTranslations + '|' + sRelPath +
-        '=' + AbsPathToRelPath( FDUnitXLibraryPath + '\' + sRelPath, FProjectLocation)
-      end;
-  DistinctRelPaths.Free;
+  DistinctRelPaths := TStringList.Create;
+  try
+    for RelPathNode in TXPath.Select( TemplateDocNode,
+      't:IOTACreation/t:IOTACreator' + PredicateToSupportCompiler + '/t:IOTAFile/t:stream//t:DUnitX-path/@plus') do
+        begin
+        sRelPath := StringValue( RelPathNode);
+        if DistinctRelPaths.IndexOf( sRelPath) <> -1 then continue;
+        DistinctRelPaths.Add( sRelPath);
+        sPathTranslations := sPathTranslations + '|' + sRelPath +
+          '=' + AbsPathToRelPath( FDUnitXLibraryPath + '\' + sRelPath, FProjectLocation)
+        end
+  finally
+    DistinctRelPaths.Free;
+    end;
   Params.Param( '', 'tree').ParameterValue := FTreeId;
   Params.Param( '', 'path-translations').ParameterValue := sPathTranslations;
-  FStyleSheet.LoadedAtRunTime;
-  result := FStyleSheet.Transform(
-    FDUnitXLibraryPath + '\MVVM-GUI-Runner\design-time\templates\' + FTemplateFileName,
-    sOutFN, sError, Params);
-  if result then
-      Output := ReadUTF8File( sOutFN)
-    else
-      Output := sError;
-  TFile.Delete( sOutFN)
-except on E: Exception do
-    begin
-    result := False;
-    Output := E.Message
-    end;
-  end
+  end, Output)
 end;
 
 function TIOTACreator.CreateModules: IOTAModule;
@@ -537,7 +563,7 @@ end;
 
 destructor TIOTACreator.Destroy;
 begin
-FStyleSheet.Free;
+FStyleSheet := nil;
 inherited
 end;
 
@@ -582,10 +608,16 @@ if SupportsProjectCreator then
     result := not TFile.Exists( sFN);
     if result then exit;
     result := doOverwrite;
-    if hasCached_doOverwrite then exit;
-    hasCached_doOverwrite := True;
-    result := FIDE.Confirm( Format( 'File %s already exists. Overwrite it?', [sFN]),
-      'TIOTACreator.GetExisting()');
+    if FhasCached_doOverwrite then exit;
+    FhasCached_doOverwrite := True;
+    if TFileEx.IsTheSameInFile( sFN, ImplSourceString) then
+        result := True
+        // If it is the same, we want to avoid bugging the user with a confirmation,
+        //  but we still want to proceed with an actual disk write so that the
+        //  last-write time-stamp is up-to-date.
+      else
+        result := FIDE.Confirm( Format( 'File %s already exists. Overwrite it?', [sFN]),
+          'TIOTACreator.GetExisting()');
     doOverwrite := result
     end;
 end;
@@ -664,11 +696,20 @@ begin
 result := nil
 end;
 
-function TIOTACreator.NewImplSource( const ModuleIdent, FormIdent,
-  AncestorIdent: string): IOTAFile;
+function TIOTACreator.ImplSourceString: string;
+begin
+result := FCached_ImplSource;
+if FhasCached_ImplSource then exit;
+FhasCached_ImplSource := True;
+result := ComputeSourceString( 'ImplSource', 'DUnitX.uExecutive');
+FCached_ImplSource := result
+end;
+
+function TIOTACreator.NewImplSource(
+  const ModuleIdent, FormIdent, AncestorIdent: string): IOTAFile;
 // IOTAModuleCreator
 begin
-result := ComputeSource( GetImplFileName, 'ImplSource', 'DUnitX.uExecutive')
+result := MakeOTAFile( GetImplFileName, ImplSourceString)
 end;
 
 function TIOTACreator.NewIntfSource( const ModuleIdent, FormIdent,
@@ -771,19 +812,26 @@ begin
 end;
 
 
-function TIOTACreator.ComputeSource( const FileName, SourceType, ModuleName: string): IOTAFile;
-var
-  sStringResult: string;
+function TIOTACreator.ComputeSourceString( const SourceType, ModuleName: string): string;
 begin
 try
-  Transform( SourceType, ModuleName, sStringResult)
+  Transform( SourceType, ModuleName, result)
 except on E: Exception do
-  sStringResult := E.Message
-  end;
+  result := E.Message
+  end
+end;
+
+function TIOTACreator.MakeOTAFile( const FileName, Source: string): IOTAFile;
+begin
 if FileName <> '' then
-    result := TOTASavedFile.Create( FIDE, GetExisting, FileName, sStringResult)
+    result := TOTASavedFile.Create( FIDE, GetExisting, FileName, Source)
   else
-    result := StringToIOTAFile( sStringResult);
+    result := StringToIOTAFile( Source)
+end;
+
+function TIOTACreator.ComputeSource( const FileName, SourceType, ModuleName: string): IOTAFile;
+begin
+result := MakeOTAFile( FileName, ComputeSourceString( SourceType, ModuleName))
 end;
 
 
@@ -818,7 +866,6 @@ end;
 
 constructor TIOTACreator.TOTASavedFile.Create( const IDE: IIDE_API; SaveToDisk: boolean; const FileName, Source: string);
 var
-  Lines: TStrings;
   sCleanList: string;
 
   procedure CleanUp( const Ext: string);
@@ -844,18 +891,12 @@ begin
 FSource := Source;
 FAge    := -1;
 if SaveToDisk then
-  try
-    Lines := TStringList.Create;
-    try
-      Lines.Text := Source;
-      Lines.SaveToFile( FileName)
-    finally
-      Lines.Free
-      end;
-    FAge := TFile.GetLastWriteTime( FileName)
-  except // It's ok to fail.
+  begin
+  if TFileEx.WriteToFile( FileName, Source) then
+      FAge := TFile.GetLastWriteTime( FileName)
+    else
       IDE.ReportError( 'Failed to save file ' + Filename)
-    end;
+  end;
 if ((FAge <> -1) or (not SaveToDisk)) and SameText( TPath.GetExtension( FileName), '.dpr') then
   begin
     // Get rid of co-named files with extensions as shown.
@@ -895,5 +936,105 @@ end;
 //     6. Console impl
 //     7. Create Package Heads for XE4. Some code adjustments
 //          may also be necessary to support these compilers.
+
+{ TFileEx }
+
+class function TFileEx.IsTheSameInFile( const FN, Datum: string): boolean;
+var
+  OnDiskDatum: string;
+begin
+if ReadFromFile( FN, OnDiskDatum) then
+    result := OnDiskDatum = Datum
+  else
+    result := Datum = ''
+end;
+
+class function TFileEx.ReadFromFile(
+  const FN: string; var Datum: string): boolean;
+// IOUtils.TFile.ReadAllText( FN, TEncoding.UTF8) is broken for files without a BOM,
+//  so use this custom code.
+var
+  Lines: TStrings;
+begin
+Lines := TStringList.Create;
+try
+  Lines.LoadFromFile( FN);
+  Datum  := Lines.Text;
+  result := True
+except
+    begin
+     result := False;
+     Datum  := ''
+    end;
+  end;
+Lines.Free
+end;
+
+class function TFileEx.WriteToFile( const FN, Datum: string): boolean;
+var
+  Lines: TStrings;
+begin
+Lines := TStringList.Create;
+try
+  Lines.Text := Datum;
+  Lines.SaveToFile( FN);
+  result := True
+except
+  result := False
+  end;
+Lines.Free
+end;
+
+{ TWizardStylesheet }
+
+constructor TWizardStylesheet.Create(
+  const DUnitXLibraryPath1, StyleSheetFileName1: string);
+begin
+FDUnitXLibraryPath  := DUnitXLibraryPath1;
+FStyleSheetFileName := StyleSheetFileName1;
+FSSFullPathFN       := FDUnitXLibraryPath + '\MVVM-GUI-Runner\design-time\xslt-stylesheets\' + FStyleSheetFileName;
+FStyleSheet := TStyleSheet.Create( nil);
+FStyleSheet.Options := [oSimpleXSLT1];
+FStyleSheet.URI := 'https://github.com/SeanBDurkin/DUnitX/template';
+FStyleSheet.XMLVer := xml10;
+FStyleSheet.XSDVer := xsd11;
+FStyleSheet.WorkingDirectory := TPath.GetTempPath;
+FStyleSheet.Content.LoadFromFile( FSSFullPathFN)
+end;
+
+destructor TWizardStylesheet.Destroy;
+begin
+FStyleSheet.Free;
+inherited
+end;
+
+function TWizardStylesheet.Transform(
+  const DocumentFileName: string; SetParams: TSetParamsProc; var Output: string): boolean;
+var
+  sOutFN: string;
+  Params: IStyleSheetParameterSet;
+  sError: string;
+begin
+try
+  sOutFN := TPath.GetTempFileName;
+  SetLength( sOutFN, StrLen( PChar( sOutFN)));
+  Params := FStyleSheet.Parameters;
+  if assigned( Params) then
+    SetParams( Params);
+  FStyleSheet.LoadedAtRunTime;
+  result := FStyleSheet.Transform(
+    DocumentFileName, sOutFN, sError, Params);
+  if result then
+      result := TFileEx.ReadFromFile( sOutFN, Output)
+    else
+      Output := sError;
+  TFile.Delete( sOutFN)
+except on E: Exception do
+    begin
+    result := False;
+    Output := E.Message
+    end;
+  end
+end;
 
 end.

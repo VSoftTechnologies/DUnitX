@@ -160,6 +160,9 @@
         <None Include="..\..\design-time\templates\GUIRunner.dpr.template"/>
         <None Include="..\..\design-time\xslt-stylesheets\IOTAConstruct.xsl"/>
         <None Include="..\..\design-time\templates\DUnitX.uExecutive.pas.template"/>
+        <None Include="..\..\design-time\xslt-stylesheets\SetPlatform.xsl">
+            <ContainerId>WebFile</ContainerId>
+        </None>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

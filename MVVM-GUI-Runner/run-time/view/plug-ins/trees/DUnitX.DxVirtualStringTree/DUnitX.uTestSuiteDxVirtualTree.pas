@@ -402,7 +402,8 @@ with Tree do
   Header.Font.Height := -11;
   Header.Font.Name := 'Tahoma';
   Header.Font.Style := [];
-  Images := FDataModule.imglstStates16x16;
+  Images      := FDataModule.imglstStates16x16;
+  StateImages := FDataModule.imglstStates16x16;
   TabOrder := 0;
   TreeOptions.MiscOptions := [toCheckSupport, toFullRepaintOnResize, toGridExtensions, toInitOnSave, toToggleOnDblClick, toWheelPanning, toEditOnClick];
   TreeOptions.PaintOptions := [toHideFocusRect, toHideSelection, toShowButtons, toShowDropmark, toShowRoot, toShowTreeLines, toShowVertGridLines, toThemeAware, toUseBlendedImages];
