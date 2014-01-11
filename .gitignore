@@ -3,6 +3,9 @@
 *.dcu
 *.obj
 *.exe
+*.bpl
+*.bpi
+*.dcp
 *.rsm
 *.stat
 *.map
@@ -20,6 +23,8 @@
 *.tvsconfig
 *.otares
 *.drc
+*.rc
+*.res
 
 # Output Folders  #
 ###################
@@ -43,4 +48,5 @@ Examples/dunitx-results.xml
 *.fbpInf
 Examples/Win32/
 Examples/Win64/
+
 
