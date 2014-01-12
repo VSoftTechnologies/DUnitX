@@ -37,6 +37,9 @@ uses
 type
   TTestCase = class
   protected
+    procedure SetUp; virtual;
+    procedure TearDown; virtual;
+  public
     procedure Check(condition: Boolean; msg: string = '');deprecated  'Use DUnitX.Assert class';
     procedure CheckTrue(condition: Boolean; msg: string = '');deprecated  'Use DUnitX.Assert class';
     procedure CheckFalse(condition: Boolean; msg: string = '');deprecated  'Use DUnitX.Assert class';
@@ -86,6 +89,10 @@ type
     //Redirect WriteLn to our loggers.
     procedure WriteLn(const msg : string);overload;
     procedure WriteLn;overload;
+    [Setup]
+    procedure TestSetupMethod;
+    [TearDown]
+    procedure TestTeardownMethod;
   end;
 
 
@@ -127,9 +134,29 @@ begin
   Assert.IsTrue(condition,msg);
 end;
 
+procedure TTestCase.SetUp;
+begin
+
+end;
+
 procedure TTestCase.Status(const msg: string);
 begin
   Self.WriteLn(msg);
+end;
+
+procedure TTestCase.TearDown;
+begin
+
+end;
+
+procedure TTestCase.TestSetupMethod;
+begin
+  Self.SetUp;
+end;
+
+procedure TTestCase.TestTeardownMethod;
+begin
+  Self.TearDown;
 end;
 
 procedure TTestCase.WriteLn(const msg: string);
