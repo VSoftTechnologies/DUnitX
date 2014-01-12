@@ -40,6 +40,17 @@ type
     procedure ATest;
   end;
 
+  {$M+}
+  TMyDUnitTestSetup = class(TTestCase)
+  protected
+    FObject: TObject;
+    procedure SetUp; override;
+    procedure TearDown; override;
+  published
+    procedure ATest;
+  end;
+
+
 implementation
 
 { TMyDUnitTest }
@@ -52,6 +63,29 @@ begin
 {$WARN SYMBOL_DEPRECATED ON}
 end;
 
+{ TMyDUnitTestSetup }
+
+procedure TMyDUnitTestSetup.ATest;
+begin
+  {$WARN SYMBOL_DEPRECATED OFF}
+  CheckNotNull(FObject);
+  {$WARN SYMBOL_DEPRECATED ON}
+end;
+
+procedure TMyDUnitTestSetUp.SetUp;
+begin
+  inherited;
+  FObject := TObject.Create;
+end;
+
+procedure TMyDUnitTestSetup.TearDown;
+begin
+  inherited;
+  FObject.Free;
+end;
+
 initialization
-  //TDUnitX.RegisterTestFixture(TMyDUnitTest);
+  TDUnitX.RegisterTestFixture(TMyDUnitTest);
+  TDUnitX.RegisterTestFixture(TMyDUnitTestSetup);
+
 end.
