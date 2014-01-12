@@ -4,7 +4,7 @@
         <MainSource>DUnitXTest_XE5.dpr</MainSource>
         <Config Condition="'$(Config)'==''">Debug</Config>
         <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
-        <ProjectVersion>15.1</ProjectVersion>
+        <ProjectVersion>15.3</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
         <Base>True</Base>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
@@ -68,7 +68,6 @@
         <DCCReference Include="..\DUnitX.ConsoleWriter.Base.pas"/>
         <DCCReference Include="..\DUnitX.Loggers.XML.NUnit.pas"/>
         <DCCReference Include="..\DUnitX.Loggers.XML.xUnit.pas"/>
-        <DCCReference Include="..\DUnitX.Detour.pas"/>
         <DCCReference Include="..\DUnitX.Generics.pas"/>
         <DCCReference Include="..\DUnitX.Utils.pas"/>
         <DCCReference Include="..\DUnitX.WeakReference.pas"/>

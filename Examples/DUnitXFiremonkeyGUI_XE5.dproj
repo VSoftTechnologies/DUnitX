@@ -1,7 +1,7 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{5BF5CE09-7514-46AA-A240-F0FF29884E54}</ProjectGuid>
-        <ProjectVersion>15.2</ProjectVersion>
+        <ProjectVersion>15.3</ProjectVersion>
         <FrameworkType>FMX</FrameworkType>
         <MainSource>DUnitXFiremonkeyGUI_XE5.dpr</MainSource>
         <Base>True</Base>
@@ -111,7 +111,6 @@
         <DCCReference Include="..\DUnitX.TestResult.pas"/>
         <DCCReference Include="..\DUnitX.TestRunner.pas"/>
         <DCCReference Include="..\DUnitX.Utils.pas"/>
-        <DCCReference Include="..\DUnitX.Detour.pas"/>
         <DCCReference Include="..\DUnitX.IoC.pas"/>
         <DCCReference Include="..\DUnitX.CommandLine.pas"/>
         <DCCReference Include="..\DUnitX.MemoryLeakMonitor.Default.pas"/>

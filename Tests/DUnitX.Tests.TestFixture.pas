@@ -47,10 +47,28 @@ type
   end;
   {$M-}
 
+  MockTestSourceAttribute = class(CustomTestCaseSourceAttribute)
+  protected
+    function GetCaseInfoArray : TestCaseInfoArray; override;
+  end;
+
+  {$M+}
+  [TestFixture]
+  TTestClassWithTestSource = class
+  public
+    [Test]
+    [MockTestSource]
+    procedure DataTest(Value : Integer);
+  end;
+
+
+  {$M-}
+
 
 implementation
 
 uses
+  Math,
   SysUtils;
 { TDUnitXTestFixtureTests }
 
@@ -68,6 +86,30 @@ begin
   FSetupRun := True;
 end;
 
+{ TTestSourceAttribute }
+
+function MockTestSourceAttribute.GetCaseInfoArray: TestCaseInfoArray;
+var
+ I : Integer;
+begin
+  SetLength(result,3);
+  for I := 0 to 2 do
+  begin
+     result[I].Name := 'DataTest' + IntToStr(I);
+     SetLength(result[I].Values,1);
+     result[I].Values[0] := I;
+  end;
+end;
+
+{ TTestClassWithTestSource }
+
+procedure TTestClassWithTestSource.DataTest(Value: Integer);
+begin
+  TDUnitX.CurrentRunner.Status(Format('DataTest(%d) Called',[Value]));
+  Assert.IsTrue(InRange(Value,0,2));
+end;
+
 initialization
   TDUnitX.RegisterTestFixture(TTestClassWithNonPublicSetup);
+  TDUnitX.RegisterTestFixture(TTestClassWithTestSource);
 end.

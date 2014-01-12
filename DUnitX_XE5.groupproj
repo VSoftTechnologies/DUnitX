@@ -12,6 +12,9 @@
         <Projects Include="Examples\DUnitXFiremonkeyGUI_XE5.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="Expert\DUnitX_IDE_Expert_XE5.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -47,14 +50,23 @@
     <Target Name="DUnitXFiremonkeyGUI_XE5:Make">
         <MSBuild Projects="Examples\DUnitXFiremonkeyGUI_XE5.dproj" Targets="Make"/>
     </Target>
+    <Target Name="DUnitX_IDE_Expert_XE5">
+        <MSBuild Projects="Expert\DUnitX_IDE_Expert_XE5.dproj"/>
+    </Target>
+    <Target Name="DUnitX_IDE_Expert_XE5:Clean">
+        <MSBuild Projects="Expert\DUnitX_IDE_Expert_XE5.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="DUnitX_IDE_Expert_XE5:Make">
+        <MSBuild Projects="Expert\DUnitX_IDE_Expert_XE5.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="DUnitXTest_XE5;DUnitXExamples_XE5;DUnitXFiremonkeyGUI_XE5"/>
+        <CallTarget Targets="DUnitXTest_XE5;DUnitXExamples_XE5;DUnitXFiremonkeyGUI_XE5;DUnitX_IDE_Expert_XE5"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="DUnitXTest_XE5:Clean;DUnitXExamples_XE5:Clean;DUnitXFiremonkeyGUI_XE5:Clean"/>
+        <CallTarget Targets="DUnitXTest_XE5:Clean;DUnitXExamples_XE5:Clean;DUnitXFiremonkeyGUI_XE5:Clean;DUnitX_IDE_Expert_XE5:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="DUnitXTest_XE5:Make;DUnitXExamples_XE5:Make;DUnitXFiremonkeyGUI_XE5:Make"/>
+        <CallTarget Targets="DUnitXTest_XE5:Make;DUnitXExamples_XE5:Make;DUnitXFiremonkeyGUI_XE5:Make;DUnitX_IDE_Expert_XE5:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

@@ -55,7 +55,6 @@
 			<DCCReference Include="..\DUnitX.ConsoleWriter.Base.pas"/>
 			<DCCReference Include="..\DUnitX.Loggers.XML.NUnit.pas"/>
 			<DCCReference Include="..\DUnitX.Loggers.XML.xUnit.pas"/>
-			<DCCReference Include="..\DUnitX.Detour.pas"/>
 			<DCCReference Include="..\DUnitX.Generics.pas"/>
 			<DCCReference Include="..\DUnitX.Utils.pas"/>
 			<DCCReference Include="..\DUnitX.WeakReference.pas"/>
@@ -67,7 +66,6 @@
 			<DCCReference Include="..\DUnitX.InternalInterfaces.pas"/>
 			<DCCReference Include="..\DUnitX.TestFramework.pas"/>
 			<DCCReference Include="..\DUnitX.DUnitCompatibility.pas"/>
-			<DCCReference Include="..\DUnitX.IoC.Internal.pas"/>
 			<DCCReference Include="..\DUnitX.IoC.pas"/>
 			<DCCReference Include="..\DUnitX.Utils.XML.pas"/>
 			<DCCReference Include="..\DUnitX.StackTrace.JCL.pas"/>
@@ -154,8 +152,3 @@
 		</ProjectExtensions>
 		<Import Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')" Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj"/>
 	</Project>
-
-<!-- EurekaLog First Line
-[Exception Log]
-EurekaLog Version=7001
-EurekaLog Last Line -->
