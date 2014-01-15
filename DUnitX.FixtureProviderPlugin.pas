@@ -3,7 +3,7 @@ unit DUnitX.FixtureProviderPlugin;
 interface
 
 uses
-  System.Rtti,
+  Rtti,
   Generics.Collections,
   DUnitX.Extensibility;
 
@@ -33,10 +33,10 @@ type
 
 implementation
 uses
-  System.TypInfo,
-  System.Classes,
-  System.Types,
-  System.StrUtils,
+  TypInfo,
+  Classes,
+  Types,
+  StrUtils,
   DUnitX.Utils,
   DUnitX.TestFramework;
 

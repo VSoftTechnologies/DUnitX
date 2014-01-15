@@ -3,8 +3,8 @@ unit DUnitX.Extensibility;
 interface
 
 uses
-  System.TimeSpan,
-  System.Rtti,
+  TimeSpan,
+  Rtti,
   DUnitX.Generics;
 
 type
