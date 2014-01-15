@@ -31,6 +31,7 @@ interface
 uses
   DUnitX.TestFramework,
   Generics.Collections,
+  DUnitX.Extensibility,
   DUnitX.InternalInterfaces,
   DUnitX.Generics,
   DUnitX.WeakReference,
@@ -134,6 +135,8 @@ type
 
     procedure AddStatus(const threadId; const msg : string);
 
+    function CreateFixture(const AInstance : TObject; const AFixtureClass: TClass; const AName: string): ITestFixture;
+
     class constructor Create;
     class destructor Destroy;
   public
@@ -151,6 +154,7 @@ uses
   DUnitX.FixtureResult,
   DUnitX.Utils,
   DUnitX.IoC,
+  DUnitX.Extensibility.PluginManager,
   TypInfo,
   StrUtils,
   Types;
@@ -226,25 +230,23 @@ end;
 
 function TDUnitXTestRunner.BuildFixtures  : IInterface;
 var
-  fixture : ITestFixture;
-  parentFixture : ITestFixture;
-  pair : TPair<TClass,string>;
-  uName : string;
-  namespaces : TStringDynArray;
-  namespace : string;
-  parentNamespace : string;
-  fixtureNamespace : string;
-  tmpFixtures : TDictionary<string,ITestFixture>;
+  pluginManager : IPluginManager;
 begin
+  result := FFixtureList;
   if FFixtureList <> nil then
-  begin
-    result := FFixtureList;
     exit;
-  end;
 
   FFixtureList := TTestFixtureList.Create;
 
 
+  pluginManager := TPluginManager.Create(Self.CreateFixture,FUseRTTI);
+  pluginManager.Init;//loads the plugin features.
+
+  //generate the fixtures. The plugin Manager calls back into CreateFixture
+  pluginManager.CreateFixtures;
+  result := FFixtureList;
+
+{
   if FUseRTTI then
     RTTIDiscoverFixtureClasses;
 
@@ -312,6 +314,7 @@ begin
     tmpFixtures.Free;
   end;
   result := FFixtureList;
+  }
 end;
 
 class constructor TDUnitXTestRunner.Create;
@@ -374,6 +377,15 @@ begin
   finally
     MonitorExit(TDUnitXTestRunner.FActiveRunners);
   end;
+end;
+
+function TDUnitXTestRunner.CreateFixture(const AInstance : TObject;const AFixtureClass: TClass; const AName: string): ITestFixture;
+begin
+  if AInstance <> nil then
+    result := TDUnitXTestFixture.Create(AName,AInstance)
+  else
+    result := TDUnitXTestFixture.Create(AName,AFixtureClass);
+  FFixtureList.Add(Result);
 end;
 
 destructor TDUnitXTestRunner.Destroy;
@@ -526,9 +538,6 @@ begin
     logger.OnExecuteTest(threadId, Test);
 end;
 
-//TODO - this needs to be thread aware so we can run tests in threads.
-function TDUnitXTestRunner.Execute: IRunResults;
-
 procedure CountTests(const fixtureList : ITestFixtureList; var count : Cardinal; var active : Cardinal);
 var
   fixture  : ITestFixture;
@@ -548,40 +557,40 @@ begin
     if fixture.HasChildFixtures then
       CountTests(fixture.children,count,active);
   end;
-
-
-
 end;
 
+
+//TODO - this needs to be thread aware so we can run tests in threads.
+function TDUnitXTestRunner.Execute: IRunResults;
 var
-  fixtures : ITestFixtureList;
+  fixtureList : ITestFixtureList;
   context : ITestExecuteContext;
   threadId : Cardinal;
   testCount : Cardinal;
   testActiveCount : Cardinal;
+  fixtures : IInterface;
 begin
   result := nil;
-  fixtures := BuildFixtures as ITestFixtureList;
-  if fixtures.Count = 0 then
+  fixtures := BuildFixtures;
+  fixtureList := fixtures as ITestFixtureList;
+  if fixtureList.Count = 0 then
     raise ENoTestsRegistered.Create('No Test Fixtures found');
 
   testCount := 0;
   //TODO: Count the active tests that we have.
   testActiveCount := 0;
 
-  CountTests(fixtures,testCount,testActiveCount);
+  CountTests(fixtureList,testCount,testActiveCount);
 
   //TODO: Move to the fixtures class
-
-  //TODO: Need a simple way of converting one list to another list of a supported interface. Generics should help here.
-  result := TDUnitXRunResults.Create(fixtures.AsFixtureInfoList);
+  result := TDUnitXRunResults.Create;
   context := result as ITestExecuteContext;
 
   //TODO: Record Test metrics.. runtime etc.
   threadId := TThread.CurrentThread.ThreadID;
   Self.Loggers_TestingStarts(threadId, testCount, testActiveCount);
   try
-    ExecuteFixtures(nil,context, threadId, fixtures);
+    ExecuteFixtures(nil,context, threadId, fixtureList);
     //make sure each fixture includes it's child fixture result counts.
     context.RollupResults;
   finally

@@ -44,7 +44,10 @@ uses
   DUnitX.SingleNameSpace in 'DUnitX.SingleNameSpace.pas',
   DUnitX.MemoryLeakMonitor.Default in '..\DUnitX.MemoryLeakMonitor.Default.pas',
   DUnitX.MemoryLeakMonitor.FastMM4 in '..\DUnitX.MemoryLeakMonitor.FastMM4.pas',
-  DUnitX.Tests.MemoryLeaks in 'DUnitX.Tests.MemoryLeaks.pas';
+  DUnitX.Tests.MemoryLeaks in 'DUnitX.Tests.MemoryLeaks.pas',
+  DUnitX.Extensibility in '..\DUnitX.Extensibility.pas',
+  DUnitX.Extensibility.PluginManager in '..\DUnitX.Extensibility.PluginManager.pas',
+  DUnitX.FixtureProviderPlugin in '..\DUnitX.FixtureProviderPlugin.pas';
 
 var
   runner : ITestRunner;

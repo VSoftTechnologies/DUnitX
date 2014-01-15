@@ -30,6 +30,7 @@ interface
 
 uses
   DUnitX.TestFramework,
+  DUnitX.Extensibility,
   DUnitX.InternalInterfaces,
   DUnitX.WeakReference,
   DUnitX.Generics,
@@ -47,7 +48,7 @@ type
     FNameSpace    : string;
     FDescription  : string;
     FEnabled      : boolean;
-    FTests        : IList<ITest>;
+    FTests        : ITestList;
     FTestInfos              : IList<ITestInfo>;
     FSetupMethod            : TTestMethod;
     FSetupFixtureMethod     : TTestMethod;
@@ -63,6 +64,7 @@ type
     FTearDownFixtureIsDestructor : boolean;
     FIgnoreMemoryLeaks : Boolean;
 
+    FIgnoreFixtureSetup : boolean;
   protected
     //uses RTTI to buid the fixture & tests
     procedure GenerateFixtureFromClass;
@@ -82,7 +84,7 @@ type
     function GetNameSpace : string;
     function GetFullName : string;
     function GetDescription : string;
-    function GetTests: IEnumerable<ITest>;
+    function GetTests: ITestList;
     function ITestFixtureInfo.GetTests = ITestFixtureInfo_GetTests;
     function ITestFixtureInfo_GetTests : IList<ITestInfo>;
     function GetTestClass : TClass;
@@ -95,7 +97,7 @@ type
     function GetSetupMethodName: string;
     function GetTearDownMethodName: string;
     function GetTearDownFixtureMethodName: string;
-
+    function GetFixtureInstance : TObject;
     function GetTestCount : cardinal;
     function GetActiveTestCount : cardinal;
 
@@ -103,10 +105,24 @@ type
     function GetHasChildren : boolean;
     function GetHasTests : boolean;
     procedure OnMethodExecuted(const AMethod : TTestMethod);
+
+    function AddTest(const AMethod : TTestMethod; const AName : string; const AEnabled : boolean = true;const AIgnored : boolean = false; const AIgnoreReason : string = '') : ITest;
+    function AddTestCase(const ACaseName : string; const AName : string; const AMethod : TRttiMethod; const AEnabled : boolean; const AArgs : TValueArray) : ITest;
+
+    function AddChildFixture(const ATestClass : TClass; const AName : string) : ITestFixture;overload;
+    function AddChildFixture(const AInstance : TObject; const AName : string) : ITestFixture;overload;
+
+    procedure SetSetupTestMethod(const AMethodName : string; const AMethod : TTestMethod);
+    procedure SetSetupFixtureMethod(const AMethodName : string; const AMethod : TTestMethod);
+    procedure SetTearDownTestMethod(const AMethodName : string; const AMethod : TTestMethod);
+    procedure SetTearDownFixtureMethod(const AMethodName : string; const AMethod : TTestMethod; const AIsDestructor : boolean);
+    procedure SetTestInOwnThread(const value: Boolean);
   public
-    constructor Create(const AName : string; const AClass : TClass);
+    constructor Create(const AName : string; const AInstance : TObject);overload;
+    constructor Create(const AName : string; const AClass : TClass);overload;
     destructor Destroy;override;
     class constructor Create;
+
   end;
 
 implementation
@@ -122,12 +138,14 @@ uses
 
 constructor TDUnitXTestFixture.Create(const AName : string; const AClass : TClass);
 var
+  fixtureAttrib   : TestFixtureAttribute;
   IgnoreMemoryLeak: IgnoreMemoryLeaks;
+  method : TRttiMethod;
   rType : TRttiType;
   i : integer;
 begin
   FTestClass := AClass;
-  FTests := TDUnitXList<ITest>.Create;
+  FTests := TTestList.Create;
 
   i := LastDelimiter('.',AName);
   if i <> 0 then
@@ -148,8 +166,39 @@ begin
   if rType.TryGetAttributeOfType<IgnoreMemoryLeaks>(IgnoreMemoryLeak) then
     FIgnoreMemoryLeaks := IgnoreMemoryLeak.IgnoreMemoryLeaks;
 
+  fixtureAttrib := nil;
+  if rType.TryGetAttributeOfType<TestFixtureAttribute>(fixtureAttrib) then
+    FDescription := fixtureAttrib.Description;
+
+
+  if FFixtureInstance = nil then
+  begin
+    //it's a dummy namespace fixture, don't bother with the rest.
+    if rType.Handle = TypeInfo(TObject) then
+    begin
+      FFixtureInstance := FTestClass.Create;
+      exit;
+    end;
+
+
+    FIgnoreFixtureSetup := false;
+    {$IFDEF DELPHI_XE_UP}
+    //NOTE: Causes Delphi 2010 to be inconsistent with produced exe. Will sometimes crash with AV when generating fixtures.
+    //If there is a parameterless constructor declared then we will use that as the
+    //fixture Setup method.
+    if rType.TryGetConstructor(method) then
+    begin
+      FIgnoreFixtureSetup := true;
+      FFixtureInstance := method.Invoke(TRttiInstanceType(rtype).MetaclassType, []).AsObject;
+    end
+    else
+    {$ENDIF}
+      FFixtureInstance := FTestClass.Create;
+  end;
+
   //TODO: Constructor doing "work" makes this harder to test and handle errors if the class isn't of the correct structure
-  GenerateFixtureFromClass;
+//  if AGenerate then
+  //  GenerateFixtureFromClass;
 end;
 
 destructor TDUnitXTestFixture.Destroy;
@@ -216,6 +265,9 @@ begin
   {$ENDIF}
     FFixtureInstance := FTestClass.Create;
 
+//  up to here needs to be done in the constructor.
+//-----------------------------------------------------------------------
+  exit;
 
 
   //important to use declared here.. otherwise we are looking at TObject as well.
@@ -412,6 +464,11 @@ begin
   result := FEnabled;
 end;
 
+function TDUnitXTestFixture.GetFixtureInstance: TObject;
+begin
+  result := FFixtureInstance;
+end;
+
 function TDUnitXTestFixture.GetFullName: string;
 begin
   if FName <> FNameSpace then
@@ -507,7 +564,7 @@ begin
   result := FTestInOwnThread;
 end;
 
-function TDUnitXTestFixture.GetTests: IEnumerable<ITest>;
+function TDUnitXTestFixture.GetTests: ITestList;
 begin
   result := FTests;
 end;
@@ -542,9 +599,76 @@ begin
   FEnabled := value;
 end;
 
+procedure TDUnitXTestFixture.SetSetupFixtureMethod(const AMethodName: string; const AMethod: TTestMethod);
+begin
+  if not FIgnoreFixtureSetup then
+  begin
+    FSetupFixtureMethodName := AMethodName;
+    FSetupFixtureMethod := AMethod;
+  end;
+end;
+
+procedure TDUnitXTestFixture.SetSetupTestMethod(const AMethodName: string; const AMethod: TTestMethod);
+begin
+  FSetupMethodName := AMethodName;
+  FSetupMethod := AMethod;
+end;
+
+procedure TDUnitXTestFixture.SetTearDownFixtureMethod(const AMethodName: string; const AMethod: TTestMethod; const AIsDestructor : boolean);
+begin
+  FTearDownFixtureMethodName := AMethodName;
+  FTearDownFixtureMethod := AMethod;
+  FTearDownFixtureIsDestructor := AIsDestructor;
+end;
+
+procedure TDUnitXTestFixture.SetTearDownTestMethod(const AMethodName: string; const AMethod: TTestMethod);
+begin
+  FTearDownMethodName := AMethodName;
+  FTearDownMethod := AMethod;
+end;
+
+procedure TDUnitXTestFixture.SetTestInOwnThread(const value: Boolean);
+begin
+  FTestInOwnThread := value;
+end;
+
+function TDUnitXTestFixture.AddChildFixture(const ATestClass: TClass; const AName: string): ITestFixture;
+begin
+  result := TDUnitXTestFixture.Create(AName,ATestClass);
+  if FChildren = nil then
+    FChildren := TTestFixtureList.Create;
+  FChildren.Add(result);
+end;
+
+function TDUnitXTestFixture.AddChildFixture(const AInstance: TObject; const AName: string): ITestFixture;
+begin
+  result := TDUnitXTestFixture.Create(AName,AInstance);
+  if FChildren = nil then
+    FChildren := TTestFixtureList.Create;
+  FChildren.Add(result);
+end;
+
+function TDUnitXTestFixture.AddTest(const AMethod : TTestMethod; const AName : string; const AEnabled : boolean;const AIgnored : boolean; const AIgnoreReason : string): ITest;
+begin
+  result  := TDUnitXTest.Create(Self, AName, AMethod,AEnabled,AIgnored,AIgnoreReason);
+  FTests.Add(Result);
+end;
+
+function TDUnitXTestFixture.AddTestCase(const ACaseName, AName: string; const AMethod: TRttiMethod; const AEnabled: boolean; const AArgs: TValueArray): ITest;
+begin
+  result := TDUnitXTestCase.Create(FFixtureInstance, Self, AName, AMethod.Name, AMethod, AEnabled, AArgs);
+  FTests.Add(result);
+end;
+
 class constructor TDUnitXTestFixture.Create;
 begin
   FRttiContext := TRttiContext.Create;
+end;
+
+constructor TDUnitXTestFixture.Create(const AName: string; const AInstance: TObject);
+begin
+  FFixtureInstance := AInstance;
+  Create(AName,AInstance.ClassType);
 end;
 
 function TDUnitXTestFixture.CreateTestFromMethod(AMethod: TRttiMethod;

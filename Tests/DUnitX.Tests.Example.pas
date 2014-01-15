@@ -37,7 +37,6 @@ type
   [TestFixture('ExampleFixture1')]
   TMyExampleTests = class
   public
-    [Test]
     //Run the same test with mulitiple parameters.
     //ideally we would like to implement this using
     //[TestCase('Case 1',[1,3,4])]
@@ -50,6 +49,7 @@ type
     //TODO: Add named params so that certain params can be passed and others are defaulted.
     //TODO: Add TestCase where the params are over and under the actually name to pass.
     //TODO: Make sure that each test case is passed and run only once, currently run multiple times. Actually its X*X times where X is the number of test cases in the fixture.
+    [Test]
     [TestCase('Case 1','1,2')]
     [TestCase('Case 2','3,4')]
     [TestCase('Case 3','5,6')]
@@ -74,11 +74,13 @@ type
 
     [TearDown]
     procedure TearDown;
+
   published
     procedure TestMeAnyway;
 
     [Ignore('I was told to ignore me anyway')]
     procedure IgnoreMeAnyway;
+
   end;
 
   [TestFixture]

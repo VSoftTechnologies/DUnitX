@@ -60,13 +60,11 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="DUnitX.Tests.IoC.pas"/>
         <DCCReference Include="..\DUnitX.Loggers.Console.pas"/>
         <DCCReference Include="..\DUnitX.Loggers.Text.pas"/>
         <DCCReference Include="..\DUnitX.MacOS.Console.pas"/>
         <DCCReference Include="..\DUnitX.Windows.Console.pas"/>
         <DCCReference Include="..\DUnitX.ConsoleWriter.Base.pas"/>
-        <DCCReference Include="..\DUnitX.Loggers.XML.NUnit.pas"/>
         <DCCReference Include="..\DUnitX.Loggers.XML.xUnit.pas"/>
         <DCCReference Include="..\DUnitX.Generics.pas"/>
         <DCCReference Include="..\DUnitX.Utils.pas"/>
@@ -81,22 +79,33 @@
         <DCCReference Include="..\DUnitX.TestFramework.pas"/>
         <DCCReference Include="..\DUnitX.DUnitCompatibility.pas"/>
         <DCCReference Include="..\DUnitX.IoC.pas"/>
-        <DCCReference Include="DUnitX.Tests.Assert.pas"/>
-        <DCCReference Include="DUnitX.Tests.DUnitCompatibility.pas"/>
-        <DCCReference Include="DUnitX.Tests.Example.pas"/>
-        <DCCReference Include="DUnitX.Tests.Loggers.XML.NUnit.pas"/>
         <DCCReference Include="..\DUnitX.Utils.XML.pas"/>
-        <DCCReference Include="DUnitX.Tests.Utils.XML.pas"/>
-        <DCCReference Include="DUnitX.Tests.WeakReference.pas"/>
         <DCCReference Include="..\DUnitX.StackTrace.JCL.pas"/>
         <DCCReference Include="..\DUnitX.StackTrace.MadExcept3.pas"/>
         <DCCReference Include="..\DUnitX.StackTrace.MadExcept4.pas"/>
-        <DCCReference Include="..\DUnitX.Loggers.GUI.pas">
-            <Form>Form1</Form>
-        </DCCReference>
         <DCCReference Include="..\DUnitX.StackTrace.EurekaLog7.pas"/>
+	<DCCReference Include="..\DUnitX.Loggers.Null.pas"/>
+        <DCCReference Include="..\DUnitX.FixtureResult.pas"/>
+        <DCCReference Include="DUnitX.Tests.Assert.pas"/>
+        <DCCReference Include="DUnitX.Tests.DUnitCompatibility.pas"/>
+        <DCCReference Include="DUnitX.Tests.Example.pas"/>
+	<DCCReference Include="DUnitX.Tests.Framework.pas"/>
+	<DCCReference Include="DUnitX.Tests.IoC.pas"/>
+	<DCCReference Include="DUnitX.Tests.TestFixture.pas"/>
+        <DCCReference Include="DUnitX.Tests.Utils.XML.pas"/>
+        <DCCReference Include="DUnitX.Tests.WeakReference.pas"/>
+	<DCCReference Include="DUnitX.Tests.Loggers.XML.NUnit.pas"/>
+	<DCCReference Include="..\DUnitX.Loggers.XML.NUnit.pas"/>
+	<DCCReference Include="DUnitX.SingleNameSpace.pas"/>
+        <DCCReference Include="..\DUnitX.MemoryLeakMonitor.Default.pas"/>
+        <DCCReference Include="..\DUnitX.MemoryLeakMonitor.FastMM4.pas"/>
+	<DCCReference Include="DUnitX.Tests.MemoryLeaks.pas"/>
+	<DCCReference Include="..\DUnitX.Extensibility.pas"/>
+	<DCCReference Include="..\DUnitX.Extensibility.PluginManager.pas"/>
+	<DCCReference Include="..\DUnitX.FixtureProviderPlugin.pas"/>
         <None Include="..\DUnitX.inc"/>
         <None Include="..\DUnitX.Stacktrace.inc"/>
+	<None Include="..\DUnitX.MemoryLeaks.inc"/>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

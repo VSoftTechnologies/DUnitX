@@ -35,6 +35,7 @@ uses
   Rtti,
   TimeSpan,
   DUnitX.Generics,
+  DUnitX.Extensibility,
   Generics.Collections;
 
 //TODO: Automatic support for https://code.google.com/p/delphi-code-coverage/ would be cool
@@ -166,7 +167,7 @@ type
     property Count : Cardinal read FCount;
   end;
 
-  TValueArray = array of TValue;
+  TValueArray = DUnitX.Extensibility.TValueArray;
 
 
   ///	<summary>
@@ -243,7 +244,8 @@ type
     property Values : TValueArray read GetValues;
   end;
 
-  TTestMethod = procedure of object;
+  TTestMethod = DUnitX.Extensibility.TTestMethod;
+
   TTestLocalMethod = reference to procedure;
 
   TLogLevel = (ltInformation, ltWarning, ltError);
@@ -543,8 +545,6 @@ type
     function GetIgnoredCount : integer;
     function GetSuccessRate : integer;
 
-    function GetFixtures : IEnumerable<ITestFixtureInfo>;
-
     function GetFixtureResults : IEnumerable<IFixtureResult>;
 
     function GetAllTestResults : IEnumerable<ITestResult>;
@@ -564,7 +564,6 @@ type
     //means all enabled/not ingored tests passed.
     property AllPassed : boolean read GetAllPassed;
 
-    property Fixtures : IEnumerable<ITestFixtureInfo> read GetFixtures;
     property FixtureResults : IEnumerable<IFixtureResult> read GetFixtureResults;
   end;
   {$M-}
@@ -738,6 +737,7 @@ type
   TDUnitX = class
   public class var
     RegisteredFixtures : TDictionary<TClass,string>;
+    RegisteredPlugins  : TList<IPlugin>;
   public
     class constructor Create;
     class destructor Destroy;
@@ -746,6 +746,7 @@ type
     class function CreateRunner(const ALogger : ITestLogger) : ITestRunner;overload;
     class function CreateRunner(const useCommandLineOptions : boolean; const ALogger : ITestLogger) : ITestRunner;overload;
     class procedure RegisterTestFixture(const AClass : TClass; const AName : string = '' );
+    class procedure RegisterPlugin(const plugin : IPlugin);
     class function CommandLine : ICommandLine;
     class function CurrentRunner : ITestRunner;
   end;
@@ -796,6 +797,7 @@ uses
   DUnitX.Commandline,
   DUnitX.IoC,
   DUnitX.MemoryLeakMonitor.Default,
+  DUnitX.FixtureProviderPlugin,
   Variants,
   Math,
   StrUtils,
@@ -1447,7 +1449,7 @@ end;
 class constructor TDUnitX.Create;
 begin
   RegisteredFixtures := TDictionary<TClass,string>.Create;
-
+  RegisteredPlugins  := TList<IPlugin>.Create;
   //Make sure we have at least a dummy memory leak monitor registered.
   if not TDUnitXIoC.DefaultContainer.HasService<IMemoryLeakMonitor> then
     DUnitX.MemoryLeakMonitor.Default.RegisterDefaultProvider;
@@ -1470,6 +1472,14 @@ end;
 class destructor TDUnitX.Destroy;
 begin
   RegisteredFixtures.Free;
+  RegisteredPlugins.Free;
+end;
+
+class procedure TDUnitX.RegisterPlugin(const plugin: IPlugin);
+begin
+  if plugin = nil then
+    raise Exception.Create('Nil plug registered!');
+  RegisteredPlugins.Add(plugin);
 end;
 
 class procedure TDUnitX.RegisterTestFixture(const AClass: TClass; const AName : string);
@@ -1589,5 +1599,6 @@ begin
 end;
 
 initialization
+  TDUnitX.RegisterPlugin(TDUnitXFixtureProviderPlugin.Create);
 
 end.

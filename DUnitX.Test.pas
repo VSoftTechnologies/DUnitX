@@ -29,9 +29,10 @@ unit DUnitX.Test;
 interface
 
 uses
-  DUnitX.TestFramework,
+  DUnitX.Extensibility,
   DUnitX.InternalInterfaces,
   DUnitX.WeakReference,
+  DUnitX.TestFramework,
   TimeSpan,
   Rtti;
 

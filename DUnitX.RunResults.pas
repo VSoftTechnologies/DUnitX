@@ -81,7 +81,7 @@ type
     //called when all is done.
     procedure RollupResults;
   public
-    constructor Create(const fixtures : IList<ITestFixtureInfo>);
+    constructor Create;
     destructor Destroy;override;
     function ToString : string;override;
   end;
@@ -103,11 +103,10 @@ uses
 
 { TDUnitXTestResults }
 
-constructor TDUnitXRunResults.Create(const fixtures : IList<ITestFixtureInfo>);
+constructor TDUnitXRunResults.Create;
 begin
   FFixtureResults := TDUnitXList<IFixtureResult>.Create;
   FAllTestResults := TDUnitXList<ITestResult>.Create;
-  FFixtures := fixtures;
   FAllPassed := True;
   FErrorCount := 0;
   FPassCount := 0;
