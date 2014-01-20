@@ -78,6 +78,8 @@ type
     procedure AreEqualMemory_Throws_ETestFailure_When_Pointers_Are_NotEqual;
     [Test]
     procedure AreEqual_Throws_No_Exception_When_Values_Are_Exactly_Equal;
+    [Test]
+    procedure WillRaise_Without_Exception_Class_Will_Capture_Any_Exception;
   end;
 
 implementation
@@ -179,6 +181,15 @@ begin
     end, ETestPass, EXPECTED_EXCEPTION_MSG);
 end;
 
+
+procedure TTestsAssert.WillRaise_Without_Exception_Class_Will_Capture_Any_Exception;
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      raise Exception.Create('Test')
+    end);
+end;
 
 procedure TTestsAssert.AreEqualMemory_Throws_ETestFailure_When_Pointers_Are_NotEqual;
 begin

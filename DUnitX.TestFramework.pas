@@ -1308,10 +1308,9 @@ begin
       if exceptionClass <> nil then
       begin
         if e.ClassType <> exceptionClass then
-          Fail(Format('Method raised [%s] was expecting [%s]. %s', [e.ClassName, exceptionClass.ClassName, e.message]), ReturnAddress)
-        else
-          exit;
+          Fail(Format('Method raised [%s] was expecting [%s]. %s', [e.ClassName, exceptionClass.ClassName, e.message]), ReturnAddress);
       end;
+      exit;
     end;
   end;
   Fail('Method did not throw any exceptions.' + GetMsg, ReturnAddress);
