@@ -31,6 +31,7 @@ interface
 uses
   DUnitX.TestFramework,
   Generics.Collections,
+  DUnitX.Extensibility,
   DUnitX.InternalInterfaces,
   DUnitX.Generics,
   DUnitX.WeakReference,
@@ -143,6 +144,8 @@ type
 
     procedure AddStatus(const threadId; const msg : string);
 
+    function CreateFixture(const AInstance : TObject; const AFixtureClass: TClass; const AName: string): ITestFixture;
+
     class constructor Create;
     class destructor Destroy;
   public
@@ -160,6 +163,7 @@ uses
   DUnitX.FixtureResult,
   DUnitX.Utils,
   DUnitX.IoC,
+  DUnitX.Extensibility.PluginManager,
   TypInfo,
   StrUtils,
   Types;
@@ -235,25 +239,23 @@ end;
 
 function TDUnitXTestRunner.BuildFixtures  : IInterface;
 var
-  fixture : ITestFixture;
-  parentFixture : ITestFixture;
-  pair : TPair<TClass,string>;
-  uName : string;
-  namespaces : TStringDynArray;
-  namespace : string;
-  parentNamespace : string;
-  fixtureNamespace : string;
-  tmpFixtures : TDictionary<string,ITestFixture>;
+  pluginManager : IPluginManager;
 begin
+  result := FFixtureList;
   if FFixtureList <> nil then
-  begin
-    result := FFixtureList;
     exit;
-  end;
 
   FFixtureList := TTestFixtureList.Create;
 
 
+  pluginManager := TPluginManager.Create(Self.CreateFixture,FUseRTTI);
+  pluginManager.Init;//loads the plugin features.
+
+  //generate the fixtures. The plugin Manager calls back into CreateFixture
+  pluginManager.CreateFixtures;
+  result := FFixtureList;
+
+{
   if FUseRTTI then
     RTTIDiscoverFixtureClasses;
 
@@ -321,6 +323,7 @@ begin
     tmpFixtures.Free;
   end;
   result := FFixtureList;
+  }
 end;
 
 class constructor TDUnitXTestRunner.Create;
@@ -352,19 +355,19 @@ begin
   begin
     // The leak occurred in the setup/teardown
     Result := False;
-    errorResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.MemoryLeak, test.CurrentPassIndex, Format('%d bytes were leaked in the setup/teardown methods', [LSetUpMemoryAllocated + LTearDownMemoryAllocated]));
+    errorResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.MemoryLeak, Format('%d bytes were leaked in the setup/teardown methods', [LSetUpMemoryAllocated + LTearDownMemoryAllocated]));
   end
   else if (LSetUpMemoryAllocated + LTearDownMemoryAllocated = 0) then
   begin
     // The leak occurred in the test only
     Result := False;
-    errorResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.MemoryLeak, test.CurrentPassIndex, Format('%d bytes were leaked in the test method', [LTestMemoryAllocated]));
+    errorResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.MemoryLeak, Format('%d bytes were leaked in the test method', [LTestMemoryAllocated]));
   end
   else
   begin
     // The leak occurred in the setup/teardown/test
     Result := False;
-    errorResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.MemoryLeak, test.CurrentPassIndex, Format('%d bytes were leaked in the setup/test/teardown methods', [LSetUpMemoryAllocated + LTestMemoryAllocated + LTearDownMemoryAllocated]));
+    errorResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.MemoryLeak, Format('%d bytes were leaked in the setup/test/teardown methods', [LSetUpMemoryAllocated + LTestMemoryAllocated + LTearDownMemoryAllocated]));
   end;
 end;
 
@@ -383,6 +386,15 @@ begin
   finally
     MonitorExit(TDUnitXTestRunner.FActiveRunners);
   end;
+end;
+
+function TDUnitXTestRunner.CreateFixture(const AInstance : TObject;const AFixtureClass: TClass; const AName: string): ITestFixture;
+begin
+  if AInstance <> nil then
+    result := TDUnitXTestFixture.Create(AName,AInstance)
+  else
+    result := TDUnitXTestFixture.Create(AName,AFixtureClass);
+  FFixtureList.Add(Result);
 end;
 
 destructor TDUnitXTestRunner.Destroy;
@@ -535,9 +547,6 @@ begin
     logger.OnExecuteTest(threadId, Test);
 end;
 
-//TODO - this needs to be thread aware so we can run tests in threads.
-function TDUnitXTestRunner.Execute: IRunResults;
-
 procedure CountTests(const fixtureList : ITestFixtureList; var count : Cardinal; var active : Cardinal);
 var
   fixture  : ITestFixture;
@@ -549,48 +558,48 @@ begin
     begin
       if test.Enabled then
       begin
-        Inc( count, test.Count);
+        Inc(count);
         if not test.Ignored then
-          Inc( active, test.Count);
+          Inc(active);
       end;
     end;
     if fixture.HasChildFixtures then
       CountTests(fixture.children,count,active);
   end;
-
-
-
 end;
 
+
+//TODO - this needs to be thread aware so we can run tests in threads.
+function TDUnitXTestRunner.Execute: IRunResults;
 var
-  fixtures : ITestFixtureList;
+  fixtureList : ITestFixtureList;
   context : ITestExecuteContext;
   threadId : Cardinal;
   testCount : Cardinal;
   testActiveCount : Cardinal;
+  fixtures : IInterface;
 begin
   result := nil;
-  fixtures := BuildFixtures as ITestFixtureList;
-  if fixtures.Count = 0 then
+  fixtures := BuildFixtures;
+  fixtureList := fixtures as ITestFixtureList;
+  if fixtureList.Count = 0 then
     raise ENoTestsRegistered.Create('No Test Fixtures found');
 
   testCount := 0;
   //TODO: Count the active tests that we have.
   testActiveCount := 0;
 
-  CountTests(fixtures,testCount,testActiveCount);
+  CountTests(fixtureList,testCount,testActiveCount);
 
   //TODO: Move to the fixtures class
-
-  //TODO: Need a simple way of converting one list to another list of a supported interface. Generics should help here.
-  result := TDUnitXRunResults.Create(fixtures.AsFixtureInfoList);
+  result := TDUnitXRunResults.Create;
   context := result as ITestExecuteContext;
 
   //TODO: Record Test metrics.. runtime etc.
   threadId := TThread.CurrentThread.ThreadID;
   Self.Loggers_TestingStarts(threadId, testCount, testActiveCount);
   try
-    ExecuteFixtures(nil,context, threadId, fixtures);
+    ExecuteFixtures(nil,context, threadId, fixtureList);
     //make sure each fixture includes it's child fixture result counts.
     context.RollupResults;
   finally
@@ -602,7 +611,7 @@ function TDUnitXTestRunner.ExecuteErrorResult(
   const context: ITestExecuteContext; const threadId: cardinal;
   const test: ITest; const exception: Exception) : ITestError;
 begin
-  Result := TDUnitXTestError.Create(test as ITestInfo, TTestResultType.Error, exception, ExceptAddr, test.CurrentPassIndex, exception.Message);
+  Result := TDUnitXTestError.Create(test as ITestInfo, TTestResultType.Error, exception, ExceptAddr, exception.Message);
 end;
 
 class function TDUnitXTestRunner.GetActiveRunner: ITestRunner;
@@ -616,7 +625,7 @@ function TDUnitXTestRunner.ExecuteFailureResult(
   const test: ITest; const exception : Exception) : ITestError;
 begin
   //TODO: Does test failure require its own results interface and class?
-  Result := TDUnitXTestError.Create(test as ITestInfo, TTestResultType.Failure, exception, ExceptAddr, test.CurrentPassIndex, exception.Message);
+  Result := TDUnitXTestError.Create(test as ITestInfo, TTestResultType.Failure, exception, ExceptAddr, exception.Message);
 end;
 
 procedure TDUnitXTestRunner.ExecuteFixtures(const parentFixtureResult : IFixtureResult; const context: ITestExecuteContext; const threadId: Cardinal; const fixtures: ITestFixtureList);
@@ -657,7 +666,7 @@ end;
 
 function TDUnitXTestRunner.ExecuteIgnoredResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const ignoreReason: string): ITestResult;
 begin
-  result := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Ignored, test.CurrentPassIndex, ignoreReason);
+  result := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Ignored, ignoreReason);
 end;
 
 procedure TDUnitXTestRunner.ExecuteSetupFixtureMethod(const threadid: cardinal; const fixture : ITestFixture);
@@ -679,7 +688,7 @@ end;
 
 function TDUnitXTestRunner.ExecuteSuccessfulResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const message: string) : ITestResult;
 begin
-  Result := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Pass, test.CurrentPassIndex, message);
+  Result := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Pass, message);
 end;
 
 procedure TDUnitXTestRunner.ExecuteTearDownFixtureMethod(
@@ -813,7 +822,6 @@ begin
     Self.Loggers_EndTest(threadId, testResult);
   end
 end;
-
 
 
 function TDUnitXTestRunner.ExecuteTestSetupMethod(const context : ITestExecuteContext; const threadid: cardinal; const fixture: ITestFixture; const test: ITest; out errorResult: ITestResult; const memoryAllocationProvider : IMemoryLeakMonitor): boolean;

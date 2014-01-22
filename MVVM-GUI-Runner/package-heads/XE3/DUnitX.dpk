@@ -53,6 +53,9 @@ contains
   DUnitX.TestRunner in '..\..\..\DUnitX.TestRunner.pas',
   DUnitX.Utils in '..\..\..\DUnitX.Utils.pas',
   DUnitX.WeakReference in '..\..\..\DUnitX.WeakReference.pas',
-  DUnitX.Test in '..\..\..\DUnitX.Test.pas';
+  DUnitX.Test in '..\..\..\DUnitX.Test.pas',
+  DUnitX.Extensibility in '..\..\..\DUnitX.Extensibility.pas',
+  DUnitX.Extensibility.PluginManager in '..\..\..\DUnitX.Extensibility.PluginManager.pas',
+  DUnitX.FixtureProviderPlugin in '..\..\..\DUnitX.FixtureProviderPlugin.pas';
 
 end.

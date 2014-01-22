@@ -35,6 +35,7 @@ uses
   Rtti,
   TimeSpan,
   DUnitX.Generics,
+  DUnitX.Extensibility,
   Generics.Collections;
 
 //TODO: Automatic support for https://code.google.com/p/delphi-code-coverage/ would be cool
@@ -158,15 +159,15 @@ type
   ///	<remarks>
   ///	  NOT IMPLEMENTED
   ///	</remarks>
-//  RepeatAttribute = class(TCustomAttribute)  // Deprecated. Use Repeats instead.
-//  private
-//    FCount : Cardinal;
-//  public
-//    constructor Create(const ACount : Cardinal);
-//    property Count : Cardinal read FCount;
-//  end;
+  RepeatAttribute = class(TCustomAttribute)
+  private
+    FCount : Cardinal;
+  public
+    constructor Create(const ACount : Cardinal);
+    property Count : Cardinal read FCount;
+  end;
 
-  TValueArray = array of TValue;
+  TValueArray = DUnitX.Extensibility.TValueArray;
 
 
   ///	<summary>
@@ -243,7 +244,8 @@ type
     property Values : TValueArray read GetValues;
   end;
 
-  TTestMethod = procedure of object;
+  TTestMethod = DUnitX.Extensibility.TTestMethod;
+
   TTestLocalMethod = reference to procedure;
 
   TLogLevel = (ltInformation, ltWarning, ltError);
@@ -261,7 +263,7 @@ Repeats = class ( TExecutionModulatorAttribute )
     constructor Create( ACount: integer);
   end;
 
- type
+type
 {$IFDEF DELPHI_XE2_UP}
   ///	<summary>
   ///	  This helper class is intended to redirect the writeln method to a test
@@ -392,7 +394,6 @@ Repeats = class ( TExecutionModulatorAttribute )
 
     function GetEnabled : boolean;
     procedure SetEnabled(const value : boolean);
-    function  GetCount: integer;
 
     property Name : string read GetName;
     property FullName : string read GetFullName;
@@ -400,7 +401,6 @@ Repeats = class ( TExecutionModulatorAttribute )
 
     property Active : boolean read GetActive;
     property Fixture : ITestFixtureInfo read GetTestFixture;
-    property Count: integer read GetCount;
   end;
 
   ITestInfoList = interface(IList<ITestInfo>)
@@ -477,7 +477,6 @@ Repeats = class ( TExecutionModulatorAttribute )
     function GetResultType : TTestResultType;
     function GetMessage : string;
     function GetStackTrace : string;
-    function GetPassIndex: integer;
 
     //Test
     property Test : ITestInfo read GetTest;
@@ -487,12 +486,7 @@ Repeats = class ( TExecutionModulatorAttribute )
     property ResultType : TTestResultType read GetResultType;
     property Message : string read GetMessage;
     property StackTrace : string read GetStackTrace;
-    property PassIndex: integer read GetPassIndex;
-      // ^ Ranges from 0 to Test.Count-1
-      // For example if a test is decorated with [Repeat(3)],
-      //  then there will be 3 test results, with PassIndex = 0, 1 and 2
-      //  unless one fails or baulks. Upon failure/baulk, stop at the first
-      //  failure/baulk, irrespecitve of the ITestRunner.ExitBehavior
+
   end;
   {$M-}
 
@@ -561,8 +555,6 @@ Repeats = class ( TExecutionModulatorAttribute )
     function GetIgnoredCount : integer;
     function GetSuccessRate : integer;
 
-    function GetFixtures : IEnumerable<ITestFixtureInfo>;
-
     function GetFixtureResults : IEnumerable<IFixtureResult>;
 
     function GetAllTestResults : IEnumerable<ITestResult>;
@@ -582,7 +574,6 @@ Repeats = class ( TExecutionModulatorAttribute )
     //means all enabled/not ingored tests passed.
     property AllPassed : boolean read GetAllPassed;
 
-    property Fixtures : IEnumerable<ITestFixtureInfo> read GetFixtures;
     property FixtureResults : IEnumerable<IFixtureResult> read GetFixtureResults;
   end;
   {$M-}
@@ -756,6 +747,7 @@ Repeats = class ( TExecutionModulatorAttribute )
   TDUnitX = class
   public class var
     RegisteredFixtures : TDictionary<TClass,string>;
+    RegisteredPlugins  : TList<IPlugin>;
   public
     class constructor Create;
     class destructor Destroy;
@@ -764,6 +756,7 @@ Repeats = class ( TExecutionModulatorAttribute )
     class function CreateRunner(const ALogger : ITestLogger) : ITestRunner;overload;
     class function CreateRunner(const useCommandLineOptions : boolean; const ALogger : ITestLogger) : ITestRunner;overload;
     class procedure RegisterTestFixture(const AClass : TClass; const AName : string = '' );
+    class procedure RegisterPlugin(const plugin : IPlugin);
     class function CommandLine : ICommandLine;
     class function CurrentRunner : ITestRunner;
   end;
@@ -814,6 +807,7 @@ uses
   DUnitX.Commandline,
   DUnitX.IoC,
   DUnitX.MemoryLeakMonitor.Default,
+  DUnitX.FixtureProviderPlugin,
   Variants,
   Math,
   StrUtils,
@@ -1324,10 +1318,9 @@ begin
       if exceptionClass <> nil then
       begin
         if e.ClassType <> exceptionClass then
-          Fail(Format('Method raised [%s] was expecting [%s]. %s', [e.ClassName, exceptionClass.ClassName, e.message]), ReturnAddress)
-        else
-          exit;
+          Fail(Format('Method raised [%s] was expecting [%s]. %s', [e.ClassName, exceptionClass.ClassName, e.message]), ReturnAddress);
       end;
+      exit;
     end;
   end;
   Fail('Method did not throw any exceptions.' + GetMsg, ReturnAddress);
@@ -1465,7 +1458,7 @@ end;
 class constructor TDUnitX.Create;
 begin
   RegisteredFixtures := TDictionary<TClass,string>.Create;
-
+  RegisteredPlugins  := TList<IPlugin>.Create;
   //Make sure we have at least a dummy memory leak monitor registered.
   if not TDUnitXIoC.DefaultContainer.HasService<IMemoryLeakMonitor> then
     DUnitX.MemoryLeakMonitor.Default.RegisterDefaultProvider;
@@ -1488,6 +1481,14 @@ end;
 class destructor TDUnitX.Destroy;
 begin
   RegisteredFixtures.Free;
+  RegisteredPlugins.Free;
+end;
+
+class procedure TDUnitX.RegisterPlugin(const plugin: IPlugin);
+begin
+  if plugin = nil then
+    raise Exception.Create('Nil plug registered!');
+  RegisteredPlugins.Add(plugin);
 end;
 
 class procedure TDUnitX.RegisterTestFixture(const AClass: TClass; const AName : string);
@@ -1589,6 +1590,14 @@ begin
   result := FCaseInfo.Values;
 end;
 
+{ RepeatAttribute }
+
+constructor RepeatAttribute.Create(const ACount: Cardinal);
+begin
+  FCount := ACount;
+end;
+
+{ IgnoreAttribute }
 
 { IgnoreMemoryLeaks }
 
@@ -1606,5 +1615,6 @@ begin
 end;
 
 initialization
+  TDUnitX.RegisterPlugin(TDUnitXFixtureProviderPlugin.Create);
 
 end.

@@ -88,7 +88,7 @@ type
     [TeardownFixture]
     procedure TearDownFixture;
   published
-    [Repeats(3)] procedure IAmATest;
+    procedure IAmATest;
   end;
 
   [TestFixture]
@@ -100,6 +100,24 @@ type
     destructor Destroy;override;
   published
     procedure ATest;
+  end;
+
+  TExampleFixture4 = class
+  protected
+    FObject: TObject;
+  public
+    [SetupFixture]
+    procedure SetupFixture;
+
+    [TeardownFixture]
+    procedure TearDownFixture;
+  end;
+
+  [TestFixture]
+  TExampleFixture5 = class(TExampleFixture4)
+  public
+    [Test]
+    procedure Testing;
   end;
 
 implementation
@@ -170,8 +188,6 @@ end;
 { TExampleFixture2 }
 
 procedure TExampleFixture2.IAmATest;
-var
-  x, y: double;
 begin
   Inc(FTestsRun);
 end;
@@ -206,6 +222,25 @@ begin
   inherited;
 end;
 
+{ TExampleFixture4 }
+
+procedure TExampleFixture4.SetupFixture;
+begin
+  FObject := TObject.Create;
+end;
+
+procedure TExampleFixture4.TearDownFixture;
+begin
+  FObject.Free;
+end;
+
+{ TExampleFixture5 }
+
+procedure TExampleFixture5.Testing;
+begin
+  Assert.IsNotNull(FObject, 'Problem with inheritance');
+end;
+
 initialization
 //I was hoping to use RTTI to discover the TestFixture classes, however unlike .NET
 //if we don't touch the class somehow then the linker will remove
@@ -224,4 +259,5 @@ initialization
   TDUnitX.RegisterTestFixture(TMyExampleTests);
   TDUnitX.RegisterTestFixture(TExampleFixture2);
   TDUnitX.RegisterTestFixture(TExampleFixture3);
+  TDUnitX.RegisterTestFixture(TExampleFixture5);
 end.

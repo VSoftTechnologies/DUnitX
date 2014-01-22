@@ -36,7 +36,10 @@ uses
   DUnitX.Utils.XML2 in '..\..\..\DUnitX.Utils.XML2.pas',
   DUnitX.Extensions in '..\..\..\DUnitX.Extensions.pas',
   DUnitX.udmVirtualTreeNonVisualSupport in '..\..\run-time\view\plug-ins\trees\DUnitX.udmVirtualTreeNonVisualSupport.pas' {dmVirtualTreeNonVisualSupport: TDataModule},
-  DUnitX.Examples.General in '..\..\..\Examples\DUnitX.Examples.General.pas';
+  DUnitX.Examples.General in '..\..\..\Examples\DUnitX.Examples.General.pas',
+  DUnitX.Extensibility in '..\..\..\DUnitX.Extensibility.pas',
+  DUnitX.Extensibility.PluginManager in '..\..\..\DUnitX.Extensibility.PluginManager.pas',
+  DUnitX.FixtureProviderPlugin in '..\..\..\DUnitX.FixtureProviderPlugin.pas';
 
 {$R *.res}
 

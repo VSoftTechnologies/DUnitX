@@ -29,12 +29,12 @@ unit DUnitX.Test;
 interface
 
 uses
-  DUnitX.TestFramework,
+  DUnitX.Extensibility,
   DUnitX.InternalInterfaces,
   DUnitX.WeakReference,
+  DUnitX.TestFramework,
   TimeSpan,
-  Rtti
-  ;
+  Rtti;
 
 {$I DUnitX.inc}
 
@@ -84,8 +84,8 @@ protected
     //ISetTestResult
     procedure SetResult(const value: ITestResult);
 
-    // ITestExecute
-    procedure Execute(const context : ITestExecuteContext); virtual;
+    //ITestExecute
+    procedure Execute(const context : ITestExecuteContext);virtual;
     function  ExecutionDecorator: IExecutionDecorator;
     procedure Decorate( const Addend: IExecutionDecorator);
     procedure SetCount( const Value: integer);
@@ -117,7 +117,6 @@ protected
 //    property TestMethod : TTestMethod read GetTestMethod;
   end;
 
-
   TAbstractExecutionDecorator = class abstract( TInterfacedObject, IExecutionDecorator)
     protected
       function  GetRunner: ITestRunnerEx;                       virtual; abstract;
@@ -131,15 +130,11 @@ protected
     end;
 
 
-
 implementation
 
 uses
   SysUtils,
   DUnitX.Utils;
-
-
-
 
 
 type
@@ -171,7 +166,7 @@ begin
   FExecutionDecorator := TTransparentExcDecrtr.Create
 end;
 
-procedure TDUnitXTest.Decorate( const Addend: IExecutionDecorator);
+procedure TDUnitXTest.Decorate(const Addend: IExecutionDecorator);
 begin
   FExecutionDecorator := Addend;
   Addend.DecorateOn( self as ITest)
@@ -277,17 +272,17 @@ begin
 
 end;
 
-procedure TDUnitXTest.SetCount( const Value: integer);
+procedure TDUnitXTest.SetCount(const Value: integer);
 begin
   FCount := Value
 end;
 
-procedure TDUnitXTest.SetEnabled( const value: Boolean);
+procedure TDUnitXTest.SetEnabled(const value: Boolean);
 begin
   FEnabled := value;
 end;
 
-procedure TDUnitXTest.SetIgnoreMemoryLeaks( const AValue: Boolean);
+procedure TDUnitXTest.SetIgnoreMemoryLeaks(const AValue: Boolean);
 begin
   FIgnoreMemoryLeaks := AValue;
 end;
@@ -297,7 +292,7 @@ begin
   FCurrentIndex := Value
 end;
 
-procedure TDUnitXTest.SetResult( const value: ITestResult);
+procedure TDUnitXTest.SetResult(const value: ITestResult);
 begin
 
 end;
@@ -366,7 +361,6 @@ begin
 
   Result := Format(TESTCASE_NAME_FORMAT, [FName, printableArgsList, FCaseName]);
 end;
-
 
 { TTransparentExcDecrtr }
 

@@ -1,6 +1,7 @@
 unit DUnitX.Extensions;
 interface
-uses DUnitX.Test, DUnitX.InternalInterfaces, DUnitX.TestFramework;
+uses DUnitX.Test, DUnitX.InternalInterfaces, DUnitX.TestFramework,
+     DUnitX.Extensibility;
 
 type
 

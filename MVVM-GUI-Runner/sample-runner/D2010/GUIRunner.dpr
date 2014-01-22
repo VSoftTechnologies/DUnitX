@@ -6,11 +6,11 @@ uses
   DUnitX.Generics in '..\..\..\DUnitX.Generics.pas',
   DUnitX.GUIRunnerForm in '..\..\run-time\view\DUnitX.GUIRunnerForm.pas' {mfmGUIRunner},
   DUnitX.BaseExecutive in '..\..\run-time\backplane\DUnitX.BaseExecutive.pas',
-  DUnitX.uExecutive in '..\DUnitX.uExecutive.pas',
+  DUnitX.uExecutive in 'DUnitX.uExecutive.pas',
   DUnitX.ViewModel_VCLForms in '..\..\run-time\view-model\DUnitX.ViewModel_VCLForms.pas',
   DUnitX.ViewModel_Tree in '..\..\run-time\view-model\DUnitX.ViewModel_Tree.pas',
   DUnitX.viewModel_LoggerContainer in '..\..\run-time\view-model\DUnitX.viewModel_LoggerContainer.pas',
-  DUnitX.uTestSuiteVirtualTree in '..\..\run-time\view\plug-ins\trees\DUnitX.VirtualStringTree\DUnitX.uTestSuiteVirtualTree.pas',
+  DUnitX.uTestSuiteVirtualTree in '..\..\run-time\view\plug-ins\trees\DUnitX.VirtualStringTree\DUnitX.uTestSuiteVirtualTree.pas' {TestSuiteVirtualTree: TFrame},
   DUnitX.WeakReference in '..\..\..\DUnitX.WeakReference.pas',
   DUnitX.InternalInterfaces in '..\..\..\DUnitX.InternalInterfaces.pas',
   DUnitX.MemoryLeakMonitor.Default in '..\..\..\DUnitX.MemoryLeakMonitor.Default.pas',
@@ -30,7 +30,13 @@ uses
   DUnitX.Utils.XML2 in '..\..\..\DUnitX.Utils.XML2.pas',
   DUnitX.Extensions in '..\..\..\DUnitX.Extensions.pas',
   DUnitX.Examples.General in '..\..\..\Examples\DUnitX.Examples.General.pas',
-  DUnitX.udmVirtualTreeNonVisualSupport in '..\..\run-time\view\plug-ins\trees\DUnitX.udmVirtualTreeNonVisualSupport.pas' {dmVirtualTreeNonVisualSupport: TDataModule};
+  DUnitX.udmVirtualTreeNonVisualSupport in '..\..\run-time\view\plug-ins\trees\DUnitX.udmVirtualTreeNonVisualSupport.pas' {dmVirtualTreeNonVisualSupport: TDataModule},
+  DUnitX.Extensibility in '..\..\..\DUnitX.Extensibility.pas',
+  DUnitX.Extensibility.PluginManager in '..\..\..\DUnitX.Extensibility.PluginManager.pas',
+  DUnitX.FixtureProviderPlugin in '..\..\..\DUnitX.FixtureProviderPlugin.pas',
+  DUnitX.uStockSecondaryLoggerFactories in '..\..\run-time\view\DUnitX.uStockSecondaryLoggerFactories.pas',
+  DUnitX.uTestSuiteDxVirtualTree in '..\..\run-time\view\plug-ins\trees\DUnitX.DxVirtualStringTree\DUnitX.uTestSuiteDxVirtualTree.pas',
+  DUnitX.VTAccessibilityFactory in '..\..\External-libraries\VirtualTreeView\Source\DUnitX.VTAccessibilityFactory.pas';
 
 {$R *.res}
 

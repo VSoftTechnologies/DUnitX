@@ -161,7 +161,8 @@ implementation
 
 
 
-uses DUnitX.uExecutive, DUnitX.IoC, DUnitX.InternalInterfaces, SysUtils, Math;
+uses DUnitX.uExecutive, DUnitX.IoC, DUnitX.InternalInterfaces, SysUtils, Math,
+     DUnitX.Extensibility;
 
 type
 TFixtureNode = class( TViewModel_VCLForms.TNode)

@@ -60,9 +60,7 @@
 			<DCCReference Include="..\..\..\DUnitX.FixtureResult.pas"/>
 			<DCCReference Include="..\..\..\DUnitX.IoC.pas"/>
 			<DCCReference Include="..\..\..\DUnitX.RunResults.pas"/>
-			<DCCReference Include="..\..\..\DUnitX.TestFramework.pas"/>
 			<DCCReference Include="..\..\..\DUnitX.Test.pas"/>
-			<DCCReference Include="..\..\..\DUnitX.TestRunner.pas"/>
 			<DCCReference Include="..\..\..\DUnitX.WeakReference.pas"/>
 			<DCCReference Include="..\..\..\DUnitX.TestFixture.pas"/>
 			<DCCReference Include="..\..\..\DUnitX.TestResult.pas"/>
@@ -71,6 +69,11 @@
 			<DCCReference Include="..\..\..\DUnitX.Loggers.Text.pas"/>
 			<DCCReference Include="..\..\..\DUnitX.Loggers.Console.pas"/>
 			<DCCReference Include="..\..\..\DUnitX.ConsoleWriter.Base.pas"/>
+			<DCCReference Include="..\..\..\DUnitX.TestRunner.pas"/>
+			<DCCReference Include="..\..\..\DUnitX.TestFramework.pas"/>
+			<DCCReference Include="..\..\..\DUnitX.Extensibility.pas"/>
+			<DCCReference Include="..\..\..\DUnitX.Extensibility.PluginManager.pas"/>
+			<DCCReference Include="..\..\..\DUnitX.FixtureProviderPlugin.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

@@ -54,7 +54,7 @@
 				<Form>mfmGUIRunner</Form>
 			</DCCReference>
 			<DCCReference Include="..\..\run-time\backplane\DUnitX.BaseExecutive.pas"/>
-			<DCCReference Include="..\DUnitX.uExecutive.pas"/>
+			<DCCReference Include="DUnitX.uExecutive.pas"/>
 			<DCCReference Include="..\..\run-time\view-model\DUnitX.ViewModel_VCLForms.pas"/>
 			<DCCReference Include="..\..\run-time\view-model\DUnitX.ViewModel_Tree.pas"/>
 			<DCCReference Include="..\..\run-time\view-model\DUnitX.viewModel_LoggerContainer.pas"/>
@@ -85,6 +85,12 @@
 				<Form>dmVirtualTreeNonVisualSupport</Form>
 				<DesignClass>TDataModule</DesignClass>
 			</DCCReference>
+			<DCCReference Include="..\..\..\DUnitX.Extensibility.pas"/>
+			<DCCReference Include="..\..\..\DUnitX.Extensibility.PluginManager.pas"/>
+			<DCCReference Include="..\..\..\DUnitX.FixtureProviderPlugin.pas"/>
+			<DCCReference Include="..\..\run-time\view\DUnitX.uStockSecondaryLoggerFactories.pas"/>
+			<DCCReference Include="..\..\run-time\view\plug-ins\trees\DUnitX.DxVirtualStringTree\DUnitX.uTestSuiteDxVirtualTree.pas"/>
+			<DCCReference Include="..\..\External-libraries\VirtualTreeView\Source\DUnitX.VTAccessibilityFactory.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

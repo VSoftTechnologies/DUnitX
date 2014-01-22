@@ -50,6 +50,9 @@ uses
   DUnitX.VTAccessibility in &apos;<t:DUnitX-path plus="MVVM-GUI-Runner\External-libraries\VirtualTreeView\Source" />\DUnitX.VTAccessibility.pas&apos;,
   DUnitX.VTAccessibilityFactory in &apos;<t:DUnitX-path plus="MVVM-GUI-Runner\External-libraries\VirtualTreeView\Source" />\DUnitX.VTAccessibilityFactory.pas&apos;,</t:tree>
   DUnitX.Utils.XML2 in &apos;<t:DUnitX-path />\DUnitX.Utils.XML2.pas&apos;,
+  DUnitX.Extensibility in &apos;;<t:DUnitX-path />\DUnitX.Extensibility.pas&apos;,
+  DUnitX.Extensibility.PluginManager in &apos;;<t:DUnitX-path />\DUnitX.Extensibility.PluginManager.pas&apos;,
+  DUnitX.FixtureProviderPlugin in &apos;';<t:DUnitX-path />\DUnitX.FixtureProviderPlugin.pas&apos;;
   DUnitX.Extensions in &apos;<t:DUnitX-path />\DUnitX.Extensions.pas&apos;,
   DUnitX.udmVirtualTreeNonVisualSupport in &apos;<t:DUnitX-path plus="MVVM-GUI-Runner\run-time\view\plug-ins\trees"/>\DUnitX.udmVirtualTreeNonVisualSupport.pas&apos; {dmVirtualTreeNonVisualSupport: TDataModule};
 

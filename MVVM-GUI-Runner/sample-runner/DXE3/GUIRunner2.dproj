@@ -2,7 +2,7 @@
     <PropertyGroup>
         <ProjectGuid>{4D272C8A-8B27-4E96-9A74-B6E6B1DC455F}</ProjectGuid>
         <ProjectVersion>14.4</ProjectVersion>
-        <FrameworkType>None</FrameworkType>
+        <FrameworkType>FMX</FrameworkType>
         <MainSource>GUIRunner2.dpr</MainSource>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
@@ -147,6 +147,9 @@
             <DesignClass>TDataModule</DesignClass>
         </DCCReference>
         <DCCReference Include="..\..\..\Examples\DUnitX.Examples.General.pas"/>
+        <DCCReference Include="..\..\..\DUnitX.Extensibility.pas"/>
+        <DCCReference Include="..\..\..\DUnitX.Extensibility.PluginManager.pas"/>
+        <DCCReference Include="..\..\..\DUnitX.FixtureProviderPlugin.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

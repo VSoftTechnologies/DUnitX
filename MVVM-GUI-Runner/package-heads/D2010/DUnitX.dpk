@@ -43,9 +43,7 @@ contains
   DUnitX.FixtureResult in '..\..\..\DUnitX.FixtureResult.pas',
   DUnitX.IoC in '..\..\..\DUnitX.IoC.pas',
   DUnitX.RunResults in '..\..\..\DUnitX.RunResults.pas',
-  DUnitX.TestFramework in '..\..\..\DUnitX.TestFramework.pas',
   DUnitX.Test in '..\..\..\DUnitX.Test.pas',
-  DUnitX.TestRunner in '..\..\..\DUnitX.TestRunner.pas',
   DUnitX.WeakReference in '..\..\..\DUnitX.WeakReference.pas',
   DUnitX.TestFixture in '..\..\..\DUnitX.TestFixture.pas',
   DUnitX.TestResult in '..\..\..\DUnitX.TestResult.pas',
@@ -53,6 +51,11 @@ contains
   DUnitX.MemoryLeakMonitor.Default in '..\..\..\DUnitX.MemoryLeakMonitor.Default.pas',
   DUnitX.Loggers.Text in '..\..\..\DUnitX.Loggers.Text.pas',
   DUnitX.Loggers.Console in '..\..\..\DUnitX.Loggers.Console.pas',
-  DUnitX.ConsoleWriter.Base in '..\..\..\DUnitX.ConsoleWriter.Base.pas';
+  DUnitX.ConsoleWriter.Base in '..\..\..\DUnitX.ConsoleWriter.Base.pas',
+  DUnitX.TestRunner in '..\..\..\DUnitX.TestRunner.pas',
+  DUnitX.TestFramework in '..\..\..\DUnitX.TestFramework.pas',
+  DUnitX.Extensibility in '..\..\..\DUnitX.Extensibility.pas',
+  DUnitX.Extensibility.PluginManager in '..\..\..\DUnitX.Extensibility.PluginManager.pas',
+  DUnitX.FixtureProviderPlugin in '..\..\..\DUnitX.FixtureProviderPlugin.pas';
 
 end.

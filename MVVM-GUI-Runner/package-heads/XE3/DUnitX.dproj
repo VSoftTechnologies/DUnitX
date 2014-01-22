@@ -3,7 +3,7 @@
         <ProjectGuid>{B367FD90-9216-4008-92E8-891F4F3D9681}</ProjectGuid>
         <MainSource>DUnitX.dpk</MainSource>
         <ProjectVersion>14.4</ProjectVersion>
-        <FrameworkType>None</FrameworkType>
+        <FrameworkType>FMX</FrameworkType>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Release</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
@@ -138,6 +138,9 @@
         <DCCReference Include="..\..\..\DUnitX.Utils.pas"/>
         <DCCReference Include="..\..\..\DUnitX.WeakReference.pas"/>
         <DCCReference Include="..\..\..\DUnitX.Test.pas"/>
+        <DCCReference Include="..\..\..\DUnitX.Extensibility.pas"/>
+        <DCCReference Include="..\..\..\DUnitX.Extensibility.PluginManager.pas"/>
+        <DCCReference Include="..\..\..\DUnitX.FixtureProviderPlugin.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

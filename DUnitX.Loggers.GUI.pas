@@ -34,7 +34,9 @@ uses
   ToolWin, ActnMan, ActnMenus, ImgList,
   PlatformDefaultStyleActnCtrls, ExtCtrls, ComCtrls,
   DUnitX.TestFrameWork,
-  DUnitX.InternalInterfaces, StdCtrls;
+  DUnitX.Extensibility,
+  DUnitX.InternalInterfaces,
+  StdCtrls;
 
 const
   WM_LOAD_TESTS = WM_USER + 123;

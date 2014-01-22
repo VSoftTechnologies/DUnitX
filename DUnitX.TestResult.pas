@@ -45,7 +45,6 @@ type
     FResultType : TTestResultType;
     FTest : IWeakReference<ITestInfo>;
     FStackTrace : string;
-    FPassIndex: integer;
   protected
     function GetMessage: string;
     function GetResult: Boolean;
@@ -55,9 +54,8 @@ type
     function GetFinishTime : TDateTime;
     function GetDuration : TTimeSpan;
     function GetStackTrace : string;
-    function GetPassIndex: integer;
   public
-    constructor Create(const ATestInfo : ITestInfo; const AType : TTestResultType; APassIndex: integer; const AMessage : string = '');
+    constructor Create(const ATestInfo : ITestInfo; const AType : TTestResultType; const AMessage : string = '');
   end;
 
   TDUnitXTestError = class(TDUnitXTestResult, ITestError)
@@ -71,7 +69,7 @@ type
     function GetExceptionAddressInfo : string;
     function GetExceptionMessage : string;
   public
-    constructor Create(const ATestInfo : ITestInfo; const AType : TTestResultType; const AThrownException: Exception; const Addrs: Pointer; APassIndex: integer; const AMessage : string = '');reintroduce;
+    constructor Create(const ATestInfo : ITestInfo; const AType : TTestResultType; const AThrownException: Exception; const Addrs: Pointer; const AMessage : string = '');reintroduce;
   end;
 
 
@@ -90,22 +88,16 @@ uses
 
 { TDUnitXTestResult }
 
-constructor TDUnitXTestResult.Create(const ATestInfo : ITestInfo; const AType: TTestResultType; APassIndex: integer; const AMessage: string);
+constructor TDUnitXTestResult.Create(const ATestInfo : ITestInfo; const AType: TTestResultType; const AMessage: string);
 begin
   FTest := TWeakReference<ITestInfo>.Create(ATestInfo);
   FResultType := AType;
   FMessage := AMessage;
-  FPassIndex := APassIndex
 end;
 
 function TDUnitXTestResult.GetMessage: string;
 begin
   result := FMessage;
-end;
-
-function TDUnitXTestResult.GetPassIndex: integer;
-begin
-  result := FPassIndex
 end;
 
 function TDUnitXTestResult.GetResult: Boolean;
@@ -157,11 +149,13 @@ end;
 
 { TDUnitXTestError }
 
-constructor TDUnitXTestError.Create(const ATestInfo : ITestInfo; const AType: TTestResultType; const AThrownException: Exception; const Addrs: Pointer; APassIndex: integer;  const AMessage: string = '');
+constructor TDUnitXTestError.Create(const ATestInfo : ITestInfo; const AType: TTestResultType; const AThrownException: Exception; const Addrs: Pointer;  const AMessage: string = '');
+{$IFDEF DELPHI_XE_UP}
 var
   stackTraceProvider : IStacktraceProvider;
+{$ENDIF}
 begin
-  inherited Create(ATestInfo, AType, APassIndex, AMessage);
+  inherited Create(ATestInfo, AType, AMessage);
 
   FExceptionClass := ExceptClass(AThrownException.ClassType);
 
@@ -177,8 +171,10 @@ begin
 end;
 
 function TDUnitXTestError.GetExceptionAddressInfo: string;
+{$IFDEF DELPHI_XE_UP}
 var
   stackTraceProvider : IStacktraceProvider;
+{$ENDIF}
 begin
   {$IFDEF DELPHI_XE_UP}
   stackTraceProvider := TDUnitXIoc.DefaultContainer.Resolve<IStacktraceProvider>();
@@ -195,8 +191,10 @@ begin
 end;
 
 function TDUnitXTestError.GetExceptionLocationInfo: string;
+{$IFDEF DELPHI_XE_UP}
 var
   stackTraceProvider : IStacktraceProvider;
+{$ENDIF}
 begin
   {$IFDEF DELPHI_XE_UP}
   stackTraceProvider := TDUnitXIoc.DefaultContainer.Resolve<IStacktraceProvider>();

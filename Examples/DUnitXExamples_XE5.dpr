@@ -4,11 +4,9 @@ program DUnitXExamples_XE5;
 
 uses
   SysUtils,
-  DUnitX.Examples.EqualityAsserts in 'DUnitX.Examples.EqualityAsserts.pas',
   DUnitX.Examples.General in 'DUnitX.Examples.General.pas',
   DUnitX.CommandLine in '..\DUnitX.CommandLine.pas',
   DUnitX.ConsoleWriter.Base in '..\DUnitX.ConsoleWriter.Base.pas',
-  DUnitX.Detour in '..\DUnitX.Detour.pas',
   DUnitX.DUnitCompatibility in '..\DUnitX.DUnitCompatibility.pas',
   DUnitX.Generics in '..\DUnitX.Generics.pas',
   DUnitX.InternalInterfaces in '..\DUnitX.InternalInterfaces.pas',
@@ -29,7 +27,13 @@ uses
   DUnitX.WeakReference in '..\DUnitX.WeakReference.pas',
   DUnitX.Windows.Console in '..\DUnitX.Windows.Console.pas',
   DUnitX.StackTrace.EurekaLog7 in '..\DUnitX.StackTrace.EurekaLog7.pas',
-  NonNamespacedExample in 'NonNamespacedExample.pas';
+  NonNamespacedExample in 'NonNamespacedExample.pas',
+  DUnitX.Examples.EqualityAsserts in 'DUnitX.Examples.EqualityAsserts.pas',
+  DUnitX.Loggers.XML.NUnit in '..\DUnitX.Loggers.XML.NUnit.pas',
+  DUnitX.FixtureResult in '..\DUnitX.FixtureResult.pas',
+  DUnitX.Loggers.Null in '..\DUnitX.Loggers.Null.pas',
+  DUnitX.MemoryLeakMonitor.Default in '..\DUnitX.MemoryLeakMonitor.Default.pas',
+  DUnitX.Extensibility in '..\DUnitX.Extensibility.pas';
 
 var
   runner : ITestRunner;
