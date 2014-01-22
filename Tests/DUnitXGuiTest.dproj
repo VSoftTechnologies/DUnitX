@@ -1,0 +1,154 @@
+﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+		<PropertyGroup>
+			<ProjectGuid>{78AC97F9-EC37-4A68-8525-9C5EC2F94223}</ProjectGuid>
+			<MainSource>DUnitXGuiTest.dpr</MainSource>
+			<Config Condition="'$(Config)'==''">Debug</Config>
+			<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
+			<ProjectVersion>14.6</ProjectVersion>
+			<FrameworkType>VCL</FrameworkType>
+			<Base>True</Base>
+			<Platform Condition="'$(Platform)'==''">Win32</Platform>
+			<TargetedPlatforms>3</TargetedPlatforms>
+			<AppType>Console</AppType>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_1)'!=''">
+			<Cfg_1>true</Cfg_1>
+			<CfgParent>Base</CfgParent>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_2)'!=''">
+			<Cfg_2>true</Cfg_2>
+			<CfgParent>Base</CfgParent>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Base)'!=''">
+			<Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
+			<DCC_UnitSearchPath>..\;..\..\Delphi-Mocks;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+			<DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Winapi;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
+			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+			<VerInfo_Locale>3081</VerInfo_Locale>
+			<DCC_DependencyCheckOutputName>DUnitXGuiTest.exe</DCC_DependencyCheckOutputName>
+			<DCC_ImageBase>00400000</DCC_ImageBase>
+			<DCC_Platform>x86</DCC_Platform>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_1)'!=''">
+			<DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
+			<DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
+			<DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+			<DCC_DebugInformation>false</DCC_DebugInformation>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_2)'!=''">
+			<DCC_MapFile>3</DCC_MapFile>
+			<DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
+		</PropertyGroup>
+		<ItemGroup>
+			<DelphiCompile Include="$(MainSource)">
+				<MainSource>MainSource</MainSource>
+			</DelphiCompile>
+			<DCCReference Include="..\DUnitX.Loggers.Console.pas"/>
+			<DCCReference Include="..\DUnitX.Loggers.Text.pas"/>
+			<DCCReference Include="..\DUnitX.MacOS.Console.pas"/>
+			<DCCReference Include="..\DUnitX.Windows.Console.pas"/>
+			<DCCReference Include="..\DUnitX.ConsoleWriter.Base.pas"/>
+			<DCCReference Include="..\DUnitX.Loggers.XML.NUnit.pas"/>
+			<DCCReference Include="..\DUnitX.Loggers.XML.xUnit.pas"/>
+			<DCCReference Include="..\DUnitX.Generics.pas"/>
+			<DCCReference Include="..\DUnitX.Utils.pas"/>
+			<DCCReference Include="..\DUnitX.WeakReference.pas"/>
+			<DCCReference Include="..\DUnitX.CommandLine.pas"/>
+			<DCCReference Include="..\DUnitX.Test.pas"/>
+			<DCCReference Include="..\DUnitX.TestFixture.pas"/>
+			<DCCReference Include="..\DUnitX.TestResult.pas"/>
+			<DCCReference Include="..\DUnitX.TestRunner.pas"/>
+			<DCCReference Include="..\DUnitX.InternalInterfaces.pas"/>
+			<DCCReference Include="..\DUnitX.TestFramework.pas"/>
+			<DCCReference Include="..\DUnitX.DUnitCompatibility.pas"/>
+			<DCCReference Include="..\DUnitX.IoC.pas"/>
+			<DCCReference Include="..\DUnitX.Utils.XML.pas"/>
+			<DCCReference Include="..\DUnitX.StackTrace.JCL.pas"/>
+			<DCCReference Include="..\DUnitX.StackTrace.MadExcept3.pas"/>
+			<DCCReference Include="..\DUnitX.StackTrace.MadExcept4.pas"/>
+			<DCCReference Include="..\DUnitX.Loggers.GUI.pas">
+				<Form>DUnitXGuiLoggerForm</Form>
+			</DCCReference>
+			<DCCReference Include="..\DUnitX.StackTrace.EurekaLog7.pas"/>
+			<DCCReference Include="DUnitX.Tests.Assert.pas"/>
+			<DCCReference Include="DUnitX.Tests.DUnitCompatibility.pas"/>
+			<DCCReference Include="DUnitX.Tests.Example.pas"/>
+			<DCCReference Include="DUnitX.Tests.Framework.pas"/>
+			<DCCReference Include="DUnitX.Tests.IoC.pas"/>
+			<DCCReference Include="DUnitX.Tests.Loggers.XML.NUnit.pas"/>
+			<DCCReference Include="DUnitX.Tests.TestFixture.pas"/>
+			<DCCReference Include="DUnitX.Tests.Utils.XML.pas"/>
+			<DCCReference Include="DUnitX.Tests.WeakReference.pas"/>
+			<DCCReference Include="..\DUnitX.RunResults.pas"/>
+			<None Include="..\DUnitX.inc"/>
+			<None Include="..\DUnitX.Stacktrace.inc"/>
+			<BuildConfiguration Include="Debug">
+				<Key>Cfg_2</Key>
+				<CfgParent>Base</CfgParent>
+			</BuildConfiguration>
+			<BuildConfiguration Include="Base">
+				<Key>Base</Key>
+			</BuildConfiguration>
+			<BuildConfiguration Include="Release">
+				<Key>Cfg_1</Key>
+				<CfgParent>Base</CfgParent>
+			</BuildConfiguration>
+		</ItemGroup>
+		<Import Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')" Project="$(BDS)\Bin\CodeGear.Delphi.Targets"/>
+		<ProjectExtensions>
+			<Borland.Personality>Delphi.Personality.12</Borland.Personality>
+			<Borland.ProjectType>VCLApplication</Borland.ProjectType>
+			<BorlandProject>
+				<Delphi.Personality>
+					<Source>
+						<Source Name="MainSource">DUnitXGuiTest.dpr</Source>
+					</Source>
+					<Parameters>
+						<Parameters Name="UseLauncher">False</Parameters>
+						<Parameters Name="LoadAllSymbols">True</Parameters>
+						<Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
+					</Parameters>
+					<VersionInfo>
+						<VersionInfo Name="IncludeVerInfo">False</VersionInfo>
+						<VersionInfo Name="AutoIncBuild">False</VersionInfo>
+						<VersionInfo Name="MajorVer">1</VersionInfo>
+						<VersionInfo Name="MinorVer">0</VersionInfo>
+						<VersionInfo Name="Release">0</VersionInfo>
+						<VersionInfo Name="Build">0</VersionInfo>
+						<VersionInfo Name="Debug">False</VersionInfo>
+						<VersionInfo Name="PreRelease">False</VersionInfo>
+						<VersionInfo Name="Special">False</VersionInfo>
+						<VersionInfo Name="Private">False</VersionInfo>
+						<VersionInfo Name="DLL">False</VersionInfo>
+						<VersionInfo Name="Locale">3081</VersionInfo>
+						<VersionInfo Name="CodePage">1252</VersionInfo>
+					</VersionInfo>
+					<VersionInfoKeys>
+						<VersionInfoKeys Name="CompanyName"/>
+						<VersionInfoKeys Name="FileDescription"/>
+						<VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys>
+						<VersionInfoKeys Name="InternalName"/>
+						<VersionInfoKeys Name="LegalCopyright"/>
+						<VersionInfoKeys Name="LegalTrademarks"/>
+						<VersionInfoKeys Name="OriginalFilename"/>
+						<VersionInfoKeys Name="ProductName"/>
+						<VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
+						<VersionInfoKeys Name="Comments"/>
+					</VersionInfoKeys>
+					<Excluded_Packages/>
+				</Delphi.Personality>
+				<Platforms>
+					<Platform value="OSX32">False</Platform>
+					<Platform value="Win64">True</Platform>
+					<Platform value="Win32">True</Platform>
+				</Platforms>
+			</BorlandProject>
+			<ProjectFileVersion>12</ProjectFileVersion>
+		</ProjectExtensions>
+		<Import Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')" Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj"/>
+	</Project>
