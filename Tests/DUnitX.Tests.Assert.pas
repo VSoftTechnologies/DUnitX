@@ -80,6 +80,14 @@ type
     procedure AreEqual_Throws_No_Exception_When_Values_Are_Exactly_Equal;
     [Test]
     procedure WillRaise_Without_Exception_Class_Will_Capture_Any_Exception;
+    [Test]
+    procedure WillRaiseWithMessage_Exception_And_Message_Will_Check_ExceptionClass_And_Exception_Message;
+    [Test]
+    procedure WillRaiseWithMessage_Without_Exception_Class_And_Message_Will_Capture_Any_Exception;
+    [Test]
+    procedure WillRaiseWithMessage_Without_Exception_Class_With_Message_Will_Capture_Any_Exception_With_Message;
+    [Test]
+    procedure WillRaiseWithMessage_Exception_Not_Thrown_Throws_ETestFailure_Exception;
   end;
 
 implementation
@@ -181,6 +189,48 @@ begin
     end, ETestPass, EXPECTED_EXCEPTION_MSG);
 end;
 
+
+procedure TTestsAssert.WillRaiseWithMessage_Exception_And_Message_Will_Check_ExceptionClass_And_Exception_Message;
+const
+  EXPECTED_EXCEPTION_MSG = 'Passing Message';
+begin
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      Assert.Pass(EXPECTED_EXCEPTION_MSG);
+    end, ETestPass, EXPECTED_EXCEPTION_MSG);
+end;
+
+procedure TTestsAssert.WillRaiseWithMessage_Exception_Not_Thrown_Throws_ETestFailure_Exception;
+const
+  EXPECTED_EXCEPTION_MSG = 'Failed Message';
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.WillRaiseWithMessage(nil, ETestFailure);
+    end, ETestFailure, EXPECTED_EXCEPTION_MSG);
+end;
+
+procedure TTestsAssert.WillRaiseWithMessage_Without_Exception_Class_And_Message_Will_Capture_Any_Exception;
+begin
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      raise Exception.Create('Pass');
+    end);
+end;
+
+procedure TTestsAssert.WillRaiseWithMessage_Without_Exception_Class_With_Message_Will_Capture_Any_Exception_With_Message;
+const
+  EXPECTED_EXCEPTION_MSG = 'Passing Message';
+begin
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      raise Exception.Create(EXPECTED_EXCEPTION_MSG);
+    end, nil, EXPECTED_EXCEPTION_MSG);
+end;
 
 procedure TTestsAssert.WillRaise_Without_Exception_Class_Will_Capture_Any_Exception;
 begin
