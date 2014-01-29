@@ -274,6 +274,9 @@ type
 
 
   Assert = class
+  private
+    class procedure CheckExceptionClass(E: Exception; const exceptionClass: ExceptClass);
+    class function AddLineBreak(const msg: string): string;
   public
     class procedure Pass(const message : string = '');
     class procedure Fail(const message : string = ''; const errorAddrs : pointer = nil);
@@ -348,6 +351,7 @@ type
 {$ENDIF}
 
     class procedure WillRaise(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass = nil; const msg : string = ''); overload;
+    class procedure WillRaiseWithMessage(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass = nil; const exceptionMsg: string = ''; const msg : string = ''); overload;
     class procedure WillRaise(const AMethod : TTestMethod; const exceptionClass : ExceptClass = nil; const msg : string = ''); overload;
     class procedure WillNotRaise(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass = nil; const msg : string = ''); overload;
     class procedure WillNotRaise(const AMethod : TTestMethod; const exceptionClass : ExceptClass = nil; const msg : string = ''); overload;
@@ -921,6 +925,15 @@ begin
   end;
 end;
 {$ENDIF}
+
+class function Assert.AddLineBreak(const msg: string): string;
+begin
+  if msg <> '' then
+    Result :=  sLineBreak + msg
+  else
+    Result := '';
+end;
+
 class procedure Assert.AreEqual(const left, right: Integer; const message: string);
 begin
   if left <> right then
@@ -1291,40 +1304,21 @@ begin
 end;
 
 class procedure Assert.WillRaise(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass; const msg : string);
-  function GetMsg : string;
-  begin
-    if msg <> '' then
-      result :=  #13#10 + msg
-    else
-      result := '';
-  end;
 begin
   try
     AMethod;
   except
-    //we expect an exception to be thrown.
-    on e : Exception do
+    on E: Exception do
     begin
-      if exceptionClass <> nil then
-      begin
-        if e.ClassType <> exceptionClass then
-          Fail(Format('Method raised [%s] was expecting [%s]. %s', [e.ClassName, exceptionClass.ClassName, e.message]), ReturnAddress);
-      end;
-      exit;
+      CheckExceptionClass(e, exceptionClass);
+      Exit;
     end;
   end;
-  Fail('Method did not throw any exceptions.' + GetMsg, ReturnAddress);
+  Fail('Method did not throw any exceptions.' + AddLineBreak(msg), ReturnAddress);
 end;
 
 
 class procedure Assert.WillNotRaise(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass; const msg : string);
-  function GetMsg : string;
-  begin
-    if msg <> '' then
-      result :=  #13#10 + msg
-    else
-      result := '';
-  end;
 begin
   try
     AMethod;
@@ -1334,7 +1328,7 @@ begin
       if exceptionClass <> nil then
       begin
         if e.ClassType = exceptionClass then
-           Fail('Method raised an exception of type : ' + exceptionClass.ClassName + #13#10 + e.Message + GetMsg, ReturnAddress);
+           Fail('Method raised an exception of type : ' + exceptionClass.ClassName + sLineBreak + e.Message + AddLineBreak(msg), ReturnAddress);
       end
       else
         Fail(Format('Method raised [%s] was expecting not to raise [%s]. %s', [e.ClassName, exceptionClass.ClassName, e.message]), ReturnAddress);
@@ -1352,6 +1346,22 @@ begin
     exceptionClass, msg);
 end;
 
+class procedure Assert.WillRaiseWithMessage(const AMethod: TTestLocalMethod; const exceptionClass: ExceptClass;const exceptionMsg, msg: string);
+begin
+  try
+    AMethod;
+  except
+    on E: Exception do
+    begin
+      CheckExceptionClass(E, exceptionClass);
+      if (exceptionMsg <> '') and (not SameStr(E.Message, exceptionMsg)) then
+        Fail(Format('Exception [%s] was raised with message [%s] was expecting [%s] %s', [E.ClassName, E.Message, exceptionMsg, msg]));
+      Exit;
+    end;
+  end;
+  Fail('Method did not throw any exceptions.' + AddLineBreak(msg), ReturnAddress);
+end;
+
 class procedure Assert.AreEqual(const left : string; const right : string; const message : string);
 begin
   Assert.AreEqual(left, right, true, message);
@@ -1366,6 +1376,15 @@ begin
   end
   else if not SameStr(left,right) then
       Fail(Format('[%s] is Not Equal to [%s] %s',[left,right,message]), ReturnAddress);
+end;
+
+class procedure Assert.CheckExceptionClass(E: Exception; const exceptionClass: ExceptClass);
+begin
+  if exceptionClass = nil then
+    Exit;
+
+  if E.ClassType <> exceptionClass then
+    Fail(Format('Method raised [%s] was expecting [%s]. %s', [E.ClassName, exceptionClass.ClassName, E.message]), ReturnAddress);
 end;
 
 class procedure Assert.Contains(const theString : string; const subString : string; const ignoreCase : boolean; const message : string);
