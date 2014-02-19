@@ -669,7 +669,7 @@ begin
   except
     on e: Exception do
     begin
-      Log(TLogLevel.ltError, 'Error in Fixture SetupError : ' + fixture.Name + ' : ' + e.Message);
+      Log(TLogLevel.ltError, 'Error in Fixture Setup. Fixture: ' + fixture.Name + ' Error: ' + e.Message);
       Log(TLogLevel.ltError, 'Skipping Fixture.');
 
       raise;
@@ -694,6 +694,9 @@ begin
     on e: Exception do
     begin
       //TODO: ExecuteErrorResult(context, threadId, test, 'Test does not support ITestExecute');
+      Log(TLogLevel.ltError, 'Error in Fixture TearDown. Fixture: ' + fixture.Name + ' Error: ' + e.Message);
+
+      raise;
     end;
   end;
 end;
