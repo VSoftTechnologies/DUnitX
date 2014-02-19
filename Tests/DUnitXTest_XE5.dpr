@@ -80,6 +80,11 @@ begin
     {$ENDIF}
   except
     on E: Exception do
+    begin
       System.Writeln(E.ClassName, ': ', E.Message);
+      {$IFNDEF CI}
+      System.Readln;
+      {$ENDIF}
+    end;
   end;
 end.
