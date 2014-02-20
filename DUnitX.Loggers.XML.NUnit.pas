@@ -270,6 +270,12 @@ begin
       begin
         WriteTestResult(testResult);
       end;
+
+      for child in fixtureResult.Children do
+      begin
+        WriteFixtureResult(child);
+      end;
+
       WriteXMLLine('</results>');
       Outdent;
       WriteXMLLine('</test-suite>');

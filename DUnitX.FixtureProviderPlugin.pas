@@ -19,6 +19,8 @@ type
     FRttiContext : TRttiContext;
   private
     FFixtureClasses : TDictionary<TClass,string>;
+
+    function FormatTestName(const AName: string; const ATimes, ACount: Integer): string;
   protected
     procedure RTTIDiscoverFixtureClasses;
     procedure GenerateTests(const fixture : ITestFixture);
@@ -37,6 +39,7 @@ uses
   Classes,
   Types,
   StrUtils,
+  SysUtils,
   DUnitX.Utils,
   DUnitX.TestFramework;
 
@@ -149,6 +152,16 @@ begin
   end;
 end;
 
+function TDUnitXFixtureProvider.FormatTestName(const AName: string; const ATimes, ACount: Integer): string;
+begin
+  Result := AName;
+
+  if (ACount > 1) then
+  begin
+    Result := Result + Format(' %d of %d', [ATimes, ACount]);
+  end;
+end;
+
 procedure TDUnitXFixtureProvider.GenerateTests(const fixture: ITestFixture);
 var
   childFixture : ITestFixture;
@@ -181,12 +194,14 @@ var
   testCaseData    : TestCaseInfo;
   testEnabled     : boolean;
   isTestMethod    : boolean;
-
+  repeatAttrib: RepeatTestAttribute;
 
   ignoredTest     : boolean;
   ignoredReason   : string;
 
-
+  repeatCount: Cardinal;
+  i: Integer;
+  currentFixture: ITestFixture;
 begin
   WriteLn('Generating Tests for : ' + fixture.FullName);
   if fixture.HasChildFixtures then
@@ -201,7 +216,6 @@ begin
   //it's a dummy namespace fixture, don't bother with the rest.
   if rType.Handle = TypeInfo(TObject) then
     exit;
-
 
   tearDownFixtureIsDestructor := False;
   setupMethod := nil;
@@ -223,16 +237,33 @@ begin
     ignoredAttrib := nil;
     testAttrib := nil;
     isTestMethod := false;
+    repeatCount := 1;
+    currentFixture := fixture;
 
     meth.Code := method.CodeAddress;
     meth.Data := fixture.FixtureInstance;
+
+    if method.TryGetAttributeOfType<RepeatTestAttribute>(repeatAttrib) then
+    begin
+      if (repeatAttrib.Count = 0) then
+      begin
+        ignoredTest := True;
+        ignoredReason := 'Repeat Set to 0. Test Ignored.';
+      end
+      else
+      if (repeatAttrib.Count > 1) then
+      begin
+        repeatCount := repeatAttrib.Count;
+        currentFixture := fixture.AddChildFixture(fixture.TestClass, Format('%d x %s', [repeatCount, method.Name]));
+      end;
+    end;
 
     {$IFDEF DELPHI_XE_UP}
     //if there is a Destructor then we will use it as the fixture
     //Teardown method.
     if method.IsDestructor and (Length(method.GetParameters) = 0) then
     begin
-      fixture.SetTearDownFixtureMethod(TTestMethod(meth),method.Name,true);
+      currentFixture.SetTearDownFixtureMethod(TTestMethod(meth),method.Name,true);
       tearDownFixtureIsDestructor := true;
       tearDownFixtureMethod := TTestMethod(meth);
       continue;
@@ -242,28 +273,28 @@ begin
     if method.TryGetAttributeOfType<SetupAttribute>(setupAttrib) then
     begin
       setupMethod := TTestMethod(meth);
-      fixture.SetSetupTestMethod(method.Name,setupMethod);
+      currentFixture.SetSetupTestMethod(method.Name,setupMethod);
       continue;
     end;
 
     if method.TryGetAttributeOfType<TearDownAttribute>(tearDownAttrib) then
     begin
       tearDownMethod := TTestMethod(meth);
-      fixture.SetTearDownTestMethod(method.Name,tearDownMethod);
+      currentFixture.SetTearDownTestMethod(method.Name,tearDownMethod);
       continue;
     end;
 
     if method.TryGetAttributeOfType<SetupFixtureAttribute>(setupFixtureAttrib) then
     begin
        setupFixtureMethod := TTestMethod(meth);
-       fixture.SetSetupFixtureMethod(method.Name,setupFixtureMethod);
+       currentFixture.SetSetupFixtureMethod(method.Name,setupFixtureMethod);
        continue;
     end;
 
     if (not tearDownFixtureIsDestructor) and method.TryGetAttributeOfType<TearDownFixtureAttribute>(tearDownFixtureAttrib) then
     begin
        tearDownFixtureMethod := TTestMethod(meth);
-       fixture.SetTearDownFixtureMethod(method.Name,tearDownFixtureMethod,false);
+       currentFixture.SetTearDownFixtureMethod(method.Name,tearDownFixtureMethod,false);
        continue;
     end;
 
@@ -272,7 +303,6 @@ begin
        ignoredTest   := true;
        ignoredReason := ignoredAttrib.Reason;
     end;
-
 
     if method.TryGetAttributeOfType<TestAttribute>(testAttrib) then
     begin
@@ -294,18 +324,28 @@ begin
         begin
           // Add individual test cases first
           for testCaseAttrib in testCases do
-            fixture.AddTestCase(testCaseAttrib.CaseInfo.Name, method.Name, method, testEnabled,testCaseAttrib.CaseInfo.Values);
-          // Add test case from test case sources
+          begin
+            for i := 1 to repeatCount do
+            begin
+              currentFixture.AddTestCase(testCaseAttrib.CaseInfo.Name, FormatTestName(method.Name, i, repeatCount), method, testEnabled,testCaseAttrib.CaseInfo.Values);
+            end;
+          end;
+          // Add test case from test \case sources
           for testCaseSourceAttrb in testCaseSources do
           begin
             for testCaseData in testCaseSourceAttrb.CaseInfoArray do
-                fixture.AddTestCase(TestCaseData.Name,method.Name, method, testEnabled,TestCaseData.Values);
+            begin
+              for i := 1 to repeatCount do
+              begin
+                currentFixture.AddTestCase(TestCaseData.Name, FormatTestName(method.Name, i, repeatCount), method, testEnabled,TestCaseData.Values);
+              end;
+            end;
           end;
         end
         else
         begin
           //if a testcase is ignored, just add it as a regular test.
-          fixture.AddTest(TTestMethod(meth),method.Name,true,true,ignoredReason);
+          currentFixture.AddTest(TTestMethod(meth),method.Name,true,true,ignoredReason);
         end;
         continue;
       end;
@@ -313,7 +353,10 @@ begin
 
     if isTestMethod and testEnabled then
     begin
-      fixture.AddTest(TTestMethod(meth),method.Name,true,ignoredTest,ignoredReason);
+      for i := 1 to repeatCount do
+      begin
+        currentFixture.AddTest(TTestMethod(meth),FormatTestName(method.Name, i, repeatCount),true,ignoredTest,ignoredReason);
+      end;
       continue;
     end;
 
@@ -321,7 +364,10 @@ begin
     if (method.Visibility = TMemberVisibility.mvPublished) and (testEnabled)  then
     begin
       // Add Published Method that has no Attributes
-      fixture.AddTest(TTestMethod(meth),method.Name,true,ignoredTest,ignoredReason);
+      for i := 1 to repeatCount do
+      begin
+        currentFixture.AddTest(TTestMethod(meth),FormatTestName(method.Name, i, repeatCount),true,ignoredTest,ignoredReason);
+      end;
     end;
   end;
 
