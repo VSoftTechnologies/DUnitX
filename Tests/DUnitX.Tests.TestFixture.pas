@@ -32,6 +32,11 @@ uses
   DUnitX.TestFramework,
   DUnitX.TestFixture;
 
+const
+  TIMES_RUN = 3;
+  TIMES_RUN_ANYWAY = 5;
+  TIMES_RUN_TEST_CASE = 2;
+
 type
   {$M+}
   [TestFixture]
@@ -60,16 +65,47 @@ type
     [MockTestSource]
     procedure DataTest(Value : Integer);
   end;
-
-
   {$M-}
 
+  {$M+}
+  [TestFixture]
+  TTestRepeatAttribute = class
+  private
+  public
+    [SetUpFixture]
+    procedure SetUp;
+    [TearDownFixture]
+    procedure TearDownFixture;
+    [Test]
+    [RepeatTest(TIMES_RUN)]
+    procedure TestRepeat3Times;
+    [RepeatTest(TIMES_RUN_TEST_CASE)]
+    [Test]
+    [TestCase('Sum', '1,2,3')]
+    procedure Sum(const A, B, Expected: Integer);
+    [Test]
+    [RepeatTest(0)]
+    procedure IgnoreMeWhenRepeatIsZero;
+  published
+    [RepeatTest(TIMES_RUN_ANYWAY)]
+    procedure TestRepeat5TimesAnyWay;
+    [Test]
+    [RepeatTest(0)]
+    procedure IgnoreMeAnyWayWhenRepeatIsZero;
+  end;
+  {$M-}
 
 implementation
 
 uses
   Math,
   SysUtils;
+
+var
+  _TimesRun: Integer;
+  _TimesRunAnyWay: Integer;
+  _TimesRunTestCase: Integer;
+
 { TDUnitXTestFixtureTests }
 
 { TTestClassWithNonPublicSetup }
@@ -109,7 +145,52 @@ begin
   Assert.IsTrue(InRange(Value,0,2));
 end;
 
+{ TTestRepeatAttribute }
+
+procedure TTestRepeatAttribute.TestRepeat3Times;
+begin
+  Inc(_TimesRun);
+end;
+
+procedure TTestRepeatAttribute.TestRepeat5TimesAnyWay;
+begin
+  Inc(_TimesRunAnyWay);
+  Sleep(5);
+end;
+
+procedure TTestRepeatAttribute.IgnoreMeAnyWayWhenRepeatIsZero;
+begin
+  Assert.IsTrue(false,'I should not have been called!');
+end;
+
+procedure TTestRepeatAttribute.IgnoreMeWhenRepeatIsZero;
+begin
+  Assert.IsTrue(false,'I should not have been called!');
+end;
+
+procedure TTestRepeatAttribute.SetUp;
+begin
+  _TimesRun := 0;
+  _TimesRunAnyWay := 0;
+  _TimesRunTestCase := 0;
+end;
+
+procedure TTestRepeatAttribute.Sum(const A, B, Expected: Integer);
+begin
+  Assert.AreEqual(Expected, A + B);
+  Inc(_TimesRunTestCase);
+end;
+
+procedure TTestRepeatAttribute.TearDownFixture;
+begin
+  Assert.AreEqual(TIMES_RUN, _TimesRun, 'TimesRun');
+  Assert.AreEqual(TIMES_RUN_ANYWAY, _TimesRunAnyWay, 'TimesRunAnyway');
+  Assert.AreEqual(TIMES_RUN_TEST_CASE, _TimesRunTestCase, 'TimesRunTestCase');
+end;
+
 initialization
   TDUnitX.RegisterTestFixture(TTestClassWithNonPublicSetup);
   TDUnitX.RegisterTestFixture(TTestClassWithTestSource);
+  TDUnitX.RegisterTestFixture(TTestRepeatAttribute);
+
 end.

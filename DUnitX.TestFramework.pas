@@ -157,9 +157,10 @@ type
   ///	  Marks a test method to be repeated count times.
   ///	</summary>
   ///	<remarks>
-  ///	  NOT IMPLEMENTED
+  ///	  If [RepeatTest(0]] used then the test will be skipped
+  ///   and behaves like IgnoreAttribute
   ///	</remarks>
-  RepeatAttribute = class(TCustomAttribute)
+  RepeatTestAttribute = class(TCustomAttribute)
   private
     FCount : Cardinal;
   public
@@ -1599,9 +1600,9 @@ begin
   result := FCaseInfo.Values;
 end;
 
-{ RepeatAttribute }
+{ RepeatTestAttribute }
 
-constructor RepeatAttribute.Create(const ACount: Cardinal);
+constructor RepeatTestAttribute.Create(const ACount: Cardinal);
 begin
   FCount := ACount;
 end;
