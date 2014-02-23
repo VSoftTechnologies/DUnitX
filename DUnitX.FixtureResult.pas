@@ -5,6 +5,7 @@ interface
 uses
   classes,
   TimeSpan,
+  Diagnostics,
   DUnitX.Generics,
   DUnitX.TestFramework,
   DUnitX.InternalInterfaces;
@@ -24,6 +25,7 @@ type
     FMemoryLeakCount   : Integer;
     FTotalCount   : integer;
 
+    FStopWatch    : TStopwatch;
     FStartTime    : TDateTime;
     FFinishTime   : TDateTime;
     FDuration     : TTimeSpan;
@@ -71,7 +73,8 @@ uses
   DateUtils,
   SysUtils;
 
-
+const
+  UNDEFINED_DATETIME = 0;
 
 { TDUnitXFixtureResult }
 
@@ -94,6 +97,8 @@ constructor TDUnitXFixtureResult.Create(const AParentResult : IFixtureResult;con
 begin
   FFixture := AFixture;
   FStartTime := Now;
+  FFinishTime := UNDEFINED_DATETIME;
+  FStopWatch := TStopwatch.StartNew;
   //Don't create collections here.. we'll lazy create;
   FChildren := nil;
   FTestResults := nil;
@@ -304,6 +309,7 @@ var
 begin
   if FChildren <> nil then
   begin
+    FDuration := TTimeSpan.Zero;
     FFinishTime := FStartTime;
     for fixture in FChildren do
     begin
@@ -314,12 +320,15 @@ begin
       Inc(FPassCount,fixture.PassCount);
       FAllPassed := FAllPassed and (not fixture.HasFailures);
       FFinishTime := Max(FFinishTime,fixture.FinishTime);
+      FDuration := FDuration.Add(fixture.Duration);
     end;
   end
-  else
+  else if (FFinishTime = UNDEFINED_DATETIME) then
+  begin
     FFinishTime := Now;
-  FDuration := TTimeSpan.FromMilliseconds(DateUtils.MilliSecondsBetween(FFinishTime,FStartTime));
-
+    FStopWatch.Stop;
+    FDuration := FStopWatch.Elapsed;
+  end;
 end;
 
 end.

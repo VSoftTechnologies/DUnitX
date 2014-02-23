@@ -77,13 +77,6 @@ type
 implementation
 
 uses
-  {$IFDEF MSWINDOWS}
-    {$if CompilerVersion < 23 }
-      Windows,
-    {$else}
-      WinAPI.Windows, // Delphi XE2 (CompilerVersion 23) added scopes in front of unit names
-    {$ifend}
-  {$ENDIF}
   DUnitX.IoC;
 
 { TDUnitXTestResult }
