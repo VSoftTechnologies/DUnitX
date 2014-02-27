@@ -30,6 +30,7 @@ interface
 
 uses
   TimeSpan,
+  Diagnostics,
   DUnitX.TestFramework,
   DUnitX.InternalInterfaces,
   Generics.Collections,
@@ -51,6 +52,7 @@ type
     FMemoryLeakCount : Integer;
     FTotalCount : integer;
 
+    FStopWatch: TStopwatch;
     FStartTime: TDateTime;
     FFinishTime: TDateTime;
     FDuration: TTimeSpan;
@@ -91,14 +93,6 @@ implementation
 
 uses
   DateUtils,
-  {$IFDEF MSWINDOWS}
-    //TODO: Need to to remove Windows by getting a system independant performance counter.
-    {$if CompilerVersion < 23 }
-      Windows,
-    {$else}
-      WinAPI.Windows, // Delphi XE2 (CompilerVersion 23) added scopes in front of unit names
-    {$ifend}
-  {$ENDIF}
   SysUtils;
 
 { TDUnitXTestResults }
@@ -114,6 +108,7 @@ begin
   FStartTime := Now;
   FFinishTime := FStartTime;
   FDuration := TTimeSpan.Zero;
+  FStopWatch := TStopwatch.StartNew;
 end;
 
 destructor TDUnitXRunResults.Destroy;
@@ -237,13 +232,11 @@ var
 
 begin
   FFinishTime := Now;
-  FDuration := TTimeSpan.FromMilliseconds(DateUtils.MilliSecondsBetween(FFinishTime,FStartTime));
+  FDuration := FStopWatch.Elapsed;
   for fixtureResult in FFixtureResults do
     (fixtureResult as IFixtureResultBuilder).RollUpResults;
 
-  //Make sure the fixture results are unique.
-
-
+  //TODO: Make sure the fixture results are unique.
 end;
 
 function TDUnitXRunResults.ToString: string;
