@@ -58,6 +58,9 @@ type
     [Test]
     procedure TestTwo;
 
+    [Test]
+    procedure TestError;
+
     //Disabled test
     [Test(false)]
     procedure DontCallMe;
@@ -156,6 +159,11 @@ end;
 procedure TMyExampleTests.AnotherTestMethod(const a: string; const b: integer);
 begin
   TDUnitX.CurrentRunner.Status(Format('TestCaseBlah called with %s %d',[a,b]));
+end;
+
+procedure TMyExampleTests.TestError;
+begin
+  raise Exception.Create('Error.');
 end;
 
 procedure TMyExampleTests.TestMeAnyway;
