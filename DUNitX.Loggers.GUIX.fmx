@@ -1,0 +1,49 @@
+object GUIXTestRunner: TGUIXTestRunner
+  Left = 0
+  Top = 0
+  Caption = 'DUNitX'
+  ClientHeight = 480
+  ClientWidth = 767
+  Visible = False
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  StyleLookup = 'backgroundstyle'
+  object TopPanel: TPanel
+    Align = alMostTop
+    Width = 767.000000000000000000
+    Height = 33.000000000000000000
+    TabOrder = 0
+    object ToolBar1: TToolBar
+      Width = 767.000000000000000000
+      Height = 33.000000000000000000
+      TabOrder = 0
+      object Button1: TButton
+        Width = 57.000000000000000000
+        Height = 33.000000000000000000
+        TabOrder = 0
+      end
+    end
+  end
+  object Panel1: TPanel
+    Align = alClient
+    Position.Point = '(0,33)'
+    Width = 767.000000000000000000
+    Height = 447.000000000000000000
+    TabOrder = 1
+    object TestTree: TTreeView
+      Align = alLeft
+      Width = 450.000000000000000000
+      Height = 447.000000000000000000
+      TabOrder = 0
+    end
+    object Splitter1: TSplitter
+      Align = alLeft
+      Cursor = crHSplit
+      Position.Point = '(450,0)'
+      Width = 15.000000000000000000
+      Height = 447.000000000000000000
+      TabOrder = 1
+      MinSize = 20.000000000000000000
+    end
+  end
+end

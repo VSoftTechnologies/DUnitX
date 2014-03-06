@@ -34,7 +34,9 @@ uses
   ToolWin, ActnMan, ActnMenus, ImgList,
   PlatformDefaultStyleActnCtrls, ExtCtrls, ComCtrls,
   DUnitX.TestFrameWork,
-  DUnitX.InternalInterfaces, StdCtrls;
+  DUnitX.Extensibility,
+  DUnitX.InternalInterfaces,
+  StdCtrls;
 
 const
   WM_LOAD_TESTS = WM_USER + 123;
@@ -83,6 +85,7 @@ type
     procedure OnTestError(const threadId: Cardinal; const Error: ITestError);
     procedure OnTestFailure(const threadId: Cardinal; const Failure: ITestError);
     procedure OnTestSuccess(const threadId: Cardinal; const Test: ITestResult);
+    procedure OnTestMemoryLeak(const threadId : Cardinal; const Test: ITestResult);
     procedure OnTestIgnored(const threadId: Cardinal; const Ignored: ITestResult);
     procedure OnTestingEnds(const RunResults: IRunResults);
     procedure OnTestingStarts(const threadId: Cardinal; const testCount: Cardinal; const testActiveCount: Cardinal);
@@ -208,6 +211,11 @@ begin
 end;
 
 procedure TDUnitXGuiLoggerForm.OnTestingStarts(const threadId, testCount, testActiveCount: Cardinal);
+begin
+
+end;
+
+procedure TDUnitXGuiLoggerForm.OnTestMemoryLeak(const threadId: Cardinal; const Test: ITestResult);
 begin
 
 end;

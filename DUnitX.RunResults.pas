@@ -30,6 +30,7 @@ interface
 
 uses
   TimeSpan,
+  Diagnostics,
   DUnitX.TestFramework,
   DUnitX.InternalInterfaces,
   Generics.Collections,
@@ -48,8 +49,10 @@ type
     FFailureCount : integer;
     FPassCount : integer;
     FIgnoredCount : integer;
+    FMemoryLeakCount : Integer;
     FTotalCount : integer;
 
+    FStopWatch: TStopwatch;
     FStartTime: TDateTime;
     FFinishTime: TDateTime;
     FDuration: TTimeSpan;
@@ -61,6 +64,7 @@ type
     function GetTestCount: Integer;
     function GetErrorCount: Integer;
     function GetFailureCount: Integer;
+    function GetMemoryLeakCount : Integer;
     function GetFixtures: IEnumerable<ITestFixtureInfo>;
     function GetFixtureResults: IEnumerable<IFixtureResult>;
     function GetAllTestResults : IEnumerable<ITestResult>;
@@ -79,7 +83,7 @@ type
     //called when all is done.
     procedure RollupResults;
   public
-    constructor Create(const fixtures : IList<ITestFixtureInfo>);
+    constructor Create;
     destructor Destroy;override;
     function ToString : string;override;
   end;
@@ -89,23 +93,14 @@ implementation
 
 uses
   DateUtils,
-  {$IFDEF MSWINDOWS}
-    //TODO: Need to to remove Windows by getting a system independant performance counter.
-    {$if CompilerVersion < 23 }
-      Windows,
-    {$else}
-      WinAPI.Windows, // Delphi XE2 (CompilerVersion 23) added scopes in front of unit names
-    {$ifend}
-  {$ENDIF}
   SysUtils;
 
 { TDUnitXTestResults }
 
-constructor TDUnitXRunResults.Create(const fixtures : IList<ITestFixtureInfo>);
+constructor TDUnitXRunResults.Create;
 begin
   FFixtureResults := TDUnitXList<IFixtureResult>.Create;
   FAllTestResults := TDUnitXList<ITestResult>.Create;
-  FFixtures := fixtures;
   FAllPassed := True;
   FErrorCount := 0;
   FPassCount := 0;
@@ -113,6 +108,7 @@ begin
   FStartTime := Now;
   FFinishTime := FStartTime;
   FDuration := TTimeSpan.Zero;
+  FStopWatch := TStopwatch.StartNew;
 end;
 
 destructor TDUnitXRunResults.Destroy;
@@ -161,6 +157,11 @@ end;
 function TDUnitXRunResults.GetIgnoredCount: Integer;
 begin
   result := FIgnoredCount;
+end;
+
+function TDUnitXRunResults.GetMemoryLeakCount: Integer;
+begin
+  Result := FMemoryLeakCount;
 end;
 
 function TDUnitXRunResults.GetFixtureCount: Integer;
@@ -214,9 +215,10 @@ begin
     TTestResultType.Failure : Inc(FFailureCount);
     TTestResultType.Error   : Inc(FErrorCount);
     TTestResultType.Ignored : Inc(FIgnoredCount);
+    TTestResultType.MemoryLeak : Inc(FMemoryLeakCount);
   end;
 
-  if testResult.ResultType <> Pass then
+  if testResult.ResultType <> TTestResultType.Pass then
     FAllPassed := False;
 
   (fixtureResult as IFixtureResultBuilder).AddTestResult(testResult);
@@ -230,13 +232,11 @@ var
 
 begin
   FFinishTime := Now;
-  FDuration := TTimeSpan.FromMilliseconds(DateUtils.MilliSecondsBetween(FFinishTime,FStartTime));
+  FDuration := FStopWatch.Elapsed;
   for fixtureResult in FFixtureResults do
     (fixtureResult as IFixtureResultBuilder).RollUpResults;
 
-  //Make sure the fixture results are unique.
-
-
+  //TODO: Make sure the fixture results are unique.
 end;
 
 function TDUnitXRunResults.ToString: string;

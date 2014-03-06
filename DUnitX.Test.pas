@@ -29,9 +29,10 @@ unit DUnitX.Test;
 interface
 
 uses
-  DUnitX.TestFramework,
+  DUnitX.Extensibility,
   DUnitX.InternalInterfaces,
   DUnitX.WeakReference,
+  DUnitX.TestFramework,
   TimeSpan,
   Rtti;
 
@@ -50,6 +51,7 @@ type
     FEnabled      : boolean;
     FIgnored      : boolean;
     FIgnoreReason : string;
+    FIgnoreMemoryLeaks : Boolean;
   protected
     //ITest
     function GetName: string; virtual;
@@ -59,6 +61,8 @@ type
     function GetTestStartTime : TDateTime;
     function GetTestEndTime : TDateTime;
     function GetTestDuration: TTimeSpan;
+    function GetIgnoreMemoryLeaks() : Boolean;
+    procedure SetIgnoreMemoryLeaks(const AValue : Boolean);
 
     //ITestInfo
     function GetActive : boolean;
@@ -153,6 +157,11 @@ begin
   result := FIgnored;
 end;
 
+function TDUnitXTest.GetIgnoreMemoryLeaks: Boolean;
+begin
+  Result := FIgnoreMemoryLeaks;
+end;
+
 function TDUnitXTest.GetIgnoreReason: string;
 begin
   result := FIgnoreReason;
@@ -203,6 +212,11 @@ end;
 procedure TDUnitXTest.SetEnabled(const value: Boolean);
 begin
   FEnabled := value;
+end;
+
+procedure TDUnitXTest.SetIgnoreMemoryLeaks(const AValue: Boolean);
+begin
+  FIgnoreMemoryLeaks := AValue;
 end;
 
 procedure TDUnitXTest.SetResult(const value: ITestResult);

@@ -1,7 +1,7 @@
 program DUnitXTest_XE2;
 
 {$APPTYPE CONSOLE}
-{\\$STRONGLINKTYPES ON}
+{$STRONGLINKTYPES ON}
 uses
   SysUtils,
   DUnitX.Loggers.Console in '..\DUnitX.Loggers.Console.pas',
@@ -10,7 +10,6 @@ uses
   DUnitX.Windows.Console in '..\DUnitX.Windows.Console.pas',
   DUnitX.ConsoleWriter.Base in '..\DUnitX.ConsoleWriter.Base.pas',
   DUnitX.Loggers.XML.xUnit in '..\DUnitX.Loggers.XML.xUnit.pas',
-  DUnitX.Detour in '..\DUnitX.Detour.pas',
   DUnitX.Generics in '..\DUnitX.Generics.pas',
   DUnitX.Utils in '..\DUnitX.Utils.pas',
   DUnitX.WeakReference in '..\DUnitX.WeakReference.pas',
@@ -44,7 +43,11 @@ uses
   DUnitX.Loggers.XML.NUnit in '..\DUnitX.Loggers.XML.NUnit.pas',
   DUnitX.SingleNameSpace in 'DUnitX.SingleNameSpace.pas',
   DUnitX.MemoryLeakMonitor.Default in '..\DUnitX.MemoryLeakMonitor.Default.pas',
-  DUnitX.MemoryLeakMonitor.FastMM4 in '..\DUnitX.MemoryLeakMonitor.FastMM4.pas';
+  DUnitX.MemoryLeakMonitor.FastMM4 in '..\DUnitX.MemoryLeakMonitor.FastMM4.pas',
+  DUnitX.Tests.MemoryLeaks in 'DUnitX.Tests.MemoryLeaks.pas',
+  DUnitX.Extensibility in '..\DUnitX.Extensibility.pas',
+  DUnitX.Extensibility.PluginManager in '..\DUnitX.Extensibility.PluginManager.pas',
+  DUnitX.FixtureProviderPlugin in '..\DUnitX.FixtureProviderPlugin.pas';
 
 var
   runner : ITestRunner;
@@ -57,7 +60,7 @@ begin
     runner := TDUnitX.CreateRunner;
     runner.UseRTTI := True;
     //tell the runner how we will log things
-    logger := TDUnitXConsoleLogger.Create(true);
+    logger := TDUnitXConsoleLogger.Create(false);
     nunitLogger := TDUnitXXMLNUnitFileLogger.Create;
     runner.AddLogger(logger);
     runner.AddLogger(nunitLogger);
@@ -76,11 +79,14 @@ begin
     //We don;t want this happening when running under CI.
     System.Write('Done.. press <Enter> key to quit.');
     System.Readln;
-
-
     {$ENDIF}
   except
     on E: Exception do
+    begin
       System.Writeln(E.ClassName, ': ', E.Message);
+      {$IFNDEF CI}
+      System.Readln;
+      {$ENDIF}
+    end;
   end;
 end.

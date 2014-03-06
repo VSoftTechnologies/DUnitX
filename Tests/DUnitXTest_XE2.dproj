@@ -29,6 +29,12 @@
 			<CfgParent>Base</CfgParent>
 			<Base>true</Base>
 		</PropertyGroup>
+		<PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win32)'!=''">
+			<Cfg_2_Win32>true</Cfg_2_Win32>
+			<CfgParent>Cfg_2</CfgParent>
+			<Cfg_2>true</Cfg_2>
+			<Base>true</Base>
+		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
 			<DCC_UsePackage>rtl;vcl;vclx;vclactnband;xmlrtl;vclimg;dbrtl;vcldb;vcldbx;bdertl;vcltouch;dsnap;dsnapcon;vclie;webdsnap;inet;inetdbbde;inetdbxpress;soaprtl;DbxCommonDriver;DbxClientDriver;DBXInterBaseDriver;DBXMySQLDriver;dbexpress;dbxcds;FBDream2010;SynEdit_R2010;NxCommonRun;NxGridRun;KWizardD2010R;GFDLIB2009;dclRouteMapD2010;tb2k_d12;SpTBXLib_d12;dwWin7Controls_2010;IndyCore140;IndySystem140;IndyProtocols140;lmddocking11rt_140;lmdrtl11rt_140;RaizeComponentsVcl;FBMiscComponents;FBFormDesigner;FBSynEditHighlighters;VSPageR;madBasic_;madDisAsm_;madExcept_;adortl;TeeWorld814;TeeImage814;TeeLanguage814;TeePro814;TeeGL814;TeeUI814;TeeDB814;Tee814;VirtualTreesR;VSMessageAPIDesign;VSMessageAPIRun;$(DCC_UsePackage)</DCC_UsePackage>
 			<DCC_DcuOutput>.\$(Platform)\$(Config)</DCC_DcuOutput>
@@ -56,6 +62,9 @@
 			<DCC_MapFile>3</DCC_MapFile>
 			<DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
 		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+			<DCC_TypedAtParameter>true</DCC_TypedAtParameter>
+		</PropertyGroup>
 		<ItemGroup>
 			<DelphiCompile Include="$(MainSource)">
 				<MainSource>MainSource</MainSource>
@@ -66,7 +75,6 @@
 			<DCCReference Include="..\DUnitX.Windows.Console.pas"/>
 			<DCCReference Include="..\DUnitX.ConsoleWriter.Base.pas"/>
 			<DCCReference Include="..\DUnitX.Loggers.XML.xUnit.pas"/>
-			<DCCReference Include="..\DUnitX.Detour.pas"/>
 			<DCCReference Include="..\DUnitX.Generics.pas"/>
 			<DCCReference Include="..\DUnitX.Utils.pas"/>
 			<DCCReference Include="..\DUnitX.WeakReference.pas"/>
@@ -84,9 +92,6 @@
 			<DCCReference Include="..\DUnitX.StackTrace.JCL.pas"/>
 			<DCCReference Include="..\DUnitX.StackTrace.MadExcept3.pas"/>
 			<DCCReference Include="..\DUnitX.StackTrace.MadExcept4.pas"/>
-			<DCCReference Include="..\DUnitX.Loggers.GUI.pas">
-				<Form>Form1</Form>
-			</DCCReference>
 			<DCCReference Include="..\DUnitX.StackTrace.EurekaLog7.pas"/>
 			<DCCReference Include="..\DUnitX.Loggers.Null.pas"/>
 			<DCCReference Include="..\DUnitX.FixtureResult.pas"/>
@@ -103,6 +108,10 @@
 			<DCCReference Include="DUnitX.SingleNameSpace.pas"/>
 			<DCCReference Include="..\DUnitX.MemoryLeakMonitor.Default.pas"/>
 			<DCCReference Include="..\DUnitX.MemoryLeakMonitor.FastMM4.pas"/>
+			<DCCReference Include="DUnitX.Tests.MemoryLeaks.pas"/>
+			<DCCReference Include="..\DUnitX.Extensibility.pas"/>
+			<DCCReference Include="..\DUnitX.Extensibility.PluginManager.pas"/>
+			<DCCReference Include="..\DUnitX.FixtureProviderPlugin.pas"/>
 			<None Include="..\DUnitX.inc"/>
 			<None Include="..\DUnitX.Stacktrace.inc"/>
 			<None Include="..\DUnitX.MemoryLeaks.inc"/>

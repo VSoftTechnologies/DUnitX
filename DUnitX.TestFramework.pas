@@ -1,4 +1,4 @@
-{***************************************************************************}
+﻿{***************************************************************************}
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
@@ -35,6 +35,7 @@ uses
   Rtti,
   TimeSpan,
   DUnitX.Generics,
+  DUnitX.Extensibility,
   Generics.Collections;
 
 //TODO: Automatic support for https://code.google.com/p/delphi-code-coverage/ would be cool
@@ -44,7 +45,7 @@ uses
 type
   ///	<summary>
   ///	  A class decorated with this attribute will be tested. The parameters
-  ///	  allow you to control which methods are treated as tests. By default�
+  ///	  allow you to control which methods are treated as tests. By default 
   ///	  only methods decorated with the Test attribute are run as tests.
   ///	</summary>
   TestFixtureAttribute = class(TCustomAttribute)
@@ -62,7 +63,7 @@ type
 
   ///	<summary>
   ///	  A TestFixture decorated with this attribute will be tested using it's
-  ///	  own thread. �This can speed up unit testing when fixtures do not
+  ///	  own thread.  This can speed up unit testing when fixtures do not
   ///	  compete for resources and the test machine has enough cores to service
   ///	  the tests.
   ///	</summary>
@@ -72,8 +73,8 @@ type
   TestInOwnThreadAttribute = class(TCustomAttribute);
 
   ///	<summary>
-  ///	  A method marked with this attribute will run before any tests in.� Note
-  ///	  that if more than one method is decorated with this attribute�the first
+  ///	  A method marked with this attribute will run before any tests in.  Note
+  ///	  that if more than one method is decorated with this attribute the first
   ///	  method found will be executed (not recommended!).
   ///	</summary>
   SetupFixtureAttribute = class(TCustomAttribute)
@@ -102,13 +103,26 @@ type
 
   ///	<summary>
   ///	  A method marked with this attribute can contain a teardown method that
-  ///	  will be run after each all tests in the fixture have executed.� Note
+  ///	  will be run after each all tests in the fixture have executed.  Note
   ///	  that if more than one method is decorated with this attribute the first
   ///	  method found will be executed (not recommended!).
   ///	</summary>
   TearDownFixtureAttribute = class(TCustomAttribute)
   end;
 
+  ///	<summary>
+  ///	    This attribue is applied to test methods.
+  ///	    If a test is successful and produces a memory leak it will be
+  ///	    reported.   If you do not want the leak reported, then you can add
+  ///	    this attribute to the test method.
+  ///	</summary>
+  IgnoreMemoryLeaks = class(TCustomAttribute)
+  private
+    FIgnoreMemoryLeaks : Boolean;
+  public
+    constructor Create(const AIgnoreMemoryLeaks : Boolean = True);
+    property IgnoreMemoryLeaks : Boolean read FIgnoreMemoryLeaks;
+  end;
 
 
   ///	<summary>
@@ -123,6 +137,13 @@ type
     property Enabled : boolean read FEnabled;
   end;
 
+  ///	<summary>
+  ///	  This attribute will prevent a test from being run.   It will still show
+  ///	  up in the lists of tests, and reported as an Ignored test
+  ///	</summary>
+  ///	<remarks>
+  ///	  This is useful when you need to temporarily stop a test from running.
+  ///	</remarks>
   IgnoreAttribute = class(TCustomAttribute)
   private
     FReason : string;
@@ -136,9 +157,10 @@ type
   ///	  Marks a test method to be repeated count times.
   ///	</summary>
   ///	<remarks>
-  ///	  NOT IMPLEMENTED
+  ///	  If [RepeatTest(0]] used then the test will be skipped
+  ///   and behaves like IgnoreAttribute
   ///	</remarks>
-  RepeatAttribute = class(TCustomAttribute)
+  RepeatTestAttribute = class(TCustomAttribute)
   private
     FCount : Cardinal;
   public
@@ -146,30 +168,85 @@ type
     property Count : Cardinal read FCount;
   end;
 
-  TValueArray = array of TValue;
+  TValueArray = DUnitX.Extensibility.TValueArray;
 
 
   ///	<summary>
-  ///	  The TestCaseAttribute allows you to specify the name of a function that
-  ///	  returns a TValueArray which will be passed into a function that takes
-  ///	  parameters. This is really only needed to work around the problens with
-  ///	  the TestCaseAttribute.�
+  ///	  Internal Structure used for those implementing CustomTestCase or
+  ///	  CustomTestCaseSource descendants.
   ///	</summary>
-  ///	<remarks>
-  ///	  Note that the types in the TConstArray should match the parameters of
-  ///	  the method we are testing.
-  ///	</remarks>
-  TestCaseAttribute = class(TCustomAttribute)
-  private
-    FCaseName : string;
-    FValues : TValueArray;
-  public
-    constructor Create(const ACaseName : string; const AValues : string);overload;
-    property Name : string read FCaseName;
-    property Values : TValueArray read FValues;
+  TestCaseInfo = record
+
+    ///	<summary>
+    ///	  Name of the Test Case
+    ///	</summary>
+    Name : string;
+
+    ///	<summary>
+    ///	  Values that will be passed to the method being tested.
+    ///	</summary>
+    Values : TValueArray;
   end;
 
-  TTestMethod = procedure of object;
+  TestCaseInfoArray = array of TestCaseInfo;
+
+
+  ///	<summary>
+  ///	  Base class for all Test Case Attributes.   
+  ///	</summary>
+  ///	<remarks>
+  ///	  Class is abstract and should never be, used to annotate a class as a
+  ///	  attribute.   Instead use a descendant, that implements the GetCaseInfo
+  ///	  method.
+  ///	</remarks>
+  CustomTestCaseAttribute = class abstract(TCustomAttribute)
+  protected
+    function GetCaseInfo : TestCaseInfo;  virtual; abstract;
+  public
+    property CaseInfo : TestCaseInfo read GetCaseInfo;
+  end;
+
+  ///	<summary>
+  ///	  Base class for all Test Case Source Attributes.   
+  ///	</summary>
+  ///	<remarks>
+  ///	  <para>
+  ///	    Class is abstract and should never be, used to annotate a class as a
+  ///	    attribute.   Instead use a descendant, that implements the
+  ///	    GetCaseInfoArray method.    
+  ///	  </para>
+  ///	  <para>
+  ///	    Note: If a method is annotated with a decendant of
+  ///	    TestCaseSourceAttribute and returns an empty TestCaseInfoArray, then
+  ///	    no test will be shown for the method.
+  ///	  </para>
+  ///	</remarks>
+  CustomTestCaseSourceAttribute = class abstract(TCustomAttribute)
+  protected
+    function GetCaseInfoArray : TestCaseInfoArray; virtual; abstract;
+  public
+    property CaseInfoArray : TestCaseInfoArray read GetCaseInfoArray;
+  end;
+
+
+  ///	<summary>
+  ///	  The TestCaseAttribute allows you to pass values to a test function.
+  ///	  Each value is delimited in the string, by default the delimiter is ','
+  ///	</summary>
+  TestCaseAttribute = class(CustomTestCaseAttribute)
+  protected
+    FCaseInfo : TestCaseInfo;
+    function GetCaseInfo : TestCaseInfo; Override;
+    function GetName: String;
+    function GetValues: TValueArray;
+  public
+    constructor Create(const ACaseName : string; const AValues : string;const ASeperator : string = ',');overload;
+    property Name : String read GetName;
+    property Values : TValueArray read GetValues;
+  end;
+
+  TTestMethod = DUnitX.Extensibility.TTestMethod;
+
   TTestLocalMethod = reference to procedure;
 
   TLogLevel = (ltInformation, ltWarning, ltError);
@@ -198,6 +275,9 @@ type
 
 
   Assert = class
+  private
+    class procedure CheckExceptionClass(E: Exception; const exceptionClass: ExceptClass);
+    class function AddLineBreak(const msg: string): string;
   public
     class procedure Pass(const message : string = '');
     class procedure Fail(const message : string = ''; const errorAddrs : pointer = nil);
@@ -272,6 +352,7 @@ type
 {$ENDIF}
 
     class procedure WillRaise(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass = nil; const msg : string = ''); overload;
+    class procedure WillRaiseWithMessage(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass = nil; const exceptionMsg: string = ''; const msg : string = ''); overload;
     class procedure WillRaise(const AMethod : TTestMethod; const exceptionClass : ExceptClass = nil; const msg : string = ''); overload;
     class procedure WillNotRaise(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass = nil; const msg : string = ''); overload;
     class procedure WillNotRaise(const AMethod : TTestMethod; const exceptionClass : ExceptClass = nil; const msg : string = ''); overload;
@@ -377,11 +458,12 @@ type
     property StartTime : TDateTime read GetStartTime;
     property FinishTime : TDateTime read GetFinishTime;
     property Duration : TTimeSpan read GetDuration;
-end;
+  end;
   {$M-}
 
 
-  TTestResultType = (Pass,Failure,Error,Ignored);
+  {$SCOPEDENUMS ON}
+  TTestResultType = (Pass,Failure,Error,Ignored,MemoryLeak);
   {$M+}
   ITestResult = interface(IResult)
   ['{EFD44ABA-4F3E-435C-B8FC-1F8EB4B35A3B}']
@@ -463,11 +545,10 @@ end;
     function GetAllPassed : boolean;
     function GetFailureCount : integer;
     function GetErrorCount : integer;
+    function GetMemoryLeakCount : Integer;
     function GetPassCount : integer;
     function GetIgnoredCount : integer;
     function GetSuccessRate : integer;
-
-    function GetFixtures : IEnumerable<ITestFixtureInfo>;
 
     function GetFixtureResults : IEnumerable<IFixtureResult>;
 
@@ -482,12 +563,12 @@ end;
     property ErrorCount : integer read GetErrorCount;
     property IgnoredCount : integer read GetIgnoredCount;
     property PassCount : integer read GetPassCount;
+    property MemoryLeakCount : integer read GetMemoryLeakCount;
 
     property SuccessRate : integer read GetSuccessRate;
     //means all enabled/not ingored tests passed.
     property AllPassed : boolean read GetAllPassed;
 
-    property Fixtures : IEnumerable<ITestFixtureInfo> read GetFixtures;
     property FixtureResults : IEnumerable<IFixtureResult> read GetFixtureResults;
   end;
   {$M-}
@@ -556,6 +637,10 @@ end;
     ///	</summary>
     procedure OnTestIgnored(const threadId : Cardinal; const AIgnored: ITestResult);
 
+    ///	<summary>
+    ///	  //called when a test memory leaks.
+    ///	</summary>
+    procedure OnTestMemoryLeak(const threadId : Cardinal; const Test: ITestResult);
 
     ///	<summary>
     ///	  //allows tests to write to the log.
@@ -632,7 +717,7 @@ end;
 
     ///	<summary>
     ///	  When true, test fixtures will be found by using RTTI to search for
-    ///	  classes decorated as TestFixtures.� Note for this to work you may
+    ///	  classes decorated as TestFixtures.  Note for this to work you may
     ///	  need to use {$STRONGLINKTYPES ON} otherwise the classes may not get
     ///	  linked as they are not referenced. When False you will need to
     ///	  register the fixtures using TDUnitX.RegisterTestFixture
@@ -657,6 +742,7 @@ end;
   TDUnitX = class
   public class var
     RegisteredFixtures : TDictionary<TClass,string>;
+    RegisteredPlugins  : TList<IPlugin>;
   public
     class constructor Create;
     class destructor Destroy;
@@ -665,6 +751,7 @@ end;
     class function CreateRunner(const ALogger : ITestLogger) : ITestRunner;overload;
     class function CreateRunner(const useCommandLineOptions : boolean; const ALogger : ITestLogger) : ITestRunner;overload;
     class procedure RegisterTestFixture(const AClass : TClass; const AName : string = '' );
+    class procedure RegisterPlugin(const plugin : IPlugin);
     class function CommandLine : ICommandLine;
     class function CurrentRunner : ITestRunner;
   end;
@@ -679,7 +766,16 @@ end;
 
   IMemoryLeakMonitor = interface
   ['{A374A4D0-9BF6-4E01-8A29-647F92CBF41C}']
+    procedure PreSetup;
+    procedure PostSetUp;
+    procedure PreTest;
+    procedure PostTest;
+    procedure PreTearDown;
+    procedure PostTearDown;
 
+    function SetUpMemoryAllocated: Int64;
+    function TearDownMemoryAllocated: Int64;
+    function TestMemoryAllocated: Int64;
   end;
 
 
@@ -706,6 +802,7 @@ uses
   DUnitX.Commandline,
   DUnitX.IoC,
   DUnitX.MemoryLeakMonitor.Default,
+  DUnitX.FixtureProviderPlugin,
   Variants,
   Math,
   StrUtils,
@@ -829,6 +926,15 @@ begin
   end;
 end;
 {$ENDIF}
+
+class function Assert.AddLineBreak(const msg: string): string;
+begin
+  if msg <> '' then
+    Result :=  sLineBreak + msg
+  else
+    Result := '';
+end;
+
 class procedure Assert.AreEqual(const left, right: Integer; const message: string);
 begin
   if left <> right then
@@ -848,7 +954,7 @@ end;
 
 class procedure Assert.AreNotEqual(const left, right, tolerance: Extended; const message: string);
 begin
-  if not Math.SameValue(left, right, tolerance) then
+  if Math.SameValue(left, right, tolerance) then
     Fail(Format('%g equals right %g %s' ,[left,right,message]), ReturnAddress);
 end;
 
@@ -1199,41 +1305,21 @@ begin
 end;
 
 class procedure Assert.WillRaise(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass; const msg : string);
-  function GetMsg : string;
-  begin
-    if msg <> '' then
-      result :=  #13#10 + msg
-    else
-      result := '';
-  end;
 begin
   try
     AMethod;
   except
-    //we expect an exception to be thrown.
-    on e : Exception do
+    on E: Exception do
     begin
-      if exceptionClass <> nil then
-      begin
-        if e.ClassType <> exceptionClass then
-          Fail(Format('Method raised [%s] was expecting [%s]. %s', [e.ClassName, exceptionClass.ClassName, e.message]), ReturnAddress)
-        else
-          exit;
-      end;
+      CheckExceptionClass(e, exceptionClass);
+      Exit;
     end;
   end;
-  Fail('Method did not throw any exceptions.' + GetMsg, ReturnAddress);
+  Fail('Method did not throw any exceptions.' + AddLineBreak(msg), ReturnAddress);
 end;
 
 
 class procedure Assert.WillNotRaise(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass; const msg : string);
-  function GetMsg : string;
-  begin
-    if msg <> '' then
-      result :=  #13#10 + msg
-    else
-      result := '';
-  end;
 begin
   try
     AMethod;
@@ -1243,7 +1329,7 @@ begin
       if exceptionClass <> nil then
       begin
         if e.ClassType = exceptionClass then
-           Fail('Method raised an exception of type : ' + exceptionClass.ClassName + #13#10 + e.Message + GetMsg, ReturnAddress);
+           Fail('Method raised an exception of type : ' + exceptionClass.ClassName + sLineBreak + e.Message + AddLineBreak(msg), ReturnAddress);
       end
       else
         Fail(Format('Method raised [%s] was expecting not to raise [%s]. %s', [e.ClassName, exceptionClass.ClassName, e.message]), ReturnAddress);
@@ -1261,6 +1347,22 @@ begin
     exceptionClass, msg);
 end;
 
+class procedure Assert.WillRaiseWithMessage(const AMethod: TTestLocalMethod; const exceptionClass: ExceptClass;const exceptionMsg, msg: string);
+begin
+  try
+    AMethod;
+  except
+    on E: Exception do
+    begin
+      CheckExceptionClass(E, exceptionClass);
+      if (exceptionMsg <> '') and (not SameStr(E.Message, exceptionMsg)) then
+        Fail(Format('Exception [%s] was raised with message [%s] was expecting [%s] %s', [E.ClassName, E.Message, exceptionMsg, msg]));
+      Exit;
+    end;
+  end;
+  Fail('Method did not throw any exceptions.' + AddLineBreak(msg), ReturnAddress);
+end;
+
 class procedure Assert.AreEqual(const left : string; const right : string; const message : string);
 begin
   Assert.AreEqual(left, right, true, message);
@@ -1275,6 +1377,15 @@ begin
   end
   else if not SameStr(left,right) then
       Fail(Format('[%s] is Not Equal to [%s] %s',[left,right,message]), ReturnAddress);
+end;
+
+class procedure Assert.CheckExceptionClass(E: Exception; const exceptionClass: ExceptClass);
+begin
+  if exceptionClass = nil then
+    Exit;
+
+  if E.ClassType <> exceptionClass then
+    Fail(Format('Method raised [%s] was expecting [%s]. %s', [E.ClassName, exceptionClass.ClassName, E.message]), ReturnAddress);
 end;
 
 class procedure Assert.Contains(const theString : string; const subString : string; const ignoreCase : boolean; const message : string);
@@ -1357,7 +1468,7 @@ end;
 class constructor TDUnitX.Create;
 begin
   RegisteredFixtures := TDictionary<TClass,string>.Create;
-
+  RegisteredPlugins  := TList<IPlugin>.Create;
   //Make sure we have at least a dummy memory leak monitor registered.
   if not TDUnitXIoC.DefaultContainer.HasService<IMemoryLeakMonitor> then
     DUnitX.MemoryLeakMonitor.Default.RegisterDefaultProvider;
@@ -1380,6 +1491,14 @@ end;
 class destructor TDUnitX.Destroy;
 begin
   RegisteredFixtures.Free;
+  RegisteredPlugins.Free;
+end;
+
+class procedure TDUnitX.RegisterPlugin(const plugin: IPlugin);
+begin
+  if plugin = nil then
+    raise Exception.Create('Nil plug registered!');
+  RegisteredPlugins.Add(plugin);
 end;
 
 class procedure TDUnitX.RegisterTestFixture(const AClass: TClass; const AName : string);
@@ -1416,18 +1535,18 @@ end;
 { TestCaseAttribute }
 
 
-constructor TestCaseAttribute.Create(const ACaseName: string; const AValues: string);
+constructor TestCaseAttribute.Create(const ACaseName: string; const AValues: string;const ASeperator : string);
 var
   i: Integer;
   l : integer;
   lValues : TStringDynArray;
 begin
-  FCaseName := ACaseName;
-  lValues := SplitString(AValues,',');
+  FCaseInfo.Name := ACaseName;
+  lValues := SplitString(AValues,ASeperator);
   l := Length(lValues);
-  SetLength(FValues,l);
+  SetLength(FCaseInfo.Values,l);
   for i := 0 to l -1 do
-    FValues[i] := TValue.From<string>(lValues[i]);
+    FCaseInfo.Values[i] := TValue.From<string>(lValues[i]);
 end;
 
 
@@ -1466,15 +1585,39 @@ begin
 end;
 {$ENDIF}
 
-{ RepeatAttribute }
+function TestCaseAttribute.GetCaseInfo: TestCaseInfo;
+begin
+  result := FCaseInfo;
+end;
 
-constructor RepeatAttribute.Create(const ACount: Cardinal);
+function TestCaseAttribute.GetName: String;
+begin
+  result := FCaseInfo.Name;
+end;
+
+function TestCaseAttribute.GetValues: TValueArray;
+begin
+  result := FCaseInfo.Values;
+end;
+
+{ RepeatTestAttribute }
+
+constructor RepeatTestAttribute.Create(const ACount: Cardinal);
 begin
   FCount := ACount;
 end;
 
 { IgnoreAttribute }
 
+{ IgnoreMemoryLeaks }
+
+constructor IgnoreMemoryLeaks.Create(const AIgnoreMemoryLeaks: Boolean);
+begin
+  inherited Create;
+  FIgnoreMemoryLeaks := AIgnoreMemoryLeaks;
+end;
+
 initialization
+  TDUnitX.RegisterPlugin(TDUnitXFixtureProviderPlugin.Create);
 
 end.

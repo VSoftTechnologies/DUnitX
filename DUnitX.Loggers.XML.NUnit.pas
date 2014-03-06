@@ -2,6 +2,8 @@ unit DUnitX.Loggers.XML.NUnit;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
   classes,
   SysUtils,
@@ -16,6 +18,7 @@ type
     FOutputStream : TStream;
     FOwnsStream   : boolean;
     FIndent       : integer;
+    FFormatSettings : TFormatSettings;
   protected
     procedure Indent;
     procedure Outdent;
@@ -27,7 +30,7 @@ type
     procedure WriteFixtureResult(const fixtureResult : IFixtureResult);
     procedure WriteTestResult(const testResult : ITestResult);
 
-
+    function Format(const Format: string; const Args: array of const): String;
   public
     constructor Create(const AOutputStream : TStream; const AOwnsStream : boolean = false);
     destructor Destroy;override;
@@ -101,12 +104,33 @@ end;
 constructor TDUnitXXMLNUnitLogger.Create(const AOutputStream: TStream; const AOwnsStream : boolean = false);
 var
   preamble: TBytes;
+  {$IFNDEF DELPHI_XE_UP}
+  oldThousandSeparator: Char;
+  oldDecimalSeparator: Char;
+  {$ENDIF}
 begin
+  {$IFDEF DELPHI_XE_UP }
+  FFormatSettings := TFormatSettings.Create;
+  FFormatSettings.ThousandSeparator := ',';
+  FFormatSettings.DecimalSeparator := '.';
+  {$ELSE}
+  oldThousandSeparator        := SysUtils.ThousandSeparator;
+  oldDecimalSeparator         := SysUtils.DecimalSeparator;
+  try
+    SysUtils.ThousandSeparator := ',';
+    SysUtils.DecimalSeparator := '.';
+  {$ENDIF}
   FOutputStream := AOutputStream;
   FOwnsStream   := AOwnsStream;
 
   Preamble := TEncoding.UTF8.GetPreamble;
   FOutputStream.WriteBuffer(preamble[0], Length(preamble));
+  {$IFNDEF DELPHI_XE_UP}
+  finally
+    SysUtils.ThousandSeparator := oldThousandSeparator;
+    SysUtils.DecimalSeparator  := oldDecimalSeparator;
+  end;
+  {$ENDIF}
 
 end;
 
@@ -115,6 +139,12 @@ begin
   if FOwnsStream then
     FOutputStream.Free;
   inherited;
+end;
+
+function TDUnitXXMLNUnitLogger.Format(const Format: string;
+  const Args: array of const): String;
+begin
+  Result := SysUtils.Format(Format, Args, FFormatSettings);
 end;
 
 procedure TDUnitXXMLNUnitLogger.Indent;
@@ -240,6 +270,12 @@ begin
       begin
         WriteTestResult(testResult);
       end;
+
+      for child in fixtureResult.Children do
+      begin
+        WriteFixtureResult(child);
+      end;
+
       WriteXMLLine('</results>');
       Outdent;
       WriteXMLLine('</test-suite>');
@@ -273,7 +309,11 @@ end;
 function ResultTypeToString(const value : TTestResultType) : string;
 begin
   case value of
-    Pass: result := 'Success';
+    TTestResultType.Pass: result := 'Success';
+    TTestResultType.Failure : result := 'Failure';
+    TTestResultType.Error   : result := 'Error';
+    TTestResultType.Ignored : result := 'Ignored';
+    TTestResultType.MemoryLeak : result := 'Failure'; //NUnit xml doesn't understand memory leak
   else
     result := GetEnumName(TypeInfo(TTestResultType),Ord(value));
   end;
@@ -294,10 +334,10 @@ begin
     sResult := ResultTypeToString(testResult.ResultType);
     if testResult.ResultType = TTestResultType.Pass then
       sLineEnd := '/';
-    sExecuted := BoolToStr(testResult.ResultType <> Ignored,true);
+    sExecuted := BoolToStr(testResult.ResultType <> TTestResultType.Ignored,true);
 
-    if testResult.ResultType <> Ignored then
-      sSuccess := Format('success="%s"',[BoolToStr(testResult.ResultType = Pass,true)])
+    if testResult.ResultType <> TTestResultType.Ignored then
+      sSuccess := Format('success="%s"',[BoolToStr(testResult.ResultType = TTestResultType.Pass,true)])
     else
       sSuccess := '';
 
@@ -306,7 +346,9 @@ begin
     begin
       Indent;
       case testResult.ResultType of
-        Failure, Error:
+        TTestResultType.MemoryLeak,
+        TTestResultType.Failure,
+        TTestResultType.Error:
         begin
           Indent;
           WriteXMLLine('<failure>');
@@ -327,7 +369,7 @@ begin
           WriteXMLLine('</failure>');
           Outdent;
         end;
-        Ignored:
+        TTestResultType.Ignored:
         begin
           Indent;
           WriteXMLLine('<reason>');
@@ -342,8 +384,6 @@ begin
           Outdent;
         end;
       end;
-
-
 
       Outdent;
       WriteXMLLine('</test-case>');

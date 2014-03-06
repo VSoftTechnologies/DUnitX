@@ -72,16 +72,11 @@ type
     constructor Create(const ATestInfo : ITestInfo; const AType : TTestResultType; const AThrownException: Exception; const Addrs: Pointer; const AMessage : string = '');reintroduce;
   end;
 
+
+
 implementation
 
 uses
-  {$IFDEF MSWINDOWS}
-    {$if CompilerVersion < 23 }
-      Windows,
-    {$else}
-      WinAPI.Windows, // Delphi XE2 (CompilerVersion 23) added scopes in front of unit names
-    {$ifend}
-  {$ENDIF}
   DUnitX.IoC;
 
 { TDUnitXTestResult }
@@ -147,7 +142,7 @@ end;
 
 { TDUnitXTestError }
 
-constructor TDUnitXTestError.Create(const ATestInfo : ITestInfo; const AType: TTestResultType; const AThrownException: Exception; const Addrs: Pointer; const AMessage: string = '');
+constructor TDUnitXTestError.Create(const ATestInfo : ITestInfo; const AType: TTestResultType; const AThrownException: Exception; const Addrs: Pointer;  const AMessage: string = '');
 var
   stackTraceProvider : IStacktraceProvider;
 begin

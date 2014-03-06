@@ -51,6 +51,7 @@ type
     procedure OnTeardownTest(const threadId: Cardinal; const Test: ITestInfo);virtual;
     procedure OnTestError(const threadId: Cardinal; const Error: ITestError);virtual;
     procedure OnTestFailure(const threadId: Cardinal; const Failure: ITestError);virtual;
+    procedure OnTestMemoryLeak(const threadId : Cardinal; const Test: ITestResult);
     procedure OnTestIgnored(const threadId: Cardinal; const AIgnored: ITestResult);virtual;
     procedure OnTestSuccess(const threadId: Cardinal; const Test: ITestResult);virtual;
     procedure OnTestingEnds(const RunResults: IRunResults);virtual;
@@ -152,6 +153,11 @@ begin
 end;
 
 procedure TDUnitXNullLogger.OnTestingStarts(const threadId, testCount, testActiveCount: Cardinal);
+begin
+
+end;
+
+procedure TDUnitXNullLogger.OnTestMemoryLeak(const threadId: Cardinal; const Test: ITestResult);
 begin
 
 end;

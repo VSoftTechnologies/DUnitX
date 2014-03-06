@@ -6,6 +6,9 @@
 			<Projects Include="Examples\DUnitXExamples_2010.dproj">
 				<Dependencies/>
 			</Projects>
+			<Projects Include="Expert\DUnitX_IDE_Expert_2010.dproj">
+				<Dependencies/>
+			</Projects>
 		</ItemGroup>
 		<ProjectExtensions>
 			<Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -23,14 +26,23 @@
 		<Target Name="DUnitXExamples_2010:Make">
 			<MSBuild Targets="Make" Projects="Examples\DUnitXExamples_2010.dproj"/>
 		</Target>
+		<Target Name="DUnitX_IDE_Expert_2010">
+			<MSBuild Projects="Expert\DUnitX_IDE_Expert_2010.dproj"/>
+		</Target>
+		<Target Name="DUnitX_IDE_Expert_2010:Clean">
+			<MSBuild Targets="Clean" Projects="Expert\DUnitX_IDE_Expert_2010.dproj"/>
+		</Target>
+		<Target Name="DUnitX_IDE_Expert_2010:Make">
+			<MSBuild Targets="Make" Projects="Expert\DUnitX_IDE_Expert_2010.dproj"/>
+		</Target>
 		<Target Name="Build">
-			<CallTarget Targets="DUnitXExamples_2010"/>
+			<CallTarget Targets="DUnitXExamples_2010;DUnitX_IDE_Expert_2010"/>
 		</Target>
 		<Target Name="Clean">
-			<CallTarget Targets="DUnitXExamples_2010:Clean"/>
+			<CallTarget Targets="DUnitXExamples_2010:Clean;DUnitX_IDE_Expert_2010:Clean"/>
 		</Target>
 		<Target Name="Make">
-			<CallTarget Targets="DUnitXExamples_2010:Make"/>
+			<CallTarget Targets="DUnitXExamples_2010:Make;DUnitX_IDE_Expert_2010:Make"/>
 		</Target>
 		<Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 	</Project>

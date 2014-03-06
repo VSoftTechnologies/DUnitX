@@ -59,6 +59,7 @@ type
     procedure OnTestError(const threadId: Cardinal; const Error: ITestError);
     procedure OnTestFailure(const threadId: Cardinal; const Failure: ITestError);
     procedure OnTestIgnored(const threadId: Cardinal; const AIgnored: ITestResult);
+    procedure OnTestMemoryLeak(const threadId : Cardinal; const Test: ITestResult);
 
     procedure OnLog(const logType: TLogLevel; const msg : string);
 
@@ -189,5 +190,10 @@ begin
 
 end;
 
+
+procedure TDUnitXTextFileLogger.OnTestMemoryLeak(const threadId: Cardinal; const Test: ITestResult);
+begin
+
+end;
 
 end.
