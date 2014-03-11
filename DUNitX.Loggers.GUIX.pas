@@ -32,7 +32,7 @@ uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
   FMX.Types, FMX.Graphics, FMX.Controls, FMX.Forms, FMX.Dialogs, FMX.StdCtrls,
   System.Actions, FMX.ActnList, FMX.Layouts, FMX.TreeView, FMX.Edit,
-  DUnitX.TestFramework, DUnitX.InternalInterfaces, FMX.ListView.Types,
+  DUnitX.TestFramework, DUnitX.Extensibility, DUnitX.InternalInterfaces, FMX.ListView.Types,
   FMX.ListView, FMX.ListBox, Generics.Collections, FMX.Memo;
 
 type
@@ -447,7 +447,7 @@ begin
      FImage.Bitmap.Clear(TAlphaColorRec.Green);
    end;
    TTestResultType.Failure: begin
-     FImage.Bitmap.Clear(TAlphaColorRec.Darksalmon);
+     FImage.Bitmap.Clear(TAlphaColorRec.DarkRed);
    end;
    TTestResultType.Error: begin
      FImage.Bitmap.Clear(TAlphaColorRec.Red);
