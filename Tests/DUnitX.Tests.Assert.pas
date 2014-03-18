@@ -57,6 +57,10 @@ type
     [Test]
     procedure AreEqual_Extended_Throws_ETestFailure_When_Values_Are_NotEqual;
     [Test]
+    procedure AreEqual_Double_Throws_No_Exception_When_Values_Are_Equal;
+    [Test]
+    procedure AreEqual_Double_Throws_ETestFailure_When_Values_Are_NotEqual;
+    [Test]
     procedure AreEqual_TClass_Throws_No_Exception_When_Classes_Are_Equal;
     [Test]
     procedure AreEqual_TClass_Throws_ETestFailure_When_Classes_Are_NotEqual;
@@ -258,11 +262,37 @@ begin
     end, ETestFailure);
 end;
 
+procedure TTestsAssert.AreEqual_Double_Throws_ETestFailure_When_Values_Are_NotEqual;
+const
+  ACTUAL_DOUBLE : double = 1.19E20;
+  EXPECTED_DOUBLE : double = 1.18E20;
+  TOLERANCE_DOUBLE : double = 0.001E20;
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.AreEqual(ACTUAL_DOUBLE, EXPECTED_DOUBLE, TOLERANCE_DOUBLE);
+    end, ETestFailure, Format('[%e] with in [%e] from [%e]', [ACTUAL_DOUBLE, TOLERANCE_DOUBLE, EXPECTED_DOUBLE]));
+end;
+
+procedure TTestsAssert.AreEqual_Double_Throws_No_Exception_When_Values_Are_Equal;
+const
+  ACTUAL_DOUBLE : double = 1.19E20;
+  EXPECTED_DOUBLE : double  = 1.18E20;
+  TOLERANCE_DOUBLE : double  = 0.011E20;
+begin
+  Assert.WillNotRaise(
+    procedure
+    begin
+      Assert.AreEqual(ACTUAL_DOUBLE, EXPECTED_DOUBLE, TOLERANCE_DOUBLE);
+    end, Exception);
+end;
+
 procedure TTestsAssert.AreEqual_Extended_Throws_ETestFailure_When_Values_Are_NotEqual;
 const
-  ACTUAL_EXTENDED = 1.19E20;
-  EXPECTED_EXTENDED = 1.18E20;
-  TOLERANCE_EXTENDED = 0.001E20;
+  ACTUAL_EXTENDED : extended  = 1.19E20;
+  EXPECTED_EXTENDED : extended = 1.18E20;
+  TOLERANCE_EXTENDED : extended = 0.001E20;
 begin
   Assert.WillRaise(
     procedure
@@ -274,9 +304,9 @@ end;
 
 procedure TTestsAssert.AreEqual_Extended_Throws_No_Exception_When_Values_Are_Equal;
 const
-  ACTUAL_EXTENDED = 1.19E20;
-  EXPECTED_EXTENDED = 1.18E20;
-  TOLERANCE_EXTENDED = 0.011E20;
+  ACTUAL_EXTENDED : extended = 1.19E20;
+  EXPECTED_EXTENDED : extended = 1.18E20;
+  TOLERANCE_EXTENDED : extended = 0.011E20;
 begin
   Assert.WillNotRaise(
     procedure

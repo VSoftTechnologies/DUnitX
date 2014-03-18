@@ -284,6 +284,8 @@ type
 
     class procedure AreEqual(const left : string; const right : string; const ignoreCase : boolean; const message : string);overload;
     class procedure AreEqual(const left : string; const right : string; const message : string = '');overload;
+    class procedure AreEqual(const left, right : Double; const tolerance : Double; const message : string = '');overload;
+    class procedure AreEqual(const left, right : Double; const message : string = '');overload;
     class procedure AreEqual(const left, right : Extended; const tolerance : Extended; const message : string = '');overload;
     class procedure AreEqual(const left, right : Extended; const message : string = '');overload;
     class procedure AreEqual(const left, right : TClass; const message : string = '');overload;
@@ -296,7 +298,13 @@ type
     class procedure AreEqualMemory(const left : Pointer; const right : Pointer; const size : Cardinal; message : string = '');
 
     class procedure AreNotEqual(const left : string; const right : string; const ignoreCase : boolean = true; const message : string = '');overload;
+
     class procedure AreNotEqual(const left, right : Extended; const tolerance : Extended; const message : string = '');overload;
+    class procedure AreNotEqual(const left, right : Extended; const message : string = '');overload;
+
+    class procedure AreNotEqual(const left, right : Double; const tolerance : double; const message : string = '');overload;
+    class procedure AreNotEqual(const left, right : Double; const message : string = '');overload;
+
     class procedure AreNotEqual(const left, right : TClass; const message : string = '');overload;
 {$IFDEF DELPHI_XE_UP}
     //Delphi 2010 compiler bug breaks this
@@ -941,9 +949,26 @@ begin
     Fail(Format('left %d but got %d - %s' ,[left, right, message]), ReturnAddress);
 end;
 
-class procedure Assert.AreEqual(const left, right: Extended; const message: string);
+class procedure Assert.AreEqual(const left, right, tolerance: Double; const message: string);
 begin
-  AreEqual(left, right, 0, message);
+  if not Math.SameValue(left,right,tolerance) then
+    Fail(Format('left %g but got %g - %s' ,[left,right,message]), ReturnAddress);
+end;
+
+class procedure Assert.AreEqual(const left, right: Double; const message: string);
+var
+  tolerance : Double;
+begin
+  tolerance := 0;
+  AreEqual(left, right, tolerance, message);
+end;
+
+class procedure Assert.AreEqual(const left, right: Extended; const message: string);
+var
+  tolerance : Extended;
+begin
+  tolerance := 0;
+  AreEqual(left, right, tolerance, message);
 end;
 
 class procedure Assert.AreEqualMemory(const left : Pointer; const right : Pointer; const size : Cardinal; message : string);
@@ -1021,6 +1046,30 @@ begin
     Fail(Format('%d equals right %d %s' ,[left, right, message]), ReturnAddress);
 end;
 {$ENDIF}
+
+class procedure Assert.AreNotEqual(const left, right: Extended; const message: string);
+var
+  tolerance : Extended;
+begin
+  tolerance := 0;
+  Assert.AreNotEqual(left,right,tolerance,message);
+
+end;
+
+class procedure Assert.AreNotEqual(const left, right: Double; const message: string);
+var
+  tolerance : double;
+begin
+  tolerance := 0;
+  Assert.AreNotEqual(left,right,tolerance,message);
+end;
+
+class procedure Assert.AreNotEqual(const left, right, tolerance: double; const message: string);
+begin
+  if Math.SameValue(left, right, tolerance) then
+    Fail(Format('%g equals right %g %s' ,[left,right,message]), ReturnAddress);
+end;
+
 
 class procedure Assert.AreNotEqualMemory(const left, right: Pointer; const size: Cardinal; message: string);
 begin
