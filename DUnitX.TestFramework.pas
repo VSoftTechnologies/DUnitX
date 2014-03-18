@@ -919,7 +919,7 @@ begin
     else
     begin
       if leftValue.TryCast(pInfo,tInfo) then
-        Fail(Format('left %s but got %s - %s', [leftValue.AsString, rightValue.AsString, message]), ReturnAddress)
+        Fail(Format('left %s but got %s - %s', [leftValue.ToString, rightValue.ToString, message]), ReturnAddress)
       else
         Fail(Format('left is not equal to right - %s', [message]), ReturnAddress)
     end;
@@ -1003,6 +1003,7 @@ class procedure Assert.AreNotEqual<T>(const left, right: T; const message: strin
 var
   comparer : IComparer<T>;
   leftValue, rightValue : TValue;
+  sLeft, sRight : string;
 begin
   comparer := TComparer<T>.Default;
   if comparer.Compare(right,left) = 0 then
@@ -1010,7 +1011,7 @@ begin
     leftValue := TValue.From<T>(left);
     rightValue := TValue.From<T>(right);
 
-    Fail(Format('left %s Not Equal To %s',[leftValue.AsString,rightValue.AsString]), ReturnAddress);
+    Fail(Format('left %s Not Equal To %s',[leftValue.ToString,rightValue.ToString]), ReturnAddress);
   end;
 end;
 {$ELSE}
