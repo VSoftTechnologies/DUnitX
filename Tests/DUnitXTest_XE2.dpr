@@ -49,6 +49,8 @@ uses
   DUnitX.Extensibility.PluginManager in '..\DUnitX.Extensibility.PluginManager.pas',
   DUnitX.FixtureProviderPlugin in '..\DUnitX.FixtureProviderPlugin.pas';
 
+{$R *.res}
+
 var
   runner : ITestRunner;
   results : IRunResults;
