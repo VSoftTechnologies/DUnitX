@@ -29,7 +29,6 @@ uses
   DUnitX.StackTrace.EurekaLog7 in '..\DUnitX.StackTrace.EurekaLog7.pas',
   NonNamespacedExample in 'NonNamespacedExample.pas',
   DUnitX.Examples.EqualityAsserts in 'DUnitX.Examples.EqualityAsserts.pas',
-  DUnitX.Loggers.XML.NUnit in '..\DUnitX.Loggers.XML.NUnit.pas',
   DUnitX.FixtureResult in '..\DUnitX.FixtureResult.pas',
   DUnitX.Loggers.Null in '..\DUnitX.Loggers.Null.pas',
   DUnitX.MemoryLeakMonitor.Default in '..\DUnitX.MemoryLeakMonitor.Default.pas',
