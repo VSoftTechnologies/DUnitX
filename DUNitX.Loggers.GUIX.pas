@@ -27,6 +27,7 @@
 unit DUNitX.Loggers.GUIX;
 
 interface
+{$I DUnitX.Inc}
 
 uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
@@ -422,7 +423,11 @@ begin
   FFullName := TestFullName;
   FImage := TImage.Create(Owner);
   FImage.Parent := Self;
-  FImage.Align := TAlignLayout.alRight;
+  {$IFDEF DELPHI_XE6_UP}
+    FImage.Align := TAlignLayout.Right;
+  {$ELSE}
+    FImage.Align := TAlignLayout.alRight;
+  {$ENDIF}
 
   FImage.Bitmap.Create(15, 15);
   FImage.Bitmap.Clear(TAlphaColorRec.Gray);

@@ -6,7 +6,7 @@ object GUIXTestRunner: TGUIXTestRunner
   ClientWidth = 908
   FormFactor.Width = 320
   FormFactor.Height = 480
-  FormFactor.Devices = [dkDesktop, dkiPhone, dkiPad]
+  FormFactor.Devices = [Desktop, iPhone, iPad]
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnShow = FormShow
@@ -17,7 +17,7 @@ object GUIXTestRunner: TGUIXTestRunner
   DesignerOrientation = 0
   DesignerOSVersion = ''
   object TopPanel: TPanel
-    Align = alMostTop
+    Align = MostTop
     Height = 33.000000000000000000
     Width = 908.000000000000000000
     TabOrder = 0
@@ -34,12 +34,12 @@ object GUIXTestRunner: TGUIXTestRunner
     end
   end
   object Panel1: TPanel
-    Align = alClient
+    Align = Client
     Height = 447.000000000000000000
     Width = 908.000000000000000000
     TabOrder = 1
     object GridPanelLayout1: TGridPanelLayout
-      Align = alClient
+      Align = Client
       Height = 447.000000000000000000
       Width = 443.000000000000000000
       ColumnCollection = <
@@ -68,7 +68,7 @@ object GUIXTestRunner: TGUIXTestRunner
         end>
       RowCollection = <
         item
-          SizeStyle = ssAuto
+          SizeStyle = Auto
           Value = 30.000000000000000000
         end
         item
@@ -79,32 +79,32 @@ object GUIXTestRunner: TGUIXTestRunner
         ItemEditAppearanceClassName = 'TListItemShowCheckAppearance'
         HeaderAppearanceClassName = 'TListHeaderObjects'
         FooterAppearanceClassName = 'TListHeaderObjects'
-        Align = alClient
+        Align = Client
         Height = 322.500000000000000000
         TabOrder = 0
         Width = 221.501693725585900000
         OnItemClick = FailListItemClick
       end
       object Panel2: TPanel
-        Align = alClient
+        Align = Client
         Height = 124.500000000000000000
         Width = 443.000000000000000000
         TabOrder = 1
         object Label1: TLabel
-          Font.Style = [fsBold]
-          StyledSettings = [ssFamily, ssSize, ssFontColor]
+          StyledSettings = [Family, Size, FontColor]
           Height = 17.000000000000000000
           Position.X = 16.000000000000000000
           Position.Y = 32.000000000000000000
+          TextSettings.Font.Style = [fsBold]
           Text = 'Runs'
           Width = 49.000000000000000000
         end
         object Label2: TLabel
-          Font.Style = [fsBold]
-          StyledSettings = [ssFamily, ssSize, ssFontColor]
+          StyledSettings = [Family, Size, FontColor]
           Height = 17.000000000000000000
           Position.X = 16.000000000000000000
           Position.Y = 48.000000000000000000
+          TextSettings.Font.Style = [fsBold]
           Text = 'Sucess'
           Width = 49.000000000000000000
         end
@@ -123,11 +123,11 @@ object GUIXTestRunner: TGUIXTestRunner
           Width = 120.000000000000000000
         end
         object Label5: TLabel
-          Font.Style = [fsBold]
-          StyledSettings = [ssFamily, ssSize, ssFontColor]
+          StyledSettings = [Family, Size, FontColor]
           Height = 17.000000000000000000
           Position.X = 16.000000000000000000
           Position.Y = 64.000000000000000000
+          TextSettings.Font.Style = [fsBold]
           Text = 'Fail'
           Width = 57.000000000000000000
         end
@@ -139,11 +139,11 @@ object GUIXTestRunner: TGUIXTestRunner
           Width = 120.000000000000000000
         end
         object MemoryLeakedLabel: TLabel
-          Font.Style = [fsBold]
-          StyledSettings = [ssFamily, ssSize, ssFontColor]
+          StyledSettings = [Family, Size, FontColor]
           Height = 17.000000000000000000
           Position.X = 16.000000000000000000
           Position.Y = 80.000000000000000000
+          TextSettings.Font.Style = [fsBold]
           Text = 'Leaked'
           Width = 89.000000000000000000
         end
@@ -157,20 +157,20 @@ object GUIXTestRunner: TGUIXTestRunner
         object TestRunnerProgress: TProgressBar
           Anchors = [akLeft, akTop, akRight]
           Height = 20.000000000000000000
-          Orientation = orHorizontal
+          Orientation = Horizontal
           Position.X = 8.000000000000000000
           Position.Y = 8.000000000000000000
           Width = 429.000000000000000000
         end
       end
       object FailTestDetailPanel: TPanel
-        Align = alClient
+        Align = Client
         Height = 322.500000000000000000
         Width = 221.498306274414100000
         TabOrder = 2
         object StackTrace: TMemo
-          Touch.InteractiveGestures = [igPan, igLongTap, igDoubleTap]
-          Align = alBottom
+          Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+          Align = Bottom
           Locked = True
           Height = 138.000000000000000000
           Position.Y = 184.500000000000000000
@@ -179,20 +179,20 @@ object GUIXTestRunner: TGUIXTestRunner
           ReadOnly = True
         end
         object Label3: TLabel
-          Font.Style = [fsBold]
-          StyledSettings = [ssFamily, ssSize, ssFontColor]
+          StyledSettings = [Family, Size, FontColor]
           Height = 17.000000000000000000
           Position.X = 8.000000000000000000
           Position.Y = 8.000000000000000000
+          TextSettings.Font.Style = [fsBold]
           Text = 'Test'
           Width = 49.000000000000000000
         end
         object Label4: TLabel
-          Font.Style = [fsBold]
-          StyledSettings = [ssFamily, ssSize, ssFontColor]
+          StyledSettings = [Family, Size, FontColor]
           Height = 17.000000000000000000
           Position.X = 8.000000000000000000
           Position.Y = 24.000000000000000000
+          TextSettings.Font.Style = [fsBold]
           Text = 'Start'
           Width = 57.000000000000000000
         end
@@ -202,9 +202,9 @@ object GUIXTestRunner: TGUIXTestRunner
           Height = 19.000000000000000000
           Position.X = 64.000000000000000000
           Position.Y = 8.000000000000000000
+          TextSettings.WordWrap = False
           Text = 'FailTestName'
           Width = 72.000000000000000000
-          WordWrap = False
         end
         object FailTestStartTime: TLabel
           Height = 17.000000000000000000
@@ -214,11 +214,11 @@ object GUIXTestRunner: TGUIXTestRunner
           Width = 121.000000000000000000
         end
         object Label7: TLabel
-          Font.Style = [fsBold]
-          StyledSettings = [ssFamily, ssSize, ssFontColor]
+          StyledSettings = [Family, Size, FontColor]
           Height = 17.000000000000000000
           Position.X = 8.000000000000000000
           Position.Y = 40.000000000000000000
+          TextSettings.Font.Style = [fsBold]
           Text = 'Finish'
           Width = 65.000000000000000000
         end
@@ -231,16 +231,16 @@ object GUIXTestRunner: TGUIXTestRunner
         end
         object Label6: TLabel
           Anchors = [akLeft, akBottom]
-          Font.Style = [fsBold]
-          StyledSettings = [ssFamily, ssSize, ssFontColor]
+          StyledSettings = [Family, Size, FontColor]
           Height = 21.000000000000000000
           Position.X = 8.000000000000000000
           Position.Y = 166.500000000000000000
+          TextSettings.Font.Style = [fsBold]
           Text = 'Stack Trace'
           Width = 275.000000000000000000
         end
         object FailTestMessage: TMemo
-          Touch.InteractiveGestures = [igPan, igLongTap, igDoubleTap]
+          Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
           Anchors = [akLeft, akTop, akRight, akBottom]
           Height = 73.000000000000000000
           Position.Y = 80.000000000000000000
@@ -249,24 +249,24 @@ object GUIXTestRunner: TGUIXTestRunner
           ReadOnly = True
         end
         object Label8: TLabel
-          Font.Style = [fsBold]
-          StyledSettings = [ssFamily, ssSize, ssFontColor]
+          StyledSettings = [Family, Size, FontColor]
           Height = 17.000000000000000000
           Position.X = 8.000000000000000000
           Position.Y = 56.000000000000000000
+          TextSettings.Font.Style = [fsBold]
           Text = 'Message'
           Width = 120.000000000000000000
         end
       end
     end
     object TestTree: TTreeView
-      Align = alLeft
+      Align = Left
       Height = 447.000000000000000000
       TabOrder = 0
       Width = 450.000000000000000000
     end
     object Splitter1: TSplitter
-      Align = alLeft
+      Align = Left
       Cursor = crHSplit
       Height = 447.000000000000000000
       MinSize = 20.000000000000000000
