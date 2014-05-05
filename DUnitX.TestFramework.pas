@@ -360,24 +360,69 @@ type
     class procedure IsNotEmpty<T>(const value : IEnumerable<T>; const message : string = '');overload;
 {$ENDIF}
 
+    /// <summary>
+    ///   Checks that an exception exactly matching ExceptClass will be raised.
+    /// </summary>
     class procedure WillRaise(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass = nil; const msg : string = ''); overload;
+    /// <summary>
+    ///   Checks that an exception exactly matching ExceptClass and Message will be raised.
+    /// </summary>
     class procedure WillRaiseWithMessage(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass = nil; const exceptionMsg: string = ''; const msg : string = ''); overload;
+    /// <summary>
+    ///   Checks that an exception exactly matching ExceptClass will be raised.
+    /// </summary>
     class procedure WillRaise(const AMethod : TTestMethod; const exceptionClass : ExceptClass = nil; const msg : string = ''); overload;
 
+    /// <summary>
+    ///   Checks that an exception that descends from ExceptClass will be raised.
+    /// </summary>
     class procedure WillRaiseDescendant(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass = nil; const msg : string = ''); overload;
+    /// <summary>
+    ///   Checks that an exception that descends from ExceptClass will be raised.
+    /// </summary>
     class procedure WillRaiseDescendant(const AMethod : TTestMethod; const exceptionClass : ExceptClass = nil; const msg : string = ''); overload;
 
+    /// <summary>
+    ///   Checks that an exception will be raised.
+    /// </summary>
     class procedure WillRaiseAny(const AMethod : TTestLocalMethod; const msg : string = ''); overload;
+    /// <summary>
+    ///   Checks that an exception will be raised.
+    /// </summary>
     class procedure WillRaiseAny(const AMethod : TTestMethod;  const msg : string = ''); overload;
 
 
+    /// <summary>
+    ///   Checks that an exception exactly matching ExceptClass will not be raised.
+    /// </summary>
     class procedure WillNotRaise(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass = nil; const msg : string = ''); overload;
+    /// <summary>
+    ///   Checks that an exception exactly matching ExceptClass will not be raised.
+    /// </summary>
     class procedure WillNotRaise(const AMethod : TTestMethod; const exceptionClass : ExceptClass = nil; const msg : string = ''); overload;
 
+    /// <summary>
+    ///   Checks that an exception that descends from ExceptClass not will be raised.
+    /// </summary>
     class procedure WillNotRaiseDescendant(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass = nil; const msg : string = ''); overload;
+    /// <summary>
+    ///   Checks that an exception that descends from ExceptClass not will be raised.
+    /// </summary>
     class procedure WillNotRaiseDescendant(const AMethod : TTestMethod; const exceptionClass : ExceptClass = nil; const msg : string = ''); overload;
 
+    /// <summary>
+    ///   Checks that an exception of Any type not will be raised. This method
+    ///   is to complement <see cref="DUnitX.TestFramework|Assert.WillRaiseAny(TTestLocalMethod,string)">
+    ///   WillRaiseAny</see> method, and is not required, as the default behavior of a test
+    ///   is to fail when any exception is raised.
+    /// </summary>
     class procedure WillNotRaiseAny(const AMethod : TTestLocalMethod; const msg : string = ''); overload;
+    /// <summary>
+    ///   Checks that an exception of Any type not will be raised. This method
+    ///   is to complement <see cref="DUnitX.TestFramework|Assert.WillRaiseAny(TTestMethod,string)">
+    ///   WillRaiseAny</see> method, and is not required, as the default behavior of a test
+    ///   is to fail when any exception is raised.
+    /// </summary>
     class procedure WillNotRaiseAny(const AMethod : TTestMethod; const msg : string = ''); overload;
 
     class procedure Contains(const theString : string; const subString : string; const ignoreCase : boolean = true; const message : string = '');overload;
