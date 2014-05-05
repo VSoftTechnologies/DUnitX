@@ -35,6 +35,8 @@ type
   {$M+}
   [TestFixture]
   TTestsAssert = class
+  private
+    procedure WillNotRaise_With_NonDescendingClass;
   published
     [Test]
     procedure Pass_Throws_ETestPass_Exception;
@@ -102,6 +104,16 @@ type
     procedure WillRaiseAny;
     [Test]
     procedure WillRaiseAny_NoExecption;
+    [Test]
+    procedure WillNotRaise_With_ExactClass_Positive;
+    [Test]
+    procedure WillNotRaise_With_ExactClass_Negative;
+    [Test]
+    procedure WillNotRaise_With_DescendingClass_Positive;
+    [Test]
+    procedure WillNotRaise_With_DescendingClass_Negative;
+
+
 
 
 
@@ -207,6 +219,65 @@ begin
     end, ETestPass, EXPECTED_EXCEPTION_MSG);
 end;
 
+
+procedure TTestsAssert.WillNotRaise_With_DescendingClass_Negative;
+begin
+ Assert.WillRaise(
+  procedure
+  begin
+    Assert.WillNotRaiseDescendant(
+      procedure
+      begin
+        raise EFilerError.Create('Test');
+      end,
+      EStreamError);
+  end,
+  ETestFailure);
+end;
+
+procedure TTestsAssert.WillNotRaise_With_DescendingClass_Positive;
+begin
+    Assert.WillNotRaiseDescendant(
+      procedure
+      begin
+        raise Exception.Create('Test');
+      end,
+      EStreamError);
+end;
+
+procedure TTestsAssert.WillNotRaise_With_ExactClass_Negative;
+const
+  EXPECTED_EXCEPTION_MSG = 'Passing Message';
+begin
+ Assert.WillRaise(
+ procedure
+ begin
+   Assert.WillNotRaise(
+     procedure
+     begin
+       raise EStreamError.Create('Error Message');
+     end,
+     EStreamError,EXPECTED_EXCEPTION_MSG);
+ end,
+ ETestFailure,
+ EXPECTED_EXCEPTION_MSG);
+end;
+
+procedure TTestsAssert.WillNotRaise_With_ExactClass_Positive;
+begin
+ Assert.WillNotRaise(
+   procedure
+   begin
+     // Don't raise an exception we are looking for.
+     raise Exception.Create('Error Message');
+   end,
+   EStreamError,'');
+end;
+
+procedure TTestsAssert.WillNotRaise_With_NonDescendingClass;
+begin
+
+end;
 
 procedure TTestsAssert.WillRaiseAny;
 begin
