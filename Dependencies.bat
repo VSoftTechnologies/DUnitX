@@ -1,48 +1,64 @@
 @echo off
 :: ##JWP TODO if %2 specifies a non-existing local repository name: emit error message (now it does nothing)
-:: ##JWP TODO check for each command if it actually exists (hg.exe, git.exe, svn.exe, etc)
+:: ##JWP TODO allow more than one localName (%2 %3...)
   for %%c in (set show clone pull help) do if /I !%1!==!%%c! call :%*
   if /I !%1!==!! call :help
   goto :eof
-:: this batch file routes all repository information through one central place :foorAllRepositories.
+:: This batch file routes all repository information through one central place :forAllRepositories.
 :: If you need more, or less: change the information there.
 
 :forAllRepositories
   pushd %~dp0
 :: the for loop will strip leading spaces
-  for /f "tokens=1,2,*" %%l in (Dependencies.txt) do (
-    call :forOneRepository %%l %%m %%n %1 %2
+  for /f "tokens=1,2,3,*" %%l in (Dependencies.txt) do (
+    setlocal enableDelayedExpansion
+    set callLabel=%1
+    set matchIfNotEmpty=%2
+    set tool=%%l
+    set localName=%%m
+    set remoteURL=%%n
+    set otherParameters=%%o
+    call :forOneRepository
+    for /f "delims=" %%a in ('set ^| find "%%m="') do endlocal & if not ""=="%%~a" set "%%~a"
+    endlocal
     echo .
   )
   popd
   goto :eof
+    :: % expansion does not work inside the for loop
+    :: ! expansion does work inside the for loop
+    :: echo localName=%localName%
+    :: echo localName=!localName!
+    :: set !localName!
+    :: http://stackoverflow.com/questions/3262287
 
 :forOneRepository
   ::for debugging purposes, uncomment the echo lines
-  ::echo %*
-  ::echo tool=%1
-  ::echo localName=%2
-  ::echo remoteURL=%3
-  ::echo callLabel=%4
-  ::echo matchIfNotEmpty=%5
-  ::for %%d in (%~dp0..) do echo LocalDirectory=%%~fd\%2
+  ::echo callLabel=%callLabel%
+  ::echo matchIfNotEmpty=%matchIfNotEmpty%
+  ::echo tool=%tool%
+  ::echo localName=%localName%
+  ::echo remoteURL=%remoteURL%
+  ::echo otherParameters="%otherParameters%"
+  ::for %%d in ("%~dp0..") do echo LocalDirectory=%%~fd\%localName%
   ::echo.
-  setlocal
-  set tool=%1
+
   :: skip comments and empty lines
   if "%tool:~0,3%"=="rem" goto :skipOneRepository
   if "%tool:~0,2%"=="::" goto :skipOneRepository
   if "%tool:~0,1%"=="#" goto :skipOneRepository
   if "%tool%"=="" goto :skipOneRepository
-  goto :doOneRepository
+  goto :matchAndPerformOneRepository
 :skipOneRepository
-  endlocal
   goto :endOneRepository
-:doOneRepository
-  endlocal
-  :: always if no match
-  if "%5"=="" call %4 %1 %2 %3
-  if /I "%5"=="%2" call %4 %1 %2 %3
+:matchAndPerformOneRepository
+  :: always if matchIfNotEmpty is empty:
+  if "%matchIfNotEmpty%"=="" goto :performOneRepository
+  :: only one if matchIfNotEmpty is specified:
+  if /I "%matchIfNotEmpty%"=="%localName%" goto :performOneRepository
+  goto :endOneRepository
+:performOneRepository
+  call %callLabel%
 :endOneRepository
   goto :eof
 
@@ -52,8 +68,10 @@
   goto :eof
 
 :setSpecific
-  for %%d in (%~dp0..) do set %2=%%~fd\%2
-  set %2
+  for %%d in ("%~dp0..") do set %localName%="%%~fd\%localName%"
+:: http://stackoverflow.com/questions/9369874/windows-batch-programming-indirect-nested-variable-evaluation
+  if "%tool%"=="dir" for /F "usebackq delims==" %%l in (`echo %remoteURL%`) do set %localName%=%%l
+  set %localName%
   goto :eof
 
 :show
@@ -62,13 +80,12 @@
   goto :eof
 
 :showSpecific
-  echo tool=%1
-  echo localName=%2
-  echo remoteURL=%3
-  echo callLabel=%4
-  echo matchIfNotEmpty=%5
-  for %%d in (%~dp0..) do echo LocalDirectory=%%~fd\%2
-  echo.
+  echo tool=%tool%
+  echo localName=%localName%
+  echo remoteURL=%remoteURL%
+  echo otherParameters=%otherParameters%
+
+  for %%d in ("%~dp0..") do echo LocalDirectory=%%~fd\%localName%
   goto :eof
 
 :: a bit ugly setlocal/endlocal, but it is the cleanest way to do this.
@@ -86,9 +103,9 @@
   goto :eof
 
 :cloneSpecific
-  if  hg==%1 for %%d in (%~dp0..) do call :do %1 clone %3 %%~fd\%2
-  if  git==%1 for %%d in (%~dp0..) do call :do %1 clone %3 %%~fd\%2
-  if  svn==%1 for %%d in (%~dp0..) do call :do %1 checkout %3 %%~fd\%2
+  if  hg==%tool% for %%d in ("%~dp0..") do call :do %tool% clone %remoteURL% "%%~fd\%localName%" %otherParameters%
+  if  git==%tool% for %%d in ("%~dp0..") do call :do %tool% clone %remoteURL% "%%~fd\%localName%" %otherParameters%
+  if  svn==%tool% for %%d in ("%~dp0..") do call :do %tool% checkout %remoteURL% "%%~fd\%localName%" %otherParameters%
   goto :eof
   
 :: trick to perform a command while being able to echo it
@@ -100,12 +117,12 @@
 :ensureExesExist
   set Found=TRUE
   for %%s in (git, hg, svn) do set %%sExists=FALSE
-  call :forAllRepositories :ensureExeExistSpecific %1
+  call :forAllRepositories :ensureExeExistSpecific
   goto :eof
 
 :ensureExeExistSpecific
 :: optimization: only call when not found for a specific VCS yet.
-  if "%1Exists"=="FALSE" call :ensureExeExist %1
+  if "%tool%Exists"=="FALSE" call :ensureExeExist %tool%
   goto :eof
 
 :ensureExeExist
@@ -134,19 +151,24 @@
 
 :pullSpecific
   :: http://mercurial.selenic.com/wiki/GitConcepts#Command_equivalence_table
-  if  hg==%1 for %%d in (%~dp0..) do call :do %1 pull %%~fd\%2
+  if  hg==%tool% for %%d in ("%~dp0..") do call :do %tool% pull "%%~fd\%localName%"
 
   :: git needs to run in the local repository directory
-  if  git==%1 for %%d in (%~dp0..) do call :do pushd %%~fd\%2
-  if  git==%1 for %%d in (%~dp0..) do call :do %1 fetch %%~fd\%2
-  if  git==%1 for %%d in (%~dp0..) do call :do popd
+  if  git==%tool% for %%d in ("%~dp0..") do call :do pushd "%%~fd\%localName%"
+  if  git==%tool% for %%d in ("%~dp0..") do call :do %tool% fetch "%%~fd\%localName%"
+  if  git==%tool% for %%d in ("%~dp0..") do call :do popd
 
-  if  svn==%1 for %%d in (%~dp0..) do call :do %1 update %%~fd\%2
+  if  svn==%tool% for %%d in ("%~dp0..") do call :do %tool% update "%%~fd\%localName%"
   goto :eof
 
 :help
   :: ^| to escape the pipe
-  echo Syntax: %~f0 [set^|clone^|pull^|help]
+  echo Syntax: %~f0 [help^|set^|show^|clone^|pull[ localName]]
+  echo   This batch file operates on dependencies defined in Dependencies.txt
+  echo   If you specify localName then the command only applies to the repository bound to localName.
+  echo   More detailed documentation is at https://bitbucket.org/jeroenp/besharp.net/src/tip/Dependencies.md
+  echo help:
+  echo   Shows this help.
   echo set:
   echo   Sets the environment variables to the directories so you can use them in Delphi or Visual Studio for instance $(FastMM)
   echo   VS:     http://stackoverflow.com/questions/840472#1126937
@@ -160,6 +182,4 @@
   echo   Calls "set", then pulls (git: fetches; svn: updates) all the repositories for each variable with the right command.
   echo   For DVCS (hg/git) you need to do your own merge.
   echo   Note this needs HG.EXE, GIT.EXE and SVN.EXE on your path.
-  echo help:
-  echo   Shows this help.
   goto :eof
