@@ -112,6 +112,8 @@ type
     procedure WillNotRaise_With_DescendingClass_Positive;
     [Test]
     procedure WillNotRaise_With_DescendingClass_Negative;
+    [Test]
+    procedure WillNotRaise_With_NoClass;
 
 
 
@@ -272,6 +274,24 @@ begin
      raise Exception.Create('Error Message');
    end,
    EStreamError,'');
+end;
+
+procedure TTestsAssert.WillNotRaise_With_NoClass;
+const
+  EXPECTED_EXCEPTION_MSG = 'Passing Message';
+begin
+ Assert.WillRaise(
+ procedure
+ begin
+   Assert.WillNotRaise(
+     procedure
+     begin
+       // Raise an exception
+       raise Exception.Create('Error Message');
+     end);
+ end,
+ ETestFailure,
+ EXPECTED_EXCEPTION_MSG);
 end;
 
 procedure TTestsAssert.WillNotRaise_With_NonDescendingClass;
