@@ -68,7 +68,8 @@
   goto :eof
 
 :setSpecific
-  for %%d in ("%~dp0..") do set %localName%="%%~fd\%localName%"
+:: no spaces (for instance for the "set" command: Delphi does not like the path names to have double quotes in them, even if they contain spaces).
+  if not "%tool%"=="dir" for %%d in ("%~dp0..") do set %localName%=%%~fd\%localName%
 :: http://stackoverflow.com/questions/9369874/windows-batch-programming-indirect-nested-variable-evaluation
   if "%tool%"=="dir" for /F "usebackq delims==" %%l in (`echo %remoteURL%`) do set %localName%=%%l
   set %localName%
