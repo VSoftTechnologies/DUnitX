@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleName</key>
+    <string>DUnitXFiremonkeyGUI_XE5</string>
+	<key>CFBundleDisplayName</key>
+	<string>DUnitXFiremonkeyGUI_XE5</string>
+	<key>CFBundleIdentifier</key>
+	<string>DUnitXFiremonkeyGUI_XE5</string>
+	<key>CFBundleVersion</key>
+	<string>1.0.0</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleAllowMixedLocalizations</key>
+	<string>YES</string>
+	<key>CFBundleExecutable</key>
+	<string>DUnitXFiremonkeyGUI_XE5</string>
+	<key>NSHighResolutionCapable</key>
+	<string>true</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.utilities</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleIconFile</key>
+	<string>DUnitXFiremonkeyGUI_XE5.icns</string>
+</dict>
+</plist>

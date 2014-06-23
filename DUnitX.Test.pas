@@ -278,7 +278,7 @@ var
 const
   TESTCASE_NAME_FORMAT = '%s ( %s ) [%s]';
 begin
-  for index := low(FArgs) to high(FArgs) do
+{  for index := low(FArgs) to high(FArgs) do
   begin
     printableArgsList := printableArgsList + FArgs[index].ToString;
 
@@ -287,6 +287,8 @@ begin
   end;
 
   Result := Format(TESTCASE_NAME_FORMAT, [FName, printableArgsList, FCaseName]);
+  }
+  Result := FName;
 end;
 
 end.

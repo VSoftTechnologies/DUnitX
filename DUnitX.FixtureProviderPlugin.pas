@@ -110,7 +110,16 @@ begin
 
         //first time through the loop it will be empty.
         if parentNamespace = '' then
-          parentNamespace := fixtureNamespace
+        begin
+          if not tmpFixtures.TryGetValue(fixtureNamespace,fixture) then
+          begin
+            parentFixture := context.CreateFixture(TObject,fixtureNamespace);
+            tmpFixtures.Add(fixtureNamespace,parentFixture);
+            fixtureList.Add(parentFixture);
+          end;
+          parentNamespace := fixtureNamespace;
+          continue;
+        end
         else
         begin
           if not tmpFixtures.TryGetValue(parentNamespace,parentFixture) then
@@ -125,7 +134,6 @@ begin
             fixture := parentFixture.AddChildFixture(TObject,fixtureNamespace);
             tmpFixtures.Add(fixtureNamespace,fixture);
           end;
-
           parentFixture := fixture;
           parentNamespace := fixtureNamespace;
         end;
