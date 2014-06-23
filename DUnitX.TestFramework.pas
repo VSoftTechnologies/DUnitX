@@ -359,23 +359,11 @@ type
     class procedure IsNotEmpty<T>(const value : IEnumerable<T>; const message : string = '');overload;
 {$ENDIF}
 
-    class procedure WillRaise(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass; const msg : string = ''; const exceptionMsg: string = ''); overload;
-    class procedure WillRaiseDescendant(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass; const msg : string = ''; const exceptionMsg: string = ''); overload;
-    class procedure WillRaiseAny(const AMethod : TTestLocalMethod; const msg : string = ''; const exceptionMsg: string = ''); overload;
-
-    class procedure WillRaise(const AMethod : TTestMethod; const exceptionClass : ExceptClass; const msg : string = ''; const exceptionMsg: string = ''); overload;
-    class procedure WillRaiseDescendant(const AMethod : TTestMethod; const exceptionClass : ExceptClass; const msg : string = ''; const exceptionMsg: string = ''); overload;
-    class procedure WillRaiseAny(const AMethod : TTestMethod; const msg : string = ''; const exceptionMsg: string = ''); overload;
-
-    class procedure WillRaiseWithMessage(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass = nil; const exceptionMsg: string = ''; const msg : string = ''); overload; deprecated;
-
-    class procedure WillNotRaise(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass; const msg : string = ''); overload;
-    class procedure WillNotRaiseDescendant(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass; const msg : string = ''); overload;
-    class procedure WillNotRaiseAny(const AMethod : TTestLocalMethod; const msg : string = ''); overload;
-
-    class procedure WillNotRaise(const AMethod : TTestMethod; const exceptionClass : ExceptClass; const msg : string = ''); overload;
-    class procedure WillNotRaiseDescendant(const AMethod : TTestMethod; const exceptionClass : ExceptClass; const msg : string = ''); overload;
-    class procedure WillNotRaiseAny(const AMethod : TTestMethod; const msg : string = ''); overload;
+    class procedure WillRaise(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass = nil; const msg : string = ''); overload;
+    class procedure WillRaiseWithMessage(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass = nil; const exceptionMsg: string = ''; const msg : string = ''); overload;
+    class procedure WillRaise(const AMethod : TTestMethod; const exceptionClass : ExceptClass = nil; const msg : string = ''); overload;
+    class procedure WillNotRaise(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass = nil; const msg : string = ''); overload;
+    class procedure WillNotRaise(const AMethod : TTestMethod; const exceptionClass : ExceptClass = nil; const msg : string = ''); overload;
 
     class procedure Contains(const theString : string; const subString : string; const ignoreCase : boolean = true; const message : string = '');overload;
     class procedure StartsWith(const theString : string; const subString : string;const ignoreCase : boolean = true; const message : string = '');
@@ -1366,53 +1354,7 @@ begin
     exceptionClass, msg);
 end;
 
-class procedure Assert.WillNotRaiseAny(const AMethod: TTestMethod; const msg: string);
-begin
-  try
-    AMethod;
-  except
-    on e : Exception do
-      Fail(Format('Method raised [%s] was expecting not to raise any exception. [%s] was raised.', [e.ClassName, exceptionClass.ClassName]), ReturnAddress);
-  end;
-end;
-
-class procedure Assert.WillNotRaiseAny(const AMethod: TTestLocalMethod; const msg: string);
-begin
-  try
-    AMethod;
-  except
-    on e : Exception do
-      Fail(Format('Method raised [%s] was expecting not to raise any exception. [%s] was raised.', [e.ClassName, exceptionClass.ClassName]), ReturnAddress);
-  end;
-end;
-
-class procedure Assert.WillNotRaiseDescendant(const AMethod: TTestLocalMethod; const exceptionClass: ExceptClass; const msg: string);
-begin
-  try
-    AMethod;
-  except
-    on e : Exception do
-    begin
-      if not (e is exceptionClass) then
-        Fail(Format('Method raised [%s] was expecting not to raise [%s] decendant. %s', [e.ClassName, exceptionClass.ClassName, e.message]), ReturnAddress);
-    end;
-  end;
-end;
-
-class procedure Assert.WillNotRaiseDescendant(const AMethod: TTestMethod; const exceptionClass: ExceptClass; const msg: string);
-begin
-  try
-    AMethod;
-  except
-    on e : Exception do
-    begin
-      if not (e is exceptionClass) then
-        Fail(Format('Method raised [%s] was expecting not to raise [%s] decendant. %s', [e.ClassName, exceptionClass.ClassName, e.message]), ReturnAddress);
-    end;
-  end;
-end;
-
-class procedure Assert.WillRaise(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass; const msg : string; const exceptionMsg: string);
+class procedure Assert.WillRaise(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass; const msg : string);
 begin
   try
     AMethod;
@@ -1427,56 +1369,6 @@ begin
 end;
 
 
-class procedure Assert.WillRaiseAny(const AMethod: TTestLocalMethod; const msg, exceptionMsg: string);
-begin
-  try
-    AMethod;
-  except
-    on E: Exception do
-      Pass;
-  end;
-  Fail('Method did not throw any exceptions.' + AddLineBreak(msg), ReturnAddress);
-end;
-
-class procedure Assert.WillRaiseAny(const AMethod: TTestMethod; const msg, exceptionMsg: string);
-begin
-  try
-    AMethod;
-  except
-    on E: Exception do
-      Pass;
-  end;
-  Fail('Method did not throw any exceptions.' + AddLineBreak(msg), ReturnAddress);
-end;
-
-class procedure Assert.WillRaiseDescendant(const AMethod: TTestMethod; const exceptionClass: ExceptClass; const msg, exceptionMsg: string);
-begin
-  try
-    AMethod;
-  except
-    on E: Exception do
-      if E is exceptionClass then
-        Pass
-      else
-        Fail('Method did not throw a decendant exception of ' + exceptionClass.ClassName + '.' + AddLineBreak(msg), ReturnAddress);
-  end;
-  Fail('Method did not throw any exceptions.' + AddLineBreak(msg), ReturnAddress);
-end;
-
-class procedure Assert.WillRaiseDescendant(const AMethod: TTestLocalMethod; const exceptionClass: ExceptClass; const msg, exceptionMsg: string);
-begin
-  try
-    AMethod;
-  except
-    on E: Exception do
-      if E is exceptionClass then
-        Pass
-      else
-        Fail('Method did not throw a decendant exception of ' + exceptionClass.ClassName + '.' + AddLineBreak(msg), ReturnAddress);
-  end;
-  Fail('Method did not throw any exceptions.' + AddLineBreak(msg), ReturnAddress);
-end;
-
 class procedure Assert.WillNotRaise(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass; const msg : string);
 begin
   try
@@ -1484,14 +1376,18 @@ begin
   except
     on e : Exception do
     begin
-      if e.ClassType = exceptionClass then
-         Fail(Format('Method raised [%s] was expecting not to raise [%s]. %s', [e.ClassName, exceptionClass.ClassName, e.message]), ReturnAddress);
-    
+      if exceptionClass <> nil then
+      begin
+        if e.ClassType = exceptionClass then
+           Fail('Method raised an exception of type : ' + exceptionClass.ClassName + sLineBreak + e.Message + AddLineBreak(msg), ReturnAddress);
+      end
+      else
+        Fail(Format('Method raised [%s] was expecting not to raise [%s]. %s', [e.ClassName, exceptionClass.ClassName, e.message]), ReturnAddress);
     end;
   end;
 end;
 
-class procedure Assert.WillRaise(const AMethod : TTestMethod; const exceptionClass : ExceptClass; const msg : string; const exceptionMsg: string);
+class procedure Assert.WillRaise(const AMethod: TTestMethod; const exceptionClass: ExceptClass; const msg: string);
 begin
   Assert.WillRaise(
     procedure
@@ -1535,7 +1431,6 @@ end;
 
 class procedure Assert.CheckExceptionClass(E: Exception; const exceptionClass: ExceptClass);
 begin
-  //If the exception passed is nil then we will accept any exception type.
   if exceptionClass = nil then
     Exit;
 

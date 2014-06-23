@@ -83,6 +83,8 @@ type
     [Test]
     procedure AreEqual_Throws_No_Exception_When_Values_Are_Exactly_Equal;
     [Test]
+    procedure WillRaise_Without_Exception_Class_Will_Capture_Any_Exception;
+    [Test]
     procedure WillRaiseWithMessage_Exception_And_Message_Will_Check_ExceptionClass_And_Exception_Message;
     [Test]
     procedure WillRaiseWithMessage_Without_Exception_Class_And_Message_Will_Capture_Any_Exception;
@@ -90,8 +92,6 @@ type
     procedure WillRaiseWithMessage_Without_Exception_Class_With_Message_Will_Capture_Any_Exception_With_Message;
     [Test]
     procedure WillRaiseWithMessage_Exception_Not_Thrown_Throws_ETestFailure_Exception;
-    [Test]
-    procedure WillRaiseAny_Will_Capture_Any_Exception;
   end;
 
 implementation
@@ -236,10 +236,9 @@ begin
     end, nil, EXPECTED_EXCEPTION_MSG);
 end;
 
-
-procedure TTestsAssert.WillRaiseAny_Will_Capture_Any_Exception;
+procedure TTestsAssert.WillRaise_Without_Exception_Class_Will_Capture_Any_Exception;
 begin
-  Assert.WillRaiseAny(
+  Assert.WillRaise(
     procedure
     begin
       raise Exception.Create('Test')
