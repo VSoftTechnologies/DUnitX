@@ -275,7 +275,9 @@ begin
     exit;
   end;
   FConsoleWriter.Indent(2);
+  SetConsolePassColor;
   FConsoleWriter.WriteLn('Success.');
+  SetConsoleDefaultColor;
   FConsoleWriter.Outdent(2);
 end;
 
