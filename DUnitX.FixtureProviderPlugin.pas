@@ -14,7 +14,7 @@ type
   end;
 
 
-  TDUnitXFixtureProvider = class(TInterfacedObject,IFixtureProvider)
+  TDUnitXFixtureProvider = class(TInterfacedObject, IFixtureProvider)
   private class var
     FRttiContext : TRttiContext;
   private
@@ -40,6 +40,7 @@ uses
   Types,
   StrUtils,
   SysUtils,
+  DUnitX.Options,
   DUnitX.Utils,
   DUnitX.TestFramework;
 
@@ -78,14 +79,32 @@ var
   fixtureNamespace : string;
   tmpFixtures : TDictionary<string,ITestFixture>;
   fixtureList : ITestFixtureList;
+  commandLineOptions : ICommandLineOptions;
+  slFixturesToRun : TStrings;
+  bInclude: Boolean;
 begin
+  commandLineOptions := Options.Category<ICommandLineOptions>;
+
+  if commandLineOptions <> nil then
+    slFixturesToRun := commandLineOptions.Fixtures;
+
   if context.UseRtti then
     RTTIDiscoverFixtureClasses;
+
   for pair in TDUnitX.RegisteredFixtures do
   begin
     if not FFixtureClasses.ContainsValue(pair.Value) then
-      FFixtureClasses.AddOrSetValue(pair.Key, pair.Value);
+    begin
+      bInclude := True;
+
+      if (slFixturesToRun <> nil) and (slFixturesToRun.Count > 0) then
+        bInclude := slFixturesToRun.IndexOf(pair.Value) <> -1;
+
+      if bInclude then
+        FFixtureClasses.AddOrSetValue(pair.Key, pair.Value);
+    end;
   end;
+
   //Build up a fixture hierarchy based on unit names.
   tmpFixtures := TDictionary<string,ITestFixture>.Create;
   fixtureList := TTestFixtureList.Create;
@@ -149,6 +168,7 @@ begin
       else
         parentFixture.AddChildFixture(pair.Key,fixtureNamespace);
     end;
+
     for fixture in fixtureList do
     begin
       GenerateTests(fixture);
@@ -465,8 +485,8 @@ begin
             sName := TestFixtureAttribute(attribute).Name;
             if sName = '' then
               sName := TRttiInstanceType(rType).MetaclassType.ClassName;
-            if not FFixtureClasses.ContainsKey(TRttiInstanceType(rType).MetaclassType) then
-              FFixtureClasses.Add(TRttiInstanceType(rType).MetaclassType,sName);
+            if not TDUnitX.RegisteredFixtures.ContainsKey(TRttiInstanceType(rType).MetaclassType) then
+              TDUnitX.RegisteredFixtures.Add(TRttiInstanceType(rType).MetaclassType,sName);
           end;
         end;
     end;

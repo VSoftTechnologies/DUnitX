@@ -34,6 +34,9 @@ uses
   Generics.Collections,
   DUnitX.TestFramework;
 
+  {$IFDEF DOGFOODING}
+  function NewCommandLine : ICommandLine;
+  {$ENDIF}
   function CommandLine : ICommandLine;
 
   procedure RegisterCommandLineOption(const optionName: string; const separator : string; const hasValue : boolean);
@@ -41,35 +44,66 @@ uses
 implementation
 
 uses
-  classes;
+  System.SysUtils,
+  classes,
+  DUnitX.Options,
+  DUnitX.Utils;
 
 var
   _commandLine : ICommandLine;
 
-
 type
-  TCommandLine = class(TInterfacedObject,ICommandLine)
+  TCommandLineOptions = class(TInterfacedObject, ICommandLineOptions, IOptionsBase)
   private
     FParamList : TStringList;
-    FLogLevel : TLogLevel;
     FHideBanner : boolean;
+    FFixturesToRun : TStrings;
+    FDirty : Boolean;
   protected
+    procedure SetHideBanner(const AValue : boolean); deprecated 'Will not be settable but external forces.';
 
-    procedure ProcessCommandLine(const sList : TStrings);
+    //ICommandLineOptions
+    function GetHideBanner : boolean;
+    function GetFixtures : TStrings;
 
-    //ICommandLine;
-    function GetLogLevel: TLogLevel;
-    function GetHideBanner: Boolean;
-    procedure SetHideBanner(const value : boolean);
-    function HasOption(const optionName: string): Boolean;
+    //IOptionsBase
+    function HasOption(const optionName : string) : boolean;
+    function GetOptions : TStringList;
     function GetOptionValue(const optionName : string) : string;
+    function GetIsDirty : boolean;
+
+    procedure ProcessCommandLine(const AParams : TStrings);
   public
     constructor Create;
     destructor Destroy;override;
   end;
 
+  TCommandLine = class(TInterfacedObject, ICommandLine, IOptionsProvider)
+  private
+    FParamList : TStringList;
+    FOptions : ICommandLineOptions;
+  protected
+    //IOptionsProvider
+    function GetHideBanner : boolean; deprecated 'Will be replaced by options object.';
+    procedure SetHideBanner(const AValue : boolean); deprecated 'Will be replaced by options object.';
+    function GetOptionsInterface : IOptionsBase;
+    function GetName : string;
+    function GetOptions : ICommandLineOptions;
+  public
+    constructor Create;
+    destructor Destroy;override;
+  end;
 
 { TDUniXCommandLine }
+
+{$IFDEF DOGFOODING}
+function NewCommandLine : ICommandLine;
+begin
+  //Used only when DUnitX is testing itself. We don't want to use the singleton command
+  //line which currently in use by the test runner when we are testing ourselves.
+  result := TComandLine.Create;
+end;
+{$ENDIF}
 
 function CommandLine: ICommandLine;
 begin
@@ -85,55 +119,174 @@ var
   count : integer;
   i     : integer;
 begin
-  FLogLevel := TLogLevel.ltInformation;
+  FOptions := TCommandLineOptions.Create;
 
   FParamList := TStringList.Create;
   //this is intended to make it eaiser to test ProcessCommandLine
   count := System.ParamCount;
   for i := 0 to count do
     FParamList.Add(ParamStr(i));
-  ProcessCommandLine(FParamList);
+
+  (FOptions as TCommandLineOptions).ProcessCommandLine(FParamList);
+
+  //Register ourselves as a provider of the commandline options.
+  Options.RegisterCategory(self);
 end;
 
-function TCommandLine.GetLogLevel: TLogLevel;
+function TCommandLine.GetHideBanner: boolean;
 begin
-  result := FLogLevel;
+  Result := FOptions.HideBanner;
 end;
 
-function TCommandLine.GetOptionValue(const optionName: string): string;
+function TCommandLine.GetName: string;
 begin
+  Result := 'Command Line';
+end;
 
+function TCommandLine.GetOptions: ICommandLineOptions;
+begin
+  Result := FOptions;
+end;
+
+function TCommandLine.GetOptionsInterface: IOptionsBase;
+begin
+  Result := FOptions;
+end;
+
+procedure TCommandLine.SetHideBanner(const AValue: boolean);
+begin
+  (FOptions as TCommandLineOptions).SetHideBanner(AValue);
 end;
 
 destructor TCommandLine.Destroy;
 begin
+  //Remove ourselves as a provider of the command line options.
+  Options.UnregisterCategory(self);
+
+  FOptions := nil;
+
   FParamList.Free;
   inherited;
 end;
 
-function TCommandLine.GetHideBanner: Boolean;
-begin
-  result := FHideBanner;
-end;
-
-function TCommandLine.HasOption(const optionName: string): Boolean;
-begin
-  result := False;
-end;
-
-procedure TCommandLine.ProcessCommandLine(const sList : TStrings);
-begin
-
-end;
-
-procedure TCommandLine.SetHideBanner(const value: boolean);
-begin
-  FHideBanner := true;
-end;
-
 procedure RegisterCommandLineOption(const optionName: string; const separator : string; const hasValue : boolean);
 begin
-
+  //  {$Message 'TODO: RegisterCommandLineOption is to be used for registration of extension parameters.'}
+  //  {$Message 'TODO: RegisterCommandLineOption needs to pass a notify method when the option is supplied.'}
+  //  {$Message 'TODO: ProcessCommandLine needs to test for registered command line options. Shouldn''t allow calling RegisterCommandLineOption after ProcessCommandLine.'}
 end;
+
+{ TCommandLineOptions }
+
+constructor TCommandLineOptions.Create;
+begin
+  FFixturesToRun := TStringList.Create;
+  FFixturesToRun.Delimiter := ',';
+
+  FHideBanner := False;
+
+  FDirty := False;
+end;
+
+destructor TCommandLineOptions.Destroy;
+begin
+  FreeAndNil(FFixturesToRun);
+
+  inherited;
+end;
+
+function TCommandLineOptions.GetFixtures: TStrings;
+begin
+  Result := FFixturesToRun;
+end;
+
+function TCommandLineOptions.GetHideBanner: boolean;
+begin
+  Result := FHideBanner;
+end;
+
+function TCommandLineOptions.GetIsDirty: boolean;
+begin
+  Result := FDirty;
+end;
+
+function TCommandLineOptions.GetOptions: TStringList;
+begin
+  Result := TStringList.Create;
+
+  Result.Add('/fixtures');
+
+  //TODO: Add banner option
+  //TODO: Add log level option
+end;
+
+function TCommandLineOptions.GetOptionValue(const optionName: string): string;
+begin
+  Result := '';
+
+  if AnsiLowerCase(optionName) = 'fixtures' then
+    Result := FFixturesToRun.DelimitedText;
+end;
+
+function TCommandLineOptions.HasOption(const optionName: string): boolean;
+begin
+  Result := False;
+
+  if AnsiLowerCase(optionName) = 'fixtures' then
+    Result := FFixturesToRun.Count > 0;
+end;
+
+procedure TCommandLineOptions.ProcessCommandLine(const AParams: TStrings);
+var
+  iParam: Integer;
+  sCommand: string;
+  iFixtureStart: Integer;
+  slFixtures: TStringList;
+  sParam: string;
+  sFixturesToAdd: string;
+begin
+  iParam := 0;
+  while iParam < AParams.Count do
+  begin
+    //Replace - with / as they are synonymous
+    sParam := StringReplace(AParams[iParam], '-', '/', [rfReplaceAll]);
+
+    //Extract the command for this param, it should be in the form /command:valueA,valueB
+    sCommand := StrBetweenChar(sParam, '/', ':');
+
+    //Deal with seeing the fixtures parameter
+    if AnsiLowerCase(sCommand) = 'fixtures' then
+    begin
+      slFixtures := TStringList.Create;
+      try
+        iFixtureStart := Pos(':', AParams[iParam]);
+
+        sFixturesToAdd := Copy(AParams[iParam], iFixtureStart + 1, Length(AParams[iParam]) - iFixtureStart);
+
+        if Trim(sFixturesToAdd) = '' then
+          Exit;
+
+        //Each fixture to test should be seperated with a comma. Therefore when adding
+        //another fixture param we need to append a comma.
+        FFixturesToRun.Add(sFixturesToAdd);
+      finally
+        FreeAndNil(slFixtures);
+      end;
+    end;
+
+    {$Message 'TODO: ProcessCommandLine needs to raise an issue when there are invalid parameters detected. It might need to move out of the create of TCommandLine to do this.'}
+
+    Inc(iParam);
+  end;
+end;
+
+procedure TCommandLineOptions.SetHideBanner(const AValue: boolean);
+begin
+  FHideBanner := AValue;
+end;
+
+initialization
+  {$Message 'TODO: Need to fix how the command line is initialised'}
+  CommandLine;
 
 end.
