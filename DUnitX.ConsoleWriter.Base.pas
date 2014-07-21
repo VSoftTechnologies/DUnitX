@@ -59,7 +59,7 @@ type
 
   end;
 
-  TDUnitXConsoleWriterBase = class(TInterfacedObject,IDUnitXConsoleWriter)
+  TDUnitXConsoleWriterBase = class(TInterfacedObject, IDUnitXConsoleWriter)
   private
     FIndent : integer;
     FConsoleWidth : integer;
@@ -67,6 +67,7 @@ type
   protected
     function GetIndent : Integer;
     procedure SetIndent(const count: Integer);virtual;
+    function InternalBreakupMessage(const s : string): TStringList;
     procedure InternalWriteLn(const s : string); virtual;abstract;
     procedure InternalWrite(const s : string);virtual;abstract;
     procedure Indent(const value : integer = 1);
@@ -87,12 +88,20 @@ implementation
 
 { TDUnitXConsoleWriterBase }
 
+uses
+  Types,
+  StrUtils,
+  SysUtils;
+
+const
+  DEFAULT_CONSOLE_WIDTH = 80;
+  MINIMUM_CONSOLE_WIDTH = 2;
+
 constructor TDUnitXConsoleWriterBase.Create;
 begin
-  FConsoleWidth := 80;
+  FConsoleWidth := DEFAULT_CONSOLE_WIDTH;
   FIndent := 0;
 end;
-
 
 function TDUnitXConsoleWriterBase.GetIndent: Integer;
 begin
@@ -102,6 +111,45 @@ end;
 procedure TDUnitXConsoleWriterBase.Indent(const value: integer);
 begin
   SetIndent(FIndent + value);
+end;
+
+function TDUnitXConsoleWriterBase.InternalBreakupMessage(const s: string): TStringList;
+var
+  line: string;
+  offset, width, len : Integer;
+  saLines : TStringDynArray;
+begin
+  Result := TStringList.Create;
+
+  //If we are blank string, add on line entry and leave.
+  if s = '' then
+  begin
+    Result.Add('');
+    Exit;
+  end;
+
+  width := FConsoleWidth - FIndent;
+  saLines := SplitString(s, #13#10);
+
+  //Walk through the string list pulling of the console width of characters at a time.
+  for line in saLines do
+  begin
+    len := Length(line);
+
+    if (width > 0) and (len > width) then
+    begin
+      offset := 1;
+      while offset <= len do
+      begin
+        //Write a line as we have hit the limit of the console.
+        Result.Add(Copy(line, offset, width));
+        Inc(offset, width);
+      end;
+    end
+    else
+      //Can write out on a single line
+      Result.Add(line);
+  end;
 end;
 
 procedure TDUnitXConsoleWriterBase.Outdent(const value: integer);
@@ -118,30 +166,27 @@ begin
     FIndent := count;
     if not FRedirectedStdOut then
     begin
-      if FIndent > FConsoleWidth -2  then
-        FIndent := FConsoleWidth - 2;
+      if FIndent > FConsoleWidth - MINIMUM_CONSOLE_WIDTH then
+        FIndent := FConsoleWidth - MINIMUM_CONSOLE_WIDTH;
     end;
   end;
 end;
 
-
 procedure TDUnitXConsoleWriterBase.Write(const s: string);
 var
-  offset, width, len : Integer;
+  // offset, width, len : Integer;
+  slLines : TStringList;
+  iLineIndx : integer;
 begin
-  width := FConsoleWidth - FIndent - 1;
-  len := Length(s);
-  if (width > 0) and (len > width) then // Need to break into multiple lines
-  begin
-    offset := 1;
-    while offset < len do
-    begin
-      InternalWrite(Copy(s, offset, width));
-      Inc(offset, width);
-    end;
-  end
-  else // Can write out on a single line
-    InternalWrite(s);
+  slLines := InternalBreakupMessage(s);
+
+  //Write out all the lines execept the last one.
+  for iLineIndx  := 0 to slLines.Count - 2 do
+    InternalWriteLn(slLines[iLineIndx]);
+
+  //Now write out the last one without an end of line character.
+  if slLines.Count > 0 then
+    InternalWrite(slLines[slLines.Count - 1]);
 end;
 
 procedure TDUnitXConsoleWriterBase.WriteLn;
@@ -151,21 +196,15 @@ end;
 
 procedure TDUnitXConsoleWriterBase.WriteLn(const s: String);
 var
-  offset, width, len : Integer;
+  // offset, width, len : Integer;
+  slLines : TStringList;
+  iLineIndx : integer;
 begin
-  width := FConsoleWidth - FIndent - 1;
-  len := Length(s);
-  if (width > 0) and (len > width) then // Need to break into multiple lines
-  begin
-    offset := 1;
-    while offset < len do
-    begin
-      InternalWriteLn(Copy(s, offset, width));
-      Inc(offset, width);
-    end;
-  end
-  else // Can write out on a single line
-    InternalWriteLn(s);
+  slLines := InternalBreakupMessage(s);
+
+  //Write out all the lines execept the last one.
+  for iLineIndx  := 0 to slLines.Count - 1 do
+    InternalWriteLn(slLines[iLineIndx]);
 end;
 
 end.

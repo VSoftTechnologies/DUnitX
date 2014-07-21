@@ -62,8 +62,6 @@ type
     procedure InternalWrite(const s : string); override;
   public
     procedure SetColour(const foreground: TConsoleColour; const background: TConsoleColour = ccDefault); override;
-    constructor Create;override;
-    destructor Destroy; override;
   end;
 
 
@@ -106,18 +104,6 @@ const
 
 { TDUnitXMacOSConsoleWriter }
 
-constructor TDUnitXMacOSConsoleWriter.Create;
-begin
-  inherited;
-
-end;
-
-destructor TDUnitXMacOSConsoleWriter.Destroy;
-begin
-
-  inherited;
-end;
-
 procedure TDUnitXMacOSConsoleWriter.InternalWrite(const s: string);
 begin
   System.Write(s);
@@ -147,23 +133,24 @@ begin
      System.Write(AT_BOLD);
 
   case foreground of
-     ccBrightRed,
-     ccDarkRed      : System.Write(AT_FG_RED);
-     ccBrightBlue,
-     ccDarkBlue     : System.Write(AT_FG_BLUE);
-     ccBrightGreen,
-     ccDarkGreen    : System.Write(AT_FG_GREEN);
-     ccBrightYellow,
-     ccDarkYellow   : System.Write(AT_FG_YELLOW);
-     ccBrightAqua,
-     ccDarkAqua     : System.Write(AT_FG_CYAN);
-     ccBrightPurple,
-     ccDarkPurple   : System.Write(AT_FG_MAGENTA);
-// Not Set:  default background in terminal.app is white and a white
-//           background on white FG is hard to read.
-//   ccBrightWhite,
-//     ccWhite        : System.Write(AT_FG_WHITE);
-   end;
+    ccBrightRed,
+    ccDarkRed      : System.Write(AT_FG_RED);
+    ccBrightBlue,
+    ccDarkBlue     : System.Write(AT_FG_BLUE);
+    ccBrightGreen,
+    ccDarkGreen    : System.Write(AT_FG_GREEN);
+    ccBrightYellow,
+    ccDarkYellow   : System.Write(AT_FG_YELLOW);
+    ccBrightAqua,
+    ccDarkAqua     : System.Write(AT_FG_CYAN);
+    ccBrightPurple,
+    ccDarkPurple   : System.Write(AT_FG_MAGENTA);
+
+    // Not Set:  default background in terminal.app is white and a white
+    //           background on white FG is hard to read.
+    //   ccBrightWhite,
+    //     ccWhite        : System.Write(AT_FG_WHITE);
+  end;
 
 end;
 

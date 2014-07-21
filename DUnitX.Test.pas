@@ -272,11 +272,6 @@ begin
 end;
 
 function TDUnitXTestCase.GetName: string;
-var
-  printableArgsList : string;
-  index: Integer;
-const
-  TESTCASE_NAME_FORMAT = '%s ( %s ) [%s]';
 begin
 {  for index := low(FArgs) to high(FArgs) do
   begin
