@@ -716,6 +716,9 @@ function StripUnitName(const s: string): string;
 function SplitString(const S: string; const Delimiters: string): TStringDynArray;
 {$ENDIF}
 
+function StrEnsureLast(const ASource: string; const AStrToEnsure: string) : string;
+function StrBetweenChar(const ASource: string; const ABefore: char; const AAfter: char): string;
+
 function Supports(const Instance: TValue; const IID: TGUID; out Intf): Boolean; overload;
 
 const
@@ -3094,6 +3097,62 @@ begin
     // copy the remaining part in case the string does not end in a delimiter
     Result[SplitPoints] := Copy(S, StartIdx, Length(S) - StartIdx + 1);
   end;
+
+end;
+
+function StrBetweenChar(const ASource: string; const ABefore: char; const AAfter: char): string;
+var
+  len: integer;
+  indexBe: Integer;
+  indexAft: Integer;
+begin
+  Result := '';
+
+  if ABefore = '' then
+    raise Exception.Create('Before for StrBetweenChar can not be blank');
+
+  if AAfter = '' then
+    raise Exception.Create('After for StrBetweenChar can not be blank');
+
+  len := Length(ASource);
+
+  if len = 0 then
+    Exit;
+
+  for indexBe := 1 to len do
+  begin
+    if ASource[indexBe] = ABefore then
+    begin
+      if (indexBe <= len) then
+      begin
+        for indexAft := indexBe + 1 to len do
+        begin
+          if ASource[indexAft] = AAfter then
+          begin
+            if (indexAft <= len) then
+            begin
+               Result := Copy(ASource, indexBe + 1, Pred(indexAft - indexBe));
+
+               Exit;
+            end;
+          end;
+        end;
+      end;
+    end;
+  end;
+end;
+
+function StrEnsureLast(const ASource: string; const AStrToEnsure: string) : string;
+var
+  tail : string;
+begin
+  //We return the source string unless its otherwise proven the strng to ensure needs to be added
+  Result := ASource;
+
+  //Copy the last part of the string.
+  tail := RightStr(ASource, Length(AStrToEnsure));
+  if CompareText(tail, AStrToEnsure) <> 0 then
+    Result := Result + AStrToEnsure;
 
 end;
 

@@ -782,7 +782,6 @@ type
     procedure WriteLn(const msg : string);overload;
     procedure WriteLn;overload;
 
-
     ///	<summary>
     ///	  When true, test fixtures will be found by using RTTI to search for
     ///	  classes decorated as TestFixtures.  Note for this to work you may
@@ -793,18 +792,46 @@ type
     property UseRTTI : boolean read GetUseRTTI write SetUseRTTI;
   end;
 
-  ICommandLine = interface
-    ['{A86D66B3-2CD3-4E11-B0A8-9602EB5790CB}']
-    function GetHideBanner : boolean;
-    procedure SetHideBanner(const value : boolean);
-    function GetLogLevel : TLogLevel;
-
+  IOptionsBase = interface
+    ['{61449B1B-EF19-4E12-911A-76CD9F8019FE}']
     function HasOption(const optionName : string) : boolean;
+    function GetOptions : TStringList;
     function GetOptionValue(const optionName : string) : string;
 
-    //standard options
-    property HideBanner : boolean read GetHideBanner write SetHideBanner; // -b
-    property LogLevel : TLogLevel read GetLogLevel;  // -l:e -l:w -l:i
+    function GetIsDirty : boolean;
+    property IsDirty : boolean read GetIsDirty;
+  end;
+
+  IOptionsProvider = interface
+    ['{E447A4EE-DF72-4DC0-B27A-E03C5A5B0163}']
+    function GetOptionsInterface : IOptionsBase;
+    function GetName : string;
+    property Name : string read GetName;
+  end;
+
+  IGeneralOptions = interface(IOptionsBase)
+    ['{B0737160-C66A-4030-BDD1-ED6D125665B3}']
+    function GetLogLevel : TLogLevel;
+
+    property LogLevel : TLogLevel read GetLogLevel;
+  end;
+
+  ICommandLineOptions = interface(IOptionsBase)
+    ['{C30CAB61-5ED1-4191-AA82-96E42CDC1FF6}']
+    function GetHideBanner : boolean;
+    function GetFixtures : TStrings;
+
+    property Fixtures : TStrings read GetFixtures;
+    property HideBanner : boolean read GetHideBanner;
+  end;
+
+  ICommandLine = interface
+    ['{A86D66B3-2CD3-4E11-B0A8-9602EB5790CB}']
+    function GetOptions : ICommandLineOptions;
+    function GetHideBanner : boolean; deprecated 'Will be replaced by options object.';
+    procedure SetHideBanner(const AValue : boolean); deprecated 'Will be replaced by options object.';
+    property Options : ICommandLineOptions read GetOptions;
+    property HideBanner : Boolean read GetHideBanner write SetHideBanner;
   end;
 
   TDUnitX = class
@@ -820,8 +847,8 @@ type
     class function CreateRunner(const useCommandLineOptions : boolean; const ALogger : ITestLogger) : ITestRunner;overload;
     class procedure RegisterTestFixture(const AClass : TClass; const AName : string = '' );
     class procedure RegisterPlugin(const plugin : IPlugin);
-    class function CommandLine : ICommandLine;
     class function CurrentRunner : ITestRunner;
+    class function CommandLine: ICommandLine; static;
   end;
 
   // Register an implementation via TDUnitXIoC.DefaultContainer
@@ -1852,3 +1879,4 @@ initialization
   TDUnitX.RegisterPlugin(TDUnitXFixtureProviderPlugin.Create);
 
 end.
+

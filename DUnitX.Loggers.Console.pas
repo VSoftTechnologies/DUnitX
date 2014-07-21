@@ -92,9 +92,9 @@ type
 implementation
 
 uses
+  DUnitX.Options,
   DUnitX.IoC,
   SysUtils;
-
 
 { TDUnitXConsoleLogger }
 
@@ -423,6 +423,8 @@ begin
 end;
 
 procedure TDUnitXConsoleLogger.OnTestingStarts(const threadId, testCount, testActiveCount : Cardinal);
+var
+  commandLineOptions : ICommandLineOptions;
 begin
   if FQuietMode then
   begin
@@ -431,7 +433,9 @@ begin
     exit;
   end;
 
-  if TDUnitX.CommandLine.HideBanner then
+  commandLineOptions := Options.Category<ICommandLineOptions>;
+
+  if (commandLineOptions <> nil) and (commandLineOptions.HideBanner) then
     exit;
 
   SetConsoleSummaryColor();

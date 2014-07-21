@@ -47,7 +47,9 @@ uses
   DUnitX.Tests.MemoryLeaks in 'DUnitX.Tests.MemoryLeaks.pas',
   DUnitX.Extensibility in '..\DUnitX.Extensibility.pas',
   DUnitX.Extensibility.PluginManager in '..\DUnitX.Extensibility.PluginManager.pas',
-  DUnitX.FixtureProviderPlugin in '..\DUnitX.FixtureProviderPlugin.pas';
+  DUnitX.FixtureProviderPlugin in '..\DUnitX.FixtureProviderPlugin.pas',
+  DUnitX.Tests.CommandLine in 'DUnitX.Tests.CommandLine.pas',
+  DUnitX.Options in '..\DUnitX.Options.pas';
 
 {$R *.res}
 

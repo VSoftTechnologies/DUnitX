@@ -155,6 +155,7 @@ uses
   DUnitX.Utils,
   DUnitX.IoC,
   DUnitX.Extensibility.PluginManager,
+  DUnitX.Options,
   TypInfo,
   StrUtils,
   Types;
@@ -231,6 +232,7 @@ end;
 function TDUnitXTestRunner.BuildFixtures  : IInterface;
 var
   pluginManager : IPluginManager;
+  generalOptions : IGeneralOptions;
 begin
   result := FFixtureList;
   if FFixtureList <> nil then
@@ -238,12 +240,16 @@ begin
 
   FFixtureList := TTestFixtureList.Create;
 
-
-  pluginManager := TPluginManager.Create(Self.CreateFixture,FUseRTTI);
+  pluginManager := TPluginManager.Create(Self.CreateFixture, FUseRTTI);
   pluginManager.Init;//loads the plugin features.
 
-  //generate the fixtures. The plugin Manager calls back into CreateFixture
+  //Generate the options specified. Any service or instance which wishes to register
+  //options registers iteself with the options generator.
+  generalOptions := Options.Category<IGeneralOptions>;
+
+  //Generate the fixtures. The plugin Manager calls back into CreateFixture
   pluginManager.CreateFixtures;
+
   result := FFixtureList;
 
 {
@@ -385,6 +391,7 @@ begin
     result := TDUnitXTestFixture.Create(AName,AInstance)
   else
     result := TDUnitXTestFixture.Create(AName,AFixtureClass);
+
   FFixtureList.Add(Result);
 end;
 
@@ -861,7 +868,6 @@ begin
   result := FUseRTTI;
 end;
 
-
 procedure TDUnitXTestRunner.SetExitBehavior(const value: TRunnerExitBehavior);
 begin
   FExitBehavior := value;
@@ -961,8 +967,13 @@ end;
 procedure TDUnitXTestRunner.Log(const logType: TLogLevel; const msg: string);
 var
   logger : ITestLogger;
+  generalOptions: IGeneralOptions;
 begin
-  if logType >= TDUnitX.CommandLine.LogLevel then
+  generalOptions := Options.Category<IGeneralOptions>;
+
+  //If there is no general options, and the log level set is lower than the current
+  //messages log level. Then log it.
+  if (generalOptions <> nil) and (generalOptions.LogLevel < logType) then
   begin
     //TODO : Need to get this to the current test result.
     FLogMessages.Add(msg);
