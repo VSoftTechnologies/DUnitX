@@ -24,28 +24,28 @@
 			<MSBuild Projects="Tests\DUnitXTest_XE2.dproj"/>
 		</Target>
 		<Target Name="DUnitXTest_XE2:Clean">
-			<MSBuild Projects="Tests\DUnitXTest_XE2.dproj" Targets="Clean"/>
+			<MSBuild Targets="Clean" Projects="Tests\DUnitXTest_XE2.dproj"/>
 		</Target>
 		<Target Name="DUnitXTest_XE2:Make">
-			<MSBuild Projects="Tests\DUnitXTest_XE2.dproj" Targets="Make"/>
+			<MSBuild Targets="Make" Projects="Tests\DUnitXTest_XE2.dproj"/>
 		</Target>
 		<Target Name="DUnitXExamples_XE2">
 			<MSBuild Projects="Examples\DUnitXExamples_XE2.dproj"/>
 		</Target>
 		<Target Name="DUnitXExamples_XE2:Clean">
-			<MSBuild Projects="Examples\DUnitXExamples_XE2.dproj" Targets="Clean"/>
+			<MSBuild Targets="Clean" Projects="Examples\DUnitXExamples_XE2.dproj"/>
 		</Target>
 		<Target Name="DUnitXExamples_XE2:Make">
-			<MSBuild Projects="Examples\DUnitXExamples_XE2.dproj" Targets="Make"/>
+			<MSBuild Targets="Make" Projects="Examples\DUnitXExamples_XE2.dproj"/>
 		</Target>
 		<Target Name="DUnitX_IDE_Expert_XE2">
 			<MSBuild Projects="Expert\DUnitX_IDE_Expert_XE2.dproj"/>
 		</Target>
 		<Target Name="DUnitX_IDE_Expert_XE2:Clean">
-			<MSBuild Projects="Expert\DUnitX_IDE_Expert_XE2.dproj" Targets="Clean"/>
+			<MSBuild Targets="Clean" Projects="Expert\DUnitX_IDE_Expert_XE2.dproj"/>
 		</Target>
 		<Target Name="DUnitX_IDE_Expert_XE2:Make">
-			<MSBuild Projects="Expert\DUnitX_IDE_Expert_XE2.dproj" Targets="Make"/>
+			<MSBuild Targets="Make" Projects="Expert\DUnitX_IDE_Expert_XE2.dproj"/>
 		</Target>
 		<Target Name="Build">
 			<CallTarget Targets="DUnitXTest_XE2;DUnitXExamples_XE2;DUnitX_IDE_Expert_XE2"/>

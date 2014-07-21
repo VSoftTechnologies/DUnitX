@@ -19,6 +19,7 @@ type
   ITest = interface
     ['{0CCCE0C7-9AD1-4C3A-86EF-E882D3A839AB}']
     function GetName : string;
+    function GetCategory : string;
     function GetTestMethod : TTestMethod;
     function GetTestFixture : ITestFixture;
     function GetTestStartTime : TDateTime;
@@ -32,6 +33,7 @@ type
     procedure SetIgnoreMemoryLeaks(const AValue : Boolean);
 
     property Name : string read GetName;
+    property Category : string read GetCategory;
     property Enabled : boolean read GetEnabled write SetEnabled;
     property Fixture : ITestFixture read GetTestFixture;
     property Ignored : boolean read GetIgnored;
@@ -76,8 +78,8 @@ type
     procedure OnMethodExecuted(const AMethod : TTestMethod);
     function GetFixtureInstance : TObject;
 
-    function AddTest(const AMethod : TTestMethod; const AName : string; const AEnabled : boolean = true;const AIgnored : boolean = false; const AIgnoreReason : string = '') : ITest;
-    function AddTestCase(const ACaseName : string; const AName : string; const AMethod : TRttiMethod; const AEnabled : boolean; const AArgs : TValueArray) : ITest;
+    function AddTest(const AMethod : TTestMethod; const AName : string; const ACategory : string; const AEnabled : boolean = true;const AIgnored : boolean = false; const AIgnoreReason : string = '') : ITest;
+    function AddTestCase(const ACaseName : string; const AName : string; const ACategory : string; const AMethod : TRttiMethod; const AEnabled : boolean; const AArgs : TValueArray) : ITest;
 
     function AddChildFixture(const ATestClass : TClass; const AName : string) : ITestFixture;overload;
     function AddChildFixture(const AInstance : TObject; const AName : string) : ITestFixture;overload;

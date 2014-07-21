@@ -54,7 +54,6 @@ type
     FLogLevel : TLogLevel;
     FHideBanner : boolean;
   protected
-
     procedure ProcessCommandLine(const sList : TStrings);
 
     //ICommandLine;
@@ -85,7 +84,7 @@ var
   count : integer;
   i     : integer;
 begin
-  FLogLevel := TLogLevel.ltInformation;
+  FLogLevel := TLogLevel.Information;
 
   FParamList := TStringList.Create;
   //this is intended to make it eaiser to test ProcessCommandLine

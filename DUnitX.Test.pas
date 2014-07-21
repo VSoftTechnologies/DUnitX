@@ -43,6 +43,7 @@ type
   TDUnitXTest = class(TWeakReferencedObject, ITest, ITestInfo, ISetTestResult, ITestExecute)
   private
     FName         : string;
+    FCategory     : string;
     FMethod       : TTestMethod;
     FFixture      : IWeakReference<ITestFixture>;
     FStartTime    : TDateTime;
@@ -55,6 +56,7 @@ type
   protected
     //ITest
     function GetName: string; virtual;
+    function GetCategory : string;
     function GetFullName : string;virtual;
     function GetTestFixture: ITestFixture;
     function GetTestMethod: TTestMethod;
@@ -79,7 +81,7 @@ type
     //ITestExecute
     procedure Execute(const context : ITestExecuteContext);virtual;
   public
-    constructor Create(const AFixture : ITestFixture; const AName : string; const AMethod : TTestMethod; const AEnabled : boolean;
+    constructor Create(const AFixture : ITestFixture; const AName : string; const ACategory  : string; const AMethod : TTestMethod; const AEnabled : boolean;
                        const AIgnored : boolean = false; const AIgnoreReason : string = '');
 
     //property Name : string read GetName;
@@ -97,7 +99,7 @@ type
     function GetName: string; override;
     procedure Execute(const context : ITestExecuteContext); override;
   public
-    constructor Create(const AInstance : TObject; const AFixture : ITestFixture; const ACaseName : string; const AName : string; const AMethod : TRttiMethod;
+    constructor Create(const AInstance : TObject; const AFixture : ITestFixture; const ACaseName : string; const AName : string; const ACategory  : string; const AMethod : TRttiMethod;
                        const AEnabled : boolean; const AArgs : TValueArray);reintroduce;
 
 //    property Name : string read GetName;
@@ -114,10 +116,11 @@ uses
 
 { TDUnitXTest }
 
-constructor TDUnitXTest.Create(const AFixture: ITestFixture; const AName: string; const AMethod: TTestMethod; const AEnabled : boolean; const AIgnored : boolean; const AIgnoreReason : string);
+constructor TDUnitXTest.Create(const AFixture: ITestFixture; const AName: string; const ACategory  : string; const AMethod: TTestMethod; const AEnabled : boolean; const AIgnored : boolean; const AIgnoreReason : string);
 begin
   FFixture := TWeakReference<ITestFixture>.Create(AFixture);
   FName := AName;
+  FCategory := ACategory;
   FMethod := AMethod;
   FEnabled := AEnabled;
   FIgnored := AIgnored;
@@ -140,6 +143,11 @@ function TDUnitXTest.GetActive: boolean;
 begin
   //TODO: Need to set the internal active state
   result := True;
+end;
+
+function TDUnitXTest.GetCategory: string;
+begin
+  result := FCategory;
 end;
 
 function TDUnitXTest.GetEnabled: Boolean;
@@ -227,7 +235,7 @@ end;
 { TDUnitXTestCase }
 
 constructor TDUnitXTestCase.Create(const AInstance : TObject; const AFixture : ITestFixture; const ACaseName : string;
-                                   const AName : string; const AMethod : TRttiMethod; const AEnabled : boolean;
+                                   const AName : string; const ACategory  : string; const AMethod : TRttiMethod; const AEnabled : boolean;
                                    const AArgs : TValueArray);
 var
   len : integer;
@@ -235,7 +243,7 @@ var
   parameters : TArray<TRttiParameter>;
   tmp : TValue;
 begin
-  inherited Create(AFixture, AName, nil,AEnabled);
+  inherited Create(AFixture, AName, ACategory, nil,AEnabled);
   FInstance := AInstance;
   FRttiMethod := AMethod;
   FCaseName := ACaseName;
@@ -272,22 +280,8 @@ begin
 end;
 
 function TDUnitXTestCase.GetName: string;
-var
-  printableArgsList : string;
-  index: Integer;
-const
-  TESTCASE_NAME_FORMAT = '%s ( %s ) [%s]';
 begin
-{  for index := low(FArgs) to high(FArgs) do
-  begin
-    printableArgsList := printableArgsList + FArgs[index].ToString;
-
-    if index <> high(FArgs) then
-      printableArgsList := printableArgsList + ', ';
-  end;
-
-  Result := Format(TESTCASE_NAME_FORMAT, [FName, printableArgsList, FCaseName]);
-  }
+  //TODO : Find a way to give test cases unique names.
   Result := FName;
 end;
 

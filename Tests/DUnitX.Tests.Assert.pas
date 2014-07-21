@@ -36,7 +36,6 @@ type
   [TestFixture]
   TTestsAssert = class
   private
-    procedure WillNotRaise_With_NonDescendingClass;
   published
     [Test]
     procedure Pass_Throws_ETestPass_Exception;
@@ -294,10 +293,6 @@ begin
  EXPECTED_EXCEPTION_MSG);
 end;
 
-procedure TTestsAssert.WillNotRaise_With_NonDescendingClass;
-begin
-
-end;
 
 procedure TTestsAssert.WillRaiseAny;
 begin

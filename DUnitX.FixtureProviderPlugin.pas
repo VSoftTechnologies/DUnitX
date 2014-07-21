@@ -194,6 +194,7 @@ var
   tearDownAttrib : TearDownAttribute;
   tearDownFixtureAttrib : TearDownFixtureAttribute;
   testAttrib : TestAttribute;
+  categoryAttrib : CategoryAttribute;
   ignoredAttrib   : IgnoreAttribute;
   testCases       : TArray<CustomTestCaseAttribute>;
   testCaseAttrib  : CustomTestCaseAttribute;
@@ -202,8 +203,9 @@ var
   testCaseData    : TestCaseInfo;
   testEnabled     : boolean;
   isTestMethod    : boolean;
-  repeatAttrib: RepeatTestAttribute;
+  repeatAttrib    : RepeatTestAttribute;
 
+  category        : string;
   ignoredTest     : boolean;
   ignoredReason   : string;
 
@@ -237,6 +239,7 @@ begin
   begin
     ignoredTest := false;
     ignoredReason := '';
+    category := '';
     testEnabled := true;
     setupAttrib := nil;
     setupFixtureAttrib := nil;
@@ -244,6 +247,7 @@ begin
     tearDownFixtureAttrib := nil;
     ignoredAttrib := nil;
     testAttrib := nil;
+    categoryAttrib := nil;
     isTestMethod := false;
     repeatCount := 1;
     currentFixture := fixture;
@@ -318,6 +322,10 @@ begin
        isTestMethod := true;
     end;
 
+    if method.TryGetAttributeOfType<CategoryAttribute>(categoryAttrib) then
+      category := categoryAttrib.Category;
+
+
     //if a test case is disabled then just ignore it.
     if testEnabled then
     begin
@@ -335,7 +343,7 @@ begin
           begin
             for i := 1 to repeatCount do
             begin
-              currentFixture.AddTestCase(testCaseAttrib.CaseInfo.Name, FormatTestName(method.Name, i, repeatCount), method, testEnabled,testCaseAttrib.CaseInfo.Values);
+              currentFixture.AddTestCase(testCaseAttrib.CaseInfo.Name, FormatTestName(method.Name, i, repeatCount), category, method, testEnabled,testCaseAttrib.CaseInfo.Values);
             end;
           end;
           // Add test case from test \case sources
@@ -345,7 +353,7 @@ begin
             begin
               for i := 1 to repeatCount do
               begin
-                currentFixture.AddTestCase(TestCaseData.Name, FormatTestName(method.Name, i, repeatCount), method, testEnabled,TestCaseData.Values);
+                currentFixture.AddTestCase(TestCaseData.Name, FormatTestName(method.Name, i, repeatCount), category, method, testEnabled,TestCaseData.Values);
               end;
             end;
           end;
@@ -353,7 +361,7 @@ begin
         else
         begin
           //if a testcase is ignored, just add it as a regular test.
-          currentFixture.AddTest(TTestMethod(meth),method.Name,true,true,ignoredReason);
+          currentFixture.AddTest(TTestMethod(meth),method.Name,category,true,true,ignoredReason);
         end;
         continue;
       end;
@@ -363,7 +371,7 @@ begin
     begin
       for i := 1 to repeatCount do
       begin
-        currentFixture.AddTest(TTestMethod(meth),FormatTestName(method.Name, i, repeatCount),true,ignoredTest,ignoredReason);
+        currentFixture.AddTest(TTestMethod(meth),FormatTestName(method.Name, i, repeatCount),category,true,ignoredTest,ignoredReason);
       end;
       continue;
     end;
@@ -374,7 +382,7 @@ begin
       // Add Published Method that has no Attributes
       for i := 1 to repeatCount do
       begin
-        currentFixture.AddTest(TTestMethod(meth),FormatTestName(method.Name, i, repeatCount),true,ignoredTest,ignoredReason);
+        currentFixture.AddTest(TTestMethod(meth),FormatTestName(method.Name, i, repeatCount),category,true,ignoredTest,ignoredReason);
       end;
     end;
   end;

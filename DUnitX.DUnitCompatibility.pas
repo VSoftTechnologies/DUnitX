@@ -165,7 +165,7 @@ var
 begin
   runner := TDUnitXTestRunner.GetActiveRunner;
   if runner <> nil then
-    runner.Log(TLogLevel.ltInformation,msg)
+    runner.Log(TLogLevel.Information,msg)
   else
     System.Writeln(msg);
 end;
