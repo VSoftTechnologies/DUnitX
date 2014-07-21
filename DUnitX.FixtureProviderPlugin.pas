@@ -78,9 +78,13 @@ var
   fixtureNamespace : string;
   tmpFixtures : TDictionary<string,ITestFixture>;
   fixtureList : ITestFixtureList;
+  rType : TRttiType;
+  categoryAttrib : CategoryAttribute;
+  category : string;
 begin
   if context.UseRtti then
     RTTIDiscoverFixtureClasses;
+
   for pair in TDUnitX.RegisteredFixtures do
   begin
     if not FFixtureClasses.ContainsValue(pair.Value) then
@@ -113,7 +117,7 @@ begin
         begin
           if not tmpFixtures.TryGetValue(fixtureNamespace,fixture) then
           begin
-            parentFixture := context.CreateFixture(TObject,fixtureNamespace);
+            parentFixture := context.CreateFixture(TObject,fixtureNamespace,'');
             tmpFixtures.Add(fixtureNamespace,parentFixture);
             fixtureList.Add(parentFixture);
           end;
@@ -124,14 +128,14 @@ begin
         begin
           if not tmpFixtures.TryGetValue(parentNamespace,parentFixture) then
           begin
-            parentFixture := context.CreateFixture(TObject,parentNamespace);
+            parentFixture := context.CreateFixture(TObject,parentNamespace,'');
             tmpFixtures.Add(parentNamespace,parentFixture);
             fixtureList.Add(parentFixture);
           end;
 
           if not tmpFixtures.TryGetValue(fixtureNamespace,fixture) then
           begin
-            fixture := parentFixture.AddChildFixture(TObject,fixtureNamespace);
+            fixture := parentFixture.AddChildFixture(TObject,fixtureNamespace,'');
             tmpFixtures.Add(fixtureNamespace,fixture);
           end;
           parentFixture := fixture;
@@ -141,13 +145,19 @@ begin
 
       fixtureNamespace := fixtureNamespace + '.' + pair.Value;
 
+      rType := FRttiContext.GetType(pair.Key);
+      if rType.TryGetAttributeOfType<CategoryAttribute>(categoryAttrib) then
+        category := categoryAttrib.Category
+      else
+        category := '';
+
       if parentFixture = nil then
       begin
-        fixture := context.CreateFixture(pair.Key,fixtureNamespace);
+        fixture := context.CreateFixture(pair.Key,fixtureNamespace,category);
         fixtureList.Add(fixture);
       end
       else
-        parentFixture.AddChildFixture(pair.Key,fixtureNamespace);
+        parentFixture.AddChildFixture(pair.Key,fixtureNamespace,category);
     end;
     for fixture in fixtureList do
     begin
@@ -239,7 +249,7 @@ begin
   begin
     ignoredTest := false;
     ignoredReason := '';
-    category := '';
+    category := fixture.Category; //default to the fixture's category
     testEnabled := true;
     setupAttrib := nil;
     setupFixtureAttrib := nil;
@@ -255,6 +265,12 @@ begin
     meth.Code := method.CodeAddress;
     meth.Data := fixture.FixtureInstance;
 
+    //if the test has a category attribute then we'll use it to override the fixtures's category.
+    if method.TryGetAttributeOfType<CategoryAttribute>(categoryAttrib) then
+      category := categoryAttrib.Category;
+
+
+
     if method.TryGetAttributeOfType<RepeatTestAttribute>(repeatAttrib) then
     begin
       if (repeatAttrib.Count = 0) then
@@ -266,7 +282,7 @@ begin
       if (repeatAttrib.Count > 1) then
       begin
         repeatCount := repeatAttrib.Count;
-        currentFixture := fixture.AddChildFixture(fixture.TestClass, Format('%d x %s', [repeatCount, method.Name]));
+        currentFixture := fixture.AddChildFixture(fixture.TestClass, Format('%d x %s', [repeatCount, method.Name]),category);
       end;
     end;
 
@@ -321,10 +337,6 @@ begin
        testEnabled := testAttrib.Enabled;
        isTestMethod := true;
     end;
-
-    if method.TryGetAttributeOfType<CategoryAttribute>(categoryAttrib) then
-      category := categoryAttrib.Category;
-
 
     //if a test case is disabled then just ignore it.
     if testEnabled then
@@ -468,7 +480,7 @@ begin
       if Length(attributes) > 0 then
         for attribute in attributes do
         begin
-          if attribute.ClassType =  TestFixtureAttribute then
+          if attribute.ClassType = TestFixtureAttribute then
           begin
             sName := TestFixtureAttribute(attribute).Name;
             if sName = '' then

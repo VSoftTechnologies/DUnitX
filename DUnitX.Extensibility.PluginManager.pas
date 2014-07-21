@@ -12,7 +12,7 @@ type
     procedure CreateFixtures;
   end;
 
-  TCreateFixtureProc = function(const AInstance : TObject; const AFixtureClass: TClass; const AName: string): ITestFixture of object;
+  TCreateFixtureProc = function(const AInstance : TObject; const AFixtureClass: TClass; const AName: string; const ACategory : string): ITestFixture of object;
 
   TPluginManager = class(TInterfacedObject,IPluginManager,IPluginLoadContext,IFixtureProviderContext)
   private
@@ -28,8 +28,8 @@ type
     procedure RegisterFixtureProvider(const provider: IFixtureProvider);
 
     //IFixtureProviderContext
-    function CreateFixture(const AFixtureClass: TClass; const AName: string): ITestFixture;overload;
-    function CreateFixture(const AInstance : TObject; const AName: string): ITestFixture;overload;
+    function CreateFixture(const AFixtureClass: TClass; const AName: string; const ACategory : string): ITestFixture;overload;
+    function CreateFixture(const AInstance : TObject; const AName: string; const ACategory : string): ITestFixture;overload;
     function GetUseRtti: Boolean;
   public
     constructor Create(const ACreateFixtureProc : TCreateFixtureProc; const AUseRtti : boolean);
@@ -52,16 +52,16 @@ begin
   FUseRtti := AUseRtti;
 end;
 
-function TPluginManager.CreateFixture(const AFixtureClass: TClass; const AName: string): ITestFixture;
+function TPluginManager.CreateFixture(const AFixtureClass: TClass; const AName: string; const ACategory : string): ITestFixture;
 begin
   //delegate back to the runner so it can own the fixture.
-  result := FCreateFixtureProc(nil,AFixtureClass,AName);
+  result := FCreateFixtureProc(nil,AFixtureClass,AName,ACategory);
 end;
 
-function TPluginManager.CreateFixture(const AInstance: TObject; const AName: string): ITestFixture;
+function TPluginManager.CreateFixture(const AInstance: TObject; const AName: string; const ACategory : string): ITestFixture;
 begin
   //delegate back to the runner so it can own the fixture.
-  result := FCreateFixtureProc(AInstance,AInstance.ClassType,AName);
+  result := FCreateFixtureProc(AInstance,AInstance.ClassType,AName,ACategory);
 
 end;
 

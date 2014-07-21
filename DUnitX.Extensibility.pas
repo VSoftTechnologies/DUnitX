@@ -58,6 +58,7 @@ type
     function GetName  : string;
     function GetFullName : string;
     function GetDescription : string;
+    function GetCategory : string;
     function GetTests : ITestList;
     function GetTestClass : TClass;
     function GetSetupMethod : TTestMethod;
@@ -81,8 +82,8 @@ type
     function AddTest(const AMethod : TTestMethod; const AName : string; const ACategory : string; const AEnabled : boolean = true;const AIgnored : boolean = false; const AIgnoreReason : string = '') : ITest;
     function AddTestCase(const ACaseName : string; const AName : string; const ACategory : string; const AMethod : TRttiMethod; const AEnabled : boolean; const AArgs : TValueArray) : ITest;
 
-    function AddChildFixture(const ATestClass : TClass; const AName : string) : ITestFixture;overload;
-    function AddChildFixture(const AInstance : TObject; const AName : string) : ITestFixture;overload;
+    function AddChildFixture(const ATestClass : TClass; const AName : string; const ACategory : string) : ITestFixture;overload;
+    function AddChildFixture(const AInstance : TObject; const AName : string; const ACategory : string) : ITestFixture;overload;
 
     procedure SetSetupTestMethod(const AMethodName : string; const AMethod : TTestMethod);
     procedure SetSetupFixtureMethod(const AMethodName : string; const AMethod : TTestMethod);
@@ -94,6 +95,7 @@ type
     property Name                       : string read GetName;
     property NameSpace                  : string read GetNameSpace;
     property FullName                   : string read GetFullName;
+    property Category                   : string read GetCategory;
     property Children                   : ITestFixtureList read GetChildren;
     property Description                : string read GetDescription;
     property Enabled                    : boolean read GetEnabled write SetEnabled;
@@ -127,8 +129,8 @@ type
 
   IFixtureProviderContext = interface
     ['{933F8442-77F1-4574-BB5E-2F3D0B8E6E6F}']
-    function CreateFixture(const AFixtureClass : TClass; const AName : string) : ITestFixture;overload;
-    function CreateFixture(const AInstance : TObject; const AName : string) : ITestFixture;overload;
+    function CreateFixture(const AFixtureClass : TClass; const AName : string; const ACategory : string) : ITestFixture;overload;
+    function CreateFixture(const AInstance : TObject; const AName : string; const ACategory : string) : ITestFixture;overload;
     function GetUseRtti : boolean;
     //The runner UseRtti property exposed for plugin use.
     property UseRtti : boolean read GetUseRtti;
@@ -153,6 +155,14 @@ type
     procedure GetPluginFeatures(const context : IPluginLoadContext);
   end;
 
+
+  IFixtureFilter = interface
+    ['{0FBC270E-2DC0-4135-8724-C2AD567A009A}']
+    procedure InitFromOptions(const ARun : string; const AInclude : string; const AExclude : string);
+    function CheckNameSpace(const ANameSpace : string) : boolean;
+    function CheckFixture(const AFixture : string) : boolean;
+    function CheckCategory(const ACategory : string) : boolean;
+  end;
 
 
 

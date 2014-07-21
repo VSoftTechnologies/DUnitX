@@ -129,7 +129,7 @@ type
 
     procedure AddStatus(const threadId; const msg : string);
 
-    function CreateFixture(const AInstance : TObject; const AFixtureClass: TClass; const AName: string): ITestFixture;
+    function CreateFixture(const AInstance : TObject; const AFixtureClass: TClass; const AName: string; const ACategory : string): ITestFixture;
 
     class constructor Create;
     class destructor Destroy;
@@ -240,76 +240,6 @@ begin
   //generate the fixtures. The plugin Manager calls back into CreateFixture
   pluginManager.CreateFixtures;
   result := FFixtureList;
-
-{
-  if FUseRTTI then
-    RTTIDiscoverFixtureClasses;
-
-  for pair in TDUnitX.RegisteredFixtures do
-  begin
-    if not FFixtureClasses.ContainsValue(pair.Value) then
-      FFixtureClasses.AddOrSetValue(pair.Key, pair.Value);
-  end;
-
-  //Build up a fixture hierarchy based on unit names.
-  tmpFixtures := TDictionary<string,ITestFixture>.Create;
-  try
-    for pair in FFixtureClasses do
-    begin
-      uName := pair.Key.UnitName;
-      namespaces := SplitString(uName,'.');
-      //if the unit name has no namespaces the just add the tests.
-      fixtureNamespace := '';
-      parentNameSpace := '';
-
-      parentFixture := nil;
-      fixture := nil;
-
-      for namespace in namespaces do
-      begin
-        if fixtureNamespace <> '' then
-          fixtureNamespace := fixtureNamespace + '.' + namespace
-        else
-          fixtureNamespace := namespace;
-
-        //first time through the loop it will be empty.
-        if parentNamespace = '' then
-          parentNamespace := fixtureNamespace
-        else
-        begin
-          if not tmpFixtures.TryGetValue(parentNamespace,parentFixture) then
-          begin
-            parentFixture := TDUnitXTestFixture.Create(parentNamespace, TObject);
-            FFixtureList.Add(parentFixture);
-            tmpFixtures.Add(parentNamespace,parentFixture);
-          end;
-
-          if not tmpFixtures.TryGetValue(fixtureNamespace,fixture) then
-          begin
-            fixture := TDUnitXTestFixture.Create(fixtureNamespace, TObject);
-            parentFixture.Children.Add(fixture);
-            tmpFixtures.Add(fixtureNamespace,fixture);
-          end;
-
-          parentFixture := fixture;
-          parentNamespace := fixtureNamespace;
-        end;
-      end;
-
-
-      fixtureNamespace := fixtureNamespace + '.' + pair.Value;
-      fixture := TDUnitXTestFixture.Create(fixtureNamespace, pair.Key);
-
-      if parentFixture = nil then
-        FFixtureList.Add(fixture)
-      else
-        parentFixture.Children.Add(fixture);
-    end;
-  finally
-    tmpFixtures.Free;
-  end;
-  result := FFixtureList;
-  }
 end;
 
 class constructor TDUnitXTestRunner.Create;
@@ -374,12 +304,12 @@ begin
   end;
 end;
 
-function TDUnitXTestRunner.CreateFixture(const AInstance : TObject;const AFixtureClass: TClass; const AName: string): ITestFixture;
+function TDUnitXTestRunner.CreateFixture(const AInstance : TObject;const AFixtureClass: TClass; const AName: string; const ACategory : string): ITestFixture;
 begin
   if AInstance <> nil then
-    result := TDUnitXTestFixture.Create(AName,AInstance)
+    result := TDUnitXTestFixture.Create(AName,ACategory, AInstance)
   else
-    result := TDUnitXTestFixture.Create(AName,AFixtureClass);
+    result := TDUnitXTestFixture.Create(AName, ACategory, AFixtureClass);
   FFixtureList.Add(Result);
 end;
 

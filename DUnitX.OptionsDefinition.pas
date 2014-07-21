@@ -66,11 +66,12 @@ begin
                                              TDUnitXOptions.RunListFile := value;
                                           end);
 
-  TOptionsRegistry.RegisterOption<string>('run','r','Specify the tests to run, separate by commas',
+  def := TOptionsRegistry.RegisterOption<string>('run','r','Specify the tests to run, separate by commas',
                                           procedure(value :string)
                                           begin
-                                             TDUnitXOptions.RunListFile := value;
+                                             TDUnitXOptions.Run.Add(value);
                                           end);
+  def.AllowMultiple := true;
 
   TOptionsRegistry.RegisterOption<TLogLevel>('loglevel','l','Specify the tests to run, separate by commas',
                                           procedure(value : TLogLevel)
