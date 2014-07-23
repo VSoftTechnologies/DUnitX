@@ -117,7 +117,7 @@ function TDUnitXConsoleWriterBase.InternalBreakupMessage(const s: string): TStri
 var
   line: string;
   offset, width, len : Integer;
-  saLines : TStringDynArray;
+  slLines : TStringList;
 begin
   Result := TStringList.Create;
 
@@ -129,26 +129,32 @@ begin
   end;
 
   width := FConsoleWidth - FIndent;
-  saLines := SplitString(s, #13#10);
+  slLines := TStringList.Create;
+  try
+    slLines.StrictDelimiter := True;
+    slLines.Text := s;
 
-  //Walk through the string list pulling of the console width of characters at a time.
-  for line in saLines do
-  begin
-    len := Length(line);
-
-    if (width > 0) and (len > width) then
+    //Walk through the string list pulling of the console width of characters at a time.
+    for line in slLines do
     begin
-      offset := 1;
-      while offset <= len do
+      len := Length(line);
+
+      if (width > 0) and (len > width) then
       begin
-        //Write a line as we have hit the limit of the console.
-        Result.Add(Copy(line, offset, width));
-        Inc(offset, width);
-      end;
-    end
-    else
-      //Can write out on a single line
-      Result.Add(line);
+        offset := 1;
+        while offset <= len do
+        begin
+          //Write a line as we have hit the limit of the console.
+          Result.Add(Copy(line, offset, width));
+          Inc(offset, width);
+        end;
+      end
+      else
+        //Can write out on a single line
+        Result.Add(line);
+    end;
+  finally
+    FreeAndNil(slLines);
   end;
 end;
 
