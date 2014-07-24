@@ -35,6 +35,7 @@ uses
 type
   {$M+}
   [TestFixture('ExampleFixture1')]
+  [Category('examples')]
   TMyExampleTests = class
   public
     //Run the same test with mulitiple parameters.
@@ -59,7 +60,12 @@ type
     procedure AnotherTestMethod(const a : string; const b : integer);
 
     [Test]
+    [Category('Bar,foo')]
     procedure TestTwo;
+
+    [Test]
+    [Category('Bar,foo')]
+    procedure TestTwoOne;
 
     //Disabled test
     [Test(false)]
@@ -76,6 +82,7 @@ type
     procedure TearDown;
 
   published
+    [Category('blah')]
     procedure TestMeAnyway;
 
     [Ignore('I was told to ignore me anyway')]
@@ -168,6 +175,17 @@ end;
 
 
 procedure TMyExampleTests.TestTwo;
+var
+  x : TMyExampleTests;
+begin
+  TDUnitX.CurrentRunner.Status('TestTwo called');
+  x := TMyExampleTests.Create;
+  //CheckIs(x,TObject); //DUnit compatibility.
+  TDUnitX.CurrentRunner.Status('hello world');
+  Assert.IsTrue(x is TObject); /// a bit pointless since it's strongly typed.
+end;
+
+procedure TMyExampleTests.TestTwoOne;
 var
   x : TMyExampleTests;
 begin

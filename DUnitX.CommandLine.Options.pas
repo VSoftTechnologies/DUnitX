@@ -29,10 +29,10 @@ interface
 
 uses
   Generics.Collections,
-  System.Rtti,
-  System.TypInfo,
-  System.SysUtils,
-  System.Classes;
+  Rtti,
+  TypInfo,
+  SysUtils,
+  Classes;
 
 type
   ICommandLineParseResult = interface

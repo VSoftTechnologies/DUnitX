@@ -28,7 +28,7 @@ unit DUnitX.CommandLine.Parser;
 interface
 
 uses
-  System.Classes,
+  Classes,
   DUnitX.CommandLine.Options,
   DUnitX.CommandLine.OptionDef;
 
@@ -71,8 +71,8 @@ implementation
 
 uses
   Generics.Collections,
-  System.StrUtils,
-  System.SysUtils;
+  StrUtils,
+  SysUtils;
 
 procedure StripQuotes(var value : string);
 var

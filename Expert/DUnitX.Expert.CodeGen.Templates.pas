@@ -32,7 +32,7 @@ resourcestring
  '    logger := TDUnitXConsoleLogger.Create(true);'#13#10 +
  '    runner.AddLogger(logger);'#13#10 +
  '    //Generate an NUnit compatible XML File'#13#10 +
- '    nunitLogger := TDUnitXXMLNUnitFileLogger.Create(TDUnitXOptions.XMLOutputFile);'#13#10 +
+ '    nunitLogger := TDUnitXXMLNUnitFileLogger.Create(TDUnitX.Options.XMLOutputFile);'#13#10 +
  '    runner.AddLogger(nunitLogger);'#13#10 +
  #13#10 +
  '    //Run tests'#13#10 +
@@ -42,7 +42,7 @@ resourcestring
  #13#10 +
  '    {$IFNDEF CI}'#13#10 +
  '    //We don''t want this happening when running under CI.'#13#10 +
- '    if TDUnitXOptions.ExitBehavior = TDUnitXExitBehavior.Pause then'#13#10 +
+ '    if TDUnitX.Options.ExitBehavior = TDUnitXExitBehavior.Pause then'#13#10 +
  '    begin'#13#10 +
  '      System.Write(''Done.. press <Enter> key to quit.'');'#13#10 +
  '      System.Readln;'#13#10 +

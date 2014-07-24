@@ -97,7 +97,10 @@ type
 type
   TStrUtils = class
     class function PadString(const s: string; const totalLength: integer; const padLeft: boolean = True; padChr: Char = ' '): string;
-    class function SplitString(const S, Delimiters: string): TStringDynArray;
+    class function SplitString(const S, Delimiters: string): TArray<string>;
+    class function Join(const values : TArray<string>; const delim : string) : string;overload;
+    class function Join(const values : TList<string>; const delim : string) : string;overload;
+
   end;
 
 type
@@ -678,6 +681,7 @@ type
   TArrayHelper = class
   public
     class function Concat<T>(const Arrays: array of TArray<T>): TArray<T>; static;
+    class function Create<T>(const a : T; const b : T) : TArray<T>;static;
 {$IF DELPHI_2010}
     class function ToArray<T>(Enumerable: TEnumerable<T>; Count: Integer): TArray<T>; static;
 {$IFEND}
@@ -790,6 +794,32 @@ begin
   end;
 end;
 
+
+class function TStrUtils.Join(const values : TArray<string>; const delim: string): string;
+var
+  v : string;
+begin
+  result := '';
+  for v in values do
+  begin
+    if result <> '' then
+      result := result + delim;
+    result := result + v;
+  end;
+end;
+
+class function TStrUtils.Join(const values: TList<string>; const delim: string): string;
+var
+  v : string;
+begin
+  result := '';
+  for v in values do
+  begin
+    if result <> '' then
+      result := result + delim;
+    result := result + v;
+  end;
+end;
 
 class function TStrUtils.PadString(const s: string; const totalLength: integer; const padLeft: boolean = True; padChr: Char = ' '): string;
 begin
@@ -1608,6 +1638,13 @@ begin
   end;
 end;
 {$IFEND}
+
+class function TArrayHelper.Create<T>(const a, b: T): TArray<T>;
+begin
+  SetLength(result,2);
+  result[0] := a;
+  result[0] := b;
+end;
 
 { TObjectHelper }
 
@@ -3058,7 +3095,7 @@ end;
 {$ENDIF}
 
 
-class function TStrUtils.SplitString(const S, Delimiters: string): TStringDynArray;
+class function TStrUtils.SplitString(const S, Delimiters: string): TArray<string>;
 var
   StartIdx: Integer;
   FoundIdx: Integer;

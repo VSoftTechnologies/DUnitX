@@ -29,15 +29,16 @@ unit DUnitX.TestRunner;
 interface
 
 uses
+  classes,
+  SysUtils,
+  Rtti,
   DUnitX.TestFramework,
   Generics.Collections,
   DUnitX.Extensibility,
   DUnitX.InternalInterfaces,
   DUnitX.Generics,
   DUnitX.WeakReference,
-  classes,
-  SysUtils,
-  Rtti;
+  DUnitX.Filters;
 
 {$I DUnitX.inc}
 
@@ -48,6 +49,7 @@ type
   TDUnitXTestRunner = class(TInterfacedObject, ITestRunner)
   private class var
     FRttiContext : TRttiContext;
+    FFilter         : ITestFilter;
   public class var
     FActiveRunners : TDictionary<Cardinal,ITestRunner>;
   private
@@ -58,6 +60,9 @@ type
     FFixtureList    : ITestFixtureList;
     FLogMessages    : TStringList;
   protected
+    procedure CountAndFilterTests(const fixtureList: ITestFixtureList; var count, active: Cardinal);
+    function CreateTestFilter(const options : TDUnitXOptions; out filter : ITestFilter) : boolean;
+
     //Logger calls - sequence ordered
     procedure Loggers_TestingStarts(const threadId, testCount, testActiveCount : Cardinal);
 
@@ -150,6 +155,8 @@ uses
   DUnitX.Utils,
   DUnitX.IoC,
   DUnitX.Extensibility.PluginManager,
+  DUnitX.CategoryExpression,
+  DUnitX.TestNameParser,
   TypInfo,
   StrUtils,
   Types;
@@ -239,6 +246,8 @@ begin
 
   //generate the fixtures. The plugin Manager calls back into CreateFixture
   pluginManager.CreateFixtures;
+  FFixtureList.Sort;
+
   result := FFixtureList;
 end;
 
@@ -313,6 +322,86 @@ begin
   FFixtureList.Add(Result);
 end;
 
+function TDUnitXTestRunner.CreateTestFilter(const options : TDUnitXOptions; out filter : ITestFilter) : boolean;
+var
+  nameFilter    : INameFilter;
+  includeFilter : ITestFilter;
+  excludeFilter : ITestFilter;
+  i             : integer;
+  name          : string;
+  sList         : TStringList;
+begin
+  if FFilter <> nil then
+    exit(true);
+  result := False;
+  filter := TEmptyFilter.Create;
+  nameFilter := TNameFilter.Create;
+
+  if options.Run.Count > 0 then
+  begin
+    for i := 0 to options.Run.Count -1 do
+    begin
+      for name in TTestNameParser.Parse(options.Run[i]) do
+        nameFilter.Add(name);
+    end;
+    filter := nameFilter;
+  end;
+
+  if options.RunListFile <> '' then
+  begin
+    if not FileExists(options.RunListFile) then
+    begin
+      Self.Log(TLogLevel.Error,'RunList File does not exist : ' + options.RunListFile);
+      exit;
+    end;
+    try
+      sList := TStringList.Create;
+      try
+        sList.LoadFromFile(options.RunListFile);
+        for i := 0 to sList.Count -1 do
+        begin
+          for name in TTestNameParser.Parse(sList[i]) do
+            nameFilter.Add(name);
+        end;
+        filter := nameFilter;
+      finally
+        sList.Free;
+      end;
+    except
+      on e : Exception do
+      begin
+        Self.Log(TLogLevel.Error,e.Message);
+        FFilter := nil;
+        exit;
+      end;
+    end;
+  end;
+
+  if Trim(options.Include) <> '' then
+  begin
+    includeFilter := TCategoryExpression.CreateFilter(options.Include);
+    if filter.IsEmpty then
+      filter := includeFilter
+    else
+      filter := TAndFilter.Create(TArray<ITestFilter>.Create(filter,includeFilter));
+  end;
+
+  if Trim(options.Exclude) <> '' then
+  begin
+    excludeFilter := TNotFilter.Create(TCategoryExpression.CreateFilter(options.Exclude));
+    if filter.IsEmpty then
+      filter := excludeFilter
+    else
+      filter := TAndFilter.Create(TArray<ITestFilter>.Create(filter,excludeFilter));
+  end;
+
+  if Supports(filter,INotFilter) then
+    (filter as INotFilter).TopLevel := true;
+
+  FFilter := filter;
+  result := True;
+end;
+
 destructor TDUnitXTestRunner.Destroy;
 var
   tId : Cardinal;
@@ -335,6 +424,7 @@ end;
 class destructor TDUnitXTestRunner.Destroy;
 begin
   FActiveRunners.Free;
+  FRttiContext.Free;
 end;
 
 procedure TDUnitXTestRunner.RecordResult(const context: ITestExecuteContext; const threadId: cardinal; const fixtureResult : IFixtureResult; const testResult: ITestResult);
@@ -463,7 +553,7 @@ begin
     logger.OnExecuteTest(threadId, Test);
 end;
 
-procedure CountTests(const fixtureList : ITestFixtureList; var count : Cardinal; var active : Cardinal);
+procedure TDUnitXTestRunner.CountAndFilterTests(const fixtureList : ITestFixtureList; var count : Cardinal; var active : Cardinal);
 var
   fixture  : ITestFixture;
   test     : ITest;
@@ -472,6 +562,9 @@ begin
   begin
     for test in fixture.Tests do
     begin
+      if FFilter <> nil then
+        test.Enabled := FFilter.Match(test);
+
       if test.Enabled then
       begin
         Inc(count);
@@ -480,7 +573,10 @@ begin
       end;
     end;
     if fixture.HasChildFixtures then
-      CountTests(fixture.children,count,active);
+      CountAndFilterTests(fixture.children,count,active);
+
+//    if not (fixture.HasTests or fixture.HasChildTests) then
+//      fixture.Enabled := false;
   end;
 end;
 
@@ -496,6 +592,8 @@ var
   fixtures : IInterface;
 begin
   result := nil;
+  if FFilter = nil then
+    CreateTestFilter(TDUnitX.Options,FFilter);
   fixtures := BuildFixtures;
   fixtureList := fixtures as ITestFixtureList;
   if fixtureList.Count = 0 then
@@ -505,7 +603,10 @@ begin
   //TODO: Count the active tests that we have.
   testActiveCount := 0;
 
-  CountTests(fixtureList,testCount,testActiveCount);
+  //TODO : Filter tests here?
+
+
+  CountAndFilterTests(fixtureList,testCount,testActiveCount);
 
   //TODO: Move to the fixtures class
   result := TDUnitXRunResults.Create;
@@ -551,6 +652,9 @@ begin
   begin
     if not fixture.Enabled then
       System.continue;
+
+    if (not fixture.HasTests) and (not fixture.HasChildTests) then
+      System.Continue;
 
     fixtureResult := TDUnitXFixtureResult.Create(parentFixtureResult, fixture as ITestFixtureInfo);
     if parentFixtureResult = nil then
@@ -668,6 +772,9 @@ begin
     if not test.Enabled then
       System.Continue;
 
+    if test.Ignored and TDUnitX.Options.DontShowIgnored then
+      System.Continue;
+
     memoryAllocationProvider := TDUnitXIoC.DefaultContainer.Resolve<IMemoryLeakMonitor>();
 
     //Start a fresh for this test. If we had an exception last execute of the
@@ -688,7 +795,7 @@ begin
 
     try
       try
-        if test.Ignored then
+        if test.Ignored  then
             testResult :=  ExecuteIgnoredResult(context,threadId,test,test.IgnoreReason)
        //If we haven't already failed, then run the test.
         else if testResult = nil then
@@ -868,7 +975,7 @@ procedure TDUnitXTestRunner.Log(const logType: TLogLevel; const msg: string);
 var
   logger : ITestLogger;
 begin
-  if logType >= TDUnitXOptions.LogLevel then
+  if logType >= TDUnitX.Options.LogLevel then
   begin
     //TODO : Need to get this to the current test result.
     FLogMessages.Add(msg);

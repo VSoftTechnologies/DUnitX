@@ -50,46 +50,67 @@ begin
   def := TOptionsRegistry.RegisterOption<boolean>('hidebanner','b','Hide the License Banner',
                                           procedure(value : boolean)
                                           begin
-                                             TDUnitXOptions.HideBanner := value;
+                                             TDUnitX.Options.HideBanner := value;
                                           end);
   def.HasValue := false;
 
   TOptionsRegistry.RegisterOption<string>('xmlfile','xml','XML output file path',
                                           procedure(value :string)
                                           begin
-                                             TDUnitXOptions.XMLOutputFile := value;
+                                             TDUnitX.Options.XMLOutputFile := value;
                                           end);
 
   TOptionsRegistry.RegisterOption<string>('runlist','rl','Specify the name of a file which lists the tests to run.',
                                           procedure(value :string)
                                           begin
-                                             TDUnitXOptions.RunListFile := value;
+                                             TDUnitX.Options.RunListFile := value;
                                           end);
 
   def := TOptionsRegistry.RegisterOption<string>('run','r','Specify the tests to run, separate by commas',
                                           procedure(value :string)
                                           begin
-                                             TDUnitXOptions.Run.Add(value);
+                                             TDUnitX.Options.Run.Add(value);
                                           end);
   def.AllowMultiple := true;
+
+  def := TOptionsRegistry.RegisterOption<string>('include','i','Specify the categories to include',
+                                          procedure(value :string)
+                                          begin
+                                             TDUnitX.Options.Include := value;
+                                          end);
+
+  def := TOptionsRegistry.RegisterOption<string>('exclude','e','Specify the categories to exclude',
+                                          procedure(value :string)
+                                          begin
+                                             TDUnitX.Options.Exclude := value;
+                                          end);
+
+  def := TOptionsRegistry.RegisterOption<boolean>('dontshowignored','dsi','Don''t show ignored tests',
+                                          procedure(value : boolean)
+                                          begin
+                                             TDUnitX.Options.DontShowIgnored := true;
+                                          end);
+  def.HasValue := false;
+
+
 
   TOptionsRegistry.RegisterOption<TLogLevel>('loglevel','l','Specify the tests to run, separate by commas',
                                           procedure(value : TLogLevel)
                                           begin
-                                             TDUnitXOptions.LogLevel := value
+                                             TDUnitX.Options.LogLevel := value
                                           end);
 
   def := TOptionsRegistry.RegisterOption<boolean>('h','?','Show Usage',
                                           procedure(value : boolean)
                                           begin
-                                             TDUnitXOptions.ShowUsage := value;
+                                             TDUnitX.Options.ShowUsage := value;
                                           end);
   def.HasValue := False;
 
   def := TOptionsRegistry.RegisterUnNamedOption<string>('',
                                                         procedure(value :string)
                                                         begin
-                                                           TDUnitXOptions.XMLOutputFile := value;
+                                                           TDUnitX.Options.XMLOutputFile := value;
                                                         end);
   def.Hidden := True;
 

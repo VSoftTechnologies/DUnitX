@@ -28,10 +28,10 @@ unit DUnitX.CommandLine.OptionDef;
 interface
 
 uses
-  System.Classes,
-  System.SysUtils,
-  System.Rtti,
-  System.TypInfo,
+  Classes,
+  SysUtils,
+  Rtti,
+  TypInfo,
   Generics.Collections,
   DUnitX.CommandLine.Options;
 
@@ -99,7 +99,7 @@ function StringToBoolean(const value: string): boolean;
 implementation
 
 uses
-  System.StrUtils;
+  StrUtils;
 
 { TOptionDefinition<T> }
 

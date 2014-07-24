@@ -10,6 +10,8 @@ uses
   DUnitX.TestFramework,
   DUnitX.InternalInterfaces;
 
+{$I DUnitX.inc}
+
 type
   TDUnitXFixtureResult = class(TInterfacedObject,IFixtureResult,IFixtureResultBuilder)
   private

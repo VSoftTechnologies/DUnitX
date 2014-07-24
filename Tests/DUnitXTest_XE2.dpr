@@ -48,7 +48,13 @@ uses
   DUnitX.Extensibility.PluginManager in '..\DUnitX.Extensibility.PluginManager.pas',
   DUnitX.FixtureProviderPlugin in '..\DUnitX.FixtureProviderPlugin.pas',
   DUnitX.OptionsDefinition in '..\DUnitX.OptionsDefinition.pas',
-  DUnitX.Tests.CommandLineParser in 'DUnitX.Tests.CommandLineParser.pas';
+  DUnitX.Tests.CommandLineParser in 'DUnitX.Tests.CommandLineParser.pas',
+  DUnitX.Filters in '..\DUnitX.Filters.pas',
+  DUnitX.CategoryExpression in '..\DUnitX.CategoryExpression.pas',
+  DUnitX.Tests.CategoryParser in 'DUnitX.Tests.CategoryParser.pas',
+  DUnitX.TestNameParser in '..\DUnitX.TestNameParser.pas',
+  DUnitX.Tests.TestNameParser in 'DUnitX.Tests.TestNameParser.pas',
+  DUnitX.AutoDetect.Console in '..\DUnitX.AutoDetect.Console.pas';
 
 {$R *.res}
 
@@ -65,7 +71,7 @@ begin
     runner.UseRTTI := True;
     //tell the runner how we will log things
     logger := TDUnitXConsoleLogger.Create(false);
-    nunitLogger := TDUnitXXMLNUnitFileLogger.Create;
+    nunitLogger := TDUnitXXMLNUnitFileLogger.Create(TDUnitX.Options.XMLOutputFile);
     runner.AddLogger(logger);
     runner.AddLogger(nunitLogger);
 
@@ -80,7 +86,7 @@ begin
 
     {$IFNDEF CI}
     //We don;t want this happening when running under CI.
-    if TDUnitXOptions.ExitBehavior = TDUnitXExitBehavior.Pause then
+    if TDUnitX.Options.ExitBehavior = TDUnitXExitBehavior.Pause then
     begin
       System.Write('Done.. press <Enter> key to quit.');
       System.Readln;

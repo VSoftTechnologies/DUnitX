@@ -39,7 +39,8 @@ uses
   DUnitX.CommandLine.Options in '..\DUnitX.CommandLine.Options.pas',
   DUnitX.CommandLine.Parser in '..\DUnitX.CommandLine.Parser.pas',
   DUnitX.OptionsDefinition in '..\DUnitX.OptionsDefinition.pas',
-  DUnitX.Banner in '..\DUnitX.Banner.pas';
+  DUnitX.Banner in '..\DUnitX.Banner.pas',
+  DUnitX.Filters in '..\DUnitX.Filters.pas';
 
 var
   runner : ITestRunner;
@@ -54,9 +55,9 @@ begin
     runner := TDUnitX.CreateRunner;
     runner.UseRTTI := True;
     //tell the runner how we will log things
-    logger := TDUnitXConsoleLogger.Create(true);
+    logger := TDUnitXConsoleLogger.Create(false);
     //generate an xml log file
-    nunitLogger := TDUnitXXMLNUnitFileLogger.Create(TDUnitXOptions.XMLOutputFile);
+    nunitLogger := TDUnitXXMLNUnitFileLogger.Create(TDUnitX.Options.XMLOutputFile);
     runner.AddLogger(logger);
     runner.AddLogger(nunitLogger);
 
@@ -66,7 +67,7 @@ begin
       System.ExitCode := EXIT_ERRORS;
 
     {$IFNDEF CI}
-    if TDUnitXOptions.ExitBehavior = TDUnitXExitBehavior.Pause then
+    if TDUnitX.Options.ExitBehavior = TDUnitXExitBehavior.Pause then
     begin
       System.Write('Done.. press <Enter> key to quit.');
       System.Readln;

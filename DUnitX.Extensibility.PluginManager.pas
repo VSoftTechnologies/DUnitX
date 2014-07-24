@@ -1,3 +1,29 @@
+{***************************************************************************}
+{                                                                           }
+{           DUnitX                                                          }
+{                                                                           }
+{           Copyright (C) 2013 Vincent Parrett                              }
+{                                                                           }
+{           vincent@finalbuilder.com                                        }
+{           http://www.finalbuilder.com                                     }
+{                                                                           }
+{                                                                           }
+{***************************************************************************}
+{                                                                           }
+{  Licensed under the Apache License, Version 2.0 (the "License");          }
+{  you may not use this file except in compliance with the License.         }
+{  You may obtain a copy of the License at                                  }
+{                                                                           }
+{      http://www.apache.org/licenses/LICENSE-2.0                           }
+{                                                                           }
+{  Unless required by applicable law or agreed to in writing, software      }
+{  distributed under the License is distributed on an "AS IS" BASIS,        }
+{  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. }
+{  See the License for the specific language governing permissions and      }
+{  limitations under the License.                                           }
+{                                                                           }
+{***************************************************************************}
+
 unit DUnitX.Extensibility.PluginManager;
 
 interface
@@ -5,6 +31,7 @@ interface
 uses
   DUnitX.Generics,
   DUnitX.Extensibility;
+
 type
   IPluginManager = interface
     ['{0AD83588-CF0F-4185-B5F8-093893150BB3}']
@@ -31,6 +58,7 @@ type
     function CreateFixture(const AFixtureClass: TClass; const AName: string; const ACategory : string): ITestFixture;overload;
     function CreateFixture(const AInstance : TObject; const AName: string; const ACategory : string): ITestFixture;overload;
     function GetUseRtti: Boolean;
+
   public
     constructor Create(const ACreateFixtureProc : TCreateFixtureProc; const AUseRtti : boolean);
     destructor Destroy;override;
@@ -50,6 +78,7 @@ begin
   FFixtureProviders := TDUnitXList<IFixtureProvider>.Create;
   FCreateFixtureProc := ACreateFixtureProc;
   FUseRtti := AUseRtti;
+
 end;
 
 function TPluginManager.CreateFixture(const AFixtureClass: TClass; const AName: string; const ACategory : string): ITestFixture;
@@ -90,11 +119,13 @@ procedure TPluginManager.Init;
 var
   plugin : IPlugin;
 begin
+
   for plugin in TDUnitX.RegisteredPlugins do
   begin
     plugin.GetPluginFeatures(Self);
   end;
 end;
+
 
 procedure TPluginManager.RegisterFixtureProvider(const provider: IFixtureProvider);
 begin

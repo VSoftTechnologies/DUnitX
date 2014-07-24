@@ -69,7 +69,6 @@
         <DCCReference Include="..\DUnitX.Generics.pas"/>
         <DCCReference Include="..\DUnitX.Utils.pas"/>
         <DCCReference Include="..\DUnitX.WeakReference.pas"/>
-        <DCCReference Include="..\DUnitX.CommandLine.pas"/>
         <DCCReference Include="..\DUnitX.Test.pas"/>
         <DCCReference Include="..\DUnitX.TestFixture.pas"/>
         <DCCReference Include="..\DUnitX.TestResult.pas"/>
@@ -103,6 +102,14 @@
 	<DCCReference Include="..\DUnitX.Extensibility.pas"/>
 	<DCCReference Include="..\DUnitX.Extensibility.PluginManager.pas"/>
 	<DCCReference Include="..\DUnitX.FixtureProviderPlugin.pas"/>
+        <DCCReference Include="..\DUnitX.OptionsDefinition.pas"/>
+        <DCCReference Include="DUnitX.Tests.CommandLineParser.pas"/>
+        <DCCReference Include="..\DUnitX.Filters.pas"/>
+        <DCCReference Include="..\DUnitX.CategoryExpression.pas"/>
+        <DCCReference Include="DUnitX.Tests.CategoryParser.pas"/>
+        <DCCReference Include="..\DUnitX.TestNameParser.pas"/>
+        <DCCReference Include="DUnitX.Tests.TestNameParser.pas"/>
+        <DCCReference Include="..\DUnitX.AutoDetect.Console.pas"/>
         <None Include="..\DUnitX.inc"/>
         <None Include="..\DUnitX.Stacktrace.inc"/>
 	<None Include="..\DUnitX.MemoryLeaks.inc"/>
@@ -159,11 +166,6 @@
                     <VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
                     <VersionInfoKeys Name="Comments"/>
                 </VersionInfoKeys>
-                <Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\bcboffice2k180.bpl">Embarcadero C++Builder Office 2000 Servers Package</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\bcbofficexp180.bpl">Embarcadero C++Builder Office XP Servers Package</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k180.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp180.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
                 </Excluded_Packages>
             </Delphi.Personality>
             <Platforms>

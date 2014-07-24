@@ -33,6 +33,7 @@ uses
   DUnitX.InternalInterfaces,
   DUnitX.WeakReference,
   DUnitX.TestFramework,
+  Generics.Collections,
   TimeSpan,
   Rtti;
 
@@ -43,7 +44,7 @@ type
   TDUnitXTest = class(TWeakReferencedObject, ITest, ITestInfo, ISetTestResult, ITestExecute)
   private
     FName         : string;
-    FCategory     : string;
+    FCategories   : TList<string>;
     FMethod       : TTestMethod;
     FFixture      : IWeakReference<ITestFixture>;
     FStartTime    : TDateTime;
@@ -56,7 +57,7 @@ type
   protected
     //ITest
     function GetName: string; virtual;
-    function GetCategory : string;
+    function GetCategories : TList<string>;
     function GetFullName : string;virtual;
     function GetTestFixture: ITestFixture;
     function GetTestMethod: TTestMethod;
@@ -83,10 +84,7 @@ type
   public
     constructor Create(const AFixture : ITestFixture; const AName : string; const ACategory  : string; const AMethod : TTestMethod; const AEnabled : boolean;
                        const AIgnored : boolean = false; const AIgnoreReason : string = '');
-
-    //property Name : string read GetName;
-//    property Fixture : ITestFixture read GetTestFixture;
-//    property TestMethod : TTestMethod read GetTestMethod;
+    destructor Destroy;override;
   end;
 
   TDUnitXTestCase = class(TDUnitXTest, ITestExecute)
@@ -101,10 +99,6 @@ type
   public
     constructor Create(const AInstance : TObject; const AFixture : ITestFixture; const ACaseName : string; const AName : string; const ACategory  : string; const AMethod : TRttiMethod;
                        const AEnabled : boolean; const AArgs : TValueArray);reintroduce;
-
-//    property Name : string read GetName;
-//    property Fixture : ITestFixture read GetTestFixture;
-//    property TestMethod : TTestMethod read GetTestMethod;
   end;
 
 
@@ -112,19 +106,41 @@ implementation
 
 uses
   SysUtils,
+  Generics.Defaults,
   DUnitX.Utils;
 
 { TDUnitXTest }
 
 constructor TDUnitXTest.Create(const AFixture: ITestFixture; const AName: string; const ACategory  : string; const AMethod: TTestMethod; const AEnabled : boolean; const AIgnored : boolean; const AIgnoreReason : string);
+var
+  categories : TArray<string>;
+  cat        : string;
 begin
   FFixture := TWeakReference<ITestFixture>.Create(AFixture);
   FName := AName;
-  FCategory := ACategory;
+  FCategories := TList<string>.Create(TComparer<string>.Construct(
+    function(const Left, Right : string) : integer
+    begin
+      result := AnsiCompareText(Left,Right);
+    end));
+
+  if ACategory <> '' then
+  begin
+    categories := TStrUtils.SplitString(ACategory,',');
+    for cat in categories do
+      FCategories.Add(Trim(cat));
+  end;
+
   FMethod := AMethod;
   FEnabled := AEnabled;
   FIgnored := AIgnored;
   FIgnoreReason := AIgnoreReason;
+end;
+
+destructor TDUnitXTest.Destroy;
+begin
+  FCategories.Free;
+  inherited;
 end;
 
 procedure TDUnitXTest.Execute(const context : ITestExecuteContext);
@@ -145,9 +161,9 @@ begin
   result := True;
 end;
 
-function TDUnitXTest.GetCategory: string;
+function TDUnitXTest.GetCategories: TList<string>;
 begin
-  result := FCategory;
+  result := FCategories;
 end;
 
 function TDUnitXTest.GetEnabled: Boolean;
@@ -281,8 +297,7 @@ end;
 
 function TDUnitXTestCase.GetName: string;
 begin
-  //TODO : Find a way to give test cases unique names.
-  Result := FName;
+  Result := FCaseName;
 end;
 
 end.

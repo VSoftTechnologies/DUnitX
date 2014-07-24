@@ -70,7 +70,6 @@ type
   {$M+}
   [TestFixture]
   TTestRepeatAttribute = class
-  private
   public
     [SetUpFixture]
     procedure SetUp;
