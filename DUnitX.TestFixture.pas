@@ -143,7 +143,7 @@ constructor TDUnitXTestFixture.Create(const AName : string; const ACategory : st
 var
   fixtureAttrib   : TestFixtureAttribute;
   IgnoreMemoryLeak: IgnoreMemoryLeaks;
-//  method : TRttiMethod;
+  method : TRttiMethod;
   rType : TRttiType;
   i : integer;
   categories : TArray<string>;

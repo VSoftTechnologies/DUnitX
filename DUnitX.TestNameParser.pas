@@ -2,9 +2,6 @@ unit DUnitX.TestNameParser;
 
 interface
 
-uses
-  DUnitX.Types;
-
 {$I DUnitX.inc}
 
 type
@@ -13,7 +10,7 @@ type
     class function GetTestName(const arg : string; var index : integer) : string;
     class function GetSeparator(const arg : string; index : integer) : integer;
   public
-    class function Parse(const arg : string) : TStringArray;
+    class function Parse(const arg : string) : TArray<string>;
   end;
 
 implementation
@@ -73,13 +70,13 @@ begin
 
 end;
 
-class function TTestNameParser.Parse(const arg: string): TStringArray;
+class function TTestNameParser.Parse(const arg: string): TArray<string>;
 var
-  sList : TStringList;
+  sList : TList<string>;
   i : integer;
   sName : string;
 begin
-  sList := TStringList.Create;
+  sList := TList<string>.Create;
   try
     if arg <> '' then
     begin
@@ -91,10 +88,7 @@ begin
           sList.Add(sName);
       end;
     end;
-
-    SetLength(result, sList.Count);
-    for i := 0 to sList.Count - 1 do
-      result[i] := sList[i];
+    result := sList.ToArray;
   finally
     sList.Free;
   end;

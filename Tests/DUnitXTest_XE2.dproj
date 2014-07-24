@@ -63,7 +63,7 @@
 			<DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
-			<Debugger_RunParams>--run:DUnitX</Debugger_RunParams>
+			<Debugger_RunParams>--run:DUnitX.Tests.TestFixture.TTestRepeatAttribute</Debugger_RunParams>
 			<DCC_TypedAtParameter>true</DCC_TypedAtParameter>
 		</PropertyGroup>
 		<ItemGroup>

@@ -99,8 +99,6 @@ type
     class function PadString(const s: string; const totalLength: integer; const padLeft: boolean = True; padChr: Char = ' '): string;
     class function SplitString(const S, Delimiters: string): TArray<string>;
     class function Join(const values : TArray<string>; const delim : string) : string;overload;
-    class function Join(const values : TList<string>; const delim : string) : string;overload;
-
   end;
 
 type
@@ -796,19 +794,6 @@ end;
 
 
 class function TStrUtils.Join(const values : TArray<string>; const delim: string): string;
-var
-  v : string;
-begin
-  result := '';
-  for v in values do
-  begin
-    if result <> '' then
-      result := result + delim;
-    result := result + v;
-  end;
-end;
-
-class function TStrUtils.Join(const values: TList<string>; const delim: string): string;
 var
   v : string;
 begin

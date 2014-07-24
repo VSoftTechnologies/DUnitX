@@ -32,7 +32,6 @@ interface
 
 uses
   Classes,
-  DUnitX.Types,
   Generics.Collections,
   DUnitX.Extensibility;
 
@@ -65,7 +64,7 @@ type
   INameFilter = interface(ITestFilter)
   ['{74E76CBC-6CC3-4393-A66C-09A14974B7EB}']
     procedure Add(const name : string);overload;
-    procedure Add(const names : TStringArray);overload;
+    procedure Add(const names : TArray<string>);overload;
   end;
 
   /// <summary>
@@ -106,8 +105,8 @@ type
   ICategoryFilter = interface(ITestFilter)
   ['{3D11F89D-9E39-4E03-80AB-F1AC9C6F3065}']
     procedure Add(const name : string);overload;
-    procedure Add(const names : TStringArray);overload;
-    function Categories : TStrings;
+    procedure Add(const names : TArray<string>);overload;
+    function Categories : TList<string>;
   end;
 
 
@@ -125,22 +124,22 @@ type
 
   TNameFilter = class(TTestFilter, ITestFilter,INameFilter)
   private
-    FNames : TStrings;
+    FNames : TList<string>;
   protected
     procedure Add(const name : string);overload;
-    procedure Add(const names : TStringArray);overload;
+    procedure Add(const names : TArray<string>);overload;
     function Match(const test: ITest): Boolean;override;
   public
     constructor Create;overload;
     constructor Create(const AName : string);overload;
-    constructor Create(const ANames : TStringArray);overload;
+    constructor Create(const ANames : TArray<string>);overload;
     destructor Destroy;override;
   end;
 
   TCategoryFilter = class(TNameFilter,ITestFilter,ICategoryFilter)
   protected
     function Match(const test: ITest): Boolean;override;
-    function Categories : TStrings;
+    function Categories : TList<string>;
   end;
 
 
@@ -213,7 +212,7 @@ end;
 
 { TNameFilter }
 
-procedure TNameFilter.Add(const names: TStringArray);
+procedure TNameFilter.Add(const names: TArray<string>);
 var
   name: string;
 begin
@@ -225,24 +224,23 @@ end;
 
 constructor TNameFilter.Create;
 begin
-//  FNames := TList<string>.Create(TComparer<string>.Construct(
-//  function(const Left, Right : string) : integer
-//  begin
-//    result := AnsiCompareText(Left,Right);
-//  end));
-  FNames := TStringList.Create;
+  FNames := TList<string>.Create(TComparer<string>.Construct(
+  function(const Left, Right : string) : integer
+  begin
+    result := AnsiCompareText(Left,Right);
+  end));
 end;
 
 procedure TNameFilter.Add(const name: string);
 begin
   if name <> '' then
   begin
-    if FNames.IndexOf(name) = -1 then
+    if not FNames.Contains(name) then
       FNames.Add(name)
   end;
 end;
 
-constructor TNameFilter.Create(const ANames: TStringArray);
+constructor TNameFilter.Create(const ANames: TArray<string>);
 begin
   Create;
   Add(ANames);
@@ -407,7 +405,7 @@ end;
 
 { TCategoryFilter }
 
-function TCategoryFilter.Categories: TStrings;
+function TCategoryFilter.Categories: TList<string>;
 begin
   result := FNames;
 end;
@@ -422,7 +420,7 @@ begin
 
   for i := 0 to FNames.Count -1 do
   begin
-    if test.Categories.IndexOf(FNames[i]) <> -1 then
+    if test.Categories.Contains(FNames[i]) then
       exit(true);
   end;
 end;

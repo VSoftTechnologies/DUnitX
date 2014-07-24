@@ -281,7 +281,7 @@ begin
     ignoredTest := false;
     ignoredReason := '';
 
-    category := TStrUtils.Join(fixture.Categories,','); //default to the fixture's category
+    category := TStrUtils.Join(fixture.Categories.ToArray,','); //default to the fixture's category
     categoryAttrib := nil;
     testEnabled := true;
     setupAttrib := nil;
