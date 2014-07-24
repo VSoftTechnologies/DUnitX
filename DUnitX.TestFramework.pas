@@ -311,7 +311,7 @@ type
 {$ENDIF}
     class procedure AreEqual(const left, right : Integer; const message : string = '');overload;
 
-    class procedure AreEqualMemory(const left : Pointer; const right : Pointer; const size : Cardinal; message : string = '');
+    class procedure AreEqualMemory(const left : Pointer; const right : Pointer; const size : Cardinal; const message : string = '');
 
     class procedure AreNotEqual(const left : string; const right : string; const ignoreCase : boolean = true; const message : string = '');overload;
 
@@ -328,7 +328,7 @@ type
 {$ELSE}
     class procedure AreNotEqual(const left, right : Integer; const message : string = '');overload;
 {$ENDIF}
-    class procedure AreNotEqualMemory(const left : Pointer; const right : Pointer; const size : Cardinal; message : string = '');
+    class procedure AreNotEqualMemory(const left : Pointer; const right : Pointer; const size : Cardinal; const message : string = '');
 
     class procedure AreSame(const left, right : TObject; const message : string = '');overload;
     class procedure AreSame(const left, right : IInterface; const message : string = '');overload;
@@ -1080,7 +1080,7 @@ begin
   AreEqual(left, right, tolerance, message);
 end;
 
-class procedure Assert.AreEqualMemory(const left : Pointer; const right : Pointer; const size : Cardinal; message : string);
+class procedure Assert.AreEqualMemory(const left : Pointer; const right : Pointer; const size : Cardinal; const message : string);
 begin
   if not CompareMem(left, right, size) then
     Fail('Memory values are not equal. ' + message, ReturnAddress);
@@ -1180,7 +1180,7 @@ begin
 end;
 
 
-class procedure Assert.AreNotEqualMemory(const left, right: Pointer; const size: Cardinal; message: string);
+class procedure Assert.AreNotEqualMemory(const left, right: Pointer; const size: Cardinal; const message: string);
 begin
   if CompareMem(left,right, size) then
     Fail('Memory values are equal. ' + message, ReturnAddress);

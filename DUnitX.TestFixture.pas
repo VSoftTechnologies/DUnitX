@@ -120,11 +120,11 @@ type
     procedure SetTearDownTestMethod(const AMethodName : string; const AMethod : TTestMethod);
     procedure SetTearDownFixtureMethod(const AMethodName : string; const AMethod : TTestMethod; const AIsDestructor : boolean);
     procedure SetTestInOwnThread(const value: Boolean);
+    class constructor Create;
   public
     constructor Create(const AName : string; const ACategory : string; const AInstance : TObject);overload;
     constructor Create(const AName : string; const ACategory : string; const AClass : TClass);overload;
     destructor Destroy;override;
-    class constructor Create;
 
   end;
 

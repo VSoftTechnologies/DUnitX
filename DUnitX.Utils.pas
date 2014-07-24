@@ -480,7 +480,7 @@ type
     function IsGenericTypeOf(const BaseTypeName: string): Boolean;
     function IsInheritedFrom(OtherType: TRttiType): Boolean; overload;
     function IsInheritedFrom(const OtherTypeName: string): Boolean; overload;
-    function MakeGenericType(TypeArguments: array of PTypeInfo): TRttiType;
+    function MakeGenericType(const TypeArguments: array of PTypeInfo): TRttiType;
 
     {$REGION 'Documentation'}
     ///	<summary>
@@ -2322,7 +2322,7 @@ begin
   end;
 end;
 
-function TRttiTypeHelper.MakeGenericType(TypeArguments: array of PTypeInfo): TRttiType;
+function TRttiTypeHelper.MakeGenericType(const TypeArguments: array of PTypeInfo): TRttiType;
 var
   i: Integer;
   args: TStringDynArray;

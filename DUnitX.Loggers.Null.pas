@@ -35,27 +35,27 @@ type
   ///  A Base class for loggers that do not need to use every interface method.
   TDUnitXNullLogger = class(TInterfacedObject,ITestLogger)
   protected
-    procedure OnBeginTest(const threadId: Cardinal; const Test: ITestInfo);virtual;
-    procedure OnEndSetupFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);virtual;
-    procedure OnEndSetupTest(const threadId: Cardinal; const Test: ITestInfo);virtual;
-    procedure OnEndTearDownFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);virtual;
-    procedure OnEndTeardownTest(const threadId: Cardinal; const Test: ITestInfo);virtual;
-    procedure OnEndTest(const threadId: Cardinal; const Test: ITestResult);virtual;
-    procedure OnEndTestFixture(const threadId: Cardinal; const results: IFixtureResult);virtual;
-    procedure OnExecuteTest(const threadId: Cardinal; const Test: ITestInfo);virtual;
-    procedure OnLog(const logType: TLogLevel; const msg: string);virtual;
-    procedure OnSetupFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);virtual;
-    procedure OnSetupTest(const threadId: Cardinal; const Test: ITestInfo);virtual;
-    procedure OnStartTestFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);virtual;
-    procedure OnTearDownFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);virtual;
-    procedure OnTeardownTest(const threadId: Cardinal; const Test: ITestInfo);virtual;
-    procedure OnTestError(const threadId: Cardinal; const Error: ITestError);virtual;
-    procedure OnTestFailure(const threadId: Cardinal; const Failure: ITestError);virtual;
+    procedure OnBeginTest(const threadId: Cardinal; const Test: ITestInfo);
+    procedure OnEndSetupFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
+    procedure OnEndSetupTest(const threadId: Cardinal; const Test: ITestInfo);
+    procedure OnEndTearDownFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
+    procedure OnEndTeardownTest(const threadId: Cardinal; const Test: ITestInfo);
+    procedure OnEndTest(const threadId: Cardinal; const Test: ITestResult);
+    procedure OnEndTestFixture(const threadId: Cardinal; const results: IFixtureResult);
+    procedure OnExecuteTest(const threadId: Cardinal; const Test: ITestInfo);
+    procedure OnLog(const logType: TLogLevel; const msg: string);
+    procedure OnSetupFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
+    procedure OnSetupTest(const threadId: Cardinal; const Test: ITestInfo);
+    procedure OnStartTestFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
+    procedure OnTearDownFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
+    procedure OnTeardownTest(const threadId: Cardinal; const Test: ITestInfo);
+    procedure OnTestError(const threadId: Cardinal; const Error: ITestError);
+    procedure OnTestFailure(const threadId: Cardinal; const Failure: ITestError);
     procedure OnTestMemoryLeak(const threadId : Cardinal; const Test: ITestResult);
-    procedure OnTestIgnored(const threadId: Cardinal; const AIgnored: ITestResult);virtual;
-    procedure OnTestSuccess(const threadId: Cardinal; const Test: ITestResult);virtual;
+    procedure OnTestIgnored(const threadId: Cardinal; const AIgnored: ITestResult);
+    procedure OnTestSuccess(const threadId: Cardinal; const Test: ITestResult);
     procedure OnTestingEnds(const RunResults: IRunResults);virtual;
-    procedure OnTestingStarts(const threadId: Cardinal; const testCount: Cardinal; const testActiveCount: Cardinal);virtual;
+    procedure OnTestingStarts(const threadId: Cardinal; const testCount: Cardinal; const testActiveCount: Cardinal);
   end;
 
 implementation

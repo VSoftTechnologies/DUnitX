@@ -207,7 +207,7 @@ begin
 
   if (ACount > 1) then
   begin
-    Result := Result + Format(' %d of %d', [ATimes, ACount]);
+    Result := Result + Format('-%d-of-%d', [ATimes, ACount]);
   end;
 end;
 
@@ -315,7 +315,7 @@ begin
       if (repeatAttrib.Count > 1) then
       begin
         repeatCount := repeatAttrib.Count;
-        currentFixture := fixture.AddChildFixture(fixture.TestClass, Format('%d x %s', [repeatCount, method.Name]),category);
+        currentFixture := fixture.AddChildFixture(fixture.TestClass, Format('%s.%s', [currentFixture.FullName,method.Name]),category);
       end;
     end;
 

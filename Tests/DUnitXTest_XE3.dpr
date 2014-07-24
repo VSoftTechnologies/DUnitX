@@ -6,7 +6,6 @@ uses
   SysUtils,
   DUnitX.Loggers.Console in '..\DUnitX.Loggers.Console.pas',
   DUnitX.Loggers.Text in '..\DUnitX.Loggers.Text.pas',
-  DUnitX.MacOS.Console in '..\DUnitX.MacOS.Console.pas',
   DUnitX.Windows.Console in '..\DUnitX.Windows.Console.pas',
   DUnitX.ConsoleWriter.Base in '..\DUnitX.ConsoleWriter.Base.pas',
   DUnitX.Loggers.XML.xUnit in '..\DUnitX.Loggers.XML.xUnit.pas',
@@ -47,14 +46,20 @@ uses
   DUnitX.Extensibility in '..\DUnitX.Extensibility.pas',
   DUnitX.Extensibility.PluginManager in '..\DUnitX.Extensibility.PluginManager.pas',
   DUnitX.FixtureProviderPlugin in '..\DUnitX.FixtureProviderPlugin.pas',
-  DUnitX.OptionsDefinition in '..\DUnitX.OptionsDefinition.pas',
   DUnitX.Tests.CommandLineParser in 'DUnitX.Tests.CommandLineParser.pas',
   DUnitX.Filters in '..\DUnitX.Filters.pas',
   DUnitX.CategoryExpression in '..\DUnitX.CategoryExpression.pas',
   DUnitX.Tests.CategoryParser in 'DUnitX.Tests.CategoryParser.pas',
   DUnitX.TestNameParser in '..\DUnitX.TestNameParser.pas',
   DUnitX.Tests.TestNameParser in 'DUnitX.Tests.TestNameParser.pas',
-  DUnitX.AutoDetect.Console in '..\DUnitX.AutoDetect.Console.pas';
+  DUnitX.AutoDetect.Console in '..\DUnitX.AutoDetect.Console.pas',
+  DUnitX.CommandLine.OptionDef in '..\DUnitX.CommandLine.OptionDef.pas',
+  DUnitX.CommandLine.Options in '..\DUnitX.CommandLine.Options.pas',
+  DUnitX.CommandLine.Parser in '..\DUnitX.CommandLine.Parser.pas',
+  DUnitX.OptionsDefinition in '..\DUnitX.OptionsDefinition.pas',
+  DUnitX.MacOS.Console in '..\DUnitX.MacOS.Console.pas';
+
+{$R *.res}
 
 var
   runner : ITestRunner;

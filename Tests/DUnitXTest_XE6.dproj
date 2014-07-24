@@ -63,7 +63,6 @@
         </DelphiCompile>
         <DCCReference Include="..\DUnitX.Loggers.Console.pas"/>
         <DCCReference Include="..\DUnitX.Loggers.Text.pas"/>
-        <DCCReference Include="..\DUnitX.MacOS.Console.pas"/>
         <DCCReference Include="..\DUnitX.Windows.Console.pas"/>
         <DCCReference Include="..\DUnitX.ConsoleWriter.Base.pas"/>
         <DCCReference Include="..\DUnitX.Loggers.XML.xUnit.pas"/>
@@ -114,6 +113,11 @@
         <DCCReference Include="..\DUnitX.TestNameParser.pas"/>
         <DCCReference Include="DUnitX.Tests.TestNameParser.pas"/>
         <DCCReference Include="..\DUnitX.AutoDetect.Console.pas"/>
+	<DCCReference Include="..\DUnitX.CommandLine.OptionDef.pas"/>
+	<DCCReference Include="..\DUnitX.CommandLine.Options.pas"/>
+	<DCCReference Include="..\DUnitX.CommandLine.Parser.pas"/>
+	<DCCReference Include="..\DUnitX.OptionsDefinition.pas"/>
+	<DCCReference Include="..\DUnitX.MacOS.Console.pas"/>
         <None Include="..\DUnitX.inc"/>
         <None Include="..\DUnitX.Stacktrace.inc"/>
         <None Include="..\DUnitX.MemoryLeaks.inc"/>
