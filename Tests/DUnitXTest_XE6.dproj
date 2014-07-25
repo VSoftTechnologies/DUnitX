@@ -105,7 +105,6 @@
         <DCCReference Include="..\DUnitX.Extensibility.pas"/>
         <DCCReference Include="..\DUnitX.Extensibility.PluginManager.pas"/>
         <DCCReference Include="..\DUnitX.FixtureProviderPlugin.pas"/>
-        <DCCReference Include="..\DUnitX.OptionsDefinition.pas"/>
         <DCCReference Include="DUnitX.Tests.CommandLineParser.pas"/>
         <DCCReference Include="..\DUnitX.Filters.pas"/>
         <DCCReference Include="..\DUnitX.CategoryExpression.pas"/>
@@ -118,6 +117,7 @@
 	<DCCReference Include="..\DUnitX.CommandLine.Parser.pas"/>
 	<DCCReference Include="..\DUnitX.OptionsDefinition.pas"/>
 	<DCCReference Include="..\DUnitX.MacOS.Console.pas"/>
+	<DCCReference Include="..\DUnitX.FilterBuilder.pas"/>
         <None Include="..\DUnitX.inc"/>
         <None Include="..\DUnitX.Stacktrace.inc"/>
         <None Include="..\DUnitX.MemoryLeaks.inc"/>

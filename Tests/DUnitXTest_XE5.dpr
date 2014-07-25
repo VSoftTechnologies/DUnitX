@@ -57,7 +57,8 @@ uses
   DUnitX.CommandLine.Options in '..\DUnitX.CommandLine.Options.pas',
   DUnitX.CommandLine.Parser in '..\DUnitX.CommandLine.Parser.pas',
   DUnitX.OptionsDefinition in '..\DUnitX.OptionsDefinition.pas',
-  DUnitX.MacOS.Console in '..\DUnitX.MacOS.Console.pas';
+  DUnitX.MacOS.Console in '..\DUnitX.MacOS.Console.pas',
+  DUnitX.FilterBuilder in '..\DUnitX.FilterBuilder.pas';
 
 {$R *.res}
 

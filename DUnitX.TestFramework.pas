@@ -36,6 +36,7 @@ uses
   TimeSpan,
   DUnitX.Generics,
   DUnitX.Extensibility,
+  DUnitX.Filters,
   Generics.Collections;
 
 //TODO: Automatic support for https://code.google.com/p/delphi-code-coverage/ would be cool
@@ -850,19 +851,26 @@ type
   private
     class var
       FOptions : TDUnitXOptions;
+      FFilter : ITestFilter;
+  protected
+    class constructor Create;
+    class destructor Destroy;
   public class var
     RegisteredFixtures : TDictionary<TClass,string>;
     RegisteredPlugins  : TList<IPlugin>;
   public
-    class constructor Create;
-    class destructor Destroy;
     class function CreateRunner : ITestRunner;overload;
     class function CreateRunner(const ALogger : ITestLogger) : ITestRunner;overload;
     class procedure RegisterTestFixture(const AClass : TClass; const AName : string = '' );
     class procedure RegisterPlugin(const plugin : IPlugin);
     class function CurrentRunner : ITestRunner;
+    ///  Parses the command line options and applies them the the Options object.
+    ///  Will throw exception if there are errors.
     class procedure CheckCommandLine;
+    //   Container for all options supported
     class property Options : TDUnitXOptions read FOptions;
+    //   This is the test filter used by the runners. It's here because we need to build it when checking the command line.
+    class property Filter : ITestFilter read FFilter;
   end;
 
   // Register an implementation via TDUnitXIoC.DefaultContainer
@@ -898,6 +906,7 @@ type
   ETestFailure = class(EAbort);
   ETestPass = class(EAbort);
   ENoTestsRegistered = class(ETestFrameworkException);
+  ECommandLineError = class(ETestFrameworkException);
 
 {$IFDEF DELPHI_XE_DOWN}
   function ReturnAddress: Pointer; assembler;
@@ -920,6 +929,7 @@ uses
   DUnitX.IoC,
   DUnitX.MemoryLeakMonitor.Default,
   DUnitX.FixtureProviderPlugin,
+  DUnitX.FilterBuilder,
   Variants,
   Math,
   StrUtils,
@@ -1809,6 +1819,9 @@ begin
   end
   else
   begin
+    //no parse errors, so now build the filter. will throw if there is an error.
+    FFilter := TDUnitXFilterBuilder.BuildFilter(FOptions);
+
     //Command line options parsed ok.
     if IsConsole then
     begin
@@ -1834,7 +1847,7 @@ begin
   //Make sure we have at least a dummy memory leak monitor registered.
   if not TDUnitXIoC.DefaultContainer.HasService<IMemoryLeakMonitor> then
     DUnitX.MemoryLeakMonitor.Default.RegisterDefaultProvider;
-
+  FFilter := nil;
 end;
 
 class function TDUnitX.CurrentRunner: ITestRunner;

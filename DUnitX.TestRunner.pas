@@ -49,7 +49,6 @@ type
   TDUnitXTestRunner = class(TInterfacedObject, ITestRunner)
   private class var
     FRttiContext : TRttiContext;
-    FFilter         : ITestFilter;
   public class var
     FActiveRunners : TDictionary<Cardinal,ITestRunner>;
   private
@@ -61,8 +60,6 @@ type
     FLogMessages    : TStringList;
   protected
     procedure CountAndFilterTests(const fixtureList: ITestFixtureList; var count, active: Cardinal);
-    function CreateTestFilter(const options : TDUnitXOptions; out filter : ITestFilter) : boolean;
-
     //Logger calls - sequence ordered
     procedure Loggers_TestingStarts(const threadId, testCount, testActiveCount : Cardinal);
 
@@ -155,8 +152,6 @@ uses
   DUnitX.Utils,
   DUnitX.IoC,
   DUnitX.Extensibility.PluginManager,
-  DUnitX.CategoryExpression,
-  DUnitX.TestNameParser,
   TypInfo,
   StrUtils,
   Types;
@@ -322,85 +317,6 @@ begin
   FFixtureList.Add(Result);
 end;
 
-function TDUnitXTestRunner.CreateTestFilter(const options : TDUnitXOptions; out filter : ITestFilter) : boolean;
-var
-  nameFilter    : INameFilter;
-  includeFilter : ITestFilter;
-  excludeFilter : ITestFilter;
-  i             : integer;
-  name          : string;
-  sList         : TStringList;
-begin
-  if FFilter <> nil then
-    exit(true);
-  result := False;
-  filter := TEmptyFilter.Create;
-  nameFilter := TNameFilter.Create;
-
-  if options.Run.Count > 0 then
-  begin
-    for i := 0 to options.Run.Count -1 do
-    begin
-      for name in TTestNameParser.Parse(options.Run[i]) do
-        nameFilter.Add(name);
-    end;
-    filter := nameFilter;
-  end;
-
-  if options.RunListFile <> '' then
-  begin
-    if not FileExists(options.RunListFile) then
-    begin
-      Self.Log(TLogLevel.Error,'RunList File does not exist : ' + options.RunListFile);
-      exit;
-    end;
-    try
-      sList := TStringList.Create;
-      try
-        sList.LoadFromFile(options.RunListFile);
-        for i := 0 to sList.Count -1 do
-        begin
-          for name in TTestNameParser.Parse(sList[i]) do
-            nameFilter.Add(name);
-        end;
-        filter := nameFilter;
-      finally
-        sList.Free;
-      end;
-    except
-      on e : Exception do
-      begin
-        Self.Log(TLogLevel.Error,e.Message);
-        FFilter := nil;
-        exit;
-      end;
-    end;
-  end;
-
-  if Trim(options.Include) <> '' then
-  begin
-    includeFilter := TCategoryExpression.CreateFilter(options.Include);
-    if filter.IsEmpty then
-      filter := includeFilter
-    else
-      filter := TAndFilter.Create(TArray<ITestFilter>.Create(filter,includeFilter));
-  end;
-
-  if Trim(options.Exclude) <> '' then
-  begin
-    excludeFilter := TNotFilter.Create(TCategoryExpression.CreateFilter(options.Exclude));
-    if filter.IsEmpty then
-      filter := excludeFilter
-    else
-      filter := TAndFilter.Create(TArray<ITestFilter>.Create(filter,excludeFilter));
-  end;
-
-  if Supports(filter,INotFilter) then
-    (filter as INotFilter).TopLevel := true;
-
-  FFilter := filter;
-  result := True;
-end;
 
 destructor TDUnitXTestRunner.Destroy;
 var
@@ -562,8 +478,8 @@ begin
   begin
     for test in fixture.Tests do
     begin
-      if FFilter <> nil then
-        test.Enabled := FFilter.Match(test);
+      if TDUnitX.Filter <> nil then
+        test.Enabled := TDUnitX.Filter.Match(test);
 
       if test.Enabled then
       begin
@@ -592,8 +508,8 @@ var
   fixtures : IInterface;
 begin
   result := nil;
-  if FFilter = nil then
-    CreateTestFilter(TDUnitX.Options,FFilter);
+
+
   fixtures := BuildFixtures;
   fixtureList := fixtures as ITestFixtureList;
   if fixtureList.Count = 0 then
