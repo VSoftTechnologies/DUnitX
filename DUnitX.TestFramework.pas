@@ -22,6 +22,10 @@
 {  See the License for the specific language governing permissions and      }
 {  limitations under the License.                                           }
 {                                                                           }
+{ This unit is contains ideas borrowed largely from NUnit                   }
+{ Copyright © 2012-2014 Charlie Poole                                       }
+{ License  : http://nunit.org/index.php?p=vsTestAdapterLicense&r=2.6.3      }
+{                                                                           }
 {***************************************************************************}
 
 unit DUnitX.TestFramework;
