@@ -1774,7 +1774,7 @@ procedure ShowUsage(consoleWriter : IDUnitXConsoleWriter);
 begin
   if consoleWriter <> nil then
     consoleWriter.SetColour(ccBrightYellow,ccDefault);
-  Writeline(consoleWriter, 'Usage : your.exe options');
+  Writeline(consoleWriter, Format('Usage : %s options', [ExtractFileName(ParamStr(0))])+#13#10);
   Writeline(consoleWriter, ' Options :');
   if consoleWriter <> nil then
     consoleWriter.SetColour(ccBrightWhite,ccDefault);

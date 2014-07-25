@@ -106,12 +106,13 @@ type
     class function Parse(const values : TStrings) : ICommandLineParseResult;overload;
     class property RegisteredOptions : TDictionary<string,IOptionDefintion> read FOptionsLookup;
     class property RegisteredUnamedOptions : TList<IOptionDefintion> read FUnnamedOptions;
-    class procedure PrintUsage(const proc : TProc<string>);
+    class procedure PrintUsage(const proc : TProc<string>; const pad : integer = 30);
   end;
 
 implementation
 
 uses
+  DUnitX.Utils,
   DUnitX.CommandLine.Parser,
   DUnitX.Commandline.OptionDef;
 
@@ -174,7 +175,7 @@ begin
   result := parser.Parse(values);
 end;
 
-class procedure TOptionsRegistry.PrintUsage(const proc: TProc<string>);
+class procedure TOptionsRegistry.PrintUsage(const proc: TProc<string>; const pad : integer);
 var
   option : IOptionDefintion;
   helpString : string;
@@ -193,8 +194,10 @@ begin
       if option.HasValue then
         helpString := helpString + ':value';
     end;
+    helpString := TStrUtils.PadString(helpString,pad,false);
+
     if option.HelpText <> '' then
-      helpString := helpString + ' : ' + option.HelpText;
+      helpString := helpString + ' - ' + option.HelpText;
     proc(helpString)
   end;  
 end;
