@@ -297,7 +297,7 @@ end;
 
 function TDUnitXTestCase.GetName: string;
 begin
-  Result := FCaseName;
+  Result := FName + '.' + FCaseName;
 end;
 
 end.
