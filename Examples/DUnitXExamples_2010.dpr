@@ -42,6 +42,7 @@ uses
   DUnitX.Banner in '..\DUnitX.Banner.pas',
   DUnitX.CategoryExpression in '..\DUnitX.CategoryExpression.pas',
   DUnitX.TestNameParser in '..\DUnitX.TestNameParser.pas',
+  DUnitX.FilterBuilder in '..\DUnitX.FilterBuilder.pas',
   DUnitX.Filters in '..\DUnitX.Filters.pas';
 
 var
