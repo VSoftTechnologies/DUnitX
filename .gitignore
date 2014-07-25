@@ -30,6 +30,7 @@
 ###################
 /Win32
 /Win64
+/OSX32
 /__history
 /Tests/Win32
 /Tests/Win64
@@ -48,5 +49,6 @@ Examples/dunitx-results.xml
 *.fbpInf
 Examples/Win32/
 Examples/Win64/
+Examples/OSX32/
 
 
