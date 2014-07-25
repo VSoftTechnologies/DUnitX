@@ -1803,7 +1803,7 @@ begin
     if IsConsole then
     begin
       //we may have sucessfully parsed this option so we should respect it.
-      if not TDUnitX.Options.HideBanner then
+      if not FOptions.HideBanner then
         DUnitX.Banner.ShowBanner;
 
       consoleWriter := TDUnitXIoC.DefaultContainer.Resolve<IDUnitXConsoleWriter>;
@@ -1811,12 +1811,12 @@ begin
         consoleWriter.SetColour(ccBrightRed,ccDefault);
       Writeline(consoleWriter, parseResult.ErrorText);
       //if the user said hidebanner then don't print the usage either
-      if not TDUnitX.Options.HideBanner then
+      if not FOptions.HideBanner then
         ShowUsage(consoleWriter);
       if consoleWriter <> nil then
         consoleWriter.SetColour(ccDefault,ccDefault);
       System.ExitCode :=EXIT_OPTIONS_ERROR;
-      raise ECommandLineError.Create('Error Message');
+      raise ECommandLineError.Create(parseResult.ErrorText);
     end
     else
       //Not a console app, raise an exception and let the GUI app deal with it??
@@ -1830,10 +1830,10 @@ begin
     //Command line options parsed ok.
     if IsConsole then
     begin
-      if not TDUnitX.Options.HideBanner then
+      if not FOptions.HideBanner then
         DUnitX.Banner.ShowBanner;
       //if /? or -h then just show usage and exit
-      if TDUnitX.Options.ShowUsage then
+      if FOptions.ShowUsage then
       begin
         consoleWriter := TDUnitXIoC.DefaultContainer.Resolve<IDUnitXConsoleWriter>;
         ShowUsage(consoleWriter);
