@@ -41,7 +41,7 @@ var
   names : TArray<string>;
 begin
   names := TTestNameParser.Parse(name);
-  Assert.AreEqual(1, Length(names));
+  Assert.AreEqual<Integer>(1,Length(names));
   Assert.AreEqual(Trim(name), names[0]);
 end;
 
@@ -50,7 +50,7 @@ var
   names : TArray<string>;
 begin
   names := TTestNameParser.Parse(name1 + ',' + name2);
-  Assert.AreEqual(2, Length(names));
+  Assert.AreEqual<Integer>(2, Length(names));
   Assert.AreEqual(Trim(name1), names[0]);
   Assert.AreEqual(Trim(name2), names[1]);
 end;
