@@ -1811,11 +1811,12 @@ begin
         ShowUsage(consoleWriter);
       if consoleWriter <> nil then
         consoleWriter.SetColour(ccDefault,ccDefault);
-      Halt(EXIT_OPTIONS_ERROR);
+      System.ExitCode :=EXIT_OPTIONS_ERROR;
+      raise ECommandLineError.Create('Error Message');
     end
     else
       //Not a console app, raise an exception and let the GUI app deal with it??
-      raise Exception.Create(parseResult.ErrorText);
+      raise ECommandLineError.Create(parseResult.ErrorText);
   end
   else
   begin
