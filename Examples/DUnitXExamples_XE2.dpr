@@ -40,7 +40,10 @@ uses
   DUnitX.CommandLine.Parser in '..\DUnitX.CommandLine.Parser.pas',
   DUnitX.OptionsDefinition in '..\DUnitX.OptionsDefinition.pas',
   DUnitX.Banner in '..\DUnitX.Banner.pas',
-  DUnitX.Filters in '..\DUnitX.Filters.pas';
+  DUnitX.FilterBuilder in '..\DUnitX.FilterBuilder.pas',
+  DUnitX.Filters in '..\DUnitX.Filters.pas',
+  DUnitX.CategoryExpression in '..\DUnitX.CategoryExpression.pas',
+  DUnitX.TestNameParser in '..\DUnitX.TestNameParser.pas';
 
 var
   runner : ITestRunner;
