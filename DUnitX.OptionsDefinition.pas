@@ -94,7 +94,7 @@ begin
 
 
 
-  TOptionsRegistry.RegisterOption<TLogLevel>('loglevel','l','Specify the tests to run, separate by commas',
+  TOptionsRegistry.RegisterOption<TLogLevel>('loglevel','l','Logging Level - Information, Warning, Error',
                                           procedure(value : TLogLevel)
                                           begin
                                              TDUnitX.Options.LogLevel := value
