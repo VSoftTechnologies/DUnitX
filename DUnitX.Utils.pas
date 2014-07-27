@@ -101,6 +101,10 @@ type
     class function Join(const values : TArray<string>; const delim : string) : string;overload;
   end;
 
+  TListStringUtils = class
+    class function ToArray(const values : TList<string>) : TArray<string>;
+  end;
+
 type
   {$REGION 'Documentation'}
   ///	<summary>
@@ -3117,6 +3121,17 @@ begin
     Result[SplitPoints] := Copy(S, StartIdx, Length(S) - StartIdx + 1);
   end;
 
+end;
+
+{ TListStringUtils }
+
+class function TListStringUtils.ToArray(const values: TList<string>): TArray<string>;
+var
+  i : integer;
+begin
+  SetLength(result,values.Count);
+  for i := 0 to values.Count - 1 do
+    result[i] := values[i];
 end;
 
 initialization

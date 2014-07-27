@@ -26,8 +26,11 @@
 
 unit DUnitX.Examples.General;
 
-{$STRONGLINKTYPES ON}
+{$I DUnitX.inc}
 
+{$IFDEF DELPHI_XE_UP}
+{$STRONGLINKTYPES ON}
+{$ENDIF}
 
 interface
 
@@ -267,8 +270,10 @@ initialization
 //manual registration for now.
 
 //Register the test fixtures
-//  TDUnitX.RegisterTestFixture(TMyExampleTests);
-//  TDUnitX.RegisterTestFixture(TExampleFixture2);
-//  TDUnitX.RegisterTestFixture(TExampleFixture3);
-//  TDUnitX.RegisterTestFixture(TExampleFixture5);
+{$IFNDEF DELPHI_XE_UP}
+  TDUnitX.RegisterTestFixture(TMyExampleTests);
+  TDUnitX.RegisterTestFixture(TExampleFixture2);
+  TDUnitX.RegisterTestFixture(TExampleFixture3);
+  TDUnitX.RegisterTestFixture(TExampleFixture5);
+{$ENDIF}
 end.

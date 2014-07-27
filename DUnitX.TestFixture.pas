@@ -143,7 +143,9 @@ constructor TDUnitXTestFixture.Create(const AName : string; const ACategory : st
 var
   fixtureAttrib   : TestFixtureAttribute;
   IgnoreMemoryLeak: IgnoreMemoryLeaks;
+  {$IFDEF DELPHI_XE_UP}
   method : TRttiMethod;
+  {$ENDIF}
   rType : TRttiType;
   i : integer;
   categories : TArray<string>;

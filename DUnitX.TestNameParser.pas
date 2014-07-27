@@ -49,6 +49,7 @@ implementation
 uses
   SysUtils,
   Classes,
+  DUnitX.Utils,
   Generics.Collections;
 
 { TTestNameParser }
@@ -119,7 +120,7 @@ begin
           sList.Add(sName);
       end;
     end;
-    result := sList.ToArray;
+    result := TListStringUtils.ToArray(sList);
   finally
     sList.Free;
   end;
