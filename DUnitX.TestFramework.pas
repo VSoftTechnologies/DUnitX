@@ -1001,7 +1001,7 @@ end;
 class procedure Assert.AreEqual(const left, right, tolerance: Extended; const message: string);
 begin
   if not Math.SameValue(left,right,tolerance) then
-    Fail(Format('left %g but got %g - %s' ,[left,right,message]), ReturnAddress);
+    Fail(Format('left %g but got %g %s' ,[left,right,message]), ReturnAddress);
 end;
 
 
@@ -1046,13 +1046,13 @@ begin
     pInfo := TypeInfo(string);
 
     if leftValue.IsEmpty or rightvalue.IsEmpty then
-      Fail(Format('left is not equal to right - %s', [message]), ReturnAddress)
+      Fail(Format('left is not equal to right %s', [message]), ReturnAddress)
     else
     begin
       if leftValue.TryCast(pInfo,tInfo) then
-        Fail(Format('left %s but got %s - %s', [leftValue.ToString, rightValue.ToString, message]), ReturnAddress)
+        Fail(Format('left %s but got %s %s', [leftValue.ToString, rightValue.ToString, message]), ReturnAddress)
       else
-        Fail(Format('left is not equal to right - %s', [message]), ReturnAddress)
+        Fail(Format('left is not equal to right %s', [message]), ReturnAddress)
     end;
   end;
 end;
@@ -1069,13 +1069,13 @@ end;
 class procedure Assert.AreEqual(const left, right: Integer; const message: string);
 begin
   if left <> right then
-    Fail(Format('left %d but got %d - %s' ,[left, right, message]), ReturnAddress);
+    Fail(Format('left %d but got %d %s' ,[left, right, message]), ReturnAddress);
 end;
 
 class procedure Assert.AreEqual(const left, right, tolerance: Double; const message: string);
 begin
   if not Math.SameValue(left,right,tolerance) then
-    Fail(Format('left %g but got %g - %s' ,[left,right,message]), ReturnAddress);
+    Fail(Format('left %g but got %g %s' ,[left,right,message]), ReturnAddress);
 end;
 
 class procedure Assert.AreEqual(const left, right: Double; const message: string);
