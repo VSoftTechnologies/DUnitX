@@ -220,6 +220,7 @@ var
 begin
   sList := TStringList.Create;
   try
+    sList.LoadFromFile(fileName);
     InternalParse(sList,parseErrors);
   finally
     sList.Free;
