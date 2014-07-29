@@ -28,6 +28,8 @@ unit DUnitX.FixtureProviderPlugin;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
   Rtti,
   Generics.Collections,
@@ -324,7 +326,7 @@ begin
     //Teardown method.
     if method.IsDestructor and (Length(method.GetParameters) = 0) then
     begin
-      currentFixture.SetTearDownFixtureMethod(TTestMethod(meth),method.Name,true);
+      currentFixture.SetTearDownFixtureMethod(method.Name,TTestMethod(meth),true);
       tearDownFixtureIsDestructor := true;
       tearDownFixtureMethod := TTestMethod(meth);
       continue;
