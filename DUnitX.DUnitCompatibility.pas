@@ -292,7 +292,7 @@ begin
 {$IFDEF DELPHI_XE_UP}
   Assert.AreNotEqual<integer>(expected,actual,msg);
 {$ELSE}
-  Assert.IsTrue(expected = actual, msg);
+  Assert.IsFalse(expected = actual, msg);
 {$ENDIF}
 end;
 
@@ -301,7 +301,7 @@ begin
 {$IFDEF DELPHI_XE_UP}
   Assert.AreNotEqual<Cardinal>(expected,actual,msg);
 {$ELSE}
-  Assert.IsTrue(expected = actual, msg);
+  Assert.IsFalse(expected = actual, msg);
 {$ENDIF}
 end;
 
@@ -310,7 +310,7 @@ begin
 {$IFDEF DELPHI_XE_UP}
   Assert.AreNotEqual<int64>(expected,actual,msg);
 {$ELSE}
-  Assert.IsTrue(expected = actual, msg);
+  Assert.IsFalse(expected = actual, msg);
 {$ENDIF}
 end;
 
@@ -349,7 +349,7 @@ begin
 {$IFDEF DELPHI_XE_UP}
   Assert.AreNotEqual<boolean>(expected,actual,msg);
 {$ELSE}
-  Assert.IsTrue(expected = actual, msg);
+  Assert.IsFalse(expected = actual, msg);
 {$ENDIF}
 end;
 
