@@ -1,3 +1,29 @@
+{***************************************************************************}
+{                                                                           }
+{           DUnitX                                                          }
+{                                                                           }
+{           Copyright (C) 2013 Vincent Parrett                              }
+{                                                                           }
+{           vincent@finalbuilder.com                                        }
+{           http://www.finalbuilder.com                                     }
+{                                                                           }
+{                                                                           }
+{***************************************************************************}
+{                                                                           }
+{  Licensed under the Apache License, Version 2.0 (the "License");          }
+{  you may not use this file except in compliance with the License.         }
+{  You may obtain a copy of the License at                                  }
+{                                                                           }
+{      http://www.apache.org/licenses/LICENSE-2.0                           }
+{                                                                           }
+{  Unless required by applicable law or agreed to in writing, software      }
+{  distributed under the License is distributed on an "AS IS" BASIS,        }
+{  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. }
+{  See the License for the specific language governing permissions and      }
+{  limitations under the License.                                           }
+{                                                                           }
+{***************************************************************************}
+
 unit DUnitX.Extensibility;
 
 interface
@@ -5,10 +31,12 @@ interface
 uses
   TimeSpan,
   Rtti,
+  Generics.Collections,
   DUnitX.Generics;
 
 type
   TTestMethod = procedure of object;
+
 
   //These interfaces mirror the Info classes in the framework but expose stuff we need for runtime.
   ITestFixture = interface;
@@ -19,6 +47,8 @@ type
   ITest = interface
     ['{0CCCE0C7-9AD1-4C3A-86EF-E882D3A839AB}']
     function GetName : string;
+    function GetFullName : string;
+    function GetCategories : TList<string>;
     function GetTestMethod : TTestMethod;
     function GetTestFixture : ITestFixture;
     function GetTestStartTime : TDateTime;
@@ -32,6 +62,8 @@ type
     procedure SetIgnoreMemoryLeaks(const AValue : Boolean);
 
     property Name : string read GetName;
+    property FullName : string read GetFullName;
+    property Categories : TList<string> read GetCategories;
     property Enabled : boolean read GetEnabled write SetEnabled;
     property Fixture : ITestFixture read GetTestFixture;
     property Ignored : boolean read GetIgnored;
@@ -48,6 +80,7 @@ type
   TValueArray = array of TValue;
 
   ITestFixtureList = interface;
+
   ///
   ///  Describes the Test Fixture at runtime.
   ///
@@ -56,6 +89,7 @@ type
     function GetName  : string;
     function GetFullName : string;
     function GetDescription : string;
+    function GetCategories : TList<string>;
     function GetTests : ITestList;
     function GetTestClass : TClass;
     function GetSetupMethod : TTestMethod;
@@ -73,14 +107,16 @@ type
     function GetHasChildren : boolean;
     function GetNameSpace : string;
     function GetHasTests : boolean;
+    function GetHasChildTests : boolean;
+    function IsNameSpaceOnly : boolean;
     procedure OnMethodExecuted(const AMethod : TTestMethod);
     function GetFixtureInstance : TObject;
 
-    function AddTest(const AMethod : TTestMethod; const AName : string; const AEnabled : boolean = true;const AIgnored : boolean = false; const AIgnoreReason : string = '') : ITest;
-    function AddTestCase(const ACaseName : string; const AName : string; const AMethod : TRttiMethod; const AEnabled : boolean; const AArgs : TValueArray) : ITest;
+    function AddTest(const AMethod : TTestMethod; const AName : string; const ACategory : string; const AEnabled : boolean = true;const AIgnored : boolean = false; const AIgnoreReason : string = '') : ITest;
+    function AddTestCase(const ACaseName : string; const AName : string; const ACategory : string; const AMethod : TRttiMethod; const AEnabled : boolean; const AArgs : TValueArray) : ITest;
 
-    function AddChildFixture(const ATestClass : TClass; const AName : string) : ITestFixture;overload;
-    function AddChildFixture(const AInstance : TObject; const AName : string) : ITestFixture;overload;
+    function AddChildFixture(const ATestClass : TClass; const AName : string; const ACategory : string) : ITestFixture;overload;
+    function AddChildFixture(const AInstance : TObject; const AName : string; const ACategory : string) : ITestFixture;overload;
 
     procedure SetSetupTestMethod(const AMethodName : string; const AMethod : TTestMethod);
     procedure SetSetupFixtureMethod(const AMethodName : string; const AMethod : TTestMethod);
@@ -92,12 +128,14 @@ type
     property Name                       : string read GetName;
     property NameSpace                  : string read GetNameSpace;
     property FullName                   : string read GetFullName;
+    property Categories                 : TList<string> read GetCategories;
     property Children                   : ITestFixtureList read GetChildren;
     property Description                : string read GetDescription;
     property Enabled                    : boolean read GetEnabled write SetEnabled;
     property FixtureInstance            : TObject read GetFixtureInstance;
     property HasChildFixtures           : boolean read GetHasChildren;
     property HasTests                   : boolean read GetHasTests;
+    property HasChildTests              : boolean read GetHasChildTests;
     property TestClass                  : TClass read GetTestClass;
     property Tests                      : ITestList read GetTests;
     property SetupMethod                : TTestMethod read GetSetupMethod;
@@ -125,8 +163,8 @@ type
 
   IFixtureProviderContext = interface
     ['{933F8442-77F1-4574-BB5E-2F3D0B8E6E6F}']
-    function CreateFixture(const AFixtureClass : TClass; const AName : string) : ITestFixture;overload;
-    function CreateFixture(const AInstance : TObject; const AName : string) : ITestFixture;overload;
+    function CreateFixture(const AFixtureClass : TClass; const AName : string; const ACategory : string) : ITestFixture;overload;
+    function CreateFixture(const AInstance : TObject; const AName : string; const ACategory : string) : ITestFixture;overload;
     function GetUseRtti : boolean;
     //The runner UseRtti property exposed for plugin use.
     property UseRtti : boolean read GetUseRtti;
@@ -151,6 +189,11 @@ type
     procedure GetPluginFeatures(const context : IPluginLoadContext);
   end;
 
+
+  IFixtureFilter = interface
+    ['{0FBC270E-2DC0-4135-8724-C2AD567A009A}']
+    procedure InitFromOptions(const ARun : string; const AInclude : string; const AExclude : string);
+  end;
 
 
 

@@ -88,10 +88,10 @@ type
     destructor Destroy;override;
   end;
 
-
 implementation
 
 uses
+  DUnitX.AutoDetect.Console,
   DUnitX.IoC,
   SysUtils;
 
@@ -210,9 +210,9 @@ begin
   try
 
     case logType  of
-      ltInformation: SetConsoleDefaultColor();
-      ltWarning: SetConsoleWarningColor();
-      ltError: SetConsoleErrorColor();
+      TLogLevel.Information: SetConsoleDefaultColor();
+      TLogLevel.Warning: SetConsoleWarningColor();
+      TLogLevel.Error: SetConsoleErrorColor();
     end;
 
     FConsoleWriter.WriteLn(msg);
@@ -430,20 +430,6 @@ begin
     FConsoleWriter.WriteLn;
     exit;
   end;
-
-  if TDUnitX.CommandLine.HideBanner then
-    exit;
-
-  SetConsoleSummaryColor();
-  FConsoleWriter.WriteLn('**********************************************************************');
-  FConsoleWriter.WriteLn('               DUnitX - (c) 2013 Vincent Parrett                      ');
-  FConsoleWriter.WriteLn('                     vincent@finalbuilder.com                         ');
-  FConsoleWriter.WriteLn('                                                                      ');
-  FConsoleWriter.WriteLn('         License - http://www.apache.org/licenses/LICENSE-2.0         ');
-  FConsoleWriter.WriteLn('**********************************************************************');
-  FConsoleWriter.WriteLn();
-  SetConsoleDefaultColor();
-  FConsoleWriter.Indent(1);
 end;
 
 

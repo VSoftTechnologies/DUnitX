@@ -22,6 +22,10 @@
 {  See the License for the specific language governing permissions and      }
 {  limitations under the License.                                           }
 {                                                                           }
+{ This unit is contains ideas borrowed largely from NUnit                   }
+{ Copyright © 2012-2014 Charlie Poole                                       }
+{ License  : http://nunit.org/index.php?p=vsTestAdapterLicense&r=2.6.3      }
+{                                                                           }
 {***************************************************************************}
 
 unit DUnitX.TestFramework;
@@ -29,13 +33,14 @@ unit DUnitX.TestFramework;
 interface
 
 uses
-  classes,
+  Classes,
   SysUtils,
   TypInfo,
   Rtti,
   TimeSpan,
   DUnitX.Generics,
   DUnitX.Extensibility,
+  DUnitX.Filters,
   Generics.Collections;
 
 //TODO: Automatic support for https://code.google.com/p/delphi-code-coverage/ would be cool
@@ -136,6 +141,19 @@ type
     constructor Create(const AEnabled : boolean);overload;
     property Enabled : boolean read FEnabled;
   end;
+
+  ///	<summary>
+  ///	 This attribute allows you to specify a test Category
+  ///  which can be used when filtering the tests to run.
+  ///	</summary>
+  CategoryAttribute = class(TCustomAttribute)
+  private
+    FCategory : string;
+  public
+    constructor Create(const ACategory : string);
+    property Category : string read FCategory;
+  end;
+
 
   ///	<summary>
   ///	  This attribute will prevent a test from being run.   It will still show
@@ -249,7 +267,9 @@ type
 
   TTestLocalMethod = reference to procedure;
 
-  TLogLevel = (ltInformation, ltWarning, ltError);
+  {$SCOPEDENUMS ON}
+  TLogLevel = (Information, Warning, Error);
+  {$SCOPEDENUMS OFF}
 
 const
   TLogLevelDesc : array[TLogLevel] of string = ('Info', 'Warn', 'Err');
@@ -296,7 +316,7 @@ type
 {$ENDIF}
     class procedure AreEqual(const left, right : Integer; const message : string = '');overload;
 
-    class procedure AreEqualMemory(const left : Pointer; const right : Pointer; const size : Cardinal; message : string = '');
+    class procedure AreEqualMemory(const left : Pointer; const right : Pointer; const size : Cardinal; const message : string = '');
 
     class procedure AreNotEqual(const left : string; const right : string; const ignoreCase : boolean = true; const message : string = '');overload;
 
@@ -313,7 +333,7 @@ type
 {$ELSE}
     class procedure AreNotEqual(const left, right : Integer; const message : string = '');overload;
 {$ENDIF}
-    class procedure AreNotEqualMemory(const left : Pointer; const right : Pointer; const size : Cardinal; message : string = '');
+    class procedure AreNotEqualMemory(const left : Pointer; const right : Pointer; const size : Cardinal; const message : string = '');
 
     class procedure AreSame(const left, right : TObject; const message : string = '');overload;
     class procedure AreSame(const left, right : IInterface; const message : string = '');overload;
@@ -326,7 +346,7 @@ type
     class procedure Contains<T>(const list : IEnumerable<T>; const value : T; const message : string = '');overload;
     class procedure DoesNotContain<T>(const list : IEnumerable<T>; const value : T; const message : string = '');overload;
 {$ENDIF}
-
+    class procedure Implements<T : IInterface>(value : IInterface; const message : string = '' );
     class procedure IsTrue(const condition : boolean; const message : string = '');
     class procedure IsFalse(const condition : boolean; const message : string = '');
 
@@ -431,7 +451,7 @@ type
     class procedure InheritsFrom(const descendant : TClass; const parent : TClass; const message : string = '');
 {$IFDEF DELPHI_XE_UP}
     //Delphi 2010 compiler bug breaks this
-    class procedure IsType<T>(const value : T; const message : string = '');overload;
+    class procedure IsType<T>(const value : T; const message : string = '');overload;deprecated 'use inheritsfrom - istype is useless';
 {$ENDIF}
 
     {$IFDEF SUPPORTS_REGEX}
@@ -751,18 +771,13 @@ type
     procedure OnTestingEnds(const RunResults: IRunResults);
   end;
 
-  TRunnerExitBehavior = (Continue, //The runner will exit normally
-                         Pause, //The runner will pause after displaying it's results
-                         HaltOnFailures //??
+  TDUnitXExitBehavior = (Continue, //The runner will exit normally
+                         Pause //The runner will pause after displaying it's results
                          );
 
   ITestRunner = interface
     ['{06C0D8D2-B2D7-42F9-8D23-8F2D8A75263F}']
     procedure AddLogger(const value : ITestLogger);
-    function GetUseCommandLineOptions : boolean;
-    procedure SetUseCommandLineOptions(const value : boolean);
-    function GetExitBehavior : TRunnerExitBehavior;
-    procedure SetExitBehavior(const value : TRunnerExitBehavior);
     function GetUseRTTI : boolean;
     procedure SetUseRTTI(const value : boolean);
 
@@ -770,9 +785,6 @@ type
     function BuildFixtures : IInterface;
 
     function Execute : IRunResults;
-
-    property ExitBehavior : TRunnerExitBehavior read GetExitBehavior write SetExitBehavior;
-    property UseCommandLineOptions : boolean read GetUseCommandLineOptions write SetUseCommandLineOptions;
 
     procedure Log(const logType : TLogLevel; const msg : string);overload;
     procedure Log(const msg : string);overload;
@@ -793,35 +805,76 @@ type
     property UseRTTI : boolean read GetUseRTTI write SetUseRTTI;
   end;
 
-  ICommandLine = interface
-    ['{A86D66B3-2CD3-4E11-B0A8-9602EB5790CB}']
-    function GetHideBanner : boolean;
-    procedure SetHideBanner(const value : boolean);
-    function GetLogLevel : TLogLevel;
+  TDUnitXOptions = class
+  private
+    FXMLOutputFile : string;
+    FRun : TStringList;
+    FRunListFile : string;
+    FInclude : string;
+    FExclude : string;
+    FLogLevel : TLogLevel;
+    FHideBanner : boolean;
+    FExitBehavior : TDUnitXExitBehavior;
+    FShowUsage : boolean;
+    FDontShowIgnored : boolean;
+  public
+    constructor Create;
+    destructor Destroy;override;
+    //The xml output file to be generated by xml loggers
+    property XMLOutputFile : string read FXMLOutputFile write FXMLOutputFile;
 
-    function HasOption(const optionName : string) : boolean;
-    function GetOptionValue(const optionName : string) : string;
+    // Specifiy the tests to run.
+    property Run : TStringList read FRun write FRun;
 
-    //standard options
-    property HideBanner : boolean read GetHideBanner write SetHideBanner; // -b
-    property LogLevel : TLogLevel read GetLogLevel;  // -l:e -l:w -l:i
+    //the name of a file which lists the tests to run.
+    property RunListFile : string read FRunListFile write FRunListFile;
+
+    //Category Include Pattern
+    property Include : string read FInclude write FInclude;
+
+    //Category Exlude Pattern
+    property Exclude : string read FExclude write FExclude;
+
+    property LogLevel : TLogLevel read FLogLevel write FLogLevel;
+
+    //If true do not show the banner
+    property HideBanner : boolean read FHideBanner write FHideBanner;
+
+    //Defaults to Pause
+    property ExitBehavior : TDUnitXExitBehavior read FExitBehavior write FExitBehavior;
+
+    // Show command line usage
+    property ShowUsage : boolean read FShowUsage write FShowUsage;
+
+    //Don't run or show ignored tests at all
+    property DontShowIgnored : boolean read FDontShowIgnored write FDontShowIgnored;
   end;
 
+
   TDUnitX = class
+  private
+    class var
+      FOptions : TDUnitXOptions;
+      FFilter : ITestFilter;
+  protected
+    class constructor Create;
+    class destructor Destroy;
   public class var
     RegisteredFixtures : TDictionary<TClass,string>;
     RegisteredPlugins  : TList<IPlugin>;
   public
-    class constructor Create;
-    class destructor Destroy;
     class function CreateRunner : ITestRunner;overload;
-    class function CreateRunner(const useCommandLineOptions : boolean) : ITestRunner;overload;
     class function CreateRunner(const ALogger : ITestLogger) : ITestRunner;overload;
-    class function CreateRunner(const useCommandLineOptions : boolean; const ALogger : ITestLogger) : ITestRunner;overload;
     class procedure RegisterTestFixture(const AClass : TClass; const AName : string = '' );
     class procedure RegisterPlugin(const plugin : IPlugin);
-    class function CommandLine : ICommandLine;
     class function CurrentRunner : ITestRunner;
+    ///  Parses the command line options and applies them the the Options object.
+    ///  Will throw exception if there are errors.
+    class procedure CheckCommandLine;
+    //   Container for all options supported
+    class property Options : TDUnitXOptions read FOptions;
+    //   This is the test filter used by the runners. It's here because we need to build it when checking the command line.
+    class property Filter : ITestFilter read FFilter;
   end;
 
   // Register an implementation via TDUnitXIoC.DefaultContainer
@@ -857,20 +910,30 @@ type
   ETestFailure = class(EAbort);
   ETestPass = class(EAbort);
   ENoTestsRegistered = class(ETestFrameworkException);
+  ECommandLineError = class(ETestFrameworkException);
 
 {$IFDEF DELPHI_XE_DOWN}
   function ReturnAddress: Pointer; assembler;
 {$ENDIF}
 
+const
+  EXIT_OK     = 0;
+  EXIT_ERRORS = 1;
+  EXIT_OPTIONS_ERROR = 100;
+
 implementation
 
 uses
+  DUnitX.ConsoleWriter.Base,
+  DUnitX.Banner,
+  DUnitX.OptionsDefinition,
+  DUnitX.CommandLine.Options,
   DUnitX.TestRunner,
   DUnitX.Utils,
-  DUnitX.Commandline,
   DUnitX.IoC,
   DUnitX.MemoryLeakMonitor.Default,
   DUnitX.FixtureProviderPlugin,
+  DUnitX.FilterBuilder,
   Variants,
   Math,
   StrUtils,
@@ -938,7 +1001,7 @@ end;
 class procedure Assert.AreEqual(const left, right, tolerance: Extended; const message: string);
 begin
   if not Math.SameValue(left,right,tolerance) then
-    Fail(Format('left %g but got %g - %s' ,[left,right,message]), ReturnAddress);
+    Fail(Format('left %g but got %g %s' ,[left,right,message]), ReturnAddress);
 end;
 
 
@@ -983,13 +1046,13 @@ begin
     pInfo := TypeInfo(string);
 
     if leftValue.IsEmpty or rightvalue.IsEmpty then
-      Fail(Format('left is not equal to right - %s', [message]), ReturnAddress)
+      Fail(Format('left is not equal to right %s', [message]), ReturnAddress)
     else
     begin
       if leftValue.TryCast(pInfo,tInfo) then
-        Fail(Format('left %s but got %s - %s', [leftValue.ToString, rightValue.ToString, message]), ReturnAddress)
+        Fail(Format('left %s but got %s %s', [leftValue.ToString, rightValue.ToString, message]), ReturnAddress)
       else
-        Fail(Format('left is not equal to right - %s', [message]), ReturnAddress)
+        Fail(Format('left is not equal to right %s', [message]), ReturnAddress)
     end;
   end;
 end;
@@ -1006,13 +1069,13 @@ end;
 class procedure Assert.AreEqual(const left, right: Integer; const message: string);
 begin
   if left <> right then
-    Fail(Format('left %d but got %d - %s' ,[left, right, message]), ReturnAddress);
+    Fail(Format('left %d but got %d %s' ,[left, right, message]), ReturnAddress);
 end;
 
 class procedure Assert.AreEqual(const left, right, tolerance: Double; const message: string);
 begin
   if not Math.SameValue(left,right,tolerance) then
-    Fail(Format('left %g but got %g - %s' ,[left,right,message]), ReturnAddress);
+    Fail(Format('left %g but got %g %s' ,[left,right,message]), ReturnAddress);
 end;
 
 class procedure Assert.AreEqual(const left, right: Double; const message: string);
@@ -1031,7 +1094,7 @@ begin
   AreEqual(left, right, tolerance, message);
 end;
 
-class procedure Assert.AreEqualMemory(const left : Pointer; const right : Pointer; const size : Cardinal; message : string);
+class procedure Assert.AreEqualMemory(const left : Pointer; const right : Pointer; const size : Cardinal; const message : string);
 begin
   if not CompareMem(left, right, size) then
     Fail('Memory values are not equal. ' + message, ReturnAddress);
@@ -1131,7 +1194,7 @@ begin
 end;
 
 
-class procedure Assert.AreNotEqualMemory(const left, right: Pointer; const size: Cardinal; message: string);
+class procedure Assert.AreNotEqualMemory(const left, right: Pointer; const size: Cardinal; const message: string);
 begin
   if CompareMem(left,right, size) then
     Fail('Memory values are equal. ' + message, ReturnAddress);
@@ -1210,6 +1273,12 @@ end;
 class procedure Assert.Pass(const message: string);
 begin
   raise ETestPass.Create(message);
+end;
+
+class procedure Assert.Implements<T>(value: IInterface; const message: string);
+begin
+  if not Supports(value,GetTypeData(TypeInfo(T)).Guid) then
+    Fail(message,ReturnAddress);
 end;
 
 class procedure Assert.InheritsFrom(const descendant, parent: TClass; const message: string);
@@ -1414,18 +1483,7 @@ begin
     exceptionClass, msg);
 end;
 
-class procedure Assert.WillNotRaiseAny(const AMethod: TTestLocalMethod;
-  const msg: string);
-begin
-  Assert.WillNotRaiseAny(
-    procedure
-    begin
-      AMethod;
-    end,
-     msg);
-end;
-
-class procedure Assert.WillNotRaiseAny(const AMethod: TTestMethod;const msg: string);
+class procedure Assert.WillNotRaiseAny(const AMethod: TTestLocalMethod;  const msg: string);
 begin
   try
     AMethod;
@@ -1440,6 +1498,16 @@ begin
         Fail(Format('Method raised [%s] was expecting not to raise Any exception.', [e.ClassName]), ReturnAddress);
     end;
   end;
+end;
+
+class procedure Assert.WillNotRaiseAny(const AMethod: TTestMethod;const msg: string);
+begin
+  Assert.WillNotRaiseAny(
+    procedure
+    begin
+      AMethod;
+    end,
+     msg);
 end;
 
 class procedure Assert.WillNotRaiseDescendant(const AMethod: TTestLocalMethod;
@@ -1676,43 +1744,118 @@ begin
   FReason := AReason;
 end;
 
+{ TDUnitXOptions }
+
+constructor TDUnitXOptions.Create;
+begin
+  Run := TStringList.Create;
+  LogLevel := TLogLevel.Information;
+  ExitBehavior := TDUnitXExitBehavior.Pause;
+end;
+
+
 class function TDUnitX.CreateRunner: ITestRunner;
 begin
-  result := CreateRunner(false,nil);
+  result := CreateRunner(nil);
 end;
 
 class function TDUnitX.CreateRunner(const ALogger: ITestLogger): ITestRunner;
 begin
-  result := CreateRunner(false,ALogger);
+  result := TDUnitXTestRunner.Create(ALogger);
 end;
 
-class function TDUnitX.CreateRunner(const useCommandLineOptions: boolean): ITestRunner;
+
+procedure WriteLine(consoleWriter : IDUnitXConsoleWriter; const value : string);
 begin
-  result := CreateRunner(useCommandLineOptions,nil);
+  if consoleWriter <> nil then
+    consoleWriter.WriteLn(value)
+  else
+    System.Writeln(value);
 end;
 
-class function TDUnitX.CommandLine: ICommandLine;
+
+procedure ShowUsage(consoleWriter : IDUnitXConsoleWriter);
 begin
-  result := DUnitX.CommandLine.CommandLine;
+  if consoleWriter <> nil then
+    consoleWriter.SetColour(ccBrightYellow,ccDefault);
+  Writeline(consoleWriter, Format('Usage : %s options', [ExtractFileName(ParamStr(0))])+#13#10);
+  Writeline(consoleWriter, ' Options :');
+  if consoleWriter <> nil then
+    consoleWriter.SetColour(ccBrightWhite,ccDefault);
+
+  TOptionsRegistry.PrintUsage(procedure(value : string)
+                            begin
+                               WriteLine(consoleWriter, value);
+                            end);
+  if consoleWriter <> nil then
+    consoleWriter.SetColour(ccDefault);
+end;
+
+class procedure TDUnitX.CheckCommandLine;
+var
+  parseResult : ICommandLineParseResult;
+  consoleWriter : IDUnitXConsoleWriter;
+begin
+  parseResult := TOptionsRegistry.Parse;
+  if parseResult.HasErrors then
+  begin
+    //if it's a console tell the user what they did wrong
+    if IsConsole then
+    begin
+      //we may have sucessfully parsed this option so we should respect it.
+      if not FOptions.HideBanner then
+        DUnitX.Banner.ShowBanner;
+
+      consoleWriter := TDUnitXIoC.DefaultContainer.Resolve<IDUnitXConsoleWriter>;
+      if consoleWriter <> nil then
+        consoleWriter.SetColour(ccBrightRed,ccDefault);
+      Writeline(consoleWriter, parseResult.ErrorText);
+      //if the user said hidebanner then don't print the usage either
+      if not FOptions.HideBanner then
+        ShowUsage(consoleWriter);
+      if consoleWriter <> nil then
+        consoleWriter.SetColour(ccDefault,ccDefault);
+      System.ExitCode :=EXIT_OPTIONS_ERROR;
+      raise ECommandLineError.Create(parseResult.ErrorText);
+    end
+    else
+      //Not a console app, raise an exception and let the GUI app deal with it??
+      raise ECommandLineError.Create(parseResult.ErrorText);
+  end
+  else
+  begin
+    //no parse errors, so now build the filter. will throw if there is an error.
+    FFilter := TDUnitXFilterBuilder.BuildFilter(FOptions);
+
+    //Command line options parsed ok.
+    if IsConsole then
+    begin
+      if not FOptions.HideBanner then
+        DUnitX.Banner.ShowBanner;
+      //if /? or -h then just show usage and exit
+      if FOptions.ShowUsage then
+      begin
+        consoleWriter := TDUnitXIoC.DefaultContainer.Resolve<IDUnitXConsoleWriter>;
+        ShowUsage(consoleWriter);
+        Halt(EXIT_OK);
+      end;
+    end
+  end;
+
 end;
 
 class constructor TDUnitX.Create;
 begin
+  FOptions := TDUnitXOptions.Create;
   RegisteredFixtures := TDictionary<TClass,string>.Create;
   RegisteredPlugins  := TList<IPlugin>.Create;
   //Make sure we have at least a dummy memory leak monitor registered.
   if not TDUnitXIoC.DefaultContainer.HasService<IMemoryLeakMonitor> then
     DUnitX.MemoryLeakMonitor.Default.RegisterDefaultProvider;
-
-end;
-
-class function TDUnitX.CreateRunner(const useCommandLineOptions: boolean; const ALogger: ITestLogger): ITestRunner;
-begin
-  result := TDUnitXTestRunner.Create(useCommandLineOptions,ALogger);
+  FFilter := nil;
 end;
 
 class function TDUnitX.CurrentRunner: ITestRunner;
-
 begin
   if not TDUnitXTestRunner.FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId,result) then
     raise Exception.Create('No Runner found for current thread');
@@ -1723,6 +1866,7 @@ class destructor TDUnitX.Destroy;
 begin
   RegisteredFixtures.Free;
   RegisteredPlugins.Free;
+  FOptions.Free;
 end;
 
 class procedure TDUnitX.RegisterPlugin(const plugin: IPlugin);
@@ -1763,6 +1907,12 @@ begin
       RegisteredFixtures.Add(AClass,sName );
 end;
 
+destructor TDUnitXOptions.Destroy;
+begin
+  FRun.Free;
+  inherited;
+end;
+
 { TestCaseAttribute }
 
 
@@ -1787,7 +1937,7 @@ end;
 
 procedure TTestFixtureHelper.Log(const msg: string);
 begin
-  Self.Log(TLogLevel.ltInformation,msg);
+  Self.Log(TLogLevel.Information,msg);
 end;
 
 procedure TTestFixtureHelper.Log(const logType : TLogLevel; const msg: string);
@@ -1802,17 +1952,17 @@ end;
 
 procedure TTestFixtureHelper.Status(const msg: string);
 begin
-  Self.Log(TLogLevel.ltInformation,msg);
+  Self.Log(TLogLevel.Information,msg);
 end;
 
 procedure TTestFixtureHelper.WriteLn;
 begin
-  Self.Log(TLogLevel.ltInformation,'');
+  Self.Log(TLogLevel.Information,'');
 end;
 
 procedure TTestFixtureHelper.WriteLn(const msg: string);
 begin
-  Self.Log(TLogLevel.ltInformation,msg);
+  Self.Log(TLogLevel.Information,msg);
 end;
 {$ENDIF}
 
@@ -1846,6 +1996,13 @@ constructor IgnoreMemoryLeaks.Create(const AIgnoreMemoryLeaks: Boolean);
 begin
   inherited Create;
   FIgnoreMemoryLeaks := AIgnoreMemoryLeaks;
+end;
+
+{ CategoryAttribute }
+
+constructor CategoryAttribute.Create(const ACategory: string);
+begin
+  FCategory := ACategory;
 end;
 
 initialization

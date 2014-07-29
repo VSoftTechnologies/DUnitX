@@ -62,14 +62,12 @@
         </DelphiCompile>
         <DCCReference Include="..\DUnitX.Loggers.Console.pas"/>
         <DCCReference Include="..\DUnitX.Loggers.Text.pas"/>
-        <DCCReference Include="..\DUnitX.MacOS.Console.pas"/>
         <DCCReference Include="..\DUnitX.Windows.Console.pas"/>
         <DCCReference Include="..\DUnitX.ConsoleWriter.Base.pas"/>
         <DCCReference Include="..\DUnitX.Loggers.XML.xUnit.pas"/>
         <DCCReference Include="..\DUnitX.Generics.pas"/>
         <DCCReference Include="..\DUnitX.Utils.pas"/>
         <DCCReference Include="..\DUnitX.WeakReference.pas"/>
-        <DCCReference Include="..\DUnitX.CommandLine.pas"/>
         <DCCReference Include="..\DUnitX.Test.pas"/>
         <DCCReference Include="..\DUnitX.TestFixture.pas"/>
         <DCCReference Include="..\DUnitX.TestResult.pas"/>
@@ -83,6 +81,9 @@
         <DCCReference Include="..\DUnitX.StackTrace.JCL.pas"/>
         <DCCReference Include="..\DUnitX.StackTrace.MadExcept3.pas"/>
         <DCCReference Include="..\DUnitX.StackTrace.MadExcept4.pas"/>
+			<DCCReference Include="..\DUnitX.Loggers.GUI.pas">
+				<Form>Form1</Form>
+			</DCCReference>
         <DCCReference Include="..\DUnitX.StackTrace.EurekaLog7.pas"/>
 	<DCCReference Include="..\DUnitX.Loggers.Null.pas"/>
         <DCCReference Include="..\DUnitX.FixtureResult.pas"/>
@@ -103,6 +104,19 @@
 	<DCCReference Include="..\DUnitX.Extensibility.pas"/>
 	<DCCReference Include="..\DUnitX.Extensibility.PluginManager.pas"/>
 	<DCCReference Include="..\DUnitX.FixtureProviderPlugin.pas"/>
+        <DCCReference Include="DUnitX.Tests.CommandLineParser.pas"/>
+        <DCCReference Include="..\DUnitX.Filters.pas"/>
+        <DCCReference Include="..\DUnitX.CategoryExpression.pas"/>
+        <DCCReference Include="DUnitX.Tests.CategoryParser.pas"/>
+        <DCCReference Include="..\DUnitX.TestNameParser.pas"/>
+        <DCCReference Include="DUnitX.Tests.TestNameParser.pas"/>
+        <DCCReference Include="..\DUnitX.AutoDetect.Console.pas"/>
+	<DCCReference Include="..\DUnitX.CommandLine.OptionDef.pas"/>
+	<DCCReference Include="..\DUnitX.CommandLine.Options.pas"/>
+	<DCCReference Include="..\DUnitX.CommandLine.Parser.pas"/>
+	<DCCReference Include="..\DUnitX.OptionsDefinition.pas"/>
+	<DCCReference Include="..\DUnitX.MacOS.Console.pas"/>
+	<DCCReference Include="..\DUnitX.FilterBuilder.pas"/>
         <None Include="..\DUnitX.inc"/>
         <None Include="..\DUnitX.Stacktrace.inc"/>
 	<None Include="..\DUnitX.MemoryLeaks.inc"/>
@@ -159,12 +173,6 @@
                     <VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
                     <VersionInfoKeys Name="Comments"/>
                 </VersionInfoKeys>
-                <Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\bcboffice2k180.bpl">Embarcadero C++Builder Office 2000 Servers Package</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\bcbofficexp180.bpl">Embarcadero C++Builder Office XP Servers Package</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k180.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp180.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
-                </Excluded_Packages>
             </Delphi.Personality>
             <Platforms>
                 <Platform value="OSX32">False</Platform>

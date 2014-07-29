@@ -1,3 +1,29 @@
+{***************************************************************************}
+{                                                                           }
+{           DUnitX                                                          }
+{                                                                           }
+{           Copyright (C) 2013 Vincent Parrett                              }
+{                                                                           }
+{           vincent@finalbuilder.com                                        }
+{           http://www.finalbuilder.com                                     }
+{                                                                           }
+{                                                                           }
+{***************************************************************************}
+{                                                                           }
+{  Licensed under the Apache License, Version 2.0 (the "License");          }
+{  you may not use this file except in compliance with the License.         }
+{  You may obtain a copy of the License at                                  }
+{                                                                           }
+{      http://www.apache.org/licenses/LICENSE-2.0                           }
+{                                                                           }
+{  Unless required by applicable law or agreed to in writing, software      }
+{  distributed under the License is distributed on an "AS IS" BASIS,        }
+{  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. }
+{  See the License for the specific language governing permissions and      }
+{  limitations under the License.                                           }
+{                                                                           }
+{***************************************************************************}
+
 unit DUnitX.FixtureProviderPlugin;
 
 interface
@@ -20,10 +46,11 @@ type
   private
     FFixtureClasses : TDictionary<TClass,string>;
 
-    function FormatTestName(const AName: string; const ATimes, ACount: Integer): string;
   protected
-    procedure RTTIDiscoverFixtureClasses;
-    procedure GenerateTests(const fixture : ITestFixture);
+    function FormatTestName(const AName: string; const ATimes, ACount: Integer): string;
+    function TryGetAttributeOfType<T : class>(const attributes: TArray<TCustomAttribute>; var attribute: T): boolean;
+    procedure RTTIDiscoverFixtureClasses(const context: IFixtureProviderContext);
+    procedure GenerateTests(const context: IFixtureProviderContext; const fixture : ITestFixture);
     procedure Execute(const context: IFixtureProviderContext);
   public
     class constructor Create;
@@ -78,21 +105,35 @@ var
   fixtureNamespace : string;
   tmpFixtures : TDictionary<string,ITestFixture>;
   fixtureList : ITestFixtureList;
+  rType : TRttiType;
+  categoryAttrib : CategoryAttribute;
+  category : string;
 begin
   if context.UseRtti then
-    RTTIDiscoverFixtureClasses;
+    RTTIDiscoverFixtureClasses(context);
+
   for pair in TDUnitX.RegisteredFixtures do
   begin
-    if not FFixtureClasses.ContainsValue(pair.Value) then
+     if not FFixtureClasses.ContainsValue(pair.Value) then
       FFixtureClasses.AddOrSetValue(pair.Key, pair.Value);
   end;
+
+
+
   //Build up a fixture hierarchy based on unit names.
   tmpFixtures := TDictionary<string,ITestFixture>.Create;
   fixtureList := TTestFixtureList.Create;
   try
     for pair in FFixtureClasses do
     begin
+      rType := FRttiContext.GetType(pair.Key);
+      if rType.TryGetAttributeOfType<CategoryAttribute>(categoryAttrib) then
+        category := categoryAttrib.Category
+      else
+        category := '';
+
       uName := pair.Key.UnitName;
+
       namespaces := SplitString(uName,'.');
       //if the unit name has no namespaces the just add the tests.
       fixtureNamespace := '';
@@ -113,7 +154,7 @@ begin
         begin
           if not tmpFixtures.TryGetValue(fixtureNamespace,fixture) then
           begin
-            parentFixture := context.CreateFixture(TObject,fixtureNamespace);
+            parentFixture := context.CreateFixture(TObject,fixtureNamespace,'');
             tmpFixtures.Add(fixtureNamespace,parentFixture);
             fixtureList.Add(parentFixture);
           end;
@@ -124,14 +165,14 @@ begin
         begin
           if not tmpFixtures.TryGetValue(parentNamespace,parentFixture) then
           begin
-            parentFixture := context.CreateFixture(TObject,parentNamespace);
+            parentFixture := context.CreateFixture(TObject,parentNamespace,'');
             tmpFixtures.Add(parentNamespace,parentFixture);
             fixtureList.Add(parentFixture);
           end;
 
           if not tmpFixtures.TryGetValue(fixtureNamespace,fixture) then
           begin
-            fixture := parentFixture.AddChildFixture(TObject,fixtureNamespace);
+            fixture := parentFixture.AddChildFixture(TObject,fixtureNamespace,'');
             tmpFixtures.Add(fixtureNamespace,fixture);
           end;
           parentFixture := fixture;
@@ -143,15 +184,15 @@ begin
 
       if parentFixture = nil then
       begin
-        fixture := context.CreateFixture(pair.Key,fixtureNamespace);
+        fixture := context.CreateFixture(pair.Key,fixtureNamespace,category);
         fixtureList.Add(fixture);
       end
       else
-        parentFixture.AddChildFixture(pair.Key,fixtureNamespace);
+        parentFixture.AddChildFixture(pair.Key,fixtureNamespace,category);
     end;
     for fixture in fixtureList do
     begin
-      GenerateTests(fixture);
+      GenerateTests(context,fixture);
     end;
 
   finally
@@ -166,11 +207,11 @@ begin
 
   if (ACount > 1) then
   begin
-    Result := Result + Format(' %d of %d', [ATimes, ACount]);
+    Result := Result + Format('-%d-of-%d', [ATimes, ACount]);
   end;
 end;
 
-procedure TDUnitXFixtureProvider.GenerateTests(const fixture: ITestFixture);
+procedure TDUnitXFixtureProvider.GenerateTests(const context: IFixtureProviderContext; const fixture: ITestFixture);
 var
   childFixture : ITestFixture;
 
@@ -194,6 +235,7 @@ var
   tearDownAttrib : TearDownAttribute;
   tearDownFixtureAttrib : TearDownFixtureAttribute;
   testAttrib : TestAttribute;
+  categoryAttrib : CategoryAttribute;
   ignoredAttrib   : IgnoreAttribute;
   testCases       : TArray<CustomTestCaseAttribute>;
   testCaseAttrib  : CustomTestCaseAttribute;
@@ -202,8 +244,9 @@ var
   testCaseData    : TestCaseInfo;
   testEnabled     : boolean;
   isTestMethod    : boolean;
-  repeatAttrib: RepeatTestAttribute;
+  repeatAttrib    : RepeatTestAttribute;
 
+  category        : string;
   ignoredTest     : boolean;
   ignoredReason   : string;
 
@@ -211,11 +254,11 @@ var
   i: Integer;
   currentFixture: ITestFixture;
 begin
-  WriteLn('Generating Tests for : ' + fixture.FullName);
+//  WriteLn('Generating Tests for : ' + fixture.FullName);
   if fixture.HasChildFixtures then
   begin
     for childFixture in fixture.Children do
-      GenerateTests(childFixture);
+      GenerateTests(context, childFixture);
   end;
 
   rType := FRttiContext.GetType(fixture.TestClass);
@@ -237,6 +280,9 @@ begin
   begin
     ignoredTest := false;
     ignoredReason := '';
+
+    category := TStrUtils.Join(TListStringUtils.ToArray(fixture.Categories),','); //default to the fixture's category
+    categoryAttrib := nil;
     testEnabled := true;
     setupAttrib := nil;
     setupFixtureAttrib := nil;
@@ -244,12 +290,19 @@ begin
     tearDownFixtureAttrib := nil;
     ignoredAttrib := nil;
     testAttrib := nil;
+    categoryAttrib := nil;
     isTestMethod := false;
     repeatCount := 1;
     currentFixture := fixture;
 
     meth.Code := method.CodeAddress;
     meth.Data := fixture.FixtureInstance;
+
+    //if the test has a category attribute then we'll use it to override the fixtures's category.
+    if method.TryGetAttributeOfType<CategoryAttribute>(categoryAttrib) then
+      category := categoryAttrib.Category;
+
+
 
     if method.TryGetAttributeOfType<RepeatTestAttribute>(repeatAttrib) then
     begin
@@ -262,7 +315,7 @@ begin
       if (repeatAttrib.Count > 1) then
       begin
         repeatCount := repeatAttrib.Count;
-        currentFixture := fixture.AddChildFixture(fixture.TestClass, Format('%d x %s', [repeatCount, method.Name]));
+        currentFixture := fixture.AddChildFixture(fixture.TestClass, Format('%s.%s', [currentFixture.FullName,method.Name]),category);
       end;
     end;
 
@@ -335,7 +388,7 @@ begin
           begin
             for i := 1 to repeatCount do
             begin
-              currentFixture.AddTestCase(testCaseAttrib.CaseInfo.Name, FormatTestName(method.Name, i, repeatCount), method, testEnabled,testCaseAttrib.CaseInfo.Values);
+              currentFixture.AddTestCase(testCaseAttrib.CaseInfo.Name, FormatTestName(method.Name, i, repeatCount), category, method, testEnabled,testCaseAttrib.CaseInfo.Values);
             end;
           end;
           // Add test case from test \case sources
@@ -345,7 +398,7 @@ begin
             begin
               for i := 1 to repeatCount do
               begin
-                currentFixture.AddTestCase(TestCaseData.Name, FormatTestName(method.Name, i, repeatCount), method, testEnabled,TestCaseData.Values);
+                currentFixture.AddTestCase(TestCaseData.Name, FormatTestName(method.Name, i, repeatCount), category, method, testEnabled,TestCaseData.Values);
               end;
             end;
           end;
@@ -353,7 +406,7 @@ begin
         else
         begin
           //if a testcase is ignored, just add it as a regular test.
-          currentFixture.AddTest(TTestMethod(meth),method.Name,true,true,ignoredReason);
+          currentFixture.AddTest(TTestMethod(meth),method.Name,category,true,true,ignoredReason);
         end;
         continue;
       end;
@@ -363,7 +416,7 @@ begin
     begin
       for i := 1 to repeatCount do
       begin
-        currentFixture.AddTest(TTestMethod(meth),FormatTestName(method.Name, i, repeatCount),true,ignoredTest,ignoredReason);
+        currentFixture.AddTest(TTestMethod(meth),FormatTestName(method.Name, i, repeatCount),category,true,ignoredTest,ignoredReason);
       end;
       continue;
     end;
@@ -374,7 +427,7 @@ begin
       // Add Published Method that has no Attributes
       for i := 1 to repeatCount do
       begin
-        currentFixture.AddTest(TTestMethod(meth),FormatTestName(method.Name, i, repeatCount),true,ignoredTest,ignoredReason);
+        currentFixture.AddTest(TTestMethod(meth),FormatTestName(method.Name, i, repeatCount),category,true,ignoredTest,ignoredReason);
       end;
     end;
   end;
@@ -442,33 +495,59 @@ begin
 
 end;
 
-procedure TDUnitXFixtureProvider.RTTIDiscoverFixtureClasses;
+function TDUnitXFixtureProvider.TryGetAttributeOfType<T>(const attributes : TArray<TCustomAttribute>; var attribute : T) : boolean;
+var
+  LAttribute: TCustomAttribute;
+begin
+  attribute := Default(T);
+  Result := false;
+  for LAttribute in attributes do
+  begin
+    if LAttribute.InheritsFrom(T) then
+    begin
+      attribute := T(LAttribute);
+      result := true;
+      Break;
+    end;
+  end;
+end;
+
+procedure TDUnitXFixtureProvider.RTTIDiscoverFixtureClasses(const context: IFixtureProviderContext);
 var
   types : TArray<TRttiType>;
   rType : TRttiType;
   attributes : TArray<TCustomAttribute>;
-  attribute : TCustomAttribute;
   sName : string;
+  fixtureAttribute : TestFixtureAttribute;
+  categoryAttrib : CategoryAttribute;
+  sNameSpace : string;
+  sCategory : string;
 begin
   types := FRttiContext.GetTypes;
   for rType in types do
   begin
+    fixtureAttribute := nil;
     //try and keep the iteration down as much as possible
     if (rType.TypeKind = TTypeKind.tkClass) and (not rType.InheritsFrom(TPersistent)) then
     begin
       attributes := rType.GetAttributes;
       if Length(attributes) > 0 then
-        for attribute in attributes do
+      begin
+        if TryGetAttributeOfType<TestFixtureAttribute>(attributes,fixtureAttribute) then
         begin
-          if attribute.ClassType =  TestFixtureAttribute then
-          begin
-            sName := TestFixtureAttribute(attribute).Name;
-            if sName = '' then
-              sName := TRttiInstanceType(rType).MetaclassType.ClassName;
-            if not FFixtureClasses.ContainsKey(TRttiInstanceType(rType).MetaclassType) then
-              FFixtureClasses.Add(TRttiInstanceType(rType).MetaclassType,sName);
-          end;
+          sName := fixtureattribute.Name;
+          if sName = '' then
+            sName := TRttiInstanceType(rType).MetaclassType.ClassName;
+          sNameSpace := TRttiInstanceType(rType).MetaclassType.UnitName;
+          if TryGetAttributeOfType<CategoryAttribute>(attributes,categoryAttrib) then
+            sCategory := categoryAttrib.Category
+          else
+            sCategory := '';
+
+          if not FFixtureClasses.ContainsKey(TRttiInstanceType(rType).MetaclassType) then
+            FFixtureClasses.Add(TRttiInstanceType(rType).MetaclassType,sName);
         end;
+      end;
     end;
   end;
 end;

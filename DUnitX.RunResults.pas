@@ -218,7 +218,8 @@ begin
     TTestResultType.MemoryLeak : Inc(FMemoryLeakCount);
   end;
 
-  if testResult.ResultType <> TTestResultType.Pass then
+  //Note, don't treat ignored as errors here!
+  if not (testResult.ResultType in [TTestResultType.Pass, TTestResultType.Ignored]) then
     FAllPassed := False;
 
   (fixtureResult as IFixtureResultBuilder).AddTestResult(testResult);

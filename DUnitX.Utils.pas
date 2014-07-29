@@ -97,7 +97,12 @@ type
 type
   TStrUtils = class
     class function PadString(const s: string; const totalLength: integer; const padLeft: boolean = True; padChr: Char = ' '): string;
-    class function SplitString(const S, Delimiters: string): TStringDynArray;
+    class function SplitString(const S, Delimiters: string): TArray<string>;
+    class function Join(const values : TArray<string>; const delim : string) : string;overload;
+  end;
+
+  TListStringUtils = class
+    class function ToArray(const values : TList<string>) : TArray<string>;
   end;
 
 type
@@ -479,7 +484,7 @@ type
     function IsGenericTypeOf(const BaseTypeName: string): Boolean;
     function IsInheritedFrom(OtherType: TRttiType): Boolean; overload;
     function IsInheritedFrom(const OtherTypeName: string): Boolean; overload;
-    function MakeGenericType(TypeArguments: array of PTypeInfo): TRttiType;
+    function MakeGenericType(const TypeArguments: array of PTypeInfo): TRttiType;
 
     {$REGION 'Documentation'}
     ///	<summary>
@@ -678,6 +683,7 @@ type
   TArrayHelper = class
   public
     class function Concat<T>(const Arrays: array of TArray<T>): TArray<T>; static;
+    class function Create<T>(const a : T; const b : T) : TArray<T>;static;
 {$IF DELPHI_2010}
     class function ToArray<T>(Enumerable: TEnumerable<T>; Count: Integer): TArray<T>; static;
 {$IFEND}
@@ -790,6 +796,19 @@ begin
   end;
 end;
 
+
+class function TStrUtils.Join(const values : TArray<string>; const delim: string): string;
+var
+  v : string;
+begin
+  result := '';
+  for v in values do
+  begin
+    if result <> '' then
+      result := result + delim;
+    result := result + v;
+  end;
+end;
 
 class function TStrUtils.PadString(const s: string; const totalLength: integer; const padLeft: boolean = True; padChr: Char = ' '): string;
 begin
@@ -1609,6 +1628,13 @@ begin
 end;
 {$IFEND}
 
+class function TArrayHelper.Create<T>(const a, b: T): TArray<T>;
+begin
+  SetLength(result,2);
+  result[0] := a;
+  result[0] := b;
+end;
+
 { TObjectHelper }
 
 function TObjectHelper.GetField(const AName: string): TRttiField;
@@ -2300,7 +2326,7 @@ begin
   end;
 end;
 
-function TRttiTypeHelper.MakeGenericType(TypeArguments: array of PTypeInfo): TRttiType;
+function TRttiTypeHelper.MakeGenericType(const TypeArguments: array of PTypeInfo): TRttiType;
 var
   i: Integer;
   args: TStringDynArray;
@@ -3058,7 +3084,7 @@ end;
 {$ENDIF}
 
 
-class function TStrUtils.SplitString(const S, Delimiters: string): TStringDynArray;
+class function TStrUtils.SplitString(const S, Delimiters: string): TArray<string>;
 var
   StartIdx: Integer;
   FoundIdx: Integer;
@@ -3095,6 +3121,17 @@ begin
     Result[SplitPoints] := Copy(S, StartIdx, Length(S) - StartIdx + 1);
   end;
 
+end;
+
+{ TListStringUtils }
+
+class function TListStringUtils.ToArray(const values: TList<string>): TArray<string>;
+var
+  i : integer;
+begin
+  SetLength(result,values.Count);
+  for i := 0 to values.Count - 1 do
+    result[i] := values[i];
 end;
 
 initialization

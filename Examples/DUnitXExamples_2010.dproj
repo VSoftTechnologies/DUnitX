@@ -25,6 +25,7 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
+			<DCC_UnitSearchPath>$(DUNITX);$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
 			<DCC_UsePackage>rtl;vcl;vclx;vclactnband;xmlrtl;vclimg;dbrtl;vcldb;vcldbx;bdertl;vcltouch;dsnap;dsnapcon;vclie;webdsnap;inet;inetdbbde;inetdbxpress;soaprtl;DbxCommonDriver;DbxClientDriver;DBXInterBaseDriver;DBXMySQLDriver;dbexpress;dbxcds;FBDream2010;SynEdit_R2010;NxCommonRun;NxGridRun;KWizardD2010R;GFDLIB2009;dclRouteMapD2010;tb2k_d12;SpTBXLib_d12;dwWin7Controls_2010;IndyCore140;IndySystem140;IndyProtocols140;lmddocking11rt_140;lmdrtl11rt_140;RaizeComponentsVcl;FBMiscComponents;FBFormDesigner;FBSynEditHighlighters;VSPageR;madBasic_;madDisAsm_;madExcept_;adortl;TeeWorld814;TeeImage814;TeeLanguage814;TeePro814;TeeGL814;TeeUI814;TeeDB814;Tee814;VirtualTreesR;VSMessageAPIDesign;VSMessageAPIRun</DCC_UsePackage>
 			<Manifest_File>None</Manifest_File>
 			<DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;$(DCC_Namespace)</DCC_Namespace>
@@ -68,7 +69,6 @@
 			<DCCReference Include="..\DUnitX.Loggers.Null.pas"/>
 			<DCCReference Include="..\DUnitX.MemoryLeakMonitor.Default.pas"/>
 			<DCCReference Include="..\DUnitX.AutoDetect.Console.pas"/>
-			<DCCReference Include="..\DUnitX.CommandLine.pas"/>
 			<DCCReference Include="..\DUnitX.ConsoleWriter.Base.pas"/>
 			<DCCReference Include="..\DUnitX.DUnitCompatibility.pas"/>
 			<DCCReference Include="..\DUnitX.Extensibility.pas"/>
@@ -79,12 +79,24 @@
 			<DCCReference Include="..\DUnitX.InternalInterfaces.pas"/>
 			<DCCReference Include="..\DUnitX.IoC.pas"/>
 			<DCCReference Include="..\DUnitX.Loggers.Console.pas"/>
-			<BuildConfiguration Include="Debug">
-				<Key>Cfg_2</Key>
-				<CfgParent>Base</CfgParent>
+			<DCCReference Include="..\DUnitX.CommandLine.OptionDef.pas"/>
+			<DCCReference Include="..\DUnitX.CommandLine.Options.pas"/>
+			<DCCReference Include="..\DUnitX.CommandLine.Parser.pas"/>
+			<DCCReference Include="..\DUnitX.OptionsDefinition.pas"/>
+			<DCCReference Include="..\DUnitX.Banner.pas"/>
+			<DCCReference Include="..\DUnitX.CategoryExpression.pas"/>
+			<DCCReference Include="..\DUnitX.TestNameParser.pas"/>
+			<DCCReference Include="..\DUnitX.FilterBuilder.pas"/>
+			<DCCReference Include="..\DUnitX.Filters.pas"/>
+			<BuildConfiguration Include="Base">
+				<Key>Base</Key>
 			</BuildConfiguration>
 			<BuildConfiguration Include="Release">
 				<Key>Cfg_1</Key>
+				<CfgParent>Base</CfgParent>
+			</BuildConfiguration>
+			<BuildConfiguration Include="Debug">
+				<Key>Cfg_2</Key>
 				<CfgParent>Base</CfgParent>
 			</BuildConfiguration>
 		</ItemGroup>

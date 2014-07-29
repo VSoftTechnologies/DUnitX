@@ -143,8 +143,10 @@ end;
 { TDUnitXTestError }
 
 constructor TDUnitXTestError.Create(const ATestInfo : ITestInfo; const AType: TTestResultType; const AThrownException: Exception; const Addrs: Pointer;  const AMessage: string = '');
+{$IFDEF DELPHI_XE_UP}
 var
   stackTraceProvider : IStacktraceProvider;
+{$ENDIF}
 begin
   inherited Create(ATestInfo, AType, AMessage);
 
@@ -162,8 +164,10 @@ begin
 end;
 
 function TDUnitXTestError.GetExceptionAddressInfo: string;
+{$IFDEF DELPHI_XE_UP}
 var
   stackTraceProvider : IStacktraceProvider;
+{$ENDIF}
 begin
   {$IFDEF DELPHI_XE_UP}
   stackTraceProvider := TDUnitXIoc.DefaultContainer.Resolve<IStacktraceProvider>();
@@ -180,8 +184,10 @@ begin
 end;
 
 function TDUnitXTestError.GetExceptionLocationInfo: string;
+{$IFDEF DELPHI_XE_UP}
 var
   stackTraceProvider : IStacktraceProvider;
+{$ENDIF}
 begin
   {$IFDEF DELPHI_XE_UP}
   stackTraceProvider := TDUnitXIoc.DefaultContainer.Resolve<IStacktraceProvider>();

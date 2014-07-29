@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2012 Vincent Parrett                              }
+{           Copyright (C) 2013 Vincent Parrett                              }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -25,6 +25,12 @@
 {***************************************************************************}
 
 unit DUnitX.Examples.General;
+
+{$I DUnitX.inc}
+
+{$IFDEF DELPHI_XE_UP}
+{$STRONGLINKTYPES ON}
+{$ENDIF}
 
 interface
 
@@ -264,8 +270,10 @@ initialization
 //manual registration for now.
 
 //Register the test fixtures
+{$IFNDEF DELPHI_XE_UP}
   TDUnitX.RegisterTestFixture(TMyExampleTests);
   TDUnitX.RegisterTestFixture(TExampleFixture2);
   TDUnitX.RegisterTestFixture(TExampleFixture3);
   TDUnitX.RegisterTestFixture(TExampleFixture5);
+{$ENDIF}
 end.

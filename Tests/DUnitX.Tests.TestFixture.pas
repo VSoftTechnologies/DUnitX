@@ -70,25 +70,29 @@ type
   {$M+}
   [TestFixture]
   TTestRepeatAttribute = class
-  private
   public
     [SetUpFixture]
-    procedure SetUp;
+    procedure SetUpFixture;
+
     [TearDownFixture]
     procedure TearDownFixture;
+
     [Test]
     [RepeatTest(TIMES_RUN)]
     procedure TestRepeat3Times;
+
     [RepeatTest(TIMES_RUN_TEST_CASE)]
     [Test]
     [TestCase('Sum', '1,2,3')]
     procedure Sum(const A, B, Expected: Integer);
+
     [Test]
     [RepeatTest(0)]
     procedure IgnoreMeWhenRepeatIsZero;
   published
     [RepeatTest(TIMES_RUN_ANYWAY)]
     procedure TestRepeat5TimesAnyWay;
+
     [Test]
     [RepeatTest(0)]
     procedure IgnoreMeAnyWayWhenRepeatIsZero;
@@ -168,7 +172,7 @@ begin
   Assert.IsTrue(false,'I should not have been called!');
 end;
 
-procedure TTestRepeatAttribute.SetUp;
+procedure TTestRepeatAttribute.SetUpFixture;
 begin
   _TimesRun := 0;
   _TimesRunAnyWay := 0;
