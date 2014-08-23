@@ -23,7 +23,7 @@
 {  limitations under the License.                                           }
 {                                                                           }
 { This unit is largely a port of the NUnit CategoryExpression class         }
-{ Copyright © 2012-2014 Charlie Poole                                       }
+{ Copyright Â© 2012-2014 Charlie Poole                                       }
 { License  : http://nunit.org/index.php?p=vsTestAdapterLicense&r=2.6.3      }
 {                                                                           }
 {***************************************************************************}
@@ -228,7 +228,7 @@ end;
 
 procedure TCategoryExpression.SkipWhiteSpace;
 begin
-  while( (FNext < Length(Ftext)) and TCharacter.IsWhiteSpace(FText [FNext] ) ) do
+  while( (FNext < Length(Ftext)) and {$IFDEF DELPHI_XE4_UP}FText[FNext].IsWhiteSpace{$ELSE}TCharacter.IsWhiteSpace(FText[FNext]){$ENDIF} ) do
     Inc(FNext);
 end;
 
