@@ -1160,14 +1160,14 @@ begin
     leftValue := TValue.From<T>(left);
     rightValue := TValue.From<T>(right);
 
-    Fail(Format('left %s Not Equal To %s',[leftValue.ToString,rightValue.ToString]), ReturnAddress);
+    Fail(Format('left %s equals right %s %s',[leftValue.ToString, rightValue.ToString, message]), ReturnAddress);
   end;
 end;
 {$ELSE}
 class procedure Assert.AreNotEqual(const left, right: Integer; const message: string);
 begin
   if left = right then
-    Fail(Format('%d equals right %d %s' ,[left, right, message]), ReturnAddress);
+    Fail(Format('left %d equals right %d %s' ,[left, right, message]), ReturnAddress);
 end;
 {$ENDIF}
 
