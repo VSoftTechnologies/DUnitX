@@ -54,7 +54,6 @@ type
     destructor Destroy; override;
   end;
 
-
 implementation
 
 uses
@@ -68,20 +67,23 @@ uses
   DUnitX.Utils,
   DUnitX.IoC;
 
-
 constructor TDUnitXWindowsConsoleWriter.Create;
 var
   dummy : Cardinal;
   consoleInfo : _CONSOLE_SCREEN_BUFFER_INFO;
 begin
   inherited;
+
   FStdOut := GetStdHandle(STD_OUTPUT_HANDLE);
+
   if not GetConsoleMode(FStdOut, dummy) then // Not a console handle
     Self.RedirectedStdOut := True;
+
   Self.ConsoleWidth := GetConsoleWidth;
   FLastForeground := ccDarkYellow; // Just to ensure the first colour change goes through
   FLastBackground := ccDarkYellow;
-  // Save the current console colour settings so we can restore them:
+
+  //Save the current console colour settings so we can restore them:
   if GetConsoleScreenBufferInfo(FStdOut, consoleInfo) then
   begin
     FDefaultForeground := consoleInfo.wAttributes and (FOREGROUND_BLUE or FOREGROUND_GREEN or FOREGROUND_RED or FOREGROUND_INTENSITY);
@@ -101,6 +103,7 @@ begin
     SetConsoleTextAttribute(FStdOut,
        GetForegroundColourCode(foreground) or
        GetBackgroundColourCode(background));
+
     FLastForeground := foreground;
     FLastBackground := background;
   end;
@@ -130,12 +133,12 @@ begin
   end;
 end;
 
-
 procedure TDUnitXWindowsConsoleWriter.InternalWrite(const s: String);
 var
   output : string;
   dummy : Cardinal;
 begin
+  //Add the indenting.
   output := TStrUtils.PadString(s, length(s)+ Self.CurrentIndentLevel, True, ' ');
   if Self.RedirectedStdOut then
     System.Write(output)
@@ -148,7 +151,13 @@ var
   output : string;
   dummy : Cardinal;
 begin
-  output := TStrUtils.PadString(s, length(s)+ Self.CurrentIndentLevel, True, ' ') + #13#10;
+  //Add the indenting.
+  output := TStrUtils.PadString(s, length(s)+ Self.CurrentIndentLevel, True, ' ');
+
+  //If we are already going to wrap around to the next line. No need to add CRLF
+  if Length(output) < ConsoleWidth then
+    output := output + #13#10;
+
   if Self.RedirectedStdOut then
     System.Write(output)
   else
@@ -193,7 +202,6 @@ begin
   if GetConsoleScreenBufferInfo(FStdOut, info) then
     Result := info.dwSize.X;
 end;
-
 
 {$IFDEF MSWINDOWS}
 initialization
