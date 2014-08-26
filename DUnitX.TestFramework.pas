@@ -315,6 +315,7 @@ type
     class procedure AreEqual<T>(const left, right : T; const message : string = '');overload;
 {$ENDIF}
     class procedure AreEqual(const left, right : Integer; const message : string = '');overload;
+    class procedure AreEqual(const left, right : boolean; const message : string = '');overload;
 
     class procedure AreEqualMemory(const left : Pointer; const right : Pointer; const size : Cardinal; const message : string = '');
 
@@ -1742,6 +1743,12 @@ end;
 constructor IgnoreAttribute.Create(const AReason: string);
 begin
   FReason := AReason;
+end;
+
+class procedure Assert.AreEqual(const left, right: boolean; const message: string);
+begin
+  if left <> right then
+    Fail(Format('left %s but got %s %s' ,[BoolToStr(left, true), BoolToStr(right, true), message]), ReturnAddress);
 end;
 
 { TDUnitXOptions }
