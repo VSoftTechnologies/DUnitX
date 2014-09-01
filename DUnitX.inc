@@ -131,3 +131,8 @@
 {$I DUnitX.Stacktrace.inc}
 {$I DUnitX.MemoryLeaks.inc}
 
+{$IFNDEF DUNITX-DEBUG}
+  {$D-}
+{$ENDIF}
+
+
