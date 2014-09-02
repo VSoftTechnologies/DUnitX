@@ -245,6 +245,8 @@ var
   child : IFixtureResult;
   testResult : ITestResult;
   sExecuted : string;
+  sName: string;
+  sSuccess: string;
 begin
   Indent;
   try
@@ -254,6 +256,10 @@ begin
       sResult := 'Failure';
     sTime := Format('%.3f',[fixtureResult.Duration.TotalSeconds]);
 
+    sName := EscapeForXML(fixtureResult.Fixture.Name);
+    sResult := EscapeForXML(sResult);
+    sSuccess := EscapeForXML(BoolToStr(not fixtureResult.HasFailures,true));
+    sTime := EscapeForXML(sTime);
 
     //its a real fixture if the class is not TObject.
     if (not fixtureResult.Fixture.TestClass.ClassNameIs('TObject'))  then
@@ -262,8 +268,10 @@ begin
       if fixtureResult.ResultCount = 0 then
         exit;
       sExecuted := BoolToStr(fixtureResult.ResultCount > 0,true);
+      sExecuted := EscapeForXML(sExecuted);
 
-      WriteXMLLine(Format('<test-suite type="Fixture" name="%s" executed="%s" result="%s" success="%s" time="%s" >',[fixtureResult.Fixture.Name, sResult,sExecuted,BoolToStr(not fixtureResult.HasFailures,true),sTime]));
+      WriteXMLLine(Format('<test-suite type="Fixture" name="%s" executed="%s" result="%s" success="%s" time="%s" >',[sName, sResult, sExecuted, sSuccess, sTime]));
+
       Indent;
       WriteXMLLine('<results>');
       for testResult in fixtureResult.TestResults do
@@ -285,7 +293,9 @@ begin
       if fixtureResult.ChildCount = 0 then
         sLineEnd := '/';
       //It's a Namespace.
-      WriteXMLLine(Format('<test-suite type="Namespace" name="%s" executed="true" result="%s" success="%s" time="%s" asserts="0" %s>',[fixtureResult.Fixture.Name, sResult,BoolToStr(not fixtureResult.HasFailures,true),sTime,sLineEnd]));
+
+      WriteXMLLine(Format('<test-suite type="Namespace" name="%s" executed="true" result="%s" success="%s" time="%s" asserts="0" %s>',[sName, sResult, sSuccess, sTime, sLineEnd]));
+
       if fixtureResult.ChildCount > 0 then
       begin
         Indent;
@@ -326,7 +336,7 @@ var
   sTime : string;
   sExecuted : string;
   sSuccess : string;
-
+  sName : string;
 begin
   Indent;
   try
@@ -337,11 +347,16 @@ begin
     sExecuted := BoolToStr(testResult.ResultType <> TTestResultType.Ignored,true);
 
     if testResult.ResultType <> TTestResultType.Ignored then
-      sSuccess := Format('success="%s"',[BoolToStr(testResult.ResultType = TTestResultType.Pass,true)])
+      sSuccess := Format('success="%s"',[EscapeForXML(BoolToStr(testResult.ResultType = TTestResultType.Pass, true))])
     else
       sSuccess := '';
 
-    WriteXMLLine(Format('<test-case name="%s" executed="%s" result="%s" %s time="%s" asserts="0" %s>',[testResult.Test.Name, sExecuted, sResult,sSuccess,sTime,sLineEnd]));
+    sName := EscapeForXML(testResult.Test.Name);
+    sExecuted := EscapeForXML(sExecuted);
+    sResult := EscapeForXML(sResult);
+    sTime := EscapeForXML(sTime);
+
+    WriteXMLLine(Format('<test-case name="%s" executed="%s" result="%s" %s time="%s" asserts="0" %s>', [sName, sExecuted, sResult, sSuccess, sTime, sLineEnd]));
     if testResult.ResultType <> TTestResultType.Pass then
     begin
       Indent;
