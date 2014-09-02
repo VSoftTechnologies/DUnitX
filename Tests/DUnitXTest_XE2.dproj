@@ -63,6 +63,7 @@
 			<DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+			<DCC_Define>DUNITX-DEBUG;$(DCC_Define)</DCC_Define>
 			<DCC_TypedAtParameter>true</DCC_TypedAtParameter>
 		</PropertyGroup>
 		<ItemGroup>
