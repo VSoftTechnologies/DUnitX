@@ -185,14 +185,18 @@ var
   iLineIndx : integer;
 begin
   slLines := InternalBreakupMessage(s);
+  try
+    //Write out all the lines execept the last one.
+    for iLineIndx  := 0 to slLines.Count - 2 do
+      InternalWriteLn(slLines[iLineIndx]);
 
-  //Write out all the lines execept the last one.
-  for iLineIndx  := 0 to slLines.Count - 2 do
-    InternalWriteLn(slLines[iLineIndx]);
+    //Now write out the last one without an end of line character.
+    if slLines.Count > 0 then
+      InternalWrite(slLines[slLines.Count - 1]);
+  finally
+    FreeAndNil(slLines);
+  end;
 
-  //Now write out the last one without an end of line character.
-  if slLines.Count > 0 then
-    InternalWrite(slLines[slLines.Count - 1]);
 end;
 
 procedure TDUnitXConsoleWriterBase.WriteLn;
@@ -207,10 +211,13 @@ var
   iLineIndx : integer;
 begin
   slLines := InternalBreakupMessage(s);
-
-  //Write out all the lines execept the last one.
-  for iLineIndx  := 0 to slLines.Count - 1 do
-    InternalWriteLn(slLines[iLineIndx]);
+  try
+    //Write out all the lines execept the last one.
+    for iLineIndx  := 0 to slLines.Count - 1 do
+      InternalWriteLn(slLines[iLineIndx]);
+  finally
+    FreeAndNil(slLines);
+  end;
 end;
 
 end.
