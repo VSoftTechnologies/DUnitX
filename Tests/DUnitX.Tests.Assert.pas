@@ -120,6 +120,11 @@ type
     [Test]
     procedure Test_Implements_Will_Pass_If_Implemented;
 
+    [Test]
+    procedure Test_AreSameOnSameObjectWithDifferentInterfaces_No_Exception;
+
+    [Test]
+    procedure Test_AreNotSameOnSameObjectWithDifferentInterfaces_Throws_Exception;
 
   end;
 
@@ -682,6 +687,31 @@ begin
   finally
     FreeAndNil(mock);
   end;
+end;
+
+
+procedure TTestsAssert.Test_AreSameOnSameObjectWithDifferentInterfaces_No_Exception;
+var
+  myObject  : IInterfaceList;
+begin
+  myObject := TInterfaceList.Create;
+  Assert.WillNotRaise(
+    procedure
+    begin
+      Assert.AreSame(myObject, myObject as IInterface);
+    end, ETestFailure);
+end;
+
+procedure TTestsAssert.Test_AreNotSameOnSameObjectWithDifferentInterfaces_Throws_Exception;
+var
+  myObject  : IInterfaceList;
+begin
+  myObject := TInterfaceList.Create;
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.AreNotSame(myObject, myObject as IInterface);
+    end, ETestFailure);
 end;
 
 initialization

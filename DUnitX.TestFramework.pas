@@ -1209,13 +1209,13 @@ end;
 
 class procedure Assert.AreNotSame(const left, right: IInterface; const message: string);
 begin
-  if left = right then
+  if (left as IInterface) = (right as IInterface) then
     Fail(Format('references are the same. %s',[message]), ReturnAddress);
 end;
 
 class procedure Assert.AreSame(const left, right: IInterface; const message: string);
 begin
-  if left <> right then
+  if (left as IInterface) <> (right as IInterface) then
     Fail(Format('references are Not the same. %s',[message]), ReturnAddress);
 end;
 
