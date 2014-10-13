@@ -331,9 +331,8 @@ type
 {$IFDEF DELPHI_XE_UP}
     //Delphi 2010 compiler bug breaks this
     class procedure AreNotEqual<T>(const left, right : T; const message : string = '');overload;
-{$ELSE}
-    class procedure AreNotEqual(const left, right : Integer; const message : string = '');overload;
 {$ENDIF}
+    class procedure AreNotEqual(const left, right : Integer; const message : string = '');overload;
     class procedure AreNotEqualMemory(const left : Pointer; const right : Pointer; const size : Cardinal; const message : string = '');
 
     class procedure AreSame(const left, right : TObject; const message : string = '');overload;
@@ -1163,13 +1162,13 @@ begin
     Fail(Format('left %s equals right %s %s',[leftValue.ToString, rightValue.ToString, message]), ReturnAddress);
   end;
 end;
-{$ELSE}
+{$ENDIF}
+
 class procedure Assert.AreNotEqual(const left, right: Integer; const message: string);
 begin
   if left = right then
     Fail(Format('left %d equals right %d %s' ,[left, right, message]), ReturnAddress);
 end;
-{$ENDIF}
 
 class procedure Assert.AreNotEqual(const left, right: Extended; const message: string);
 var
