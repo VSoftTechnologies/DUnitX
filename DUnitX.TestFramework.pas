@@ -345,7 +345,9 @@ type
 {$IFDEF DELPHI_XE_UP}
     //Delphi 2010 compiler bug breaks this
     class procedure Contains<T>(const list : IEnumerable<T>; const value : T; const message : string = '');overload;
+    class procedure Contains<T>(const arr : array of T; const value : T; const message : string = '');overload;
     class procedure DoesNotContain<T>(const list : IEnumerable<T>; const value : T; const message : string = '');overload;
+    class procedure DoesNotContain<T>(const arr : array of T; const value : T; const message : string = '');overload;
 {$ENDIF}
     class procedure Implements<T : IInterface>(value : IInterface; const message : string = '' );
     class procedure IsTrue(const condition : boolean; const message : string = '');
@@ -1241,6 +1243,22 @@ begin
 
   Fail(Format('List does not contain value. %s',[message]), ReturnAddress);
 end;
+
+class procedure Assert.Contains<T>(const arr : array of T; const value : T; const message : string = '');
+var
+  o : T;
+  comparer : IComparer<T>;
+begin
+  comparer := TComparer<T>.Default;
+  for o in arr do
+  begin
+    if comparer.Compare(o,value) = 0 then
+      exit;
+  end;
+
+  Fail(Format('List does not contain value. %s',[message]), ReturnAddress);
+end;
+
 {$ENDIF}
 
 {$IFDEF DELPHI_XE_UP}
@@ -1252,6 +1270,19 @@ var
 begin
   comparer := TComparer<T>.Default;
   for o in list do
+  begin
+    if comparer.Compare(o,value) = 0 then
+      Fail(Format('List contains value. %s',[message]), ReturnAddress);
+  end;
+end;
+
+class procedure Assert.DoesNotContain<T>(const arr : array of T; const value : T; const message : string = '');
+var
+  o : T;
+  comparer : IComparer<T>;
+begin
+  comparer := TComparer<T>.Default;
+  for o in arr do
   begin
     if comparer.Compare(o,value) = 0 then
       Fail(Format('List contains value. %s',[message]), ReturnAddress);
