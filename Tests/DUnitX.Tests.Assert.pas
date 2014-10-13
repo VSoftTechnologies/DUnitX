@@ -126,6 +126,17 @@ type
     [Test]
     procedure Test_AreNotSameOnSameObjectWithDifferentInterfaces_Throws_Exception;
 
+    [Test]
+    procedure Contains_ArrayOfT_Throws_No_Exception_When_Value_In_Array;
+
+    [Test]
+    procedure Contains_ArrayOfT_Throws_Exception_When_Value_Not_In_Array;
+
+    [Test]
+    procedure DoesNotContain_ArrayOfT_Throws_No_Exception_When_Value_Not_In_Array;
+
+    [Test]
+    procedure DoesNotContain_ArrayOfT_Throws_Exception_When_Value_In_Array;
   end;
 
 implementation
@@ -713,6 +724,44 @@ begin
       Assert.AreNotSame(myObject, myObject as IInterface);
     end, ETestFailure);
 end;
+
+procedure TTestsAssert.Contains_ArrayOfT_Throws_No_Exception_When_Value_In_Array;
+begin
+  Assert.WillNotRaise(
+    procedure
+    begin
+      Assert.Contains<string>(['x', 'y', 'z'], 'x');
+    end, ETestFailure);
+end;
+
+procedure TTestsAssert.Contains_ArrayOfT_Throws_Exception_When_Value_Not_In_Array;
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.Contains<string>(['x', 'y', 'z'], 'a');
+    end, ETestFailure);
+end;
+
+procedure TTestsAssert.DoesNotContain_ArrayOfT_Throws_No_Exception_When_Value_Not_In_Array;
+begin
+  Assert.WillNotRaise(
+    procedure
+    begin
+      Assert.DoesNotContain<string>(['x', 'y', 'z'], 'a');
+    end, ETestFailure);
+end;
+
+
+procedure TTestsAssert.DoesNotContain_ArrayOfT_Throws_Exception_When_Value_In_Array;
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.DoesNotContain<string>(['x', 'y', 'z'], 'x');
+    end, ETestFailure);
+end;
+
 
 initialization
   TDUnitX.RegisterTestFixture(TTestsAssert);
