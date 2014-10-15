@@ -1037,25 +1037,13 @@ class procedure Assert.AreEqual<T>(const left, right: T; const message: string);
 var
   comparer : IComparer<T>;
   leftvalue, rightvalue : TValue;
-  pInfo : PTypeInfo;
-  tInfo : TValue;
 begin
   comparer := TComparer<T>.Default;
   if comparer.Compare(right,left) <> 0 then
   begin
     leftValue := TValue.From<T>(left);
     rightValue := TValue.From<T>(right);
-    pInfo := TypeInfo(string);
-
-    if leftValue.IsEmpty or rightvalue.IsEmpty then
-      Fail(Format('left is not equal to right %s', [message]), ReturnAddress)
-    else
-    begin
-      if leftValue.TryCast(pInfo,tInfo) then
-        Fail(Format('left %s but got %s %s', [leftValue.ToString, rightValue.ToString, message]), ReturnAddress)
-      else
-        Fail(Format('left is not equal to right %s', [message]), ReturnAddress)
-    end;
+    Fail(Format('left %s is not equal to right %s %s', [leftValue.ToString, rightValue.ToString, message]), ReturnAddress)
   end;
 end;
 {$ENDIF}
@@ -1240,7 +1228,7 @@ begin
       exit;
   end;
 
-  Fail(Format('List does not contain value. %s',[message]), ReturnAddress);
+  Fail(Format('List does not contain value %s. %s',[TValue.From<T>(value).ToString, message]), ReturnAddress);
 end;
 
 class procedure Assert.Contains<T>(const arr : array of T; const value : T; const message : string = '');
@@ -1255,7 +1243,7 @@ begin
       exit;
   end;
 
-  Fail(Format('List does not contain value. %s',[message]), ReturnAddress);
+  Fail(Format('List does not contain value %s. %s',[TValue.From<T>(value).ToString, message]), ReturnAddress);
 end;
 
 {$ENDIF}
@@ -1271,7 +1259,7 @@ begin
   for o in list do
   begin
     if comparer.Compare(o,value) = 0 then
-      Fail(Format('List contains value. %s',[message]), ReturnAddress);
+      Fail(Format('List contains value %s. %s',[TValue.From<T>(value).ToString, message]), ReturnAddress);
   end;
 end;
 
@@ -1284,7 +1272,7 @@ begin
   for o in arr do
   begin
     if comparer.Compare(o,value) = 0 then
-      Fail(Format('List contains value. %s',[message]), ReturnAddress);
+      Fail(Format('List contains value %s. %s',[TValue.From<T>(value).ToString, message]), ReturnAddress);
   end;
 end;
 {$ENDIF}
@@ -1309,7 +1297,7 @@ end;
 class procedure Assert.Implements<T>(value: IInterface; const message: string);
 begin
   if not Supports(value,GetTypeData(TypeInfo(T)).Guid) then
-    Fail(message,ReturnAddress);
+    Fail(Format('value does not implement %s. %s', [GetTypeName(TypeInfo(T)), message]),ReturnAddress);
 end;
 
 class procedure Assert.InheritsFrom(const descendant, parent: TClass; const message: string);
