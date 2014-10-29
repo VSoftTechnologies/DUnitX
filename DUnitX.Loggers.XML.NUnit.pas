@@ -8,7 +8,8 @@ uses
   classes,
   SysUtils,
   DUnitX.TestFramework,
-  DUnitX.Loggers.Null;
+  DUnitX.Loggers.Null, 
+  System.Generics.Collections;
 
 //TODO : Rework https://github.com/VSoftTechnologies/Delphi-Fluent-XML so it doesn't use msxml and use it here?
 
@@ -27,6 +28,7 @@ type
 
     procedure OnTestingEnds(const RunResults: IRunResults); override;
 
+    procedure WriteCategoryNodes(const ACategoryList: TList<string>);
     procedure WriteFixtureResult(const fixtureResult : IFixtureResult);
     procedure WriteTestResult(const testResult : ITestResult);
 
@@ -270,9 +272,11 @@ begin
       sExecuted := BoolToStr(fixtureResult.ResultCount > 0,true);
       sExecuted := EscapeForXML(sExecuted);
 
-      WriteXMLLine(Format('<test-suite type="Fixture" name="%s" executed="%s" result="%s" success="%s" time="%s" >',[sName, sResult, sExecuted, sSuccess, sTime]));
-
+      WriteXMLLine(Format('<test-suite type="Fixture" name="%s" executed="%s" result="%s" success="%s" time="%s" >',[sName, sExecuted, sResult, sSuccess, sTime]));
       Indent;
+
+      WriteCategoryNodes(fixtureResult.Fixture.Categories);
+
       WriteXMLLine('<results>');
       for testResult in fixtureResult.TestResults do
       begin
@@ -357,6 +361,8 @@ begin
     sTime := EscapeForXML(sTime);
 
     WriteXMLLine(Format('<test-case name="%s" executed="%s" result="%s" %s time="%s" asserts="0" %s>', [sName, sExecuted, sResult, sSuccess, sTime, sLineEnd]));
+    WriteCategoryNodes(testResult.Test.Categories);
+
     if testResult.ResultType <> TTestResultType.Pass then
     begin
       Indent;
@@ -408,6 +414,21 @@ begin
     Outdent;
   end;
 end;
+
+procedure TDUnitXXMLNUnitLogger.WriteCategoryNodes(const ACategoryList: TList<string>);
+var
+  sCategory: string;
+begin
+  if ACategoryList.Count > 0 then begin
+    WriteXMLLine('<categories>');
+    Indent;
+    for sCategory in ACategoryList do
+      WriteXMLLine(Format('<category name="%s" />', [sCategory]));
+    Outdent;
+    WriteXMLLine('</categories>');
+  end;
+end;
+
 
 procedure TDUnitXXMLNUnitLogger.WriteXMLLine(const value: string);
 var
