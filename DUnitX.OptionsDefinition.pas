@@ -100,7 +100,7 @@ begin
                                              TDUnitX.Options.LogLevel := value
                                           end);
 
-  def := TOptionsRegistry.RegisterOption<TDUnitXExitBehavior>('exitbehavior','exit','Exit behaviour - Continue, Pause',
+  def := TOptionsRegistry.RegisterOption<TDUnitXExitBehavior>('exitbehavior','exit','Exit behavior - Continue, Pause',
                                           procedure(value : TDUnitXExitBehavior)
                                           begin
                                              TDUnitX.Options.ExitBehavior := value
