@@ -446,6 +446,7 @@ constructor TDUnitXXMLNUnitFileLogger.Create(const AFilename: string);
 var
   sXmlFilename  : string;
   fileStream    : TFileStream;
+  lXmlDirectory: string;
 const
   DEFAULT_NUNIT_FILE_NAME = 'dunitx-results.xml';
 begin
@@ -453,6 +454,9 @@ begin
 
   if sXmlFilename = '' then
     sXmlFilename := ExtractFilePath(ParamStr(0)) + DEFAULT_NUNIT_FILE_NAME;
+
+  lXmlDirectory := ExtractFilePath(sXmlFilename);
+  ForceDirectories(lXmlDirectory);
 
   fileStream := TFileStream.Create(sXmlFilename, fmCreate);
 
