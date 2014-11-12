@@ -214,9 +214,6 @@ begin
   //TODO: Populate these properly.
   WriteXMLLine('<environment nunit-version="DUnitX" clr-version="2.0.0.0" os-version="6.1.0.0" platform="Windows" cwd="c:\test" machine-name="mymachine" user="vincent" user-domain="finalbuilder.com"  />');
   WriteXMLLine('<culture-info current-culture="en" current-uiculture="en" />');
-  Outdent;
-
-  Indent;
   WriteXMLLine(Format('<test-suite type="Assembly" name="%s" executed="true" result="%s" success="%s" time="%s" asserts="0">',[sExeName,sResult,BoolToStr(RunResults.AllPassed,true),sTime]));
   Indent;
   WriteXMLLine('<results>');
@@ -224,7 +221,6 @@ begin
   Indent;
   for fixtureRes in RunResults.FixtureResults do
     WriteFixtureResult(fixtureRes);
-
   Outdent;
   WriteXMLLine('</results>');
   Outdent;
@@ -273,24 +269,21 @@ begin
       sExecuted := EscapeForXML(sExecuted);
 
       WriteXMLLine(Format('<test-suite type="Fixture" name="%s" executed="%s" result="%s" success="%s" time="%s" >',[sName, sExecuted, sResult, sSuccess, sTime]));
-      Indent;
+        WriteCategoryNodes(fixtureResult.Fixture.Categories);
+          Indent;
+          WriteXMLLine('<results>');
+          for testResult in fixtureResult.TestResults do
+          begin
+            WriteTestResult(testResult);
+          end;
 
-      WriteCategoryNodes(fixtureResult.Fixture.Categories);
-
-      WriteXMLLine('<results>');
-      for testResult in fixtureResult.TestResults do
-      begin
-        WriteTestResult(testResult);
-      end;
-
-      for child in fixtureResult.Children do
-      begin
-        WriteFixtureResult(child);
-      end;
-
-      WriteXMLLine('</results>');
-      Outdent;
-      WriteXMLLine('</test-suite>');
+          for child in fixtureResult.Children do
+          begin
+            WriteFixtureResult(child);
+          end;
+          WriteXMLLine('</results>');
+        Outdent;
+        WriteXMLLine('</test-suite>');
     end
     else
     begin
@@ -346,7 +339,7 @@ begin
   try
     sTime := Format('%.3f',[testResult.Duration.TotalSeconds]);
     sResult := ResultTypeToString(testResult.ResultType);
-    if testResult.ResultType = TTestResultType.Pass then
+    if (testResult.ResultType = TTestResultType.Pass) and (testResult.Test.Categories.Count = 0)  then
       sLineEnd := '/';
     sExecuted := BoolToStr(testResult.ResultType <> TTestResultType.Ignored,true);
 
@@ -362,53 +355,53 @@ begin
 
     WriteXMLLine(Format('<test-case name="%s" executed="%s" result="%s" %s time="%s" asserts="0" %s>', [sName, sExecuted, sResult, sSuccess, sTime, sLineEnd]));
     WriteCategoryNodes(testResult.Test.Categories);
-
-    if testResult.ResultType <> TTestResultType.Pass then
-    begin
-      Indent;
-      case testResult.ResultType of
-        TTestResultType.MemoryLeak,
-        TTestResultType.Failure,
-        TTestResultType.Error:
-        begin
+    case testResult.ResultType of
+      TTestResultType.MemoryLeak,
+      TTestResultType.Failure,
+      TTestResultType.Error:
+      begin
+        Indent;
+        WriteXMLLine('<failure>');
+        Indent;
+          WriteXMLLine('<message>');
           Indent;
-          WriteXMLLine('<failure>');
+            WriteXMLLine(Format('<![CDATA[ %s ]]>',[EscapeForXML(testResult.Message, False, True)]));
+          Outdent;
+          WriteXMLLine('</message>');
+        Outdent;
+        Indent;
+          WriteXMLLine('<stack-trace>');
           Indent;
-            WriteXMLLine('<message>');
-            Indent;
-              WriteXMLLine(Format('<![CDATA[ %s ]]>',[EscapeForXML(testResult.Message, False, True)]));
-            Outdent;
-            WriteXMLLine('</message>');
+            WriteXMLLine(Format('<![CDATA[ %s ]]>',[EscapeForXML(testResult.StackTrace, False, True)]));
           Outdent;
-          Indent;
-            WriteXMLLine('<stack-trace>');
-            Indent;
-              WriteXMLLine(Format('<![CDATA[ %s ]]>',[EscapeForXML(testResult.StackTrace, False, True)]));
-            Outdent;
-            WriteXMLLine('</stack-trace>');
-          Outdent;
-          WriteXMLLine('</failure>');
-          Outdent;
-        end;
-        TTestResultType.Ignored:
-        begin
-          Indent;
-          WriteXMLLine('<reason>');
-          Indent;
-            WriteXMLLine('<message>');
-            Indent;
-              WriteXMLLine(Format('<![CDATA[ %s ]]>',[EscapeForXML(testResult.Message, False, True)]));
-            Outdent;
-            WriteXMLLine('</message>');
-          Outdent;
-          WriteXMLLine('</reason>');
-          Outdent;
-        end;
+          WriteXMLLine('</stack-trace>');
+        Outdent;
+        WriteXMLLine('</failure>');
       end;
-
-      Outdent;
-      WriteXMLLine('</test-case>');
+      TTestResultType.Ignored:
+      begin
+        Indent;
+        WriteXMLLine('<reason>');
+        Indent;
+          WriteXMLLine('<message>');
+          Indent;
+            WriteXMLLine(Format('<![CDATA[ %s ]]>',[EscapeForXML(testResult.Message, False, True)]));
+          Outdent;
+          WriteXMLLine('</message>');
+        Outdent;
+        WriteXMLLine('</reason>');
+      end;
+      TTestResultType.Pass :
+      begin
+        if testResult.Test.Categories.Count = 0 then
+        begin
+          exit;
+        end;
+        Indent;
+      end;
     end;
+    Outdent;
+    WriteXMLLine('</test-case>');
 
   finally
     Outdent;
@@ -419,13 +412,16 @@ procedure TDUnitXXMLNUnitLogger.WriteCategoryNodes(const ACategoryList: TList<st
 var
   sCategory: string;
 begin
-  if ACategoryList.Count > 0 then begin
+  if ACategoryList.Count > 0 then
+  begin
+    Indent;
     WriteXMLLine('<categories>');
     Indent;
     for sCategory in ACategoryList do
       WriteXMLLine(Format('<category name="%s" />', [sCategory]));
     Outdent;
     WriteXMLLine('</categories>');
+    Outdent;
   end;
 end;
 
