@@ -303,7 +303,7 @@ type
     class procedure Pass(const message : string = '');
     class procedure Fail(const message : string = ''; const errorAddrs : pointer = nil);
 
-    class procedure AreEqual(const left : string; const right : string; const ignoreCase : boolean; const message : string);overload;
+    class procedure AreEqual(const left : string; const right : string; const ignoreCase : boolean; const message : string = '');overload;
     class procedure AreEqual(const left : string; const right : string; const message : string = '');overload;
     class procedure AreEqual(const left, right : Double; const tolerance : Double; const message : string = '');overload;
     class procedure AreEqual(const left, right : Double; const message : string = '');overload;
