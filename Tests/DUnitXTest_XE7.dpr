@@ -13,7 +13,6 @@ uses
   DUnitX.Generics in '..\DUnitX.Generics.pas',
   DUnitX.Utils in '..\DUnitX.Utils.pas',
   DUnitX.WeakReference in '..\DUnitX.WeakReference.pas',
-  DUnitX.CommandLine in '..\DUnitX.CommandLine.pas',
   DUnitX.Test in '..\DUnitX.Test.pas',
   DUnitX.TestFixture in '..\DUnitX.TestFixture.pas',
   DUnitX.TestResult in '..\DUnitX.TestResult.pas',

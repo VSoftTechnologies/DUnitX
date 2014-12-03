@@ -5,7 +5,6 @@ program DUnitXExamples_XE7;
 uses
   SysUtils,
   DUnitX.Examples.General in 'DUnitX.Examples.General.pas',
-  DUnitX.CommandLine in '..\DUnitX.CommandLine.pas',
   DUnitX.ConsoleWriter.Base in '..\DUnitX.ConsoleWriter.Base.pas',
   DUnitX.DUnitCompatibility in '..\DUnitX.DUnitCompatibility.pas',
   DUnitX.Generics in '..\DUnitX.Generics.pas',
