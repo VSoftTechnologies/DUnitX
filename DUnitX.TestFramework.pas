@@ -317,29 +317,29 @@ type
     class procedure AreEqual(const expected, actual : Integer; const message : string = '');overload;
     class procedure AreEqual(const expected, actual : boolean; const message : string = '');overload;
 
-    class procedure AreEqualMemory(const left : Pointer; const right : Pointer; const size : Cardinal; const message : string = '');
+    class procedure AreEqualMemory(const expected : Pointer; const actual : Pointer; const size : Cardinal; const message : string = '');
 
-    class procedure AreNotEqual(const left : string; const right : string; const ignoreCase : boolean = true; const message : string = '');overload;
+    class procedure AreNotEqual(const expected : string; const actual : string; const ignoreCase : boolean = true; const message : string = '');overload;
 
-    class procedure AreNotEqual(const left, right : Extended; const tolerance : Extended; const message : string = '');overload;
-    class procedure AreNotEqual(const left, right : Extended; const message : string = '');overload;
+    class procedure AreNotEqual(const expected, actual : Extended; const tolerance : Extended; const message : string = '');overload;
+    class procedure AreNotEqual(const expected, actual : Extended; const message : string = '');overload;
 
-    class procedure AreNotEqual(const left, right : Double; const tolerance : double; const message : string = '');overload;
-    class procedure AreNotEqual(const left, right : Double; const message : string = '');overload;
+    class procedure AreNotEqual(const expected, actual : Double; const tolerance : double; const message : string = '');overload;
+    class procedure AreNotEqual(const expected, actual : Double; const message : string = '');overload;
 
-    class procedure AreNotEqual(const left, right : TClass; const message : string = '');overload;
+    class procedure AreNotEqual(const expected, actual : TClass; const message : string = '');overload;
 {$IFDEF DELPHI_XE_UP}
     //Delphi 2010 compiler bug breaks this
-    class procedure AreNotEqual<T>(const left, right : T; const message : string = '');overload;
+    class procedure AreNotEqual<T>(const expected, actual : T; const message : string = '');overload;
 {$ENDIF}
-    class procedure AreNotEqual(const left, right : Integer; const message : string = '');overload;
-    class procedure AreNotEqualMemory(const left : Pointer; const right : Pointer; const size : Cardinal; const message : string = '');
+    class procedure AreNotEqual(const expected, actual : Integer; const message : string = '');overload;
+    class procedure AreNotEqualMemory(const expected : Pointer; const actual : Pointer; const size : Cardinal; const message : string = '');
 
-    class procedure AreSame(const left, right : TObject; const message : string = '');overload;
-    class procedure AreSame(const left, right : IInterface; const message : string = '');overload;
+    class procedure AreSame(const expected, actual : TObject; const message : string = '');overload;
+    class procedure AreSame(const expected, actual : IInterface; const message : string = '');overload;
 
-    class procedure AreNotSame(const left, right : TObject; const message : string = '');overload;
-    class procedure AreNotSame(const left, right : IInterface; const message : string = '');overload;
+    class procedure AreNotSame(const expected, actual : TObject; const message : string = '');overload;
+    class procedure AreNotSame(const expected, actual : IInterface; const message : string = '');overload;
 
 {$IFDEF DELPHI_XE_UP}
     //Delphi 2010 compiler bug breaks this
@@ -1088,50 +1088,50 @@ begin
   AreEqual(expected, actual, tolerance, message);
 end;
 
-class procedure Assert.AreEqualMemory(const left : Pointer; const right : Pointer; const size : Cardinal; const message : string);
+class procedure Assert.AreEqualMemory(const expected : Pointer; const actual : Pointer; const size : Cardinal; const message : string);
 begin
-  if not CompareMem(left, right, size) then
+  if not CompareMem(expected, actual, size) then
     Fail('Memory values are not equal. ' + message, ReturnAddress);
 end;
 
-class procedure Assert.AreNotEqual(const left, right, tolerance: Extended; const message: string);
+class procedure Assert.AreNotEqual(const expected, actual, tolerance: Extended; const message: string);
 begin
-  if Math.SameValue(left, right, tolerance) then
-    Fail(Format('%g equals right %g %s' ,[left,right,message]), ReturnAddress);
+  if Math.SameValue(expected, actual, tolerance) then
+    Fail(Format('%g equals actual %g %s' ,[expected,actual,message]), ReturnAddress);
 end;
 
 
-class procedure Assert.AreNotEqual(const left, right: string;const ignoreCase: boolean; const message: string);
+class procedure Assert.AreNotEqual(const expected, actual: string;const ignoreCase: boolean; const message: string);
 
-  function AreNotEqualText(const left, right: string; const ignoreCase: boolean): boolean;
+  function AreNotEqualText(const expected, actual: string; const ignoreCase: boolean): boolean;
   begin
     if ignoreCase then
-      Result := SameText(left, right)
+      Result := SameText(expected, actual)
     else
-      Result := SameStr(left, right);
+      Result := SameStr(expected, actual);
 
   end;
 begin
-  if AreNotEqualText(left, right, ignoreCase) then
-     Fail(Format('[%s] is Equal to [%s] %s', [left, right, message]), ReturnAddress);
+  if AreNotEqualText(expected, actual, ignoreCase) then
+     Fail(Format('[%s] is Equal to [%s] %s', [expected, actual, message]), ReturnAddress);
 end;
 
-class procedure Assert.AreNotEqual(const left, right: TClass; const message: string);
+class procedure Assert.AreNotEqual(const expected, actual: TClass; const message: string);
 var
   msg : string;
 begin
-  if left = right then
+  if expected = actual then
   begin
     msg := ' is equal to ';
-    if left = nil then
+    if expected = nil then
       msg := 'nil' + msg
     else
-      msg := left.ClassName + msg;
+      msg := expected.ClassName + msg;
 
-    if right = nil then
+    if actual = nil then
       msg := msg +  'nil'
     else
-      msg := msg + right.ClassName;
+      msg := msg + actual.ClassName;
     if message <> '' then
       msg := msg + '. ' + message;
 
@@ -1141,81 +1141,80 @@ end;
 
 {$IFDEF DELPHI_XE_UP}
 //Delphi 2010 compiler bug breaks this
-class procedure Assert.AreNotEqual<T>(const left, right: T; const message: string);
+class procedure Assert.AreNotEqual<T>(const expected, actual: T; const message: string);
 var
   comparer : IComparer<T>;
-  leftValue, rightValue : TValue;
-  sLeft, sRight : string;
+  expectedValue, actualValue : TValue;
 begin
   comparer := TComparer<T>.Default;
-  if comparer.Compare(right,left) = 0 then
+  if comparer.Compare(actual,expected) = 0 then
   begin
-    leftValue := TValue.From<T>(left);
-    rightValue := TValue.From<T>(right);
+    expectedValue := TValue.From<T>(expected);
+    actualValue := TValue.From<T>(actual);
 
-    Fail(Format('left %s equals right %s %s',[leftValue.ToString, rightValue.ToString, message]), ReturnAddress);
+    Fail(Format('Expected %s equals actual %s %s',[expectedValue.ToString, actualValue.ToString, message]), ReturnAddress);
   end;
 end;
 {$ENDIF}
 
-class procedure Assert.AreNotEqual(const left, right: Integer; const message: string);
+class procedure Assert.AreNotEqual(const expected, actual: Integer; const message: string);
 begin
-  if left = right then
-    Fail(Format('left %d equals right %d %s' ,[left, right, message]), ReturnAddress);
+  if expected = actual then
+    Fail(Format('Expected %d equals actual %d %s' ,[expected, actual, message]), ReturnAddress);
 end;
 
-class procedure Assert.AreNotEqual(const left, right: Extended; const message: string);
+class procedure Assert.AreNotEqual(const expected, actual: Extended; const message: string);
 var
   tolerance : Extended;
 begin
   tolerance := 0;
-  Assert.AreNotEqual(left,right,tolerance,message);
+  Assert.AreNotEqual(expected,actual,tolerance,message);
 
 end;
 
-class procedure Assert.AreNotEqual(const left, right: Double; const message: string);
+class procedure Assert.AreNotEqual(const expected, actual: Double; const message: string);
 var
   tolerance : double;
 begin
   tolerance := 0;
-  Assert.AreNotEqual(left,right,tolerance,message);
+  Assert.AreNotEqual(expected,actual,tolerance,message);
 end;
 
-class procedure Assert.AreNotEqual(const left, right, tolerance: double; const message: string);
+class procedure Assert.AreNotEqual(const expected, actual, tolerance: double; const message: string);
 begin
-  if Math.SameValue(left, right, tolerance) then
-    Fail(Format('%g equals right %g %s' ,[left,right,message]), ReturnAddress);
+  if Math.SameValue(expected, actual, tolerance) then
+    Fail(Format('%g equals actual %g %s' ,[expected,actual,message]), ReturnAddress);
 end;
 
 
-class procedure Assert.AreNotEqualMemory(const left, right: Pointer; const size: Cardinal; const message: string);
+class procedure Assert.AreNotEqualMemory(const expected, actual: Pointer; const size: Cardinal; const message: string);
 begin
-  if CompareMem(left,right, size) then
+  if CompareMem(expected,actual, size) then
     Fail('Memory values are equal. ' + message, ReturnAddress);
 end;
 
-class procedure Assert.AreNotSame(const left, right: TObject; const message: string);
+class procedure Assert.AreNotSame(const expected, actual: TObject; const message: string);
 begin
-  if left.Equals(right) then
-    Fail(Format('Object [%s] Equals Object [%s] %s',[left.ToString,right.ToString,message]), ReturnAddress);
+  if expected.Equals(actual) then
+    Fail(Format('Object [%s] Equals Object [%s] %s',[expected.ToString,actual.ToString,message]), ReturnAddress);
 end;
 
-class procedure Assert.AreNotSame(const left, right: IInterface; const message: string);
+class procedure Assert.AreNotSame(const expected, actual: IInterface; const message: string);
 begin
-  if (left as IInterface) = (right as IInterface) then
+  if (expected as IInterface) = (actual as IInterface) then
     Fail(Format('references are the same. %s',[message]), ReturnAddress);
 end;
 
-class procedure Assert.AreSame(const left, right: IInterface; const message: string);
+class procedure Assert.AreSame(const expected, actual: IInterface; const message: string);
 begin
-  if (left as IInterface) <> (right as IInterface) then
+  if (expected as IInterface) <> (actual as IInterface) then
     Fail(Format('references are Not the same. %s',[message]), ReturnAddress);
 end;
 
-class procedure Assert.AreSame(const left, right: TObject; const message: string);
+class procedure Assert.AreSame(const expected, actual: TObject; const message: string);
 begin
-  if not left.Equals(right) then
-    Fail(Format('Object [%s] Not Object [%s] %s',[left.ToString,right.ToString,message]), ReturnAddress);
+  if not expected.Equals(actual) then
+    Fail(Format('Object [%s] Not Object [%s] %s',[expected.ToString,actual.ToString,message]), ReturnAddress);
 end;
 
 {$IFDEF DELPHI_XE_UP}
