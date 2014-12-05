@@ -303,19 +303,19 @@ type
     class procedure Pass(const message : string = '');
     class procedure Fail(const message : string = ''; const errorAddrs : pointer = nil);
 
-    class procedure AreEqual(const left : string; const right : string; const ignoreCase : boolean; const message : string = '');overload;
-    class procedure AreEqual(const left : string; const right : string; const message : string = '');overload;
-    class procedure AreEqual(const left, right : Double; const tolerance : Double; const message : string = '');overload;
-    class procedure AreEqual(const left, right : Double; const message : string = '');overload;
-    class procedure AreEqual(const left, right : Extended; const tolerance : Extended; const message : string = '');overload;
-    class procedure AreEqual(const left, right : Extended; const message : string = '');overload;
-    class procedure AreEqual(const left, right : TClass; const message : string = '');overload;
+    class procedure AreEqual(const expected : string; const actual : string; const ignoreCase : boolean; const message : string = '');overload;
+    class procedure AreEqual(const expected : string; const actual : string; const message : string = '');overload;
+    class procedure AreEqual(const expected, actual : Double; const tolerance : Double; const message : string = '');overload;
+    class procedure AreEqual(const expected, actual : Double; const message : string = '');overload;
+    class procedure AreEqual(const expected, actual : Extended; const tolerance : Extended; const message : string = '');overload;
+    class procedure AreEqual(const expected, actual : Extended; const message : string = '');overload;
+    class procedure AreEqual(const expected, actual : TClass; const message : string = '');overload;
 {$IFDEF DELPHI_XE_UP}
     //Delphi 2010 compiler bug breaks this
-    class procedure AreEqual<T>(const left, right : T; const message : string = '');overload;
+    class procedure AreEqual<T>(const expected, actual : T; const message : string = '');overload;
 {$ENDIF}
-    class procedure AreEqual(const left, right : Integer; const message : string = '');overload;
-    class procedure AreEqual(const left, right : boolean; const message : string = '');overload;
+    class procedure AreEqual(const expected, actual : Integer; const message : string = '');overload;
+    class procedure AreEqual(const expected, actual : boolean; const message : string = '');overload;
 
     class procedure AreEqualMemory(const left : Pointer; const right : Pointer; const size : Cardinal; const message : string = '');
 
@@ -1004,29 +1004,29 @@ end;
 
 { Assert }
 
-class procedure Assert.AreEqual(const left, right, tolerance: Extended; const message: string);
+class procedure Assert.AreEqual(const expected, actual, tolerance: Extended; const message: string);
 begin
-  if not Math.SameValue(left,right,tolerance) then
-    Fail(Format('left %g but got %g %s' ,[left,right,message]), ReturnAddress);
+  if not Math.SameValue(expected,actual,tolerance) then
+    Fail(Format('Expected %g but got %g %s' ,[expected,actual,message]), ReturnAddress);
 end;
 
 
-class procedure Assert.AreEqual(const left, right: TClass; const message: string);
+class procedure Assert.AreEqual(const expected, actual: TClass; const message: string);
 var
   msg : string;
 begin
-  if left <> right then
+  if expected <> actual then
   begin
     msg := ' is not equal to ';
-    if left = nil then
+    if expected = nil then
       msg := 'nil' + msg
     else
-      msg := left.ClassName + msg;
+      msg := expected.ClassName + msg;
 
-    if right = nil then
+    if actual = nil then
       msg := msg +  'nil'
     else
-      msg := msg + right.ClassName;
+      msg := msg + actual.ClassName;
 
     if message <> '' then
       msg := msg + '. ' + message;
@@ -1037,17 +1037,17 @@ end;
 
 {$IFDEF DELPHI_XE_UP}
     //Delphi 2010 compiler bug breaks this
-class procedure Assert.AreEqual<T>(const left, right: T; const message: string);
+class procedure Assert.AreEqual<T>(const expected, actual: T; const message: string);
 var
   comparer : IComparer<T>;
-  leftvalue, rightvalue : TValue;
+  expectedValue, actualValue : TValue;
 begin
   comparer := TComparer<T>.Default;
-  if comparer.Compare(right,left) <> 0 then
+  if comparer.Compare(actual,expected) <> 0 then
   begin
-    leftValue := TValue.From<T>(left);
-    rightValue := TValue.From<T>(right);
-    Fail(Format('left %s is not equal to right %s %s', [leftValue.ToString, rightValue.ToString, message]), ReturnAddress)
+    expectedValue := TValue.From<T>(expected);
+    actualValue := TValue.From<T>(actual);
+    Fail(Format('Expected %s is not equal to actual %s %s', [expectedValue.ToString, actualValue.ToString, message]), ReturnAddress)
   end;
 end;
 {$ENDIF}
@@ -1060,32 +1060,32 @@ begin
     Result := '';
 end;
 
-class procedure Assert.AreEqual(const left, right: Integer; const message: string);
+class procedure Assert.AreEqual(const expected, actual: Integer; const message: string);
 begin
-  if left <> right then
-    Fail(Format('left %d but got %d %s' ,[left, right, message]), ReturnAddress);
+  if expected <> actual then
+    Fail(Format('Expected %d but got %d %s' ,[expected, actual, message]), ReturnAddress);
 end;
 
-class procedure Assert.AreEqual(const left, right, tolerance: Double; const message: string);
+class procedure Assert.AreEqual(const expected, actual, tolerance: Double; const message: string);
 begin
-  if not Math.SameValue(left,right,tolerance) then
-    Fail(Format('left %g but got %g %s' ,[left,right,message]), ReturnAddress);
+  if not Math.SameValue(expected,actual,tolerance) then
+    Fail(Format('Expected %g but got %g %s' ,[expected,actual,message]), ReturnAddress);
 end;
 
-class procedure Assert.AreEqual(const left, right: Double; const message: string);
+class procedure Assert.AreEqual(const expected, actual: Double; const message: string);
 var
   tolerance : Double;
 begin
   tolerance := 0;
-  AreEqual(left, right, tolerance, message);
+  AreEqual(expected, actual, tolerance, message);
 end;
 
-class procedure Assert.AreEqual(const left, right: Extended; const message: string);
+class procedure Assert.AreEqual(const expected, actual: Extended; const message: string);
 var
   tolerance : Extended;
 begin
   tolerance := 0;
-  AreEqual(left, right, tolerance, message);
+  AreEqual(expected, actual, tolerance, message);
 end;
 
 class procedure Assert.AreEqualMemory(const left : Pointer; const right : Pointer; const size : Cardinal; const message : string);
@@ -1675,20 +1675,20 @@ begin
   Fail('Method did not throw any exceptions.' + AddLineBreak(msg), ReturnAddress);
 end;
 
-class procedure Assert.AreEqual(const left : string; const right : string; const message : string);
+class procedure Assert.AreEqual(const expected : string; const actual : string; const message : string);
 begin
-  Assert.AreEqual(left, right, true, message);
+  Assert.AreEqual(expected, actual, true, message);
 end;
 
-class procedure Assert.AreEqual(const left, right : string;  const ignoreCase : boolean; const message: string);
+class procedure Assert.AreEqual(const expected, actual : string;  const ignoreCase : boolean; const message: string);
 begin
   if ignoreCase then
   begin
-    if not SameText(left,right) then
-      Fail(Format('[%s] is Not Equal to [%s] %s',[left,right,message]), ReturnAddress);
+    if not SameText(expected,actual) then
+      Fail(Format('[%s] is Not Equal to [%s] %s',[expected,actual,message]), ReturnAddress);
   end
-  else if not SameStr(left,right) then
-      Fail(Format('[%s] is Not Equal to [%s] %s',[left,right,message]), ReturnAddress);
+  else if not SameStr(expected,actual) then
+      Fail(Format('[%s] is Not Equal to [%s] %s',[expected,actual,message]), ReturnAddress);
 end;
 
 class procedure Assert.CheckExceptionClass(E: Exception; const exceptionClass: ExceptClass);
@@ -1767,10 +1767,10 @@ begin
   FReason := AReason;
 end;
 
-class procedure Assert.AreEqual(const left, right: boolean; const message: string);
+class procedure Assert.AreEqual(const expected, actual: boolean; const message: string);
 begin
-  if left <> right then
-    Fail(Format('left %s but got %s %s' ,[BoolToStr(left, true), BoolToStr(right, true), message]), ReturnAddress);
+  if expected <> actual then
+    Fail(Format('Expected %s but got %s %s' ,[BoolToStr(expected, true), BoolToStr(actual, true), message]), ReturnAddress);
 end;
 
 { TDUnitXOptions }
