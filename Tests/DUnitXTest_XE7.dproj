@@ -70,7 +70,6 @@
         <DCCReference Include="..\DUnitX.Generics.pas"/>
         <DCCReference Include="..\DUnitX.Utils.pas"/>
         <DCCReference Include="..\DUnitX.WeakReference.pas"/>
-        <DCCReference Include="..\DUnitX.CommandLine.pas"/>
         <DCCReference Include="..\DUnitX.Test.pas"/>
         <DCCReference Include="..\DUnitX.TestFixture.pas"/>
         <DCCReference Include="..\DUnitX.TestResult.pas"/>
