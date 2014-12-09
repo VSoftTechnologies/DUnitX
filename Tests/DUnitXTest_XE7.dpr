@@ -13,7 +13,6 @@ uses
   DUnitX.Generics in '..\DUnitX.Generics.pas',
   DUnitX.Utils in '..\DUnitX.Utils.pas',
   DUnitX.WeakReference in '..\DUnitX.WeakReference.pas',
-  DUnitX.CommandLine in '..\DUnitX.CommandLine.pas',
   DUnitX.Test in '..\DUnitX.Test.pas',
   DUnitX.TestFixture in '..\DUnitX.TestFixture.pas',
   DUnitX.TestResult in '..\DUnitX.TestResult.pas',
@@ -47,7 +46,11 @@ uses
   DUnitX.Tests.MemoryLeaks in 'DUnitX.Tests.MemoryLeaks.pas',
   DUnitX.Extensibility in '..\DUnitX.Extensibility.pas',
   DUnitX.Extensibility.PluginManager in '..\DUnitX.Extensibility.PluginManager.pas',
-  DUnitX.FixtureProviderPlugin in '..\DUnitX.FixtureProviderPlugin.pas';
+  DUnitX.FixtureProviderPlugin in '..\DUnitX.FixtureProviderPlugin.pas',
+  DUnitX.CommandLine.OptionDef in '..\DUnitX.CommandLine.OptionDef.pas',
+  DUnitX.CommandLine.Options in '..\DUnitX.CommandLine.Options.pas',
+  DUnitX.CommandLine.Parser in '..\DUnitX.CommandLine.Parser.pas',
+  DUnitX.Tests.Inheritance in 'DUnitX.Tests.Inheritance.pas';
 
 var
   runner : ITestRunner;

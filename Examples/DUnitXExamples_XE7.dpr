@@ -5,7 +5,6 @@ program DUnitXExamples_XE7;
 uses
   SysUtils,
   DUnitX.Examples.General in 'DUnitX.Examples.General.pas',
-  DUnitX.CommandLine in '..\DUnitX.CommandLine.pas',
   DUnitX.ConsoleWriter.Base in '..\DUnitX.ConsoleWriter.Base.pas',
   DUnitX.DUnitCompatibility in '..\DUnitX.DUnitCompatibility.pas',
   DUnitX.Generics in '..\DUnitX.Generics.pas',
@@ -32,7 +31,10 @@ uses
   DUnitX.FixtureResult in '..\DUnitX.FixtureResult.pas',
   DUnitX.Loggers.Null in '..\DUnitX.Loggers.Null.pas',
   DUnitX.MemoryLeakMonitor.Default in '..\DUnitX.MemoryLeakMonitor.Default.pas',
-  DUnitX.Extensibility in '..\DUnitX.Extensibility.pas';
+  DUnitX.Extensibility in '..\DUnitX.Extensibility.pas',
+  DUnitX.CommandLine.OptionDef in '..\DUnitX.CommandLine.OptionDef.pas',
+  DUnitX.CommandLine.Options in '..\DUnitX.CommandLine.Options.pas',
+  DUnitX.CommandLine.Parser in '..\DUnitX.CommandLine.Parser.pas';
 
 var
   runner : ITestRunner;
