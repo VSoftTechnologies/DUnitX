@@ -124,6 +124,7 @@ type
     procedure SetTearDownFixtureMethod(const AMethodName : string; const AMethod : TTestMethod; const AIsDestructor : boolean);
     procedure SetTestInOwnThread(const value : boolean);
 
+    procedure ExecuteFixtureTearDown;
 
     property Name                       : string read GetName;
     property NameSpace                  : string read GetNameSpace;

@@ -3,6 +3,11 @@ program DUnitXExamples_XE7;
 {$APPTYPE CONSOLE}
 
 uses
+  madExcept,
+  madLinkDisAsm,
+  madListHardware,
+  madListProcesses,
+  madListModules,
   SysUtils,
   DUnitX.Examples.General in 'DUnitX.Examples.General.pas',
   DUnitX.ConsoleWriter.Base in '..\DUnitX.ConsoleWriter.Base.pas',
@@ -34,7 +39,8 @@ uses
   DUnitX.Extensibility in '..\DUnitX.Extensibility.pas',
   DUnitX.CommandLine.OptionDef in '..\DUnitX.CommandLine.OptionDef.pas',
   DUnitX.CommandLine.Options in '..\DUnitX.CommandLine.Options.pas',
-  DUnitX.CommandLine.Parser in '..\DUnitX.CommandLine.Parser.pas';
+  DUnitX.CommandLine.Parser in '..\DUnitX.CommandLine.Parser.pas',
+  DUnitX.FixtureProviderPlugin in '..\DUnitX.FixtureProviderPlugin.pas';
 
 var
   runner : ITestRunner;

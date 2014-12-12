@@ -6,6 +6,7 @@ uses
   SysUtils,
   DUnitX.Loggers.Console in '..\DUnitX.Loggers.Console.pas',
   DUnitX.Loggers.Text in '..\DUnitX.Loggers.Text.pas',
+  DUnitX.MacOS.Console in '..\DUnitX.MacOS.Console.pas',
   DUnitX.Windows.Console in '..\DUnitX.Windows.Console.pas',
   DUnitX.ConsoleWriter.Base in '..\DUnitX.ConsoleWriter.Base.pas',
   DUnitX.Loggers.XML.xUnit in '..\DUnitX.Loggers.XML.xUnit.pas',
@@ -57,11 +58,9 @@ uses
   DUnitX.CommandLine.Options in '..\DUnitX.CommandLine.Options.pas',
   DUnitX.CommandLine.Parser in '..\DUnitX.CommandLine.Parser.pas',
   DUnitX.OptionsDefinition in '..\DUnitX.OptionsDefinition.pas',
-  DUnitX.MacOS.Console in '..\DUnitX.MacOS.Console.pas',
   DUnitX.FilterBuilder in '..\DUnitX.FilterBuilder.pas',
+  DUnitX.Tests.Inheritance in 'DUnitX.Tests.Inheritance.pas',
   DUnitX.Tests.ConsoleWriter.Base in 'DUnitX.Tests.ConsoleWriter.Base.pas';
-
-{$R *.res}
 
 var
   runner : ITestRunner;
@@ -82,14 +81,15 @@ begin
 
     logger := nil;
     nunitLogger := nil;
-
     //Run tests
     results := runner.Execute;
+    runner := nil;
     //Let the CI Server know that something failed.
+
+    {$IFDEF CI}
     if not results.AllPassed then
       System.ExitCode := EXIT_ERRORS;
-
-    {$IFNDEF CI}
+    {$ELSE}
     //We don;t want this happening when running under CI.
     if TDUnitX.Options.ExitBehavior = TDUnitXExitBehavior.Pause then
     begin
@@ -97,6 +97,8 @@ begin
       System.Readln;
     end;
     {$ENDIF}
+    results := nil;
+
   except
     on E: Exception do
     begin

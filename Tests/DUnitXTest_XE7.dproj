@@ -64,7 +64,7 @@
         <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
-        <DCC_Define>DUNITX-DEBUG;$(DCC_Define)</DCC_Define>
+        <DCC_Define>DUNITX-DEBUG;madExcept;LeakChecking;$(DCC_Define)</DCC_Define>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
@@ -115,10 +115,20 @@
         <DCCReference Include="..\DUnitX.Extensibility.pas"/>
         <DCCReference Include="..\DUnitX.Extensibility.PluginManager.pas"/>
         <DCCReference Include="..\DUnitX.FixtureProviderPlugin.pas"/>
+        <DCCReference Include="DUnitX.Tests.CommandLineParser.pas"/>
+        <DCCReference Include="..\DUnitX.Filters.pas"/>
+        <DCCReference Include="..\DUnitX.CategoryExpression.pas"/>
+        <DCCReference Include="DUnitX.Tests.CategoryParser.pas"/>
+        <DCCReference Include="..\DUnitX.TestNameParser.pas"/>
+        <DCCReference Include="DUnitX.Tests.TestNameParser.pas"/>
+        <DCCReference Include="..\DUnitX.AutoDetect.Console.pas"/>
         <DCCReference Include="..\DUnitX.CommandLine.OptionDef.pas"/>
         <DCCReference Include="..\DUnitX.CommandLine.Options.pas"/>
         <DCCReference Include="..\DUnitX.CommandLine.Parser.pas"/>
+        <DCCReference Include="..\DUnitX.OptionsDefinition.pas"/>
+        <DCCReference Include="..\DUnitX.FilterBuilder.pas"/>
         <DCCReference Include="DUnitX.Tests.Inheritance.pas"/>
+        <DCCReference Include="DUnitX.Tests.ConsoleWriter.Base.pas"/>
         <None Include="..\DUnitX.inc"/>
         <None Include="..\DUnitX.Stacktrace.inc"/>
         <None Include="..\DUnitX.MemoryLeaks.inc"/>

@@ -109,6 +109,8 @@ type
     function IsNameSpaceOnly : boolean;
     procedure OnMethodExecuted(const AMethod : TTestMethod);
 
+    procedure ExecuteFixtureTearDown;
+
     function AddTest(const AMethod : TTestMethod; const AName : string; const ACategory  : string; const AEnabled : boolean = true;const AIgnored : boolean = false; const AIgnoreReason : string = '') : ITest;
     function AddTestCase(const ACaseName : string; const AName : string; const ACategory  : string; const AMethod : TRttiMethod; const AEnabled : boolean; const AArgs : TValueArray) : ITest;
 
@@ -225,13 +227,32 @@ destructor TDUnitXTestFixture.Destroy;
 begin
   if FFixtureInstance <> nil then
     FFixtureInstance.Free;
+  if FChildren <> nil then
+    FChildren.Clear;
+  FChildren := nil;
+
   FCategories.Free;
+  FTests.Clear;
   FTests := nil;
   inherited;
 end;
 
 
 
+
+procedure TDUnitXTestFixture.ExecuteFixtureTearDown;
+begin
+  if Assigned(FTearDownFixtureMethod) then
+  begin
+    if FTearDownFixtureIsDestructor then
+    begin
+      FFixtureInstance.Free;
+      FFixtureInstance := nil;
+    end
+    else
+      FTearDownFixtureMethod();
+  end;
+end;
 
 function TDUnitXTestFixture.GetActiveTestCount: cardinal;
 begin

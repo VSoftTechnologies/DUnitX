@@ -378,6 +378,9 @@ begin
        isTestMethod := true;
     end;
 
+    if method.IsDestructor or method.IsConstructor then
+      continue;
+
     //if a test case is disabled then just ignore it.
     if testEnabled then
     begin

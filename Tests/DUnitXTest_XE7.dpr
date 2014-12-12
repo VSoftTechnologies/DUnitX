@@ -3,6 +3,11 @@ program DUnitXTest_XE7;
 {$APPTYPE CONSOLE}
 {$STRONGLINKTYPES ON}
 uses
+  madExcept,
+  madLinkDisAsm,
+  madListHardware,
+  madListProcesses,
+  madListModules,
   SysUtils,
   DUnitX.Loggers.Console in '..\DUnitX.Loggers.Console.pas',
   DUnitX.Loggers.Text in '..\DUnitX.Loggers.Text.pas',
@@ -47,10 +52,20 @@ uses
   DUnitX.Extensibility in '..\DUnitX.Extensibility.pas',
   DUnitX.Extensibility.PluginManager in '..\DUnitX.Extensibility.PluginManager.pas',
   DUnitX.FixtureProviderPlugin in '..\DUnitX.FixtureProviderPlugin.pas',
+  DUnitX.Tests.CommandLineParser in 'DUnitX.Tests.CommandLineParser.pas',
+  DUnitX.Filters in '..\DUnitX.Filters.pas',
+  DUnitX.CategoryExpression in '..\DUnitX.CategoryExpression.pas',
+  DUnitX.Tests.CategoryParser in 'DUnitX.Tests.CategoryParser.pas',
+  DUnitX.TestNameParser in '..\DUnitX.TestNameParser.pas',
+  DUnitX.Tests.TestNameParser in 'DUnitX.Tests.TestNameParser.pas',
+  DUnitX.AutoDetect.Console in '..\DUnitX.AutoDetect.Console.pas',
   DUnitX.CommandLine.OptionDef in '..\DUnitX.CommandLine.OptionDef.pas',
   DUnitX.CommandLine.Options in '..\DUnitX.CommandLine.Options.pas',
   DUnitX.CommandLine.Parser in '..\DUnitX.CommandLine.Parser.pas',
-  DUnitX.Tests.Inheritance in 'DUnitX.Tests.Inheritance.pas';
+  DUnitX.OptionsDefinition in '..\DUnitX.OptionsDefinition.pas',
+  DUnitX.FilterBuilder in '..\DUnitX.FilterBuilder.pas',
+  DUnitX.Tests.Inheritance in 'DUnitX.Tests.Inheritance.pas',
+  DUnitX.Tests.ConsoleWriter.Base in 'DUnitX.Tests.ConsoleWriter.Base.pas';
 
 var
   runner : ITestRunner;
@@ -59,12 +74,13 @@ var
   nunitLogger : ITestLogger;
 begin
   try
+    TDUnitX.CheckCommandLine;
     //Create the runner
     runner := TDUnitX.CreateRunner;
     runner.UseRTTI := True;
     //tell the runner how we will log things
     logger := TDUnitXConsoleLogger.Create(false);
-    nunitLogger := TDUnitXXMLNUnitFileLogger.Create;
+    nunitLogger := TDUnitXXMLNUnitFileLogger.Create(TDUnitX.Options.XMLOutputFile);
     runner.AddLogger(logger);
     runner.AddLogger(nunitLogger);
 
@@ -72,16 +88,19 @@ begin
     nunitLogger := nil;
     //Run tests
     results := runner.Execute;
-
     runner := nil;
+    //Let the CI Server know that something failed.
 
     {$IFDEF CI}
     if not results.AllPassed then
-      System.ExitCode := 1;
+      System.ExitCode := EXIT_ERRORS;
     {$ELSE}
     //We don;t want this happening when running under CI.
-    System.Write('Done.. press <Enter> key to quit.');
-    System.Readln;
+    if TDUnitX.Options.ExitBehavior = TDUnitXExitBehavior.Pause then
+    begin
+      System.Write('Done.. press <Enter> key to quit.');
+      System.Readln;
+    end;
     {$ENDIF}
     results := nil;
 

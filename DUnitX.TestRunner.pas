@@ -630,14 +630,10 @@ begin
 end;
 
 procedure TDUnitXTestRunner.ExecuteTearDownFixtureMethod(const context: ITestExecuteContext; const threadId: Cardinal; const fixture: ITestFixture);
-var
-  teardown : TTestMethod;
 begin
   try
     Self.Loggers_TeardownFixture(threadId, fixture as ITestFixtureInfo);
-    tearDown := fixture.TearDownFixtureMethod;
-    tearDown();
-    fixture.OnMethodExecuted(fixture.TearDownFixtureMethod);
+    fixture.ExecuteFixtureTearDown; //deals with destructors in a way that stops memory leak reporting from reporting bogus leaks.
   except
     on e: Exception do
     begin

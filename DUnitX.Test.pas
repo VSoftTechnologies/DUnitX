@@ -99,6 +99,7 @@ type
   public
     constructor Create(const AInstance : TObject; const AFixture : ITestFixture; const ACaseName : string; const AName : string; const ACategory  : string; const AMethod : TRttiMethod;
                        const AEnabled : boolean; const AArgs : TValueArray);reintroduce;
+    destructor Destroy;override;
   end;
 
 
@@ -283,6 +284,12 @@ begin
   end;
 end;
 
+
+destructor TDUnitXTestCase.Destroy;
+begin
+
+  inherited;
+end;
 
 procedure TDUnitXTestCase.Execute(const context : ITestExecuteContext);
 begin

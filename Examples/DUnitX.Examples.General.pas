@@ -195,7 +195,7 @@ end;
 procedure TMyExampleTests.TestTwo;
 {$IFDEF DELPHI_XE_UP}
 var
-  x : TMyExampleTests;
+  x : TStringList;
 {$ENDIF}
 begin
   TDUnitX.CurrentRunner.Status('TestTwo called');
@@ -203,8 +203,9 @@ begin
 
   //No longer compatible for Delphi2010
 {$IFDEF DELPHI_XE_UP}
-  x := TMyExampleTests.Create;
+  x := TStringList.Create;
   Assert.IsType<TObject>(x); /// a bit pointless since it's strongly typed.
+  x.Free;
 {$ENDIF}
 end;
 
