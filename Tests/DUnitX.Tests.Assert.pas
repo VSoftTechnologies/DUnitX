@@ -231,6 +231,7 @@ begin
     end;
 
   Assert.WillRaise(MyProc, ETestFailure);
+  MyProc := nil;
 end;
 
 procedure TTestsAssert.Pass_Throws_ETestPass_Exception;

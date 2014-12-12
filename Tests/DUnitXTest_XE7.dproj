@@ -29,6 +29,12 @@
         <CfgParent>Base</CfgParent>
         <Base>true</Base>
     </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win32)'!=''">
+        <Cfg_2_Win32>true</Cfg_2_Win32>
+        <CfgParent>Cfg_2</CfgParent>
+        <Cfg_2>true</Cfg_2>
+        <Base>true</Base>
+    </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
         <SanitizedProjectName>DUnitXTest_XE7</SanitizedProjectName>
         <DCC_UsePackage>rtl;vcl;vclx;vclactnband;xmlrtl;vclimg;dbrtl;vcldb;vcldbx;bdertl;vcltouch;dsnap;dsnapcon;vclie;webdsnap;inet;inetdbbde;inetdbxpress;soaprtl;DbxCommonDriver;DbxClientDriver;DBXInterBaseDriver;DBXMySQLDriver;dbexpress;dbxcds;FBDream2010;SynEdit_R2010;NxCommonRun;NxGridRun;KWizardD2010R;GFDLIB2009;dclRouteMapD2010;tb2k_d12;SpTBXLib_d12;dwWin7Controls_2010;IndyCore140;IndySystem140;IndyProtocols140;lmddocking11rt_140;lmdrtl11rt_140;RaizeComponentsVcl;FBMiscComponents;FBFormDesigner;FBSynEditHighlighters;VSPageR;madBasic_;madDisAsm_;madExcept_;adortl;TeeWorld814;TeeImage814;TeeLanguage814;TeePro814;TeeGL814;TeeUI814;TeeDB814;Tee814;VirtualTreesR;VSMessageAPIDesign;VSMessageAPIRun;$(DCC_UsePackage)</DCC_UsePackage>
@@ -56,6 +62,9 @@
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_MapFile>3</DCC_MapFile>
         <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+        <DCC_Define>DUNITX-DEBUG;$(DCC_Define)</DCC_Define>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
@@ -167,10 +176,11 @@
                     <VersionInfoKeys Name="Comments"/>
                 </VersionInfoKeys>
                 <Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\bcboffice2k190.bpl">Embarcadero C++Builder Office 2000 Servers Package</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\bcbofficexp190.bpl">Embarcadero C++Builder Office XP Servers Package</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k190.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp190.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclMetropolisUILiveTile210.bpl">Embarcadero Metropolis UI Live Tile Standard Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\bcboffice2k210.bpl">Embarcadero C++Builder Office 2000 Servers Package</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\bcbofficexp210.bpl">Embarcadero C++Builder Office XP Servers Package</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k210.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp210.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
                 </Excluded_Packages>
             </Delphi.Personality>
             <Platforms>

@@ -73,6 +73,8 @@ begin
     //Run tests
     results := runner.Execute;
 
+    runner := nil;
+
     {$IFDEF CI}
     if not results.AllPassed then
       System.ExitCode := 1;
@@ -81,6 +83,8 @@ begin
     System.Write('Done.. press <Enter> key to quit.');
     System.Readln;
     {$ENDIF}
+    results := nil;
+
   except
     on E: Exception do
     begin

@@ -99,6 +99,7 @@ type
     procedure SetupFixture;
     [Teardown]
     procedure TearDownFixture;
+    destructor Destroy;override;
   published
     procedure Published_Procedures_Are_Included_As_Tests;
   end;
@@ -183,6 +184,7 @@ begin
   //CheckIs(x,TObject); //DUnit compatibility.
   TDUnitX.CurrentRunner.Status('hello world');
   Assert.IsTrue(x is TObject); /// a bit pointless since it's strongly typed.
+  x.Free;
 end;
 
 procedure TMyExampleTests.TestTwoOne;
@@ -194,9 +196,16 @@ begin
   //CheckIs(x,TObject); //DUnit compatibility.
   TDUnitX.CurrentRunner.Status('hello world');
   Assert.IsTrue(x is TObject); /// a bit pointless since it's strongly typed.
+  x.Free;
 end;
 
 { TExampleFixture2 }
+
+destructor TExampleFixture2.Destroy;
+begin
+
+  inherited;
+end;
 
 procedure TExampleFixture2.Published_Procedures_Are_Included_As_Tests;
 begin

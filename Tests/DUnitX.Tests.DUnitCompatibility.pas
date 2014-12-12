@@ -80,8 +80,8 @@ end;
 
 procedure TMyDUnitTestSetup.TearDown;
 begin
-  inherited;
   FObject.Free;
+  inherited;
 end;
 
 initialization

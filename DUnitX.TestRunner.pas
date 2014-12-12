@@ -46,11 +46,11 @@ uses
 type
   ///  Note - we rely on the fact that there will only ever be 1 testrunner
   ///  per thread, if this changes then handling of WriteLn will need to change
-  TDUnitXTestRunner = class(TInterfacedObject, ITestRunner)
+  TDUnitXTestRunner = class(TWeakReferencedObject, ITestRunner)
   private class var
     FRttiContext : TRttiContext;
   public class var
-    FActiveRunners : TDictionary<Cardinal,ITestRunner>;
+    FActiveRunners : TDictionary<Cardinal,IWeakReference<ITestRunner>>;
   private
     FLoggers        : TList<ITestLogger>;
     FUseRTTI        : boolean;
@@ -249,7 +249,7 @@ end;
 class constructor TDUnitXTestRunner.Create;
 begin
   FRttiContext := TRttiContext.Create;
-  FActiveRunners := TDictionary<Cardinal,ITestRunner>.Create;
+  FActiveRunners := TDictionary<Cardinal,IWeakReference<ITestRunner>>.Create;
 end;
 
 function TDUnitXTestRunner.CheckMemoryAllocations(const test: ITest; out errorResult: ITestResult; const memoryAllocationProvider: IMemoryLeakMonitor): boolean;
@@ -302,7 +302,7 @@ begin
   FLogMessages    := TStringList.Create;
   MonitorEnter(TDUnitXTestRunner.FActiveRunners);
   try
-    TDUnitXTestRunner.FActiveRunners.Add(TThread.CurrentThread.ThreadID, Self);
+    TDUnitXTestRunner.FActiveRunners.Add(TThread.CurrentThread.ThreadID, TWeakReference<ITestRunner>.Create(Self));
   finally
     MonitorExit(TDUnitXTestRunner.FActiveRunners);
   end;
@@ -333,7 +333,6 @@ begin
   FLogMessages.Free;
   FLoggers.Free;
   FFixtureClasses.Free;
-
   inherited;
 end;
 
@@ -546,9 +545,12 @@ begin
 end;
 
 class function TDUnitXTestRunner.GetActiveRunner: ITestRunner;
+var
+  ref : IWeakReference<ITestRunner>;
 begin
   result := nil;
-  FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId,result)
+  if FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId,ref) then
+    result := ref.Data;
 end;
 
 function TDUnitXTestRunner.ExecuteFailureResult(
@@ -627,13 +629,14 @@ begin
   Result := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Pass, message);
 end;
 
-procedure TDUnitXTestRunner.ExecuteTearDownFixtureMethod(
-  const context: ITestExecuteContext; const threadId: Cardinal;
-  const fixture: ITestFixture);
+procedure TDUnitXTestRunner.ExecuteTearDownFixtureMethod(const context: ITestExecuteContext; const threadId: Cardinal; const fixture: ITestFixture);
+var
+  teardown : TTestMethod;
 begin
   try
     Self.Loggers_TeardownFixture(threadId, fixture as ITestFixtureInfo);
-    fixture.TearDownFixtureMethod;
+    tearDown := fixture.TearDownFixtureMethod;
+    tearDown();
     fixture.OnMethodExecuted(fixture.TearDownFixtureMethod);
   except
     on e: Exception do
@@ -810,7 +813,6 @@ end;
 procedure TDUnitXTestRunner.Status(const msg: string);
 begin
   Self.Log(TLogLevel.Information,msg);
-
 end;
 
 procedure TDUnitXTestRunner.WriteLn;

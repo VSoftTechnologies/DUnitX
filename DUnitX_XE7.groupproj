@@ -9,10 +9,10 @@
         <Projects Include="Examples\DUnitXExamples_XE7.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="Examples\DUnitXFiremonkeyGUI_XE7.dproj">
+        <Projects Include="Expert\DUnitX_IDE_Expert_XE7.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="Expert\DUnitX_IDE_Expert_XE7.dproj">
+        <Projects Include="Examples\DUnitXFiremonkeyGUI_XE7.dproj">
             <Dependencies/>
         </Projects>
     </ItemGroup>
@@ -41,15 +41,6 @@
     <Target Name="DUnitXExamples_XE7:Make">
         <MSBuild Projects="Examples\DUnitXExamples_XE7.dproj" Targets="Make"/>
     </Target>
-    <Target Name="DUnitXFiremonkeyGUI_XE7">
-        <MSBuild Projects="Examples\DUnitXFiremonkeyGUI_XE7.dproj"/>
-    </Target>
-    <Target Name="DUnitXFiremonkeyGUI_XE7:Clean">
-        <MSBuild Projects="Examples\DUnitXFiremonkeyGUI_XE7.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="DUnitXFiremonkeyGUI_XE7:Make">
-        <MSBuild Projects="Examples\DUnitXFiremonkeyGUI_XE7.dproj" Targets="Make"/>
-    </Target>
     <Target Name="DUnitX_IDE_Expert_XE7">
         <MSBuild Projects="Expert\DUnitX_IDE_Expert_XE7.dproj"/>
     </Target>
@@ -59,14 +50,23 @@
     <Target Name="DUnitX_IDE_Expert_XE7:Make">
         <MSBuild Projects="Expert\DUnitX_IDE_Expert_XE7.dproj" Targets="Make"/>
     </Target>
+    <Target Name="DUnitXFiremonkeyGUI_XE7">
+        <MSBuild Projects="Examples\DUnitXFiremonkeyGUI_XE7.dproj"/>
+    </Target>
+    <Target Name="DUnitXFiremonkeyGUI_XE7:Clean">
+        <MSBuild Projects="Examples\DUnitXFiremonkeyGUI_XE7.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="DUnitXFiremonkeyGUI_XE7:Make">
+        <MSBuild Projects="Examples\DUnitXFiremonkeyGUI_XE7.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="DUnitXTest_XE7;DUnitXExamples_XE7;DUnitXFiremonkeyGUI_XE7;DUnitX_IDE_Expert_XE7"/>
+        <CallTarget Targets="DUnitXTest_XE7;DUnitXExamples_XE7;DUnitX_IDE_Expert_XE7;DUnitXFiremonkeyGUI_XE7"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="DUnitXTest_XE7:Clean;DUnitXExamples_XE7:Clean;DUnitXFiremonkeyGUI_XE7:Clean;DUnitX_IDE_Expert_XE7:Clean"/>
+        <CallTarget Targets="DUnitXTest_XE7:Clean;DUnitXExamples_XE7:Clean;DUnitX_IDE_Expert_XE7:Clean;DUnitXFiremonkeyGUI_XE7:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="DUnitXTest_XE7:Make;DUnitXExamples_XE7:Make;DUnitXFiremonkeyGUI_XE7:Make;DUnitX_IDE_Expert_XE7:Make"/>
+        <CallTarget Targets="DUnitXTest_XE7:Make;DUnitXExamples_XE7:Make;DUnitX_IDE_Expert_XE7:Make;DUnitXFiremonkeyGUI_XE7:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

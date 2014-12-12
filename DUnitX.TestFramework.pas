@@ -940,6 +940,7 @@ uses
   DUnitX.MemoryLeakMonitor.Default,
   DUnitX.FixtureProviderPlugin,
   DUnitX.FilterBuilder,
+  DUnitX.WeakReference,
   Variants,
   Math,
   StrUtils,
@@ -1884,9 +1885,12 @@ begin
 end;
 
 class function TDUnitX.CurrentRunner: ITestRunner;
+var
+  ref : IWeakReference<ITestRunner>;
 begin
-  if not TDUnitXTestRunner.FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId,result) then
+  if not TDUnitXTestRunner.FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId,ref) then
     raise Exception.Create('No Runner found for current thread');
+  result := ref.Data;
 
 end;
 
@@ -1971,9 +1975,16 @@ end;
 procedure TTestFixtureHelper.Log(const logType : TLogLevel; const msg: string);
 var
   runner : ITestRunner;
+  ref : IWeakReference<ITestRunner>;
 begin
-  if TDUnitXTestRunner.FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId,runner) then
-    runner.Log(logType,msg)
+  if TDUnitXTestRunner.FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId,ref) then
+  begin
+    runner := ref.Data;
+    if runner <> nil then
+      runner.Log(logType,msg)
+    else
+      System.Writeln(msg);
+  end
   else
     System.Writeln(msg);
 end;
@@ -2035,5 +2046,7 @@ end;
 
 initialization
   TDUnitX.RegisterPlugin(TDUnitXFixtureProviderPlugin.Create);
+
+finalization
 
 end.
