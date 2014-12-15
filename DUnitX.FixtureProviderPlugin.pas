@@ -257,6 +257,7 @@ var
   currentFixture: ITestFixture;
 begin
 //  WriteLn('Generating Tests for : ' + fixture.FullName);
+
   if fixture.HasChildFixtures then
   begin
     for childFixture in fixture.Children do
@@ -328,8 +329,6 @@ begin
        continue;
     end;
 
-
-
     {$IFDEF DELPHI_XE_UP}
     //if there is a Destructor then we will use it as the fixture
     //Teardown method.
@@ -352,14 +351,14 @@ begin
     end;
 
 
-    if method.TryGetAttributeOfType<SetupAttribute>(setupAttrib) then
+    if (not Assigned(setupMethod)) and method.TryGetAttributeOfType<SetupAttribute>(setupAttrib) then
     begin
       setupMethod := TTestMethod(meth);
       currentFixture.SetSetupTestMethod(method.Name,setupMethod);
       continue;
     end;
 
-    if method.TryGetAttributeOfType<TearDownAttribute>(tearDownAttrib) then
+    if (not Assigned(tearDownMethod)) and  method.TryGetAttributeOfType<TearDownAttribute>(tearDownAttrib) then
     begin
       tearDownMethod := TTestMethod(meth);
       currentFixture.SetTearDownTestMethod(method.Name,tearDownMethod);
