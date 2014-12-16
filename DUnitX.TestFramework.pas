@@ -348,7 +348,7 @@ type
     class procedure DoesNotContain<T>(const list : IEnumerable<T>; const value : T; const message : string = '');overload;
     class procedure DoesNotContain<T>(const arr : array of T; const value : T; const message : string = '');overload;
 {$ENDIF}
-    class procedure Implements<T : IInterface>(value : IInterface; const message : string = '' );
+    class function Implements<T : IInterface>(value : IInterface; const message : string = '' ) : T;
     class procedure IsTrue(const condition : boolean; const message : string = '');
     class procedure IsFalse(const condition : boolean; const message : string = '');
 
@@ -1298,9 +1298,9 @@ begin
   raise ETestPass.Create(message);
 end;
 
-class procedure Assert.Implements<T>(value: IInterface; const message: string);
+class function Assert.Implements<T>(value: IInterface; const message: string) : T;
 begin
-  if not Supports(value,GetTypeData(TypeInfo(T)).Guid) then
+  if not Supports(value,GetTypeData(TypeInfo(T)).Guid,result) then
     Fail(Format('value does not implement %s. %s', [GetTypeName(TypeInfo(T)), message]),ReturnAddress);
 end;
 

@@ -258,12 +258,13 @@ end;
 procedure TTestsAssert.Test_Implements_Will_Fail_If_Not_Implemented;
 var
   obj : IInterface;
+  res : IAmImplemented;
 begin
   obj := TInterfacedObject.Create;
   Assert.WillRaise(
   procedure
   begin
-    Assert.Implements<IAmImplemented>(obj);
+    res := Assert.Implements<IAmImplemented>(obj);
   end,
   ETestFailure);
 end;
@@ -271,13 +272,15 @@ end;
 procedure TTestsAssert.Test_Implements_Will_Pass_If_Implemented;
 var
   obj : IInterface;
+  res : IAmImplemented;
 begin
   obj := TImplemented.Create;
   Assert.WillNotRaiseAny(
     procedure
     begin
-      Assert.Implements<IAmImplemented>(obj);
+      res := Assert.Implements<IAmImplemented>(obj);
     end);
+  Assert.IsNotNull(res);
 end;
 
 procedure TTestsAssert.WillNotRaise_With_DescendingClass_Negative;
