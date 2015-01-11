@@ -34,6 +34,8 @@ uses
   DUnitX.TestFramework,
   DUnitX.Loggers.XML.NUnit;
 
+{$I DUnitX.inc}
+
 type
   {$M+}
   [TestFixture]
@@ -43,9 +45,11 @@ type
     procedure OnTestingStarts_Fills_The_Start_Of_The_Stream_With_Header_Info;
   //  [Test(false)]
 //    procedure OnTestingEnds_Fills_The_End_Of_The_Stream_With_Testing_Result_Info;
+{$IFNDEF DELPHI_XE_DOWN}
     [Test(false)]
     procedure OnTestWarning_Adds_Warnings_To_Be_Written_Out_On_Next_Error;
     procedure OnTestWarning_Adds_Warnings_To_Be_Written_Out_On_Next_Success;
+{$ENDIF}
   end;
 
 implementation
@@ -55,9 +59,11 @@ uses
   SysUtils,
   TimeSpan,
   DateUtils,
+{$IFNDEF DELPHI_XE_DOWN}
+  Delphi.Mocks,
+{$ENDIF}
   DUnitX.Generics,
-  DUnitX.RunResults,
-  Delphi.Mocks;
+  DUnitX.RunResults;
 
 const
   CRLF = #13#10;
@@ -152,7 +158,7 @@ begin
   //Check the preamble
   sUnicodePreamble := TEncoding.UTF8.GetString(TEncoding.UTF8.GetPreamble);
 
-  Assert.AreEqual<string>(Copy(sOnTestingStartsText, iPrevLastChar, Length(sUnicodePreamble)), sUnicodePreamble);
+  Assert.AreEqual(Copy(sOnTestingStartsText, iPrevLastChar, Length(sUnicodePreamble)), sUnicodePreamble);
   iPrevLastChar := iPrevLastChar + Length(sUnicodePreamble);
 
   //Check the header
@@ -164,13 +170,14 @@ begin
 
   sAppName := Copy(sOnTestingStartsText, Succ(iPrevLastChar), Length(sExpectedAppName));
 
-  Assert.AreEqual<string>(sHeader, EXPECTED_HEADER);
+  Assert.AreEqual(sHeader, EXPECTED_HEADER);
 
-  Assert.AreEqual<string>(sResults, sExpectedResults);
+  Assert.AreEqual(sResults, sExpectedResults);
 
-  Assert.AreEqual<string>(sAppName, sExpectedAppName);
+  Assert.AreEqual(sAppName, sExpectedAppName);
 end;
 
+{$IFNDEF DELPHI_XE_DOWN}
 procedure TDUnitX_LoggerXMLNUnitTests.OnTestWarning_Adds_Warnings_To_Be_Written_Out_On_Next_Error;
 var
   logger : ITestLogger;
@@ -255,7 +262,7 @@ begin
   Assert.IsTrue(iPositionOfWarning > 0);
   Assert.AreEqual(Copy(mockStream.DataString, iPositionOfWarning, Length(sExceptedWarning)), sExceptedWarning);
 end;
-
+{$ENDIF}
 
 initialization
   TDUnitX.RegisterTestFixture(TDUnitX_LoggerXMLNUnitTests);

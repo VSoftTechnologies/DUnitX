@@ -54,10 +54,10 @@ var
 begin
   filter := TCategoryExpression.CreateFilter('One , Two; Three,Four');
   catFilter := filter as ICategoryFilter;
-  Assert.AreEqual<string>(catFilter.Categories[0],'One');
-  Assert.AreEqual<string>(catFilter.Categories[1],'Two');
-  Assert.AreEqual<string>(catFilter.Categories[2],'Three');
-  Assert.AreEqual<string>(catFilter.Categories[3],'Four');
+  Assert.AreEqual(catFilter.Categories[0],'One');
+  Assert.AreEqual(catFilter.Categories[1],'Two');
+  Assert.AreEqual(catFilter.Categories[2],'Three');
+  Assert.AreEqual(catFilter.Categories[3],'Four');
 end;
 
 procedure TCategoryParseTests.CanParseExcludedCategories;
@@ -71,9 +71,9 @@ begin
   Assert.IsNotNull(notFilter);
   catFilter := notFilter.BaseFilter as ICategoryFilter;
   Assert.IsNotNull(catFilter);
-  Assert.AreEqual<string>(catFilter.Categories[0],'One');
-  Assert.AreEqual<string>(catFilter.Categories[1],'Two');
-  Assert.AreEqual<string>(catFilter.Categories[2],'Three');
+  Assert.AreEqual(catFilter.Categories[0],'One');
+  Assert.AreEqual(catFilter.Categories[1],'Two');
+  Assert.AreEqual(catFilter.Categories[2],'Three');
 end;
 
 procedure TCategoryParseTests.CanParseMultipleAlternatives;
@@ -85,21 +85,19 @@ begin
   filter := TCategoryExpression.CreateFilter('One|Two|Three');
   orFilter := filter as IOrFilter;
   Assert.IsNotNull(orFilter);
-  Assert.AreEqual<integer>(orFilter.Filters.Count,3);
+  Assert.AreEqual(orFilter.Filters.Count,3);
 
   catFilter := orFilter.Filters[0] as ICategoryFilter;
   Assert.IsNotNull(catFilter);
-  Assert.AreEqual<string>(catFilter.Categories[0],'One');
+  Assert.AreEqual(catFilter.Categories[0],'One');
 
   catFilter := orFilter.Filters[1] as ICategoryFilter;
   Assert.IsNotNull(catFilter);
-  Assert.AreEqual<string>(catFilter.Categories[0],'Two');
+  Assert.AreEqual(catFilter.Categories[0],'Two');
 
   catFilter := orFilter.Filters[2] as ICategoryFilter;
   Assert.IsNotNull(catFilter);
-  Assert.AreEqual<string>(catFilter.Categories[0],'Three');
-
-
+  Assert.AreEqual(catFilter.Categories[0],'Three');
 end;
 
 procedure TCategoryParseTests.CanParseMultipleCategoriesWithAnd;
@@ -111,19 +109,18 @@ begin
   filter := TCategoryExpression.CreateFilter('One + Two+Three');
   andFilter := filter as IAndFilter;
   Assert.IsNotNull(andFilter);
-  Assert.AreEqual<integer>(andFilter.Filters.Count,3);
+  Assert.AreEqual(andFilter.Filters.Count,3);
   catFilter := andFilter.Filters[0] as ICategoryFilter;
   Assert.IsNotNull(catFilter);
-  Assert.AreEqual<string>(catFilter.Categories[0],'One');
+  Assert.AreEqual(catFilter.Categories[0],'One');
 
   catFilter := andFilter.Filters[1] as ICategoryFilter;
   Assert.IsNotNull(catFilter);
-  Assert.AreEqual<string>(catFilter.Categories[0],'Two');
+  Assert.AreEqual(catFilter.Categories[0],'Two');
 
   catFilter := andFilter.Filters[2] as ICategoryFilter;
   Assert.IsNotNull(catFilter);
-  Assert.AreEqual<string>(catFilter.Categories[0],'Three');
-
+  Assert.AreEqual(catFilter.Categories[0],'Three');
 end;
 
 procedure TCategoryParseTests.CanParseSimpleCategory;
@@ -133,8 +130,7 @@ var
 begin
   filter := TCategoryExpression.CreateFilter('Data');
   catFilter := filter as ICategoryFilter;
-  Assert.AreEqual<string>(catFilter.Categories[0],'Data');
-
+  Assert.AreEqual(catFilter.Categories[0],'Data');
 end;
 
 procedure TCategoryParseTests.EmptyStringReturnsEmptyFilter;
@@ -195,24 +191,22 @@ begin
   andFilter := orFilter.Filters[0] as IAndFilter;
   Assert.IsNotNull(andFilter);
   catFilter := andFilter.Filters[0] as ICategoryFilter;
-  Assert.AreEqual<string>(catFilter.Categories[0],'A');
+  Assert.AreEqual(catFilter.Categories[0],'A');
   catFilter := andFilter.Filters[1] as ICategoryFilter;
-  Assert.AreEqual<string>(catFilter.Categories[0],'B');
+  Assert.AreEqual(catFilter.Categories[0],'B');
 
   andFilter := orFilter.Filters[1] as IAndFilter;
   Assert.IsNotNull(andFilter);
   catFilter := andFilter.Filters[0] as ICategoryFilter;
-  Assert.AreEqual<string>(catFilter.Categories[0],'C');
+  Assert.AreEqual(catFilter.Categories[0],'C');
 
   notFilter := andFilter.Filters[1] as INotFilter;
   Assert.IsNotNull(notFilter);
   catFilter := notFilter.BaseFilter as ICategoryFilter;
   Assert.IsNotNull(catFilter);
-  Assert.AreEqual<string>(catFilter.Categories[0],'D');
-  Assert.AreEqual<string>(catFilter.Categories[1],'E');
-  Assert.AreEqual<string>(catFilter.Categories[2],'F');
-
-
+  Assert.AreEqual(catFilter.Categories[0],'D');
+  Assert.AreEqual(catFilter.Categories[1],'E');
+  Assert.AreEqual(catFilter.Categories[2],'F');
 end;
 
 procedure TCategoryParseTests.PrecedenceTestWithParentheses;
@@ -229,23 +223,21 @@ begin
   Assert.AreEqual(andFilter.Filters.Count,3);
 
   catFilter := andFilter.Filters[0] as ICategoryFilter;
-  Assert.AreEqual<string>(catFilter.Categories[0],'A');
+  Assert.AreEqual(catFilter.Categories[0],'A');
 
   orFilter := andFilter.Filters[1] as IOrFilter;
   Assert.IsNotNull(orFilter);
   catFilter := orFilter.Filters[0] as ICategoryFilter;
-  Assert.AreEqual<string>(catFilter.Categories[0],'B');
+  Assert.AreEqual(catFilter.Categories[0],'B');
   catFilter := orFilter.Filters[1] as ICategoryFilter;
-  Assert.AreEqual<string>(catFilter.Categories[0],'C');
+  Assert.AreEqual(catFilter.Categories[0],'C');
 
   notFilter := andFilter.Filters[2] as INotFilter;
   Assert.IsNotNull(notFilter);
   catFilter := notFilter.BaseFilter as ICategoryFilter;
-  Assert.AreEqual<string>(catFilter.Categories[0],'D');
-  Assert.AreEqual<string>(catFilter.Categories[1],'E');
-  Assert.AreEqual<string>(catFilter.Categories[2],'F');
-
-
+  Assert.AreEqual(catFilter.Categories[0],'D');
+  Assert.AreEqual(catFilter.Categories[1],'E');
+  Assert.AreEqual(catFilter.Categories[2],'F');
 end;
 
 initialization
