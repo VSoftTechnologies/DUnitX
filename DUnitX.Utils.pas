@@ -727,6 +727,7 @@ function Supports(const Instance: TValue; const IID: TGUID; out Intf): Boolean; 
 const
   ObjCastGUID: TGUID = '{CEDF24DE-80A4-447D-8C75-EB871DC121FD}';
 
+
 implementation
 
 uses
@@ -734,7 +735,8 @@ uses
   Generics.Defaults,
   Math,
   StrUtils,
-  SysConst;
+  SysConst,
+  Windows;
 
 var
   Context: TRttiContext;
@@ -753,6 +755,7 @@ var
   attribute : TCustomAttribute;
 begin
   result := nil;
+
   for attribute in attributes do
   begin
     if attribute.ClassType = AttributeClass then

@@ -99,6 +99,25 @@ type
   end;
   {$M-}
 
+  {$M+}
+  [TestFixture]
+  TTestMaxTimeAttribute = class
+  public
+    [Test]
+    [MaxTime(0)]
+    procedure MaxTimeIsZero;
+
+
+    [Test]
+    [MaxTime(100)]
+    procedure TestTimeout;
+
+    [Test]
+    [MaxTime(100)]
+    procedure TestDoesNotTimeout;
+  end;
+  {$M-}
+
 implementation
 
 uses
@@ -194,9 +213,31 @@ begin
   Assert.AreEqual(TIMES_RUN_TEST_CASE, _TimesRunTestCase, 'TimesRunTestCase');
 end;
 
+{ TTestMaxTimeAttribute }
+
+procedure TTestMaxTimeAttribute.MaxTimeIsZero;
+begin
+  Sleep( 100 );
+  Assert.Pass;  // even after a delay,
+                // the test should not timeout, as zero means no timeout
+end;
+
+procedure TTestMaxTimeAttribute.TestTimeout;
+begin
+  Sleep( 150 );
+  Assert.Fail('Timeout should catch this test.');  // the test should time out before this point
+end;
+
+procedure TTestMaxTimeAttribute.TestDoesNotTimeout;
+begin
+  Assert.Pass;  // the test should NOT time out before this point
+end;
+
+
 initialization
   TDUnitX.RegisterTestFixture(TTestClassWithNonPublicSetup);
   TDUnitX.RegisterTestFixture(TTestClassWithTestSource);
   TDUnitX.RegisterTestFixture(TTestRepeatAttribute);
+  TDUnitX.RegisterTestFixture(TTestMaxTimeAttribute);
 
 end.

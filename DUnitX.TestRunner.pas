@@ -106,6 +106,7 @@ type
     function ExecuteTest(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const memoryAllocationProvider : IMemoryLeakMonitor) : ITestResult;
     function ExecuteSuccessfulResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const message: string = '') : ITestResult;
     function ExecuteFailureResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const exception : Exception) : ITestError;
+    function ExecuteTimedOutResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const exception : Exception) : ITestError;
     function ExecuteErrorResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const exception : Exception) : ITestError;
     function ExecuteIgnoredResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const ignoreReason : string) : ITestResult;
 
@@ -699,7 +700,7 @@ begin
       memoryAllocationProvider.PostTest;
     end;
 
-    if FFailsOnNoAsserts then
+    if (FFailsOnNoAsserts) then
     begin
       assertAfterCount := TDUnitX.GetAssertCount(threadId);
       if (assertBeforeCount = assertAfterCount)  then
@@ -767,6 +768,8 @@ begin
           testResult := ExecuteSuccessfulResult(context, threadId, test, e.Message);
         on e: ETestFailure do
           testResult := ExecuteFailureResult(context, threadId, test, e);
+        on e: ETimedOut do
+          testResult := ExecuteTimedOutResult(context, threadId, test, e);
         on e: Exception do
           testResult := ExecuteErrorResult(context, threadId, test, e);
       end;
@@ -839,6 +842,11 @@ begin
 end;
 
 
+
+function TDUnitXTestRunner.ExecuteTimedOutResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const exception: Exception): ITestError;
+begin
+  Result := TDUnitXTestError.Create(test as ITestInfo, TTestResultType.Failure, exception, ExceptAddr, exception.Message);
+end;
 
 function TDUnitXTestRunner.GetUseRTTI: Boolean;
 begin
