@@ -9,7 +9,7 @@ uses
   SysUtils,
   DUnitX.TestFramework,
   DUnitX.Loggers.Null, 
-  System.Generics.Collections;
+  Generics.Collections;
 
 //TODO : Rework https://github.com/VSoftTechnologies/Delphi-Fluent-XML so it doesn't use msxml and use it here?
 

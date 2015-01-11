@@ -31,6 +31,8 @@ interface
 uses
   DUnitX.TestFramework;
 
+{$I DUnitX.inc}
+
 type
   {$M+}
   [TestFixture]
@@ -65,6 +67,7 @@ type
     procedure AreEqual_TClass_Throws_No_Exception_When_Classes_Are_Equal;
     [Test]
     procedure AreEqual_TClass_Throws_ETestFailure_When_Classes_Are_NotEqual;
+{$IFNDEF DELPHI_XE_DOWN}
     [Test]
     procedure AreEqual_T_Throws_No_Exception_When_Interfaces_Are_Equal;
     [Test]
@@ -77,6 +80,7 @@ type
     procedure AreEqual_T_Throws_ETestFailure_When_Objects_Are_NotEqual;
     [Test]
     procedure AreEqual_T_Throws_ETestFailure_When_Objects_Are_Nil;
+{$ENDIF}
     [Test]
     procedure AreEqualMemory_Throws_No_Exception_When_Pointers_Are_Equal;
     [Test]
@@ -146,7 +150,6 @@ type
 implementation
 
 uses
-  Delphi.Mocks,
   SysUtils,
   Classes;
 
@@ -169,9 +172,6 @@ type
 
   TImplemented = class(TInterfacedObject,IAmImplemented)
   end;
-
-
-
 
 { TTestAssert }
 
@@ -253,7 +253,6 @@ begin
       Assert.Pass(EXPECTED_EXCEPTION_MSG);
     end, ETestPass, EXPECTED_EXCEPTION_MSG);
 end;
-
 
 procedure TTestsAssert.Test_Implements_Will_Fail_If_Not_Implemented;
 var
@@ -354,7 +353,6 @@ begin
  ETestFailure,
  EXPECTED_EXCEPTION_MSG);
 end;
-
 
 procedure TTestsAssert.WillRaiseAny;
 begin
@@ -528,7 +526,6 @@ begin
     begin
       Assert.AreEqual(ACTUAL_EXTENDED, EXPECTED_EXTENDED, TOLERANCE_EXTENDED);
     end, ETestFailure, Format('[%e] with in [%e] from [%e]', [ACTUAL_EXTENDED, TOLERANCE_EXTENDED, EXPECTED_EXTENDED]));
-
 end;
 
 procedure TTestsAssert.AreEqual_Extended_Throws_No_Exception_When_Values_Are_Equal;
@@ -600,6 +597,7 @@ begin
     end, Exception);
 end;
 
+{$IFNDEF DELPHI_XE_DOWN}
 procedure TTestsAssert.AreEqual_T_Throws_ETestFailure_When_Interfaces_Are_NotEqual;
 var
   mock : IInterface;
@@ -678,7 +676,6 @@ begin
     end, ETestFailure);
 end;
 
-
 procedure TTestsAssert.AreEqual_T_Throws_No_Exception_When_Interfaces_Are_Equal;
 var
   mock : IInterface;
@@ -707,7 +704,7 @@ begin
     FreeAndNil(mock);
   end;
 end;
-
+{$ENDIF}
 
 procedure TTestsAssert.Test_AreSameOnSameObjectWithDifferentInterfaces_No_Exception;
 var
@@ -777,7 +774,6 @@ begin
       Assert.DoesNotContain<string>(['x', 'y', 'z'], 'a');
     end, ETestFailure);
 end;
-
 
 procedure TTestsAssert.DoesNotContain_ArrayOfT_Throws_Exception_When_Value_In_Array;
 begin
