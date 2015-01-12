@@ -55,6 +55,8 @@ type
         ActivatorDelegate : TActivatorDelegate;
         IsSingleton       : boolean;
         Instance          : IInterface;
+        function CreateSingletonActivator(const delegate: TActivatorDelegate): TActivatorDelegate;
+        procedure Initialize(const delegate: TActivatorDelegate; singleton: Boolean; const instance: IInterface);
       end;
   private
     FRaiseIfNotFound : boolean;
@@ -70,12 +72,10 @@ type
     class destructor ClassDestroy;
     //Default Container - used internally by DUnitX
     class function DefaultContainer : TDUnitXIoC;
-    {$IFDEF DELPHI_XE_UP}
-    //Exe's compiled with D2010 will crash when these are used.
-    //NOTES: The issue is due to the two generics included in the functions. The constaints also seem to be an issue.
+
     procedure RegisterType<TInterface: IInterface; TImplementation: class>(const name : string = '');overload;
     procedure RegisterType<TInterface: IInterface; TImplementation: class>(const singleton : boolean;const name : string = '');overload;
-    {$ENDIF}
+
     procedure RegisterType<TInterface: IInterface>(const delegate : TActivatorDelegate<TInterface>; const name : string = '' );overload;
     procedure RegisterType<TInterface: IInterface>(const singleton : boolean;const delegate : TActivatorDelegate<TInterface>; const name : string = '');overload;
 
@@ -167,7 +167,6 @@ begin
   Result := FContainerInfo.ContainsKey(GetInterfaceKey(TypeInfo(T)));
 end;
 
-{$IFDEF DELPHI_XE_UP}
 procedure TDUnitXIoC.RegisterType<TInterface, TImplementation>(const name: string);
 begin
   InternalRegisterType(TypeInfo(TInterface), False, TClassActivator.CreateActivatorDelegate(TImplementation, GetTypeData(TypeInfo(TInterface)).Guid), name);
@@ -177,39 +176,26 @@ procedure TDUnitXIoC.RegisterType<TInterface, TImplementation>(const singleton: 
 begin
   InternalRegisterType(TypeInfo(TInterface), singleton, TClassActivator.CreateActivatorDelegate(TImplementation, GetTypeData(TypeInfo(TInterface)).Guid), name);
 end;
-{$ENDIF}
 
 procedure TDUnitXIoC.InternalRegisterType(const typeInfo: PTypeInfo; const singleton : boolean; const delegate : TActivatorDelegate; const name : string = '');
 var
   key : string;
   rego : TIoCRegistration;
-  newName : string;
-  newSingleton : boolean;
 begin
-  newSingleton := singleton;
-  newName := name;
-
-  if newName = '' then
-    key := string(typeInfo.Name)
-  else
-    key := string(typeInfo.Name) + '_' + newName;
-  key := LowerCase(key);
+  key := GetInterfaceKey(typeInfo, name);
 
   if not FContainerInfo.TryGetValue(key,rego) then
   begin
     rego := TIoCRegistration.Create;
-    rego.ActivatorDelegate := delegate;
-    rego.IsSingleton := newSingleton;
-    FContainerInfo.Add(key,rego);
+    rego.Initialize(delegate, singleton, nil);
+    FContainerInfo.Add(key, rego);
   end
   else
   begin
     //cannot replace a singleton that has already been instanciated.
     if rego.IsSingleton and (rego.Instance <> nil)  then
-      raise EIoCRegistrationException.Create(Format('An implementation for type %s with name %s is already registered with IoC',[typeInfo.Name, newName]));
-    rego.ActivatorDelegate := delegate;
-    rego.IsSingleton := newSingleton;
-    FContainerInfo.AddOrSetValue(key,rego);
+      raise EIoCRegistrationException.Create(Format('An implementation for type %s with name %s is already registered with IoC',[typeInfo.Name, name]));
+    rego.Initialize(delegate, singleton, nil);
   end;
 end;
 
@@ -234,7 +220,7 @@ end;
 
 constructor TDUnitXIoC.Create;
 begin
-  FContainerInfo := TDictionary<string,TIoCRegistration>.Create;
+  FContainerInfo := TObjectDictionary<string,TIoCRegistration>.Create([doOwnsValues]);
   FRaiseIfNotFound := False;
 end;
 
@@ -247,17 +233,8 @@ begin
 end;
 
 destructor TDUnitXIoC.Destroy;
-var
-  o : TObject;
 begin
-  if FContainerInfo <> nil then
-  begin
-    for o in FContainerInfo.Values do
-      if o <> nil then
-        o.Free;
-
-    FContainerInfo.Free;
-  end;
+  FContainerInfo.Free;
   inherited;
 end;
 
@@ -266,7 +243,7 @@ begin
   //By default the key is the interface name unless otherwise found.
   Result := string(typeInfo.Name);
 
-  if (AName <> '') then
+  if AName <> '' then
     Result := Result + '_' + AName;
 
   //All keys are stored in lower case form.
@@ -278,7 +255,6 @@ var
   key : string;
   container : TDictionary<string,TIoCRegistration>;
   registration : TIoCRegistration;
-  bIsSingleton : Boolean;
   bInstanciate : Boolean;
 begin
   AInterface := nil;
@@ -291,12 +267,9 @@ begin
   if not container.TryGetValue(key, registration) then
     Exit(TResolveResult.InterfaceNotRegistered);
 
-  //Get the interface registration class correctly.
-  bIsSingleton := registration.IsSingleton;
-
   bInstanciate := True;
 
-  if bIsSingleton then
+  if registration.IsSingleton then
   begin
     //If a singleton was registered with this interface then check if it's already been instanciated.
     if registration.Instance <> nil then
@@ -308,27 +281,10 @@ begin
 
   if bInstanciate then
   begin
-    //If the instance hasn't been instanciated then we need to lock and instanciate
-    MonitorEnter(container);
-    try
-      if registration.ActivatorDelegate <> nil then
-      begin
-        AInterface := registration.ActivatorDelegate();
+    AInterface := registration.ActivatorDelegate();
 
-        if AInterface = nil then
-          Exit(TResolveResult.DeletegateFailedCreate);
-      end;
-
-      if bIsSingleton then
-      begin
-        registration.Instance := AInterface;
-
-        //Reset the registration to show the instance which was created.
-        container.AddOrSetValue(key, registration);
-      end;
-    finally
-      MonitorExit(container);
-    end;
+    if AInterface = nil then
+      Exit(TResolveResult.DeletegateFailedCreate);
   end;
 end;
 
@@ -374,6 +330,41 @@ begin
 
     raise EIoCResolutionException.Create(errorMsg);
   end;
+end;
+
+{ TDUnitXIoC.TIoCRegistration }
+
+procedure TDUnitXIoC.TIoCRegistration.Initialize(
+  const delegate: TActivatorDelegate; singleton: Boolean;
+  const instance: IInterface);
+begin
+  inherited Create;
+  IsSingleton := singleton;
+  if Assigned(delegate) and IsSingleton then
+    ActivatorDelegate := CreateSingletonActivator(delegate)
+  else
+    ActivatorDelegate := delegate;
+  Self.Instance := instance;
+end;
+
+function TDUnitXIoC.TIoCRegistration.CreateSingletonActivator(
+  const delegate: TActivatorDelegate): TActivatorDelegate;
+begin
+  Result :=
+    function: IInterface
+    begin
+      if not Assigned(Instance) then
+      begin
+        MonitorEnter(Self);
+        try
+          if not Assigned(Instance) then
+            Instance := delegate();
+        finally
+          MonitorExit(Self);
+        end;
+      end;
+      Result := Instance;
+    end;
 end;
 
 end.
