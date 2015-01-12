@@ -69,6 +69,7 @@ uses
   Types,
   StrUtils,
   SysUtils,
+  DUnitX.Attributes,
   DUnitX.Utils,
   DUnitX.TestFramework;
 
