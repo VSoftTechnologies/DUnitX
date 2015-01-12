@@ -29,6 +29,7 @@ unit DUnitX.Test;
 interface
 
 uses
+  DUnitX.Types,
   DUnitX.Extensibility,
   DUnitX.InternalInterfaces,
   DUnitX.WeakReference,

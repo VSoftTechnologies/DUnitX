@@ -62,7 +62,6 @@ type
   IgnoreAttribute = DUnitX.Attributes.IgnoreAttribute;
   RepeatTestAttribute = DUnitX.Attributes.RepeatTestAttribute;
 
-  TValueArray = DUnitX.Extensibility.TValueArray;
   TestCaseInfo = DUnitX.Attributes.TestCaseInfo;
   TestCaseInfoArray = DUnitX.Attributes.TestCaseInfoArray;
 

@@ -59,7 +59,6 @@
 			<DCCReference Include="..\DUnitX.TestResult.pas"/>
 			<DCCReference Include="..\DUnitX.RunResults.pas"/>
 			<DCCReference Include="..\DUnitX.TestRunner.pas"/>
-			<DCCReference Include="..\DUnitX.Utils.pas"/>
 			<DCCReference Include="..\DUnitX.Utils.XML.pas"/>
 			<DCCReference Include="..\DUnitX.WeakReference.pas"/>
 			<DCCReference Include="..\DUnitX.Windows.Console.pas"/>
@@ -88,6 +87,10 @@
 			<DCCReference Include="..\DUnitX.TestNameParser.pas"/>
 			<DCCReference Include="..\DUnitX.FilterBuilder.pas"/>
 			<DCCReference Include="..\DUnitX.Filters.pas"/>
+			<DCCReference Include="..\DUnitX.Assert.pas"/>
+			<DCCReference Include="..\DUnitX.Utils.pas"/>
+			<DCCReference Include="..\DUnitX.Attributes.pas"/>
+			<DCCReference Include="..\DUnitX.Types.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

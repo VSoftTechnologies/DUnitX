@@ -32,6 +32,7 @@ uses
   TimeSpan,
   Rtti,
   Generics.Collections,
+  DUnitX.Types,
   DUnitX.Generics;
 
 type
@@ -75,8 +76,6 @@ type
   ITestList = interface(IList<ITest>)
     ['{83ABC05F-5762-4FD2-9791-E32F5A9A4D06}']
   end;
-
-  TValueArray = TArray<TValue>;
 
   ITestFixtureList = interface;
 

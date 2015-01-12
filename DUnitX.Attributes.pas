@@ -29,6 +29,7 @@ unit DUnitX.Attributes;
 interface
 
 uses
+  DUnitX.Types,
   Rtti;
 
 {$I DUnitX.inc}
@@ -165,7 +166,6 @@ type
     property Count : Cardinal read FCount;
   end;
 
-  TValueArray = TArray<TValue>;
 
   /// <summary>
   ///   Internal Structure used for those implementing CustomTestCase or
@@ -243,6 +243,7 @@ implementation
 
 uses
   StrUtils,
+  DUnitX.Utils,
   Types;
 
 { TestFixture }
