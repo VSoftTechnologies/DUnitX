@@ -219,12 +219,9 @@ var
   childFixture : ITestFixture;
 
   rType : TRttiType;
-  rBaseType : TRttiType;
   methods : TArray<TRttiMethod>;
   method : TRttiMethod;
-  attribute : TCustomAttribute;
   meth : TMethod;
-  fixtureAttrib   : TestFixtureAttribute;
 
   tearDownFixtureIsDestructor : boolean;
   setupMethod : TTestMethod;
