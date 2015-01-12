@@ -320,8 +320,7 @@ begin
         //setup and teardown might have already been set.. so take them from the parent fixture.
         currentFixture.SetSetupTestMethod(fixture.SetupMethodName,fixture.SetupMethod);
         currentFixture.SetTearDownTestMethod(fixture.TearDownMethodName,fixture.TearDownMethod);
-        currentFixture.SetSetupFixtureMethod(fixture.SetupFixtureMethodName,fixture.SetupFixtureMethod);
-        currentFixture.SetTearDownFixtureMethod(fixture.TearDownFixtureMethodName,fixture.TearDownFixtureMethod,tearDownFixtureIsDestructor);
+        //don't assign setupfixture or teardown fixture as the parent fixture's methods will still be run.
       end;
     end;
 
