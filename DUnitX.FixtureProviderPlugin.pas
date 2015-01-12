@@ -317,6 +317,11 @@ begin
       begin
         repeatCount := repeatAttrib.Count;
         currentFixture := fixture.AddChildFixture(fixture.TestClass, Format('%s.%s', [currentFixture.FullName,method.Name]),category);
+        //setup and teardown might have already been set.. so take them from the parent fixture.
+        currentFixture.SetSetupTestMethod(fixture.SetupMethodName,fixture.SetupMethod);
+        currentFixture.SetTearDownTestMethod(fixture.TearDownMethodName,fixture.TearDownMethod);
+        currentFixture.SetSetupFixtureMethod(fixture.SetupFixtureMethodName,fixture.SetupFixtureMethod);
+        currentFixture.SetTearDownFixtureMethod(fixture.TearDownFixtureMethodName,fixture.TearDownFixtureMethod,tearDownFixtureIsDestructor);
       end;
     end;
 
