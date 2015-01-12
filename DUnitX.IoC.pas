@@ -211,8 +211,7 @@ end;
 
 class destructor TDUnitXIoC.ClassDestroy;
 begin
-  if FDefault <> nil then
-    FDefault.Free;
+  FDefault.Free;
 end;
 
 procedure TDUnitXIoC.Clear;
