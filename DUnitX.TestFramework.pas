@@ -524,7 +524,7 @@ type
     //   Container for all options supported
     class property Options : TDUnitXOptions read FOptions;
     //   This is the test filter used by the runners. It's here because we need to build it when checking the command line.
-    class property Filter : ITestFilter read FFilter;
+    class property Filter : ITestFilter read FFilter write FFilter;
   end;
 
   // Register an implementation via TDUnitXIoC.DefaultContainer
