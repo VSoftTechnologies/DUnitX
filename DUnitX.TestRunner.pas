@@ -144,6 +144,7 @@ type
 implementation
 
 uses
+  DUnitX.Attributes,
   DUnitX.CommandLine.Options,
   DUnitX.TestFixture,
   DUnitX.RunResults,

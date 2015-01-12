@@ -29,6 +29,7 @@ unit DUnitX.TestFixture;
 interface
 
 uses
+  DUnitX.Attributes,
   DUnitX.TestFramework,
   DUnitX.Extensibility,
   DUnitX.InternalInterfaces,
