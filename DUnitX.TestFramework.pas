@@ -370,54 +370,54 @@ type
     ///	</summary>
     procedure OnTestFailure(const threadId : Cardinal;const  Failure: ITestError);
 
-    ///	<summary>
-    ///	  //called when a test is ignored.
-    ///	</summary>
+    /// <summary>
+    ///   called when a test is ignored.
+    /// </summary>
     procedure OnTestIgnored(const threadId : Cardinal; const AIgnored: ITestResult);
 
-    ///	<summary>
-    ///	  //called when a test memory leaks.
-    ///	</summary>
+    /// <summary>
+    ///   called when a test memory leaks.
+    /// </summary>
     procedure OnTestMemoryLeak(const threadId : Cardinal; const Test: ITestResult);
 
-    ///	<summary>
-    ///	  //allows tests to write to the log.
-    ///	</summary>
+    /// <summary>
+    ///   allows tests to write to the log.
+    /// </summary>
     procedure OnLog(const logType : TLogLevel; const msg : string);
 
-    ///	<summary>
-    ///	  //called before a Test Teardown method is run.
-    ///	</summary>
+    /// <summary>
+    ///   called before a Test Teardown method is run.
+    /// </summary>
     procedure OnTeardownTest(const threadId : Cardinal;const  Test: ITestInfo);
 
-    ///	<summary>
-    ///	  //called after a test teardown method is run.
-    ///	</summary>
+    /// <summary>
+    ///   called after a test teardown method is run.
+    /// </summary>
     procedure OnEndTeardownTest(const threadId : Cardinal; const Test: ITestInfo);
 
-    ///	<summary>
-    ///	  //called after a test method and teardown is run.
-    ///	</summary>
+    /// <summary>
+    ///   called after a test method and teardown is run.
+    /// </summary>
     procedure OnEndTest(const threadId : Cardinal;const  Test: ITestResult);
 
-    ///	<summary>
-    ///	  //called before a Fixture Teardown method is called.
-    ///	</summary>
+    /// <summary>
+    ///   called before a Fixture Teardown method is called.
+    /// </summary>
     procedure OnTearDownFixture(const threadId : Cardinal; const fixture : ITestFixtureInfo);
 
-    ///	<summary>
-    ///	  //called after a Fixture Teardown method is called.
-    ///	</summary>
+    /// <summary>
+    ///   called after a Fixture Teardown method is called.
+    /// </summary>
     procedure OnEndTearDownFixture(const threadId : Cardinal; const fixture : ITestFixtureInfo);
 
-    ///	<summary>
-    ///	  //called after a Fixture has run.
-    ///	</summary>
+    /// <summary>
+    ///   called after a Fixture has run.
+    /// </summary>
     procedure OnEndTestFixture(const threadId : Cardinal; const results : IFixtureResult);
 
-    ///	<summary>
-    ///	  //called after all fixtures have run.
-    ///	</summary>
+    /// <summary>
+    ///   called after all fixtures have run.
+    /// </summary>
     procedure OnTestingEnds(const RunResults: IRunResults);
   end;
 
@@ -474,7 +474,7 @@ type
     property XMLOutputFile : string read FXMLOutputFile write FXMLOutputFile;
 
     // Specifiy the tests to run.
-    property Run : TStringList read FRun write FRun;
+    property Run : TStringList read FRun;
 
     //the name of a file which lists the tests to run.
     property RunListFile : string read FRunListFile write FRunListFile;
@@ -515,6 +515,7 @@ type
   public
     class function CreateRunner : ITestRunner;overload;
     class function CreateRunner(const ALogger : ITestLogger) : ITestRunner;overload;
+    class function CreateRunner(const ALoggers : array of ITestLogger) : ITestRunner;overload;
     class procedure RegisterTestFixture(const AClass : TClass; const AName : string = '' );
     class procedure RegisterPlugin(const plugin : IPlugin);
     class function CurrentRunner : ITestRunner;
@@ -594,11 +595,18 @@ uses
 
 constructor TDUnitXOptions.Create;
 begin
-  Run := TStringList.Create;
-  LogLevel := TLogLevel.Information;
-  ExitBehavior := TDUnitXExitBehavior.Pause;
+  FRun := TStringList.Create;
+  FLogLevel := TLogLevel.Information;
+  FExitBehavior := TDUnitXExitBehavior.Pause;
 end;
 
+destructor TDUnitXOptions.Destroy;
+begin
+  FRun.Free;
+  inherited;
+end;
+
+{ TDUnitX }
 
 class function TDUnitX.CreateRunner: ITestRunner;
 begin
@@ -610,6 +618,11 @@ begin
   result := TDUnitXTestRunner.Create(ALogger);
 end;
 
+class function TDUnitX.CreateRunner(
+  const ALoggers: array of ITestLogger): ITestRunner;
+begin
+  Result := TDUnitXTestRunner.Create(ALoggers);
+end;
 
 procedure WriteLine(consoleWriter : IDUnitXConsoleWriter; const value : string);
 begin
@@ -754,12 +767,6 @@ begin
 
   if not RegisteredFixtures.ContainsKey(AClass) then
       RegisteredFixtures.Add(AClass,sName );
-end;
-
-destructor TDUnitXOptions.Destroy;
-begin
-  FRun.Free;
-  inherited;
 end;
 
 
