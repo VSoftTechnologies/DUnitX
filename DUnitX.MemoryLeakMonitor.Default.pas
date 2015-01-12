@@ -61,11 +61,7 @@ uses
 
 procedure RegisterDefaultProvider;
 begin
-  TDUnitXIoC.DefaultContainer.RegisterType<IMemoryLeakMonitor>(
-    function : IMemoryLeakMonitor
-    begin
-      result := TDUnitXDefaultMemoryLeakMonitor.Create;
-    end);
+  TDUnitXIoC.DefaultContainer.RegisterType<IMemoryLeakMonitor, TDUnitXDefaultMemoryLeakMonitor>;
 end;
 
 
