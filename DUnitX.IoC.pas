@@ -168,7 +168,7 @@ end;
 
 function TDUnitXIoC.HasService<T>: boolean;
 begin
-  result := Self.Resolve<T> <> nil;
+  Result := FContainerInfo.ContainsKey(GetInterfaceKey<T>);
 end;
 
 {$IFDEF DELPHI_XE_UP}
