@@ -48,28 +48,23 @@ type
 
   TActivatorDelegate<TInterface: IInterface> = reference to function: TInterface;
 
-
-
   TDUnitXIoC = class
   private
     FRaiseIfNotFound : boolean;
     FContainerInfo : TDictionary<string,TObject>;
     type
       TIoCRegistration<T : IInterface> = class
-      IInterface        : PTypeInfo;
-      ImplClass         : TClass;
-      ActivatorDelegate : TActivatorDelegate<T>;
-      IsSingleton       : boolean;
-      Instance          : IInterface;
-    end;
+        ActivatorDelegate : TActivatorDelegate<T>;
+        IsSingleton       : boolean;
+        Instance          : IInterface;
+      end;
 
-    private
-      class var FDefault : TDUnitXIoC;
-
+  private
+    class var FDefault : TDUnitXIoC;
   protected
     function GetInterfaceKey<TInterface>(const AName: string = ''): string;
     function InternalResolve<TInterface: IInterface>(out AInterface: TInterface; const AName: string = ''): TResolveResult;
-    procedure InternalRegisterType<TInterface : IInterface>(const singleton : boolean; const AImplementation : TClass; const delegate : TActivatorDelegate<TInterface>; const name : string = '');
+    procedure InternalRegisterType<TInterface : IInterface>(const singleton : boolean; const delegate : TActivatorDelegate<TInterface>; const name : string = '');
   public
     constructor Create;
     destructor Destroy;override;
@@ -99,9 +94,6 @@ type
     procedure Clear;
 
     property RaiseIfNotFound : boolean read FRaiseIfNotFound write FRaiseIfNotFound;
-
-
-
   end;
 
   EIoCException = class(Exception);
@@ -111,6 +103,7 @@ type
 
   //Makes sure virtual constructors are called correctly. Just using a class reference will not call the overriden constructor!
   //See http://stackoverflow.com/questions/791069/how-can-i-create-an-delphi-object-from-a-class-reference-and-ensure-constructor
+
   TClassActivator = class
   private
     class var
@@ -118,8 +111,8 @@ type
       class constructor Create;
   public
     class function CreateInstance(const AClass : TClass) : IInterface;
+    class function CreateActivatorDelegate<T: IInterface>(const AClass : TClass) : TActivatorDelegate<T>;
   end;
-
 
 implementation
 
@@ -133,28 +126,45 @@ end;
 
 class function TClassActivator.CreateInstance(const AClass : TClass): IInterface;
 var
-  rType : TRttiType;
-  method: TRttiMethod;
+  delegate : TActivatorDelegate<IInterface>;
 begin
-  result := nil;
+  Result := nil;
 
-  rType := FRttiCtx.GetType(AClass);
-  if not (rType is TRttiInstanceType) then
-    exit;
-
-  for method in TRttiInstanceType(rType).GetMethods do
-  begin
-    if method.IsConstructor and (Length(method.GetParameters) = 0) then
-    begin
-      Result := method.Invoke(TRttiInstanceType(rtype).MetaclassType, []).AsInterface;
-      Break;
-    end;
-  end;
-
+  delegate := CreateActivatorDelegate<IInterface>(AClass);
+  if Assigned(delegate) then
+    Result := delegate();
 end;
 
+class function TClassActivator.CreateActivatorDelegate<T>(
+  const AClass: TClass): TActivatorDelegate<T>;
+var
+  rType : TRttiType;
+  method: TRttiMethod;
+  ctor : function(InstanceOrVMT: Pointer; Alloc: ShortInt = 1): Pointer; // constructor signature
+  guid : Tguid;
+begin
+  Result := nil;
 
+  rType := FRttiCtx.GetType(AClass);
+  if rType is TRttiInstanceType then
+    for method in TRttiInstanceType(rType).GetMethods do
+      if method.IsConstructor and (Length(method.GetParameters) = 0) then
+      begin
+        ctor := method.CodeAddress;
+        guid := GetTypeData(TypeInfo(T)).Guid;
+        Result :=
+          function : T
+          var
+            obj : TObject;
+          begin
+            obj := ctor(AClass);
+            Supports(obj, guid, Result);
+          end;
+        Exit;
+      end;
+end;
 
+{ TDUnitXIoC }
 
 function TDUnitXIoC.HasService<T>: boolean;
 begin
@@ -162,19 +172,18 @@ begin
 end;
 
 {$IFDEF DELPHI_XE_UP}
-
 procedure TDUnitXIoC.RegisterType<TInterface, TImplementation>(const name: string);
 begin
-  InternalRegisterType<TInterface>(false,TImplementation,nil,name);
+  InternalRegisterType<TInterface>(false, TClassActivator.CreateActivatorDelegate<TInterface>(TImplementation), name);
 end;
 
 procedure TDUnitXIoC.RegisterType<TInterface, TImplementation>(const singleton: boolean; const name: string);
 begin
-  Self.InternalRegisterType<TInterface>(singleton,TImplementation,nil,name);
+  InternalRegisterType<TInterface>(singleton, TClassActivator.CreateActivatorDelegate<TInterface>(TImplementation), name);
 end;
 {$ENDIF}
 
-procedure TDUnitXIoC.InternalRegisterType<TInterface>(const singleton : boolean; const AImplementation : TClass; const delegate : TActivatorDelegate<TInterface>; const name : string = '');
+procedure TDUnitXIoC.InternalRegisterType<TInterface>(const singleton : boolean; const delegate : TActivatorDelegate<TInterface>; const name : string = '');
 var
   key   : string;
   pInfo : PTypeInfo;
@@ -196,9 +205,7 @@ begin
   if not FContainerInfo.TryGetValue(key,o) then
   begin
     rego := TIoCRegistration<TInterface>.Create;
-    rego.IInterface := pInfo;
     rego.ActivatorDelegate := delegate;
-    rego.ImplClass := AImplementation;
     rego.IsSingleton := newSingleton;
     FContainerInfo.Add(key,rego);
   end
@@ -208,20 +215,16 @@ begin
     //cannot replace a singleton that has already been instanciated.
     if rego.IsSingleton and (rego.Instance <> nil)  then
       raise EIoCException.Create(Format('An implementation for type %s with name %s is already registered with IoC',[pInfo.Name, newName]));
-    rego.IInterface := pInfo;
     rego.ActivatorDelegate := delegate;
-    rego.ImplClass := AImplementation;
     rego.IsSingleton := newSingleton;
     FContainerInfo.AddOrSetValue(key,rego);
   end;
 end;
 
-
 procedure TDUnitXIoC.RegisterType<TInterface>(const delegate: TActivatorDelegate<TInterface>; const name: string);
 begin
-  Self.InternalRegisterType<TInterface>(false, nil,delegate, name);
+  InternalRegisterType<TInterface>(false, delegate, name);
 end;
-
 
 class destructor TDUnitXIoC.ClassDestroy;
 begin
@@ -262,7 +265,6 @@ begin
   end;
   inherited;
 end;
-
 
 function TDUnitXIoC.GetInterfaceKey<TInterface>(const AName: string): string;
 var
@@ -331,11 +333,7 @@ begin
     //If the instance hasn't been instanciated then we need to lock and instanciate
     MonitorEnter(container);
     try
-      //If we have a implementing class then used this to activate.
-      if registration.ImplClass <> nil then
-        resolvedInf := TClassActivator.CreateInstance(registration.ImplClass)
-      //Otherwise if there is a activate delegate use this to activate.
-      else if registration.ActivatorDelegate <> nil then
+      if registration.ActivatorDelegate <> nil then
       begin
         resolvedInf := registration.ActivatorDelegate();
 
@@ -381,9 +379,7 @@ begin
   if not FContainerInfo.TryGetValue(key,o) then
   begin
     rego := TIoCRegistration<TInterface>.Create;
-    rego.IInterface := pInfo;
     rego.ActivatorDelegate := nil;
-    rego.ImplClass := nil;
     rego.IsSingleton := true;
     rego.Instance := instance;
     FContainerInfo.Add(key,rego);
@@ -394,7 +390,7 @@ end;
 
 procedure TDUnitXIoC.RegisterType<TInterface>(const singleton: boolean; const delegate: TActivatorDelegate<TInterface>; const name: string);
 begin
-  Self.InternalRegisterType<TInterface>(singleton,nil,delegate,name);
+  InternalRegisterType<TInterface>(singleton, delegate, name);
 end;
 
 function TDUnitXIoC.Resolve<TInterface>(const name: string = ''): TInterface;
