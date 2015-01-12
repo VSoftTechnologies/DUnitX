@@ -312,9 +312,9 @@ end;
 function TDUnitXTestRunner.CreateFixture(const AInstance : TObject;const AFixtureClass: TClass; const AName: string; const ACategory : string): ITestFixture;
 begin
   if AInstance <> nil then
-    result := TDUnitXTestFixture.Create(AName,ACategory, AInstance)
+    result := TDUnitXTestFixture.Create(AName,ACategory, AInstance,AInstance.ClassType.UnitName)
   else
-    result := TDUnitXTestFixture.Create(AName, ACategory, AFixtureClass);
+    result := TDUnitXTestFixture.Create(AName, ACategory, AFixtureClass,AFixtureClass.UnitName);
   FFixtureList.Add(Result);
 end;
 

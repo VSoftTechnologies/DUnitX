@@ -110,6 +110,7 @@ type
     ['{FF61A6EB-A76B-4BE7-887A-598EBBAE5611}']
     function GetName : string;
     function GetFullName : string;
+    function GetMethodName : string;
     function GetCategories : TList<string>;
     function GetActive : boolean;
     function GetTestFixture : ITestFixtureInfo;
@@ -123,6 +124,7 @@ type
 
     property Name : string read GetName;
     property FullName : string read GetFullName;
+    property MethodName : string read GetMethodName;
     property Enabled : boolean read GetEnabled write SetEnabled;
     property Categories : TList<string> read GetCategories;
 
@@ -143,6 +145,7 @@ type
     function GetName  : string;
     function GetNameSpace : string;
     function GetFullName : string;
+    function GetUnitName : string;
     function GetCategories : TList<string>;
     function GetDescription : string;
     function GetTests : IList<ITestInfo>;
@@ -160,6 +163,7 @@ type
     property Name                       : string read GetName;
     property NameSpace                  : string read GetNameSpace;
     property FullName                   : string read GetFullName;
+    property UnitName                   : string read GetUnitName;
     property Description                : string read GetDescription;
     property HasChildFixtures           : boolean read GetHasChildren;
     property TestClass                  : TClass read GetTestClass;

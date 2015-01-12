@@ -49,6 +49,7 @@ type
     ['{0CCCE0C7-9AD1-4C3A-86EF-E882D3A839AB}']
     function GetName : string;
     function GetFullName : string;
+    function GetMethodName : string;
     function GetCategories : TList<string>;
     function GetTestMethod : TTestMethod;
     function GetTestFixture : ITestFixture;
@@ -64,6 +65,7 @@ type
 
     property Name : string read GetName;
     property FullName : string read GetFullName;
+    property MethodName : string read GetMethodName;
     property Categories : TList<string> read GetCategories;
     property Enabled : boolean read GetEnabled write SetEnabled;
     property Fixture : ITestFixture read GetTestFixture;
@@ -86,6 +88,7 @@ type
     ['{B2F140C3-1D6A-4C09-B4C6-0D6AFC99BC87}']
     function GetName  : string;
     function GetFullName : string;
+    function GetUnitName : string;
     function GetDescription : string;
     function GetCategories : TList<string>;
     function GetTests : ITestList;
@@ -110,8 +113,8 @@ type
     procedure OnMethodExecuted(const AMethod : TTestMethod);
     function GetFixtureInstance : TObject;
 
-    function AddTest(const AMethod : TTestMethod; const AName : string; const ACategory : string; const AEnabled : boolean = true;const AIgnored : boolean = false; const AIgnoreReason : string = '') : ITest;
-    function AddTestCase(const ACaseName : string; const AName : string; const ACategory : string; const AMethod : TRttiMethod; const AEnabled : boolean; const AArgs : TValueArray) : ITest;
+    function AddTest(const AMethodName : string; const AMethod : TTestMethod; const AName : string; const ACategory : string; const AEnabled : boolean = true;const AIgnored : boolean = false; const AIgnoreReason : string = '') : ITest;
+    function AddTestCase(const AMethodName : string; const ACaseName : string; const AName : string; const ACategory : string; const AMethod : TRttiMethod; const AEnabled : boolean; const AArgs : TValueArray) : ITest;
 
     function AddChildFixture(const ATestClass : TClass; const AName : string; const ACategory : string) : ITestFixture;overload;
     function AddChildFixture(const AInstance : TObject; const AName : string; const ACategory : string) : ITestFixture;overload;
@@ -127,6 +130,7 @@ type
     property Name                       : string read GetName;
     property NameSpace                  : string read GetNameSpace;
     property FullName                   : string read GetFullName;
+    property UnitName                   : string read GetUnitName;
     property Categories                 : TList<string> read GetCategories;
     property Children                   : ITestFixtureList read GetChildren;
     property Description                : string read GetDescription;
