@@ -229,11 +229,13 @@ type
     function GetExceptionMessage : string;
     function GetExceptionLocationInfo : string;
     function GetExceptionAddressInfo : string;
+    function GetExceptionAddress : Pointer;
 
     property ExceptionClass : ExceptClass read GetExceptionClass;
     property ExceptionMessage : string read GetExceptionMessage;
     property ExceptionLocationInfo : string read GetExceptionLocationInfo;
     property ExceptionAddressInfo : string read GetExceptionAddressInfo;
+    property ExceptionAddress : Pointer read GetExceptionAddress;
   end;
 
   IFixtureResult = interface(IResult)
