@@ -1,4 +1,4 @@
-program DUnitXTest_XE7;
+program DUnitXTest_XE;
 
 {$APPTYPE CONSOLE}
 {$STRONGLINKTYPES ON}
@@ -47,7 +47,7 @@ uses
   DUnitX.Extensibility in '..\DUnitX.Extensibility.pas',
   DUnitX.Extensibility.PluginManager in '..\DUnitX.Extensibility.PluginManager.pas',
   DUnitX.FixtureProviderPlugin in '..\DUnitX.FixtureProviderPlugin.pas',
-  DUnitX.Tests.CommandLineParser in 'DUnitX.Tests.CommandLineParser.pas',
+//  DUnitX.Tests.CommandLineParser in 'DUnitX.Tests.CommandLineParser.pas',
   DUnitX.Filters in '..\DUnitX.Filters.pas',
   DUnitX.CategoryExpression in '..\DUnitX.CategoryExpression.pas',
   DUnitX.Tests.CategoryParser in 'DUnitX.Tests.CategoryParser.pas',
@@ -60,9 +60,7 @@ uses
   DUnitX.OptionsDefinition in '..\DUnitX.OptionsDefinition.pas',
   DUnitX.FilterBuilder in '..\DUnitX.FilterBuilder.pas',
   DUnitX.Tests.Inheritance in 'DUnitX.Tests.Inheritance.pas',
-  DUnitX.Tests.ConsoleWriter.Base in 'DUnitX.Tests.ConsoleWriter.Base.pas',
-  DUnitX.Assert in '..\DUnitX.Assert.pas',
-  DUnitX.Types in '..\DUnitX.Types.pas';
+  DUnitX.Tests.ConsoleWriter.Base in 'DUnitX.Tests.ConsoleWriter.Base.pas';
 
 var
   runner : ITestRunner;

@@ -15,7 +15,6 @@ uses
   DUnitX.TestResult in '..\DUnitX.TestResult.pas',
   DUnitX.RunResults in '..\DUnitX.RunResults.pas',
   DUnitX.TestRunner in '..\DUnitX.TestRunner.pas',
-  DUnitX.Utils in '..\DUnitX.Utils.pas',
   DUnitX.Utils.XML in '..\DUnitX.Utils.XML.pas',
   DUnitX.WeakReference in '..\DUnitX.WeakReference.pas',
   DUnitX.Windows.Console in '..\DUnitX.Windows.Console.pas',
@@ -43,7 +42,11 @@ uses
   DUnitX.CategoryExpression in '..\DUnitX.CategoryExpression.pas',
   DUnitX.TestNameParser in '..\DUnitX.TestNameParser.pas',
   DUnitX.FilterBuilder in '..\DUnitX.FilterBuilder.pas',
-  DUnitX.Filters in '..\DUnitX.Filters.pas';
+  DUnitX.Filters in '..\DUnitX.Filters.pas',
+  DUnitX.Assert in '..\DUnitX.Assert.pas',
+  DUnitX.Utils in '..\DUnitX.Utils.pas',
+  DUnitX.Attributes in '..\DUnitX.Attributes.pas',
+  DUnitX.Types in '..\DUnitX.Types.pas';
 
 var
   runner : ITestRunner;

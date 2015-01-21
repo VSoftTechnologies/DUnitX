@@ -29,6 +29,7 @@ unit DUnitX.Test;
 interface
 
 uses
+  DUnitX.Types,
   DUnitX.Extensibility,
   DUnitX.InternalInterfaces,
   DUnitX.WeakReference,
@@ -44,6 +45,7 @@ type
   TDUnitXTest = class(TWeakReferencedObject, ITest, ITestInfo, ISetTestResult, ITestExecute)
   private
     FName         : string;
+    FMethodName   : string;
     FCategories   : TList<string>;
     FMethod       : TTestMethod;
     FFixture      : IWeakReference<ITestFixture>;
@@ -57,6 +59,7 @@ type
   protected
     //ITest
     function GetName: string; virtual;
+    function GetMethodName : string;
     function GetCategories : TList<string>;
     function GetFullName : string;virtual;
     function GetTestFixture: ITestFixture;
@@ -82,7 +85,7 @@ type
     //ITestExecute
     procedure Execute(const context : ITestExecuteContext);virtual;
   public
-    constructor Create(const AFixture : ITestFixture; const AName : string; const ACategory  : string; const AMethod : TTestMethod; const AEnabled : boolean;
+    constructor Create(const AFixture : ITestFixture; const AMethodName : string; const AName : string; const ACategory  : string; const AMethod : TTestMethod; const AEnabled : boolean;
                        const AIgnored : boolean = false; const AIgnoreReason : string = '');
     destructor Destroy;override;
   end;
@@ -97,7 +100,7 @@ type
     function GetName: string; override;
     procedure Execute(const context : ITestExecuteContext); override;
   public
-    constructor Create(const AInstance : TObject; const AFixture : ITestFixture; const ACaseName : string; const AName : string; const ACategory  : string; const AMethod : TRttiMethod;
+    constructor Create(const AInstance : TObject; const AFixture : ITestFixture; const AMethodName : string; const ACaseName : string; const AName : string; const ACategory  : string; const AMethod : TRttiMethod;
                        const AEnabled : boolean; const AArgs : TValueArray);reintroduce;
     destructor Destroy;override;
   end;
@@ -112,13 +115,15 @@ uses
 
 { TDUnitXTest }
 
-constructor TDUnitXTest.Create(const AFixture: ITestFixture; const AName: string; const ACategory  : string; const AMethod: TTestMethod; const AEnabled : boolean; const AIgnored : boolean; const AIgnoreReason : string);
+constructor TDUnitXTest.Create(const AFixture: ITestFixture; const AMethodName : string; const AName: string; const ACategory  : string; const AMethod: TTestMethod; const AEnabled : boolean; const AIgnored : boolean; const AIgnoreReason : string);
 var
   categories : TArray<string>;
   cat        : string;
 begin
   FFixture := TWeakReference<ITestFixture>.Create(AFixture);
+  FMethodName := AMethodName;
   FName := AName;
+
   FCategories := TList<string>.Create(TComparer<string>.Construct(
     function(const Left, Right : string) : integer
     begin
@@ -192,6 +197,11 @@ begin
   result := FIgnoreReason;
 end;
 
+function TDUnitXTest.GetMethodName: string;
+begin
+  result := FMethodName;
+end;
+
 function TDUnitXTest.GetName: string;
 begin
   result := FName;
@@ -251,7 +261,7 @@ end;
 
 { TDUnitXTestCase }
 
-constructor TDUnitXTestCase.Create(const AInstance : TObject; const AFixture : ITestFixture; const ACaseName : string;
+constructor TDUnitXTestCase.Create(const AInstance : TObject; const AFixture : ITestFixture; const AMethodName : string; const ACaseName : string;
                                    const AName : string; const ACategory  : string; const AMethod : TRttiMethod; const AEnabled : boolean;
                                    const AArgs : TValueArray);
 var
@@ -260,7 +270,7 @@ var
   parameters : TArray<TRttiParameter>;
   tmp : TValue;
 begin
-  inherited Create(AFixture, AName, ACategory, nil,AEnabled);
+  inherited Create(AFixture, AMethodName, AName, ACategory, nil,AEnabled);
   FInstance := AInstance;
   FRttiMethod := AMethod;
   FCaseName := ACaseName;

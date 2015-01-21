@@ -68,6 +68,7 @@ type
     function GetExceptionLocationInfo : string;
     function GetExceptionAddressInfo : string;
     function GetExceptionMessage : string;
+    function GetExceptionAddress : Pointer;
   public
     constructor Create(const ATestInfo : ITestInfo; const AType : TTestResultType; const AThrownException: Exception; const Addrs: Pointer; const AMessage : string = '');reintroduce;
   end;
@@ -161,6 +162,11 @@ begin
   if stackTraceProvider <> nil then
     FStackTrace := stackTraceProvider.GetStackTrace(AThrownException,Addrs);
   {$ENDIF}
+end;
+
+function TDUnitXTestError.GetExceptionAddress: Pointer;
+begin
+  Result := FExceptionAddress;
 end;
 
 function TDUnitXTestError.GetExceptionAddressInfo: string;

@@ -136,7 +136,9 @@ type
     class constructor Create;
     class destructor Destroy;
   public
-    constructor Create(const AListener : ITestLogger);
+    constructor Create; overload;
+    constructor Create(const AListener : ITestLogger); overload;
+    constructor Create(const AListeners : array of ITestLogger); overload;
     destructor Destroy;override;
     class function GetActiveRunner : ITestRunner;
   end;
@@ -144,6 +146,7 @@ type
 implementation
 
 uses
+  DUnitX.Attributes,
   DUnitX.CommandLine.Options,
   DUnitX.TestFixture,
   DUnitX.RunResults,
@@ -291,15 +294,12 @@ begin
   end;
 end;
 
-constructor TDUnitXTestRunner.Create(const AListener: ITestLogger);
+constructor TDUnitXTestRunner.Create;
 begin
   FLoggers := TList<ITestLogger>.Create;
-  if AListener <> nil then
-    FLoggers.Add(AListener);
   FFixtureClasses := TDictionary<TClass,string>.Create;
-
   FUseRTTI := False;
-  FLogMessages    := TStringList.Create;
+  FLogMessages := TStringList.Create;
   MonitorEnter(TDUnitXTestRunner.FActiveRunners);
   try
     TDUnitXTestRunner.FActiveRunners.Add(TThread.CurrentThread.ThreadID, TWeakReference<ITestRunner>.Create(Self));
@@ -308,12 +308,27 @@ begin
   end;
 end;
 
+constructor TDUnitXTestRunner.Create(const AListener: ITestLogger);
+begin
+  Create;
+
+  if AListener <> nil then
+    FLoggers.Add(AListener);
+end;
+
+constructor TDUnitXTestRunner.Create(const AListeners: array of ITestLogger);
+begin
+  Create;
+
+  FLoggers.AddRange(AListeners);
+end;
+
 function TDUnitXTestRunner.CreateFixture(const AInstance : TObject;const AFixtureClass: TClass; const AName: string; const ACategory : string): ITestFixture;
 begin
   if AInstance <> nil then
-    result := TDUnitXTestFixture.Create(AName,ACategory, AInstance)
+    result := TDUnitXTestFixture.Create(AName,ACategory, AInstance,AInstance.ClassType.UnitName)
   else
-    result := TDUnitXTestFixture.Create(AName, ACategory, AFixtureClass);
+    result := TDUnitXTestFixture.Create(AName, ACategory, AFixtureClass,AFixtureClass.UnitName);
   FFixtureList.Add(Result);
 end;
 

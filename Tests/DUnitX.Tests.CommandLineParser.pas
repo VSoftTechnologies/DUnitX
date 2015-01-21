@@ -97,7 +97,7 @@ type
 implementation
 
 uses
-  System.Classes,
+  Classes,
   DUnitX.CommandLine.OptionDef;
 
 { TCommandLineParserTests }
