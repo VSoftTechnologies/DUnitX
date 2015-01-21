@@ -186,6 +186,21 @@ type
     property Count : Cardinal read FCount;
   end;
 
+  ///	<summary>
+  ///	  Marks a test method to fail after the time specified.
+  ///	</summary>
+  ///	<remarks>
+  ///	  If [MaxTime(1000]] used then the test will fail if the
+  ///   test takes longer than 1000ms
+  ///	</remarks>
+  MaxTimeAttribute = class(TCustomAttribute)
+  private
+    FMaxTime : Cardinal;
+  public
+    constructor Create(const AMaxTime : Cardinal);
+    property MaxTime : Cardinal read FMaxTime;
+  end;
+
   TValueArray = DUnitX.Extensibility.TValueArray;
 
 
@@ -2025,6 +2040,13 @@ end;
 constructor RepeatTestAttribute.Create(const ACount: Cardinal);
 begin
   FCount := ACount;
+end;
+
+{ MaxTimeAttribute }
+
+constructor MaxTimeAttribute.Create(const AMaxTime : Cardinal);
+begin
+  FMaxTime := AMaxTime;
 end;
 
 { IgnoreAttribute }
