@@ -111,7 +111,7 @@ type
 
     procedure ExecuteFixtureTearDown;
 
-    function AddTest(const AMethod : TTestMethod; const AName : string; const ACategory  : string; const AEnabled : boolean = true;const AIgnored : boolean = false; const AIgnoreReason : string = ''; const AMaxTime : cardinal = 0) : ITest;
+    function AddTest(const AMethod : TTestMethod; const AName : string; const ACategory  : string; const AEnabled : boolean = true;const AIgnored : boolean = false; const AIgnoreReason : string = '') : ITest;
     function AddTestCase(const ACaseName : string; const AName : string; const ACategory  : string; const AMethod : TRttiMethod; const AEnabled : boolean; const AArgs : TValueArray) : ITest;
 
     function AddChildFixture(const ATestClass : TClass; const AName : string; const ACategory : string) : ITestFixture;overload;
@@ -495,9 +495,9 @@ begin
   FChildren.Add(result);
 end;
 
-function TDUnitXTestFixture.AddTest(const AMethod : TTestMethod; const AName : string; const ACategory  : string; const AEnabled : boolean;const AIgnored : boolean; const AIgnoreReason : string; const AMaxTime : cardinal): ITest;
+function TDUnitXTestFixture.AddTest(const AMethod : TTestMethod; const AName : string; const ACategory  : string; const AEnabled : boolean;const AIgnored : boolean; const AIgnoreReason : string): ITest;
 begin
-  result  := TDUnitXTest.Create(Self, AName, ACategory, AMethod,AEnabled,AIgnored,AIgnoreReason,AMaxTime);
+  result  := TDUnitXTest.Create(Self, AName, ACategory, AMethod,AEnabled,AIgnored,AIgnoreReason);
   FTests.Add(Result);
 end;
 

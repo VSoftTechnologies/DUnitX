@@ -247,12 +247,10 @@ var
   testEnabled     : boolean;
   isTestMethod    : boolean;
   repeatAttrib    : RepeatTestAttribute;
-  maxTimeAttrib   : MaxTimeAttribute;
 
   category        : string;
   ignoredTest     : boolean;
   ignoredReason   : string;
-  maxTime         : cardinal;
 
   repeatCount: Cardinal;
   i: Integer;
@@ -298,8 +296,6 @@ begin
     categoryAttrib := nil;
     isTestMethod := false;
     repeatCount := 1;
-    maxTimeAttrib := nil;
-    maxTime := 0;
     currentFixture := fixture;
 
     meth.Code := method.CodeAddress;
@@ -371,18 +367,15 @@ begin
 
     if method.TryGetAttributeOfType<IgnoreAttribute>(ignoredAttrib) then
     begin
-      ignoredTest   := true;
-      ignoredReason := ignoredAttrib.Reason;
+       ignoredTest   := true;
+       ignoredReason := ignoredAttrib.Reason;
     end;
 
     if method.TryGetAttributeOfType<TestAttribute>(testAttrib) then
     begin
-      testEnabled := testAttrib.Enabled;
-      isTestMethod := true;
+       testEnabled := testAttrib.Enabled;
+       isTestMethod := true;
     end;
-
-    if method.TryGetAttributeOfType<MaxTimeAttribute>(maxTimeAttrib) then
-      maxTime := maxTimeAttrib.MaxTime;
 
     if method.IsDestructor or method.IsConstructor then
       continue;
@@ -422,7 +415,7 @@ begin
         else
         begin
           //if a testcase is ignored, just add it as a regular test.
-          currentFixture.AddTest(TTestMethod(meth),method.Name,category,true,true,ignoredReason,maxTime);
+          currentFixture.AddTest(TTestMethod(meth),method.Name,category,true,true,ignoredReason);
         end;
         continue;
       end;
@@ -432,7 +425,7 @@ begin
     begin
       for i := 1 to repeatCount do
       begin
-        currentFixture.AddTest(TTestMethod(meth),FormatTestName(method.Name, i, repeatCount),category,true,ignoredTest,ignoredReason,maxTime);
+        currentFixture.AddTest(TTestMethod(meth),FormatTestName(method.Name, i, repeatCount),category,true,ignoredTest,ignoredReason);
       end;
       continue;
     end;
@@ -443,7 +436,7 @@ begin
       // Add Published Method that has no Attributes
       for i := 1 to repeatCount do
       begin
-        currentFixture.AddTest(TTestMethod(meth),FormatTestName(method.Name, i, repeatCount),category,true,ignoredTest,ignoredReason,maxTime);
+        currentFixture.AddTest(TTestMethod(meth),FormatTestName(method.Name, i, repeatCount),category,true,ignoredTest,ignoredReason);
       end;
     end;
   end;

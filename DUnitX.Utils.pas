@@ -727,16 +727,6 @@ function Supports(const Instance: TValue; const IID: TGUID; out Intf): Boolean; 
 const
   ObjCastGUID: TGUID = '{CEDF24DE-80A4-447D-8C75-EB871DC121FD}';
 
-type
-  ETimeOutException = class(Exception);
-
-  ITimeout = interface(IUnknown)
-    ['{0A380F7B-9CEE-4FD7-9D86-60CE05B97C1A}']
-    procedure Stop;
-  end;
-
-  function InitialiseTimeout(const ATime: cardinal): ITimeout;
-
 implementation
 
 uses
@@ -744,8 +734,7 @@ uses
   Generics.Defaults,
   Math,
   StrUtils,
-  SysConst,
-  Windows;
+  SysConst;
 
 var
   Context: TRttiContext;
@@ -3144,115 +3133,6 @@ begin
   for i := 0 to values.Count - 1 do
     result[i] := values[i];
 end;
-
-
-// Timeout code
-// The following code allows a timeout to be set
-
-//try
-//  InitialiseTimeOut(4000); // set a 4 second timeout
-
-//  DoSomeOperations;
-//except
-//  On E: ETimeOutException do
-//    ShowMessage( 'Operation Timed Out' );
-//end;
-
-// The following TimeOut code is based on the code found at
-// https://code.google.com/p/delphitimeouts/
-// DelphiTimeouts version 1.1
-// Copyright (c) 2007-2008 Szymon Jachim
-
-type
-  TTimeoutThread = class(TThread)
-  private
-    procedure TimeoutThread;
-  public
-    ThreadHandle: Cardinal;
-    Timeout: Cardinal;
-    procedure Execute; override;
-  end;
-
-  TTimeout = class(TInterfacedObject, ITimeout)
-  private
-    FTimeoutThread: TTimeoutThread;
-  public
-    constructor Create(const ATimeout: Cardinal; AThreadHandle: THandle);
-    destructor Destroy; override;
-
-    procedure Stop;
-  end;
-
-function InitialiseTimeout(const ATime: cardinal): ITimeout;
-var
-  ThisThreadHandle: THandle;
-begin
-  DuplicateHandle(GetCurrentProcess, GetCurrentThread, GetCurrentProcess, @ThisThreadHandle, 0, True, DUPLICATE_SAME_ACCESS);
-  Result := TTimeout.Create(ATime, ThisThreadHandle);
-end;
-
-procedure RaiseTimeOutException;
-begin
-  raise ETimeoutException.Create('Operation Timed Out');
-end;
-
-procedure TTimeoutThread.TimeoutThread;
-var
-  Ctx: _CONTEXT;
-begin
-  SuspendThread(ThreadHandle);
-  Ctx.ContextFlags := CONTEXT_FULL;
-  GetThreadContext(ThreadHandle, Ctx);
-  Ctx.Eip := Cardinal(@RaiseTimeOutException);
-  SetThreadContext(ThreadHandle, Ctx);
-  ResumeThread(ThreadHandle);
-end;
-
-{ TTimeout }
-
-procedure TTimeout.Stop;
-begin
-  FTimeoutThread.Terminate;
-end;
-
-constructor TTimeout.Create(const ATimeout: Cardinal; AThreadHandle: THandle);
-begin
-  FTimeoutThread := TTimeoutThread.Create(true);
-  FTimeoutThread.FreeOnTerminate := true;
-  FTimeoutThread.ThreadHandle := AThreadHandle;
-  FTimeoutThread.Timeout := ATimeout;
-  FTimeoutThread.Resume;
-end;
-
-destructor TTimeout.Destroy;
-begin
-  Stop;  // unwinding and we need to stop the thread, as it may still raise an exception
-  inherited;
-end;
-
-{ TTimeoutThread }
-
-procedure TTimeoutThread.Execute;
-var
-  I: Integer;
-begin
-  inherited;
-
-  for I := Timeout downto 0 do
-  begin
-    Sleep(1);
-    if Terminated then
-      Break;
-  end;
-
-  if not Terminated then
-    TimeoutThread;
-end;
-
-
-
-
-
 
 initialization
   Enumerations := TObjectDictionary<PTypeInfo, TStrings>.Create([doOwnsValues]);
