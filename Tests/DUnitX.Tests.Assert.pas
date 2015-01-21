@@ -145,6 +145,40 @@ type
 
     [Test]
     procedure DoesNotContain_ArrayOfT_Throws_Exception_When_Value_In_Array;
+
+    [Test]
+    [TestCase( 'substring', 'a str,a string,false' )]
+    [TestCase( 'substring - case sensitive', 'a str,a string,true' )]
+    procedure StartsWith_SubString_Is_At_The_Start__Of_String( const subString, theString: string; caseSensitive: boolean );
+    [Test]
+    [TestCase( 'empty substring', ',a string,false' )]
+    [TestCase( 'empty substring - case sensitive', ',a string,true' )]
+    [TestCase( 'empty string', 'substring,,false' )]
+    [TestCase( 'empty string - case sensitive', 'substring,,true' )]
+    [TestCase( 'at end of string', 'substring,at the end if the substring,false' )]
+    [TestCase( 'at end of string - case sensitive', 'substring,at the end if the substring,true' )]
+    [TestCase( 'in the middle of string', 'substring,the substring is in the middle,false' )]
+    [TestCase( 'in the middle of string - case sensitive', 'substring,the substring is in the middle,true' )]
+    [TestCase( 'not in the string', 'something else,the substring is not here,false' )]
+    [TestCase( 'not in the string - case sensitive', 'something else,the substring is not here,true' )]
+    procedure StartsWith_SubString_Is_Not_At_Start( const subString, theString: string; caseSensitive: boolean );
+
+    [Test]
+    [TestCase( 'substring', 'ing,a string,false' )]
+    [TestCase( 'substring - case sensitive', 'ing,a string,true' )]
+    procedure EndsWith_SubString_Is_At_The_End__Of_String( const subString, theString: string; caseSensitive: boolean );
+    [Test]
+    [TestCase( 'empty substring', ',a string,false' )]
+    [TestCase( 'empty substring - case sensitive', ',a string,true' )]
+    [TestCase( 'empty string', 'substring,,false' )]
+    [TestCase( 'empty string - case sensitive', 'substring,,true' )]
+    [TestCase( 'at start of string', 'at the,at the end if the substring,false' )]
+    [TestCase( 'at start of string - case sensitive', 'at the,at the end if the substring,true' )]
+    [TestCase( 'in the middle of string', 'substring,the substring is in the middle,false' )]
+    [TestCase( 'in the middle of string - case sensitive', 'substring,the substring is in the middle,true' )]
+    [TestCase( 'not in the string', 'something else,the substring is not here,false' )]
+    [TestCase( 'not in the string - case sensitive', 'something else,the substring is not here,true' )]
+    procedure EndsWith_SubString_Is_Not_At_End( const subString, theString: string; caseSensitive: boolean );
   end;
 
 implementation
@@ -783,6 +817,43 @@ begin
       Assert.DoesNotContain<string>(['x', 'y', 'z'], 'x');
     end, ETestFailure);
 end;
+
+procedure TTestsAssert.StartsWith_SubString_Is_At_The_Start__Of_String( const subString, theString: string; caseSensitive: boolean );
+begin
+  Assert.WillNotRaise(
+    procedure
+    begin
+      Assert.StartsWith( subString, theString, caseSensitive );
+    end, ETestFailure);
+end;
+
+procedure TTestsAssert.StartsWith_SubString_Is_Not_At_Start( const subString, theString: string; caseSensitive: boolean );
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.StartsWith( subString, theString, caseSensitive );
+    end, ETestFailure);
+end;
+
+procedure TTestsAssert.EndsWith_SubString_Is_At_The_End__Of_String( const subString, theString: string; caseSensitive: boolean );
+begin
+  Assert.WillNotRaise(
+    procedure
+    begin
+      Assert.EndsWith( subString, theString, caseSensitive );
+    end, ETestFailure);
+end;
+
+procedure TTestsAssert.EndsWith_SubString_Is_Not_At_End( const subString, theString: string; caseSensitive: boolean );
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.EndsWith( subString, theString, caseSensitive );
+    end, ETestFailure);
+end;
+
 
 initialization
   TDUnitX.RegisterTestFixture(TTestsAssert);
