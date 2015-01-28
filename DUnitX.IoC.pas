@@ -261,8 +261,13 @@ begin
   key := GetInterfaceKey(typeInfo, AName);
 
   if not FContainerInfo.TryGetValue(key, registration) then
+  begin
     if FRaiseIfNotFound then
-      raise EIoCResolutionException.CreateFmt('No implementation registered for type %s', [typeInfo.Name]);
+      raise EIoCResolutionException.CreateFmt('No implementation registered for type %s', [typeInfo.Name])
+    //If we are not meant to raise exceptions, then handle the registration not being set.
+    else
+      Exit;
+  end;
 
   Result := registration.ActivatorDelegate();
   if Result = nil then
