@@ -198,8 +198,8 @@ type
     class procedure WillNotRaiseAny(const AMethod : TTestMethod; const msg : string = ''); overload;
 
     class procedure Contains(const theString : string; const subString : string; const ignoreCase : boolean = true; const message : string = '');overload;
-    class procedure StartsWith(const theString : string; const subString : string;const ignoreCase : boolean = true; const message : string = '');
-    class procedure EndsWith(const theString : string; const subString : string;const ignoreCase : boolean = true; const message : string = '');
+    class procedure StartsWith(const subString : string; const theString : string;const ignoreCase : boolean = true; const message : string = '');
+    class procedure EndsWith(const subString : string; const theString : string;const ignoreCase : boolean = true; const message : string = '');
     class procedure InheritsFrom(const descendant : TClass; const parent : TClass; const message : string = '');
 {$IFDEF DELPHI_XE_UP}
     //Delphi 2010 compiler bug breaks this
@@ -1000,15 +1000,15 @@ begin
     fOnAssert();
 end;
 
-class procedure Assert.EndsWith(const theString : string; const subString : string; const ignoreCase : boolean; const message : string);
+class procedure Assert.EndsWith(const subString : string; const theString : string; const ignoreCase : boolean; const message : string);
 begin
   DoAssert;
   if ignoreCase then
   begin
-    if not StrUtils.EndsText(theString,subString) then
+    if not StrUtils.EndsText(subString,theString) then
       FailFmt('[%s] does not end with [%s] %s',[theString,subString,message], ReturnAddress);
   end
-  else if not StrUtils.EndsStr(theString,subString) then
+  else if not StrUtils.EndsStr(subString,theString) then
     FailFmt('[%s] does not end with [%s] %s',[theString,subString,message], ReturnAddress);
 end;
 
@@ -1021,15 +1021,20 @@ begin
 end;
 {$ENDIF}
 
-class procedure Assert.StartsWith(const theString : string; const subString : string; const ignoreCase : boolean; const message: string);
+class procedure Assert.StartsWith(const subString : string; const theString : string; const ignoreCase : boolean; const message: string);
 begin
   DoAssert;
+
+  // passing an empty string into the StartsText results in an accessviolation
+  if subString = '' then
+    FailFmt('subString cannot be empty',[], ReturnAddress);
+
   if ignoreCase then
   begin
-    if not StrUtils.StartsText(theString,subString) then
+    if not StrUtils.StartsText(subString,theString) then
       FailFmt('[%s] does Not Start with [%s] %s',[theString,subString,message], ReturnAddress);
   end
-  else if not StrUtils.StartsStr(theString,subString) then
+  else if not StrUtils.StartsStr(subString,theString) then
     FailFmt('[%s] does Not Start with [%s] %s',[theString,subString,message], ReturnAddress);
 end;
 
