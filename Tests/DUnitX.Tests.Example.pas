@@ -161,17 +161,19 @@ end;
 procedure TMyExampleTests.AnotherTestMethod(const a: string; const b: integer);
 begin
   TDUnitX.CurrentRunner.Status(Format('TestCaseBlah called with %s %d',[a,b]));
+  Assert.Pass;
 end;
 
 procedure TMyExampleTests.TestMeAnyway;
 begin
   TDUnitX.CurrentRunner.Status('TestMeAnyway called');
-//  raise ENotImplemented.Create('I aint done');
+  Assert.Pass;
 end;
 
 procedure TMyExampleTests.TestOne(param1 : integer; param2 : integer);
 begin
   TDUnitX.CurrentRunner.Status(Format('TestOnce called with %d %d',[param1,param2]));
+  Assert.Pass;
 end;
 
 

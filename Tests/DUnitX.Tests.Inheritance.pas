@@ -58,6 +58,7 @@ end;
 procedure TMyBaseTestClass.TestInBase;
 begin
   Writeln(GetSomething);
+  Assert.Pass;
 end;
 
 { TMyDerivedTest }
@@ -77,6 +78,7 @@ end;
 function TMyDerivedTest.GetSomething: string;
 begin
   result := 'derived';
+  Assert.Pass;
 end;
 
 initialization

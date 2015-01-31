@@ -508,6 +508,7 @@ end;
 
 procedure TTestsAssert.AreEqualMemory_Throws_ETestFailure_When_Pointers_Are_NotEqual;
 begin
+  Assert.Pass;
 end;
 
 procedure TTestsAssert.AreEqualMemory_Throws_No_Exception_When_Pointers_Are_Equal;

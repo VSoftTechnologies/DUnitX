@@ -154,12 +154,14 @@ end;
 procedure TTestRepeatAttribute.TestRepeat3Times;
 begin
   Inc(_TimesRun);
+  Assert.Pass;
 end;
 
 procedure TTestRepeatAttribute.TestRepeat5TimesAnyWay;
 begin
   Inc(_TimesRunAnyWay);
   Sleep(5);
+  Assert.Pass;
 end;
 
 procedure TTestRepeatAttribute.IgnoreMeAnyWayWhenRepeatIsZero;

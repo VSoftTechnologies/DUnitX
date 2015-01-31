@@ -65,11 +65,13 @@ implementation
 procedure TTestsNoMemoryLeaksReported.No_Reporting_Of_Memory_Leaks;
 begin
   AllocMem(1024);
+  Assert.Pass;
 end;
 
 procedure TTestsNoMemoryLeaksReported.Override_Reporting_Of_Memory_Leaks;
 begin
   AllocMem(512);
+  Assert.Pass;
 end;
 
 { TTestsMemoryLeaksReported }
@@ -77,11 +79,13 @@ end;
 procedure TTestsMemoryLeaksReported.Override_No_Reporting_Of_Memory_Leaks;
 begin
   AllocMem(256);
+  Assert.Pass;
 end;
 
 procedure TTestsMemoryLeaksReported.Reporting_Of_Memory_Leaks;
 begin
   AllocMem(128);
+  Assert.Pass;
 end;
 
 initialization

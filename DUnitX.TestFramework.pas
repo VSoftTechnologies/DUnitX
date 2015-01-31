@@ -430,8 +430,12 @@ type
   ITestRunner = interface
     ['{06C0D8D2-B2D7-42F9-8D23-8F2D8A75263F}']
     procedure AddLogger(const value : ITestLogger);
+
     function GetUseRTTI : boolean;
     procedure SetUseRTTI(const value : boolean);
+
+    function GetFailsOnNoAsserts : boolean;
+    procedure SetFailsOnNoAsserts(const value : boolean);
 
     //This is exposed for the GUI Runner cast as ITestFixtureList.
     function BuildFixtures : IInterface;
@@ -455,6 +459,8 @@ type
     ///	  register the fixtures using TDUnitX.RegisterTestFixture
     ///	</summary>
     property UseRTTI : boolean read GetUseRTTI write SetUseRTTI;
+
+    property FailsOnNoAsserts : boolean read GetFailsOnNoAsserts write SetFailsOnNoAsserts;
   end;
 
   TDUnitXOptions = class
@@ -508,6 +514,7 @@ type
     class var
       FOptions : TDUnitXOptions;
       FFilter : ITestFilter;
+      FAssertCounters : TDictionary<Cardinal,Cardinal>;
   protected
     class constructor Create;
     class destructor Destroy;
@@ -521,6 +528,7 @@ type
     class procedure RegisterTestFixture(const AClass : TClass; const AName : string = '' );
     class procedure RegisterPlugin(const plugin : IPlugin);
     class function CurrentRunner : ITestRunner;
+    class function GetAssertCount(const AThreadId : Cardinal) : Cardinal;
     ///  Parses the command line options and applies them the the Options object.
     ///  Will throw exception if there are errors.
     class procedure CheckCommandLine;
@@ -708,12 +716,32 @@ end;
 class constructor TDUnitX.Create;
 begin
   FOptions := TDUnitXOptions.Create;
+  FAssertCounters := TDictionary<Cardinal,Cardinal>.Create;
   RegisteredFixtures := TDictionary<TClass,string>.Create;
   RegisteredPlugins  := TList<IPlugin>.Create;
   //Make sure we have at least a dummy memory leak monitor registered.
   if not TDUnitXIoC.DefaultContainer.HasService<IMemoryLeakMonitor> then
     DUnitX.MemoryLeakMonitor.Default.RegisterDefaultProvider;
   FFilter := nil;
+  Assert.OnAssert := procedure
+                    var
+                      threadId : Cardinal;
+                      value : cardinal;
+                    begin
+                      threadId := TThread.CurrentThread.ThreadID;
+                      MonitorEnter(FAssertCounters);
+                      try
+                        if FAssertCounters.TryGetValue(threadId,value) then
+                        begin
+                          Inc(value);
+                          FAssertCounters.AddOrSetValue(threadId,value);
+                        end
+                        else
+                          FAssertCounters.Add(threadId,1)
+                      finally
+                        MonitorExit(FAssertCounters);
+                      end;
+                    end;
 end;
 
 class function TDUnitX.CurrentRunner: ITestRunner;
@@ -731,7 +759,15 @@ begin
   RegisteredFixtures.Free;
   RegisteredPlugins.Free;
   FOptions.Free;
+  FAssertCounters.Free;
 end;
+
+class function TDUnitX.GetAssertCount(const AThreadId: Cardinal): Cardinal;
+begin
+  result := 0;
+  FAssertCounters.TryGetValue(AThreadId,result);
+end;
+
 
 class procedure TDUnitX.RegisterPlugin(const plugin: IPlugin);
 begin

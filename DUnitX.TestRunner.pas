@@ -52,12 +52,15 @@ type
   public class var
     FActiveRunners : TDictionary<Cardinal,IWeakReference<ITestRunner>>;
   private
-    FLoggers        : TList<ITestLogger>;
-    FUseRTTI        : boolean;
-    FFixtureClasses : TDictionary<TClass,string>;
+    FLoggers          : TList<ITestLogger>;
+    FUseRTTI          : boolean;
+    FFixtureClasses   : TDictionary<TClass,string>;
 
-    FFixtureList    : ITestFixtureList;
-    FLogMessages    : TStringList;
+    FFixtureList      : ITestFixtureList;
+    FLogMessages      : TStringList;
+
+    FFailsOnNoAsserts : boolean;
+
   protected
     procedure CountAndFilterTests(const fixtureList: ITestFixtureList; var count, active: Cardinal);
     //Logger calls - sequence ordered
@@ -115,6 +118,9 @@ type
 
     function GetUseRTTI: Boolean;
     procedure SetUseRTTI(const value: Boolean);
+    function GetFailsOnNoAsserts : boolean;
+    procedure SetFailsOnNoAsserts(const value : boolean);
+
     procedure Log(const logType : TLogLevel; const msg : string);overload;
     procedure Log(const msg : string);overload;
 
@@ -568,6 +574,11 @@ begin
     result := ref.Data;
 end;
 
+function TDUnitXTestRunner.GetFailsOnNoAsserts: boolean;
+begin
+  Result := FFailsOnNoAsserts;
+end;
+
 function TDUnitXTestRunner.ExecuteFailureResult(
   const context: ITestExecuteContext; const threadId: cardinal;
   const test: ITest; const exception : Exception) : ITestError;
@@ -663,17 +674,28 @@ end;
 function TDUnitXTestRunner.ExecuteTest(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const memoryAllocationProvider : IMemoryLeakMonitor) : ITestResult;
 var
   testExecute: ITestExecute;
+  assertBeforeCount : Cardinal;
+  assertAfterCount : Cardinal;
 begin
   if Supports(test, ITestExecute, testExecute) then
   begin
     FLogMessages.Clear;
     Self.Loggers_ExecuteTest(threadId, test as ITestInfo);
-
+    assertBeforeCount := 0;//to shut the compiler up;
+    if FFailsOnNoAsserts then
+      assertBeforeCount := TDUnitX.GetAssertCount(threadId);
     memoryAllocationProvider.PreTest;
     try
       testExecute.Execute(context);
     finally
       memoryAllocationProvider.PostTest;
+    end;
+
+    if FFailsOnNoAsserts then
+    begin
+      assertAfterCount := TDUnitX.GetAssertCount(threadId);
+      if (assertBeforeCount = assertAfterCount)  then
+        raise ETestFailure.Create('No assertions were made during the test');
     end;
 
     Result := ExecuteSuccessfulResult(context, threadId, test,FLogMessages.Text);
@@ -813,6 +835,11 @@ end;
 function TDUnitXTestRunner.GetUseRTTI: Boolean;
 begin
   result := FUseRTTI;
+end;
+
+procedure TDUnitXTestRunner.SetFailsOnNoAsserts(const value: boolean);
+begin
+  FFailsOnNoAsserts := value;
 end;
 
 procedure TDUnitXTestRunner.SetUseRTTI(const value: Boolean);

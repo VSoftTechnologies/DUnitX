@@ -60,7 +60,9 @@ uses
   DUnitX.OptionsDefinition in '..\DUnitX.OptionsDefinition.pas',
   DUnitX.FilterBuilder in '..\DUnitX.FilterBuilder.pas',
   DUnitX.Tests.Inheritance in 'DUnitX.Tests.Inheritance.pas',
-  DUnitX.Tests.ConsoleWriter.Base in 'DUnitX.Tests.ConsoleWriter.Base.pas';
+  DUnitX.Tests.ConsoleWriter.Base in 'DUnitX.Tests.ConsoleWriter.Base.pas',
+  DUnitX.Assert in '..\DUnitX.Assert.pas',
+  DUnitX.Types in '..\DUnitX.Types.pas';
 
 var
   runner : ITestRunner;
@@ -73,6 +75,7 @@ begin
     //Create the runner
     runner := TDUnitX.CreateRunner;
     runner.UseRTTI := True;
+    runner.FailsOnNoAsserts := True; //Assertions must be made during tests;
     //tell the runner how we will log things
     logger := TDUnitXConsoleLogger.Create(false);
     nunitLogger := TDUnitXXMLNUnitFileLogger.Create(TDUnitX.Options.XMLOutputFile);

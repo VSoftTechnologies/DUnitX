@@ -75,6 +75,7 @@ begin
     //Create the runner
     runner := TDUnitX.CreateRunner;
     runner.UseRTTI := True;
+    runner.FailsOnNoAsserts := True; //Assertions must be made during tests;
     //tell the runner how we will log things
     logger := TDUnitXConsoleLogger.Create(false);
     nunitLogger := TDUnitXXMLNUnitFileLogger.Create(TDUnitX.Options.XMLOutputFile);

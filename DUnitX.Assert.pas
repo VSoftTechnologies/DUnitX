@@ -365,12 +365,14 @@ end;
 
 class procedure Assert.AreEqualMemory(const expected : Pointer; const actual : Pointer; const size : Cardinal; const message : string);
 begin
+  DoAssert;
   if not CompareMem(expected, actual, size) then
     Fail('Memory values are not equal. ' + message, ReturnAddress);
 end;
 
 class procedure Assert.AreNotEqual(const expected, actual, tolerance: Extended; const message: string);
 begin
+  DoAssert;
   if Math.SameValue(expected, actual, tolerance) then
     FailFmt('%g equals actual %g %s' ,[expected,actual,message], ReturnAddress);
 end;
@@ -386,6 +388,7 @@ class procedure Assert.AreNotEqual(const expected, actual: string;const ignoreCa
   end;
 
 begin
+  DoAssert;
   if AreNotEqualText(expected, actual, ignoreCase) then
      FailFmt('[%s] is equal to [%s] %s', [expected, actual, message], ReturnAddress);
 end;
@@ -394,6 +397,7 @@ class procedure Assert.AreNotEqual(const expected, actual: TClass; const message
 var
   msg : string;
 begin
+  DoAssert;
   if expected = actual then
   begin
     msg := ' is equal to ';
@@ -420,6 +424,7 @@ var
   comparer : IComparer<T>;
   expectedValue, actualValue : TValue;
 begin
+  DoAssert;
   comparer := TComparer<T>.Default;
   if comparer.Compare(actual,expected) = 0 then
   begin
@@ -433,6 +438,7 @@ end;
 
 class procedure Assert.AreNotEqual(const expected, actual: Integer; const message: string);
 begin
+  DoAssert;
   if expected = actual then
     FailFmt('Expected %d equals actual %d %s' ,[expected, actual, message], ReturnAddress);
 end;
@@ -455,36 +461,42 @@ end;
 
 class procedure Assert.AreNotEqual(const expected, actual, tolerance: double; const message: string);
 begin
+  DoAssert;
   if Math.SameValue(expected, actual, tolerance) then
     FailFmt('%g equals actual %g %s' ,[expected,actual,message], ReturnAddress);
 end;
 
 class procedure Assert.AreNotEqualMemory(const expected, actual: Pointer; const size: Cardinal; const message: string);
 begin
+  DoAssert;
   if CompareMem(expected,actual, size) then
     Fail('Memory values are equal. ' + message, ReturnAddress);
 end;
 
 class procedure Assert.AreNotSame(const expected, actual: TObject; const message: string);
 begin
+  DoAssert;
   if expected.Equals(actual) then
     FailFmt('Object [%s] Equals Object [%s] %s',[expected.ToString,actual.ToString,message], ReturnAddress);
 end;
 
 class procedure Assert.AreNotSame(const expected, actual: IInterface; const message: string);
 begin
+  DoAssert;
   if (expected as IInterface) = (actual as IInterface) then
     FailFmt('references are the same. %s',[message], ReturnAddress);
 end;
 
 class procedure Assert.AreSame(const expected, actual: IInterface; const message: string);
 begin
+  DoAssert;
   if (expected as IInterface) <> (actual as IInterface) then
     FailFmt('references are Not the same. %s',[message], ReturnAddress);
 end;
 
 class procedure Assert.AreSame(const expected, actual: TObject; const message: string);
 begin
+  DoAssert;
   if not expected.Equals(actual) then
     FailFmt('Object [%s] Not Object [%s] %s',[expected.ToString,actual.ToString,message], ReturnAddress);
 end;
@@ -496,6 +508,7 @@ var
   o : T;
   comparer : IComparer<T>;
 begin
+  DoAssert;
   comparer := TComparer<T>.Default;
   for o in list do
   begin
@@ -511,6 +524,7 @@ var
   o : T;
   comparer : IComparer<T>;
 begin
+  DoAssert;
   comparer := TComparer<T>.Default;
   for o in arr do
   begin
@@ -529,6 +543,7 @@ var
   o : T;
   comparer : IComparer<T>;
 begin
+  DoAssert;
   comparer := TComparer<T>.Default;
   for o in list do
   begin
@@ -542,6 +557,7 @@ var
   o : T;
   comparer : IComparer<T>;
 begin
+  DoAssert;
   comparer := TComparer<T>.Default;
   for o in arr do
   begin
@@ -553,6 +569,7 @@ end;
 
 class procedure Assert.Fail(const message : string; const errorAddrs : pointer);
 begin
+  DoAssert;
   //If we have been given a return then use it. (makes the exception appear on level above in the stack)
   if errorAddrs <> nil then
     raise fTestFailure.Create(message) at errorAddrs
@@ -561,19 +578,21 @@ begin
     raise fTestFailure.Create(message) at ReturnAddress;
 end;
 
-class procedure Assert.FailFmt(const message: string;
-  const args: array of const; const errorAddrs: pointer);
+class procedure Assert.FailFmt(const message: string; const args: array of const; const errorAddrs: pointer);
 begin
+  DoAssert;
   Fail(Format(message, args), errorAddrs);
 end;
 
 class procedure Assert.Pass(const message: string);
 begin
+  DoAssert;
   raise fTestPass.Create(message);
 end;
 
 class function Assert.Implements<T>(value: IInterface; const message: string) : T;
 begin
+  DoAssert;
   if not Supports(value,GetTypeData(TypeInfo(T)).Guid,result) then
     FailFmt('value does not implement %s. %s', [GetTypeName(TypeInfo(T)), message],ReturnAddress);
 end;
@@ -582,6 +601,7 @@ class procedure Assert.InheritsFrom(const descendant, parent: TClass; const mess
 var
   msg : string;
 begin
+  DoAssert;
   if (descendant = nil) or (parent = nil) or (not descendant.InheritsFrom(parent)) then
   begin
     msg := ' does not inherit from ';
@@ -604,30 +624,35 @@ end;
 
 class procedure Assert.IsEmpty(const value: IInterfaceList; const message: string);
 begin
+  DoAssert;
   if value.Count > 0 then
     FailFmt('List is Not empty. %s',[message], ReturnAddress);
 end;
 
 class procedure Assert.IsEmpty(const value: TList; const message: string);
 begin
+  DoAssert;
   if value.Count > 0 then
     FailFmt('List is Not empty. %s',[message], ReturnAddress);
 end;
 
 class procedure Assert.IsEmpty(const value, message: string);
 begin
+  DoAssert;
   if Length(value) > 0 then
     FailFmt('String is Not empty. %s',[message], ReturnAddress);
 end;
 
 class procedure Assert.IsEmpty(const value: Variant; const message: string);
 begin
+  DoAssert;
   if VarIsEmpty(value) or VarIsNull(value) then
     FailFmt('Variant is Not empty. %s',[message], ReturnAddress);
 end;
 
 class procedure Assert.IsEmpty(const value: TStrings; const message: string);
 begin
+  DoAssert;
   if value.Count > 0 then
     FailFmt('List is Not empty. %s',[message], ReturnAddress);
 end;
@@ -639,6 +664,7 @@ var
   o : T;
   count : integer;
 begin
+  DoAssert;
   count := 0;
   for o in value do
     Inc(count);
@@ -650,36 +676,42 @@ end;
 
 class procedure Assert.IsFalse(const condition: boolean; const message: string);
 begin
+  DoAssert;
   if condition then
    FailFmt('Condition is True when False expected. %s',[message], ReturnAddress);
 end;
 
 class procedure Assert.IsNotEmpty(const value: TList; const message: string);
 begin
+  DoAssert;
   if value.Count = 0 then
    FailFmt('List is Empty. %s',[message], ReturnAddress);
 end;
 
 class procedure Assert.IsNotEmpty(const value: IInterfaceList; const message: string);
 begin
+  DoAssert;
   if value.Count = 0 then
    FailFmt('List is Empty. %s',[message], ReturnAddress);
 end;
 
 class procedure Assert.IsNotEmpty(const value: TStrings; const message: string);
 begin
+  DoAssert;
   if value.Count = 0 then
    FailFmt('List is Empty. %s',[message], ReturnAddress);
 end;
 
 class procedure Assert.IsNotEmpty(const value, message: string);
 begin
+  DoAssert;
   if value = '' then
    FailFmt('Variant is Empty. %s',[message], ReturnAddress);
 end;
 
 class procedure Assert.IsNotEmpty(const value: Variant; const message: string);
 begin
+  DoAssert;
   if VarIsEmpty(value) then
     FailFmt('Variant is Empty. %s',[message], ReturnAddress);
 end;
@@ -691,6 +723,7 @@ var
   x : T;
   count : integer;
 begin
+  DoAssert;
   count := 0;
   for x in value do
     Inc(count);
@@ -702,54 +735,63 @@ end;
 
 class procedure Assert.IsNotNull(const condition: IInterface; const message: string);
 begin
+  DoAssert;
   if condition = nil then
     FailFmt('Interface is Nil when not nil expected. %s',[message], ReturnAddress);
 end;
 
 class procedure Assert.IsNotNull(const condition: Pointer; const message: string);
 begin
+  DoAssert;
   if condition = nil then
     FailFmt('Pointer is Nil when not Nil expected. %s',[message], ReturnAddress);
 end;
 
 class procedure Assert.IsNotNull(const condition: TObject; const message: string);
 begin
+  DoAssert;
   if condition = nil then
     FailFmt('Object is Nil when Not Nil expected. %s',[message], ReturnAddress);
 end;
 
 class procedure Assert.IsNotNull(const condition: Variant; const message: string);
 begin
+  DoAssert;
   if VarIsNull(condition) then
     FailFmt('Variant is Null when Not Null expcted. %s',[message], ReturnAddress);
 end;
 
 class procedure Assert.IsNull(const condition: Variant; const message: string);
 begin
+  DoAssert;
   if not VarIsNull(condition) then
     FailFmt('Variant is Not Null when Null expected. [%s]',[message], ReturnAddress);
 end;
 
 class procedure Assert.IsNull(const condition: IInterface; const message: string);
 begin
+  DoAssert;
   if condition <> nil then
     FailFmt('Interface is not Nil when nil expected. [%s]',[message], ReturnAddress);
 end;
 
 class procedure Assert.IsNull(const condition: TObject; const message: string);
 begin
+  DoAssert;
   if condition <> nil then
     FailFmt('Object is not nil when nil expected. [%s]',[message], ReturnAddress);
 end;
 
 class procedure Assert.IsNull(const condition: Pointer; const message: string);
 begin
+  DoAssert;
   if condition <> nil then
     FailFmt('Pointer is not Nil when nil expected. [%s]',[message], ReturnAddress);
 end;
 
 class procedure Assert.IsTrue(const condition: boolean;const message : string);
 begin
+  DoAssert;
   if not condition then
     FailFmt('Condition is False when True expected. [%s]',[message], ReturnAddress);
 end;
@@ -760,11 +802,10 @@ class procedure Assert.IsType<T>(const value: T; const message : string);
 var
   val : TValue;
 begin
-  begin
-    val := TValue.From<T>(value);
-    if not val.IsType<T> then
-      Fail('value is not of type T', ReturnAddress);
-  end;
+  DoAssert;
+  val := TValue.From<T>(value);
+  if not val.IsType<T> then
+    Fail('value is not of type T', ReturnAddress);
 end;
 {$ENDIF}
 
@@ -780,6 +821,7 @@ end;
 
 class procedure Assert.WillNotRaiseAny(const AMethod: TTestLocalMethod;  const msg: string);
 begin
+  DoAssert;
   try
     AMethod;
   except
@@ -805,9 +847,9 @@ begin
     msg);
 end;
 
-class procedure Assert.WillNotRaiseDescendant(const AMethod: TTestLocalMethod;
-  const exceptionClass: ExceptClass; const msg: string);
+class procedure Assert.WillNotRaiseDescendant(const AMethod: TTestLocalMethod;  const exceptionClass: ExceptClass; const msg: string);
 begin
+  DoAssert;
   try
     AMethod;
   except
@@ -824,8 +866,7 @@ begin
   end;
 end;
 
-class procedure Assert.WillNotRaiseDescendant(const AMethod: TTestMethod;
-  const exceptionClass: ExceptClass; const msg: string);
+class procedure Assert.WillNotRaiseDescendant(const AMethod: TTestMethod;  const exceptionClass: ExceptClass; const msg: string);
 begin
   Assert.WillNotRaise(
     procedure
@@ -837,6 +878,7 @@ end;
 
 class procedure Assert.WillRaise(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass; const msg : string);
 begin
+  DoAssert;
   try
     AMethod;
   except
@@ -851,6 +893,7 @@ end;
 
 class procedure Assert.WillNotRaise(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass; const msg : string);
 begin
+  DoAssert;
   try
     AMethod;
   except
@@ -877,9 +920,9 @@ begin
     exceptionClass, msg);
 end;
 
-class procedure Assert.WillRaiseAny(const AMethod: TTestLocalMethod;
-  const msg: string);
+class procedure Assert.WillRaiseAny(const AMethod: TTestLocalMethod; const msg: string);
 begin
+  DoAssert;
   try
     AMethod;
   except
@@ -891,8 +934,7 @@ begin
   Fail('Method did not throw any exceptions.' + AddLineBreak(msg), ReturnAddress);
 end;
 
-class procedure Assert.WillRaiseAny(const AMethod: TTestMethod;
-  const msg: string);
+class procedure Assert.WillRaiseAny(const AMethod: TTestMethod; const msg: string);
 begin
   Assert.WillRaiseAny(
     procedure
@@ -902,9 +944,9 @@ begin
     msg);
 end;
 
-class procedure Assert.WillRaiseDescendant(const AMethod: TTestLocalMethod;
-  const exceptionClass: ExceptClass; const msg: string);
+class procedure Assert.WillRaiseDescendant(const AMethod: TTestLocalMethod;  const exceptionClass: ExceptClass; const msg: string);
 begin
+  DoAssert;
   try
     AMethod;
   except
@@ -917,8 +959,7 @@ begin
   Fail('Method did not throw any exceptions.' + AddLineBreak(msg), ReturnAddress);
 end;
 
-class procedure Assert.WillRaiseDescendant(const AMethod: TTestMethod;
-  const exceptionClass: ExceptClass; const msg: string);
+class procedure Assert.WillRaiseDescendant(const AMethod: TTestMethod; const exceptionClass: ExceptClass; const msg: string);
 begin
   Assert.WillRaiseDescendant(
     procedure
@@ -930,6 +971,7 @@ end;
 
 class procedure Assert.WillRaiseWithMessage(const AMethod: TTestLocalMethod; const exceptionClass: ExceptClass;const exceptionMsg, msg: string);
 begin
+  DoAssert;
   try
     AMethod;
   except
