@@ -569,7 +569,6 @@ end;
 
 class procedure Assert.Fail(const message : string; const errorAddrs : pointer);
 begin
-  DoAssert;
   //If we have been given a return then use it. (makes the exception appear on level above in the stack)
   if errorAddrs <> nil then
     raise fTestFailure.Create(message) at errorAddrs
@@ -580,13 +579,11 @@ end;
 
 class procedure Assert.FailFmt(const message: string; const args: array of const; const errorAddrs: pointer);
 begin
-  DoAssert;
   Fail(Format(message, args), errorAddrs);
 end;
 
 class procedure Assert.Pass(const message: string);
 begin
-  DoAssert;
   raise fTestPass.Create(message);
 end;
 
