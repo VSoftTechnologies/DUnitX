@@ -6,10 +6,15 @@ resourcestring
 
  STestDPR = 'program %0:s;'#13#10 +
  #13#10 +
+ '{$IFNDEF TESTINSIGHT}'#13#10 +
  '{$APPTYPE CONSOLE}'#13#10 +
+ '{$ENDIF}'+
  '{$STRONGLINKTYPES ON}'#13#10 +
  'uses'#13#10 +
  '  SysUtils,'#13#10 +
+ '{$IFDEF TESTINSIGHT}'#13#10 +
+ '  TestInsight.DUnitX,'#13#10 +
+ '{$ENDIF}'#13#10 +
  '  DUnitX.Loggers.Console,'#13#10 +
  '  DUnitX.Loggers.Xml.NUnit,'#13#10 +
  '  DUnitX.TestFramework;'#13#10 +
@@ -20,6 +25,10 @@ resourcestring
  '  logger : ITestLogger;'#13#10 +
  '  nunitLogger : ITestLogger;'#13#10 +
  'begin'#13#10 +
+ '{$IFDEF TESTINSIGHT}'#13#10 +
+ '  TestInsight.DUnitX.RunRegisteredTests;'#13#10 +
+ '  exit;'#13#10 +
+ '{$ENDIF}'#13#10 +
  '  try'#13#10 +
  '    //Check command line options, will exit if invalid'#13#10 +
  '    TDUnitX.CheckCommandLine;'#13#10 +
@@ -34,6 +43,7 @@ resourcestring
  '    //Generate an NUnit compatible XML File'#13#10 +
  '    nunitLogger := TDUnitXXMLNUnitFileLogger.Create(TDUnitX.Options.XMLOutputFile);'#13#10 +
  '    runner.AddLogger(nunitLogger);'#13#10 +
+ '    runner.FailsOnNoAsserts := False; //When true, Assertions must be made during tests;'#13#10 +
  #13#10 +
  '    //Run tests'#13#10 +
  '    results := runner.Execute;'#13#10 +
