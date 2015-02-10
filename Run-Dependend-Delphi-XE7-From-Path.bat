@@ -5,7 +5,7 @@
   :: Delphi:      "C:\Program Files (x86)\Embarcadero\Studio\15.0\bin\bds.exe" -pDelphi
   :: C++ Builder  "C:\Program Files (x86)\Embarcadero\Studio\15.0\bin\bds.exe" -pCBuilder
   :: call :do start bds.exe -pDelphi
-  FOR /F "tokens=2*" %%P IN ('REG QUERY HKEY_CURRENT_USER\Software\Embarcadero\BDS\14.0 /v App 2^>NUL') DO call :do start "Delphi XE7" "%%Q" -pDelphi
+  FOR /F "tokens=2*" %%P IN ('REG QUERY HKEY_CURRENT_USER\Software\Embarcadero\BDS\15.0 /v App 2^>NUL') DO call :do start "Delphi XE7" "%%Q" -pDelphi
   pause
   goto :eof
 :do
