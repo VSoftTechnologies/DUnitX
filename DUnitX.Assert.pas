@@ -53,6 +53,8 @@ type
     class procedure Fail(const message : string = ''; const errorAddrs : pointer = nil);
     class procedure FailFmt(const message : string; const args: array of const; const errorAddrs : pointer = nil);
 
+    class procedure NotImplemented;
+
     class procedure AreEqual(const expected : string; const actual : string; const ignoreCase : boolean; const message : string = '');overload;
     class procedure AreEqual(const expected : string; const actual : string; const message : string = '');overload;
     class procedure AreEqual(const expected, actual : Double; const tolerance : Double; const message : string = '');overload;
@@ -791,6 +793,11 @@ begin
   DoAssert;
   if not condition then
     FailFmt('Condition is False when True expected. [%s]',[message], ReturnAddress);
+end;
+
+class procedure Assert.NotImplemented;
+begin
+  Assert.Fail('Not implemented!');
 end;
 
 {$IFDEF DELPHI_XE_UP}
