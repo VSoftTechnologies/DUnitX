@@ -184,7 +184,7 @@ type
     Values : TValueArray;
   end;
 
-  TestCaseInfoArray = array of TestCaseInfo;
+  TestCaseInfoArray = TArray<TestCaseInfo>;
 
   /// <summary>
   ///   Base class for all Test Case Attributes.   

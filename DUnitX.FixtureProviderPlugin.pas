@@ -403,13 +403,19 @@ begin
             end;
           end;
           // Add test case from test \case sources
-          for testCaseSourceAttrb in testCaseSources do
+          if Length(testCaseSources) > 0 then
           begin
-            for testCaseData in testCaseSourceAttrb.CaseInfoArray do
+            for testCaseSourceAttrb in testCaseSources do
             begin
-              for i := 1 to repeatCount do
+              if Length(testCaseSourceAttrb.CaseInfoArray) > 0 then
               begin
-                currentFixture.AddTestCase(method.Name, TestCaseData.Name, FormatTestName(method.Name, i, repeatCount), category, method, testEnabled,TestCaseData.Values);
+                for testCaseData in testCaseSourceAttrb.CaseInfoArray do
+                begin
+                  for i := 1 to repeatCount do
+                  begin
+                    currentFixture.AddTestCase(method.Name, TestCaseData.Name, FormatTestName(method.Name, i, repeatCount), category, method, testEnabled,TestCaseData.Values);
+                  end;
+                end;
               end;
             end;
           end;
