@@ -45,6 +45,11 @@ uses
   DUnitX.Filters,
   Generics.Collections;
 
+{$HPPEMIT '#if defined(USEPACKAGES)'}
+{$HPPEMIT '# pragma comment(lib, "DUnitXRuntime.bpi")'}
+{$HPPEMIT '#else'}
+{$HPPEMIT '# pragma comment(lib, "DUnitXRuntime")'}
+{$HPPEMIT '#endif'}
 //TODO: Automatic support for https://code.google.com/p/delphi-code-coverage/ would be cool
 
 {$I DUnitX.inc}

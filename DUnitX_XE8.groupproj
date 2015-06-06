@@ -1,0 +1,72 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{578B7A11-D6C6-468D-8C4F-BC822BA313A8}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="Tests\DUnitXTest_XE8.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Examples\DUnitXExamples_XE8.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Expert\DUnitX_IDE_Expert_XE8.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Examples\DUnitXFiremonkeyGUI_XE8.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="DUnitXTest_XE8">
+        <MSBuild Projects="Tests\DUnitXTest_XE8.dproj"/>
+    </Target>
+    <Target Name="DUnitXTest_XE8:Clean">
+        <MSBuild Projects="Tests\DUnitXTest_XE8.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="DUnitXTest_XE8:Make">
+        <MSBuild Projects="Tests\DUnitXTest_XE8.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="DUnitXExamples_XE8">
+        <MSBuild Projects="Examples\DUnitXExamples_XE8.dproj"/>
+    </Target>
+    <Target Name="DUnitXExamples_XE8:Clean">
+        <MSBuild Projects="Examples\DUnitXExamples_XE8.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="DUnitXExamples_XE8:Make">
+        <MSBuild Projects="Examples\DUnitXExamples_XE8.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="DUnitX_IDE_Expert_XE8">
+        <MSBuild Projects="Expert\DUnitX_IDE_Expert_XE8.dproj"/>
+    </Target>
+    <Target Name="DUnitX_IDE_Expert_XE8:Clean">
+        <MSBuild Projects="Expert\DUnitX_IDE_Expert_XE8.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="DUnitX_IDE_Expert_XE8:Make">
+        <MSBuild Projects="Expert\DUnitX_IDE_Expert_XE8.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="DUnitXFiremonkeyGUI_XE8">
+        <MSBuild Projects="Examples\DUnitXFiremonkeyGUI_XE8.dproj"/>
+    </Target>
+    <Target Name="DUnitXFiremonkeyGUI_XE8:Clean">
+        <MSBuild Projects="Examples\DUnitXFiremonkeyGUI_XE8.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="DUnitXFiremonkeyGUI_XE8:Make">
+        <MSBuild Projects="Examples\DUnitXFiremonkeyGUI_XE8.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="DUnitXTest_XE8;DUnitXExamples_XE8;DUnitX_IDE_Expert_XE8;DUnitXFiremonkeyGUI_XE8"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="DUnitXTest_XE8:Clean;DUnitXExamples_XE8:Clean;DUnitX_IDE_Expert_XE8:Clean;DUnitXFiremonkeyGUI_XE8:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="DUnitXTest_XE8:Make;DUnitXExamples_XE8:Make;DUnitX_IDE_Expert_XE8:Make;DUnitXFiremonkeyGUI_XE8:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>
