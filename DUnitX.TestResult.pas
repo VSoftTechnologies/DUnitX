@@ -153,7 +153,9 @@ begin
 
   FExceptionClass := ExceptClass(AThrownException.ClassType);
 
-  FExceptionMessage := AMessage + AThrownException.Message;
+  FExceptionMessage := AMessage;
+  if AMessage <> AThrownException.Message then
+    FExceptionMessage := FExceptionMessage + AThrownException.Message;
   FExceptionAddress := Addrs;
 
   {$IFDEF DELPHI_XE_UP}
