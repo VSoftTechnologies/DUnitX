@@ -40,7 +40,8 @@ uses
   DUnitX.CommandLine.Parser in '..\DUnitX.CommandLine.Parser.pas',
   DUnitX.OptionsDefinition in '..\DUnitX.OptionsDefinition.pas',
   DUnitX.Banner in '..\DUnitX.Banner.pas',
-  DUnitX.Filters in '..\DUnitX.Filters.pas';
+  DUnitX.Filters in '..\DUnitX.Filters.pas',
+  DUnitX.Init in '..\DUnitX.Init.pas';
 
 var
   runner : ITestRunner;

@@ -30,6 +30,9 @@ This is far from a complete list, but a few planned features are listed here to 
  * Remote logging - Simple way to run tests on remote machines (just an idea at this point) 
  * Data driven test cases - the ability to provide a test method with a data source and test each entry in the data source. The data source will be virtualised so it can be anything (text file, db table etc).
 
+Tips and Tricks
+===========
+* In order to workaround the [Delphi XE3 Bug](https://github.com/VSoftTechnologies/DUnitX/issues/117), you need to add the unit DUnitX.Init to your test projects.
 
 Support
 =======
