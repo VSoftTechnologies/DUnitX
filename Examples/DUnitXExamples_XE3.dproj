@@ -158,6 +158,7 @@
 	<DCCReference Include="..\DUnitX.OptionsDefinition.pas"/>
 	<DCCReference Include="..\DUnitX.Banner.pas"/>
 	<DCCReference Include="..\DUnitX.Filters.pas"/>
+	<DCCReference Include="..\DUnitX.Init.pas"/>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

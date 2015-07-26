@@ -866,10 +866,12 @@ begin
   Assert.TestPass := ETestPass;
 end;
 
+{$IFNDEF DELPHI_XE3}
 initialization
   TDUnitX.RegisterPlugin(TDUnitXFixtureProviderPlugin.Create);
   InitAssert;
 
 finalization
+{$ENDIF}
 
 end.
