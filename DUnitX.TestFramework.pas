@@ -565,6 +565,11 @@ type
     function TestMemoryAllocated: Int64;
   end;
 
+  IMemoryLeakMonitor2 = interface(IMemoryLeakMonitor)
+  ['{33559983-D522-4ED5-9B5E-AC9A055FA01A}']
+    function GetReport: string;
+  end;
+
 
   ETestFrameworkException = class(Exception);
 

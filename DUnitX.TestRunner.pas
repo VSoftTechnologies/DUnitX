@@ -266,6 +266,8 @@ var
   LSetUpMemoryAllocated: Int64;
   LTearDownMemoryAllocated: Int64;
   LTestMemoryAllocated: Int64;
+  LMsg: string;
+  LMemoryAllocationProvider2: IMemoryLeakMonitor2;
 begin
   Result := True;
   errorResult := nil;
@@ -280,23 +282,29 @@ begin
   if (LSetUpMemoryAllocated + LTestMemoryAllocated + LTearDownMemoryAllocated = 0) then
     Exit(True);
 
+  if memoryAllocationProvider.QueryInterface(IMemoryLeakMonitor2, LMemoryAllocationProvider2) = 0 then
+    LMsg := LMemoryAllocationProvider2.GetReport;
+
   if (LTestMemoryAllocated = 0) then
   begin
     // The leak occurred in the setup/teardown
     Result := False;
-    errorResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.MemoryLeak, Format('%d bytes were leaked in the setup/teardown methods', [LSetUpMemoryAllocated + LTearDownMemoryAllocated]));
+    LMsg := Format('%d bytes were leaked in the setup/teardown methods', [LSetUpMemoryAllocated + LTearDownMemoryAllocated]) + LMsg;
+    errorResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.MemoryLeak, LMsg);
   end
   else if (LSetUpMemoryAllocated + LTearDownMemoryAllocated = 0) then
   begin
     // The leak occurred in the test only
     Result := False;
-    errorResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.MemoryLeak, Format('%d bytes were leaked in the test method', [LTestMemoryAllocated]));
+    LMsg := Format('%d bytes were leaked in the test method', [LTestMemoryAllocated]) + LMsg;
+    errorResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.MemoryLeak, LMsg);
   end
   else
   begin
     // The leak occurred in the setup/teardown/test
     Result := False;
-    errorResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.MemoryLeak, Format('%d bytes were leaked in the setup/test/teardown methods', [LSetUpMemoryAllocated + LTestMemoryAllocated + LTearDownMemoryAllocated]));
+    LMsg := Format('%d bytes were leaked in the setup/test/teardown methods', [LSetUpMemoryAllocated + LTestMemoryAllocated + LTearDownMemoryAllocated]) + LMsg;
+    errorResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.MemoryLeak, LMsg);
   end;
 end;
 
