@@ -62,6 +62,10 @@ type
     function GetIgnoreReason : string;
     function GetIgnoreMemoryLeaks() : Boolean;
     procedure SetIgnoreMemoryLeaks(const AValue : Boolean);
+    function GetMaxTime: cardinal;
+    procedure SetMaxTime(const AValue: cardinal);
+    function GetTimedOut: Boolean;
+    procedure SetTimedOut(const AValue: Boolean);
 
     property Name : string read GetName;
     property FullName : string read GetFullName;
@@ -73,6 +77,8 @@ type
     property IgnoreReason : string read GetIgnoreReason;
     property TestMethod : TTestMethod read GetTestMethod;
     property IgnoreMemoryLeaks : Boolean read GetIgnoreMemoryLeaks write SetIgnoreMemoryLeaks;
+    property MaxTime: cardinal read GetMaxTime write SetMaxTime;
+    property TimedOut: Boolean read GetTimedOut write SetTimedOut;
   end;
 
   ITestList = interface(IList<ITest>)
@@ -113,7 +119,7 @@ type
     procedure OnMethodExecuted(const AMethod : TTestMethod);
     function GetFixtureInstance : TObject;
 
-    function AddTest(const AMethodName : string; const AMethod : TTestMethod; const AName : string; const ACategory : string; const AEnabled : boolean = true;const AIgnored : boolean = false; const AIgnoreReason : string = '') : ITest;
+    function AddTest(const AMethodName : string; const AMethod : TTestMethod; const AName : string; const ACategory : string; const AEnabled : boolean = true;const AIgnored : boolean = false; const AIgnoreReason : string = ''; const AMaxTime :cardinal = 0) : ITest;
     function AddTestCase(const AMethodName : string; const ACaseName : string; const AName : string; const ACategory : string; const AMethod : TRttiMethod; const AEnabled : boolean; const AArgs : TValueArray) : ITest;
 
     function AddChildFixture(const ATestClass : TClass; const AName : string; const ACategory : string) : ITestFixture;overload;

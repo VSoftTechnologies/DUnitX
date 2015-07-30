@@ -66,7 +66,7 @@ type
   CategoryAttribute = DUnitX.Attributes.CategoryAttribute;
   IgnoreAttribute = DUnitX.Attributes.IgnoreAttribute;
   RepeatTestAttribute = DUnitX.Attributes.RepeatTestAttribute;
-
+  MaxTimeAttribute =  DUnitX.Attributes.MaxTimeAttribute;
   TestCaseInfo = DUnitX.Attributes.TestCaseInfo;
   TestCaseInfoArray = DUnitX.Attributes.TestCaseInfoArray;
 
@@ -580,6 +580,8 @@ type
 
   ETestFailure = class(EAbort);
   ETestPass = class(EAbort);
+  ETimedOut = class(EAbort);
+
   ENoTestsRegistered = class(ETestFrameworkException);
   ECommandLineError = class(ETestFrameworkException);
 

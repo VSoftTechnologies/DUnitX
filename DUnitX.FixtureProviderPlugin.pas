@@ -245,10 +245,12 @@ var
   testEnabled     : boolean;
   isTestMethod    : boolean;
   repeatAttrib    : RepeatTestAttribute;
+  maxTimeAttrib   : MaxTimeAttribute;
 
   category        : string;
   ignoredTest     : boolean;
   ignoredReason   : string;
+  maxTime         : cardinal;
 
   repeatCount: Cardinal;
   i: Integer;
@@ -294,6 +296,8 @@ begin
     categoryAttrib := nil;
     isTestMethod := false;
     repeatCount := 1;
+    maxTimeAttrib := nil;
+    maxTime := 0;
     currentFixture := fixture;
 
     meth.Code := method.CodeAddress;
@@ -302,8 +306,6 @@ begin
     //if the test has a category attribute then we'll use it to override the fixtures's category.
     if method.TryGetAttributeOfType<CategoryAttribute>(categoryAttrib) then
       category := categoryAttrib.Category;
-
-
 
     if method.TryGetAttributeOfType<RepeatTestAttribute>(repeatAttrib) then
     begin
@@ -352,7 +354,6 @@ begin
        continue;
     end;
 
-
     if (not Assigned(setupMethod)) and method.TryGetAttributeOfType<SetupAttribute>(setupAttrib) then
     begin
       setupMethod := TTestMethod(meth);
@@ -369,15 +370,18 @@ begin
 
     if method.TryGetAttributeOfType<IgnoreAttribute>(ignoredAttrib) then
     begin
-       ignoredTest   := true;
-       ignoredReason := ignoredAttrib.Reason;
+      ignoredTest   := true;
+      ignoredReason := ignoredAttrib.Reason;
     end;
 
     if method.TryGetAttributeOfType<TestAttribute>(testAttrib) then
     begin
-       testEnabled := testAttrib.Enabled;
-       isTestMethod := true;
+      testEnabled := testAttrib.Enabled;
+      isTestMethod := true;
     end;
+
+    if method.TryGetAttributeOfType<MaxTimeAttribute>(maxTimeAttrib) then
+      maxTime := maxTimeAttrib.MaxTime;
 
     if method.IsDestructor or method.IsConstructor then
       continue;
@@ -399,7 +403,7 @@ begin
           begin
             for i := 1 to repeatCount do
             begin
-              currentFixture.AddTestCase(method.Name, testCaseAttrib.CaseInfo.Name, FormatTestName(method.Name, i, repeatCount), category, method, testEnabled,testCaseAttrib.CaseInfo.Values);
+              currentFixture.AddTestCase(method.Name, testCaseAttrib.CaseInfo.Name, FormatTestName(method.Name, i, repeatCount), category, method, testEnabled, testCaseAttrib.CaseInfo.Values);
             end;
           end;
           // Add test case from test \case sources
@@ -423,7 +427,7 @@ begin
         else
         begin
           //if a testcase is ignored, just add it as a regular test.
-          currentFixture.AddTest(method.Name, TTestMethod(meth),method.Name,category,true,true,ignoredReason);
+          currentFixture.AddTest(method.Name, TTestMethod(meth), method.Name, category, true, true, ignoredReason, maxTime);
         end;
         continue;
       end;
@@ -433,7 +437,7 @@ begin
     begin
       for i := 1 to repeatCount do
       begin
-        currentFixture.AddTest(method.Name, TTestMethod(meth),FormatTestName(method.Name, i, repeatCount),category,true,ignoredTest,ignoredReason);
+        currentFixture.AddTest(method.Name, TTestMethod(meth), FormatTestName(method.Name, i, repeatCount), category, true, ignoredTest, ignoredReason, maxTime);
       end;
       continue;
     end;
@@ -444,7 +448,7 @@ begin
       // Add Published Method that has no Attributes
       for i := 1 to repeatCount do
       begin
-        currentFixture.AddTest(method.Name, TTestMethod(meth),FormatTestName(method.Name, i, repeatCount),category,true,ignoredTest,ignoredReason);
+        currentFixture.AddTest(method.Name, TTestMethod(meth), FormatTestName(method.Name, i, repeatCount), category, true, ignoredTest, ignoredReason, maxTime);
       end;
     end;
   end;

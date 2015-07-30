@@ -105,6 +105,8 @@ type
     class function ToArray(const values : TList<string>) : TArray<string>;
   end;
 
+  function GetElapsedTime(const ALastTick : Cardinal) : Cardinal;
+
 type
   {$REGION 'Documentation'}
   ///	<summary>
@@ -727,6 +729,7 @@ function Supports(const Instance: TValue; const IID: TGUID; out Intf): Boolean; 
 const
   ObjCastGUID: TGUID = '{CEDF24DE-80A4-447D-8C75-EB871DC121FD}';
 
+
 implementation
 
 uses
@@ -734,7 +737,8 @@ uses
   Generics.Defaults,
   Math,
   StrUtils,
-  SysConst;
+  SysConst,
+  Windows;
 
 var
   Context: TRttiContext;
@@ -753,6 +757,7 @@ var
   attribute : TCustomAttribute;
 begin
   result := nil;
+
   for attribute in attributes do
   begin
     if attribute.ClassType = AttributeClass then
@@ -3133,6 +3138,18 @@ begin
   for i := 0 to values.Count - 1 do
     result[i] := values[i];
 end;
+
+function GetElapsedTime(const ALastTick : Cardinal) : Cardinal;
+var
+  CurrentTick : Cardinal;
+begin
+  CurrentTick := GetTickCount;
+  if CurrentTick >= ALastTick then
+    Result := CurrentTick - ALastTick
+  else
+    Result := (High(Cardinal) - ALastTick) + CurrentTick;
+end;
+
 
 initialization
   Enumerations := TObjectDictionary<PTypeInfo, TStrings>.Create([doOwnsValues]);
