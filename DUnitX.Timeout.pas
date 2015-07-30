@@ -17,7 +17,13 @@ implementation
 
 uses
   DUnitX.TestFramework,
+  DUnitX.Utils,
   Windows;
+
+// The following TimeOut code is based on the code found at
+// https://code.google.com/p/delphitimeouts/
+// DelphiTimeouts version 1.1
+// Copyright (c) 2007-2008 Szymon Jachim
 
 type
   TTimeoutThread = class(TThread)
@@ -99,7 +105,7 @@ begin
   //Get the tickcount so that we leave timing up to the system.
   startTime := GetTickCount;
 
-  while (GetTickCount() >= startTime + Timeout) do
+  while (GetElapsedTime(startTime) >= Timeout) do
   begin
     //Give some time back to the system to process the test.
     Sleep(1);

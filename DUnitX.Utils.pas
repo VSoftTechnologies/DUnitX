@@ -105,6 +105,8 @@ type
     class function ToArray(const values : TList<string>) : TArray<string>;
   end;
 
+  function GetElapsedTime(const ALastTick : Cardinal) : Cardinal;
+
 type
   {$REGION 'Documentation'}
   ///	<summary>
@@ -3136,6 +3138,18 @@ begin
   for i := 0 to values.Count - 1 do
     result[i] := values[i];
 end;
+
+function GetElapsedTime(const ALastTick : Cardinal) : Cardinal;
+var
+  CurrentTick : Cardinal;
+begin
+  CurrentTick := GetTickCount;
+  if CurrentTick >= ALastTick then
+    Result := CurrentTick - ALastTick
+  else
+    Result := (High(Cardinal) - ALastTick) + CurrentTick;
+end;
+
 
 initialization
   Enumerations := TObjectDictionary<PTypeInfo, TStrings>.Create([doOwnsValues]);
