@@ -107,8 +107,8 @@ type
     [MaxTime(0)]
     procedure MaxTimeIsZero;
 
-
-    [Test]
+    //We ignore the timeout test for the moment. We require a way to test timeout without calling it to fail the test itself.
+    [Test, Ignore]
     [MaxTime(100)]
     procedure TestTimeout;
 
