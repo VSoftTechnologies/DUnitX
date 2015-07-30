@@ -80,7 +80,7 @@ end;
 constructor TTimeout.Create(const ATimeout: Cardinal; AThreadHandle: THandle);
 begin
   FTimeoutThread := TTimeoutThread.Create(true);
-  FTimeoutThread.FreeOnTerminate := true;
+  FTimeoutThread.FreeOnTerminate := false;
   FTimeoutThread.ThreadHandle := AThreadHandle;
   FTimeoutThread.Timeout := ATimeout;
   FTimeoutThread.Resume;
@@ -90,6 +90,8 @@ destructor TTimeout.Destroy;
 begin
   //Unwinding and we need to stop the thread, as it may still raise an exception
   Stop;
+  FTimeoutThread.WaitFor;
+  FTimeoutThread.Free;
   inherited;
 end;
 
