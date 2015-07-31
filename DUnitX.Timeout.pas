@@ -100,21 +100,23 @@ end;
 procedure TTimeoutThread.Execute;
 var
   I: Integer;
-  startTime: Cardinal;
+  startTime : Cardinal;
+  elaspedTime : Cardinal;
 begin
   inherited;
 
   //Get the tickcount so that we leave timing up to the system.
   startTime := GetTickCount;
 
-  while (GetElapsedTime(startTime) >= Timeout) do
-  begin
+  repeat
     //Give some time back to the system to process the test.
     Sleep(1);
 
     if Terminated then
       Break;
-  end;
+
+    elaspedTime := GetElapsedTime(startTime);
+  until (elaspedTime >= Timeout);
 
   //If we haven't been terminated then we have timed out.
   if not Terminated then
