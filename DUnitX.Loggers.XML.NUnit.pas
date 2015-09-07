@@ -172,11 +172,9 @@ begin
   inherited;
 end;
 
-function TDUnitXXMLNUnitLogger.Format(const Format: string;
-  const Args: array of const): String;
+function TDUnitXXMLNUnitLogger.Format(const Format: string; const Args: array of const): String;
 begin
-
-  Result := {$IFDEF USE_NS}System.SysUtils.{$ENDIF}Format(Format, Args, FFormatSettings);
+  Result := {$IFDEF USE_NS}System.{$ENDIF}SysUtils.Format(Format, Args, FFormatSettings);
 end;
 
 procedure TDUnitXXMLNUnitLogger.Indent;

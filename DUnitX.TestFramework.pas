@@ -92,6 +92,11 @@ type
   TLogLevel = (Information, Warning, Error);
   {$SCOPEDENUMS OFF}
 
+  {$IFDEF DELPHI_2010}
+  TThreadID = Cardinal;
+  {$ENDIF}
+
+
 const
   TLogLevelDesc : array[TLogLevel] of string = ('Info', 'Warn', 'Err');
 

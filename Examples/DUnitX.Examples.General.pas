@@ -141,6 +141,7 @@ type
 implementation
 
 uses
+  Windows,
   SysUtils,
   classes,
   DUnitX.DUnitCompatibility;
@@ -216,7 +217,11 @@ end;
 
 procedure TMyExampleTests.TooLong;
 begin
-  TThread.Sleep(2000);
+  {$IFDEF DELPHI_XE_UP}
+   TThread.Sleep(2000);
+  {$ELSE}
+    Windows.Sleep(2000);
+  {$ENDIF}
 end;
 
 { TExampleFixture2 }

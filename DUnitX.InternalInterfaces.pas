@@ -32,9 +32,9 @@ interface
 
 uses
   {$IFDEF USE_NS}
-  TimeSpan,
-  {$ELSE}
   System.TimeSpan,
+  {$ELSE}
+  TimeSpan,
   {$ENDIF}
   DUnitX.Generics,
   DUnitX.Extensibility,

@@ -91,6 +91,7 @@
 			<DCCReference Include="..\DUnitX.Utils.pas"/>
 			<DCCReference Include="..\DUnitX.Attributes.pas"/>
 			<DCCReference Include="..\DUnitX.Types.pas"/>
+			<DCCReference Include="..\DUnitX.Timeout.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

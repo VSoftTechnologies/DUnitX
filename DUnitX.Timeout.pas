@@ -78,7 +78,7 @@ begin
   Ctx.ContextFlags := CONTEXT_FULL;
   GetThreadContext(ThreadHandle, Ctx);
 
-  {$IF DEFINED(CPUX64)}
+  {$IFDEF CPUX64}
   Ctx.Rip := Cardinal(@RaiseTimeOutException);
   {$ELSE}
   Ctx.Eip := Cardinal(@RaiseTimeOutException);
