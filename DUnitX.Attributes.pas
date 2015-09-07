@@ -112,6 +112,21 @@ type
     property IgnoreMemoryLeaks : Boolean read FIgnoreMemoryLeaks;
   end;
 
+  ///	<summary>
+  ///	  Marks a test method to fail after the time specified.
+  ///	</summary>
+  ///	<remarks>
+  ///	  If [MaxTime(1000]] used then the test will fail if the
+  ///   test takes longer than 1000ms
+  ///	</remarks>
+  MaxTimeAttribute = class(TCustomAttribute)
+  private
+    FMaxTime : Cardinal;
+  public
+    constructor Create(const AMaxTime : Cardinal);
+    property MaxTime : Cardinal read FMaxTime;
+  end;
+
   /// <summary>
   ///   This attribute marks a method as a test method
   /// </summary>
@@ -333,6 +348,13 @@ end;
 function TestCaseAttribute.GetValues: TValueArray;
 begin
   Result := FCaseInfo.Values;
+end;
+
+{ MaxTimeAttribute }
+
+constructor MaxTimeAttribute.Create(const AMaxTime : Cardinal);
+begin
+  FMaxTime := AMaxTime;
 end;
 
 end.

@@ -61,6 +61,8 @@ type
     FIgnored      : boolean;
     FIgnoreReason : string;
     FIgnoreMemoryLeaks : Boolean;
+    FMaxTime      : cardinal; // milliseconds for timeout
+    FTimedOut     : Boolean;
   protected
     //ITest
     function GetName: string; virtual;
@@ -74,6 +76,10 @@ type
     function GetTestDuration: TTimeSpan;
     function GetIgnoreMemoryLeaks() : Boolean;
     procedure SetIgnoreMemoryLeaks(const AValue : Boolean);
+    function GetMaxTime: cardinal;
+    procedure SetMaxTime(const AValue: cardinal);
+    function GetTimedOut: Boolean;
+    procedure SetTimedOut(const AValue: Boolean);
 
     //ITestInfo
     function GetActive : boolean;
@@ -91,7 +97,7 @@ type
     procedure Execute(const context : ITestExecuteContext);virtual;
   public
     constructor Create(const AFixture : ITestFixture; const AMethodName : string; const AName : string; const ACategory  : string; const AMethod : TTestMethod; const AEnabled : boolean;
-                       const AIgnored : boolean = false; const AIgnoreReason : string = '');
+                       const AIgnored : boolean = false; const AIgnoreReason : string = ''; const AMaxTime : Cardinal = 0);
     destructor Destroy;override;
   end;
 
@@ -121,11 +127,12 @@ uses
   SysUtils,
   Generics.Defaults,
   {$ENDIF}
-  DUnitX.Utils;
+  DUnitX.Utils,
+  DUnitX.Timeout;
 
 { TDUnitXTest }
 
-constructor TDUnitXTest.Create(const AFixture: ITestFixture; const AMethodName : string; const AName: string; const ACategory  : string; const AMethod: TTestMethod; const AEnabled : boolean; const AIgnored : boolean; const AIgnoreReason : string);
+constructor TDUnitXTest.Create(const AFixture: ITestFixture; const AMethodName : string; const AName: string; const ACategory  : string; const AMethod: TTestMethod; const AEnabled : boolean; const AIgnored : boolean; const AIgnoreReason : string; const AMaxTime : Cardinal);
 var
   categories : TArray<string>;
   cat        : string;
@@ -151,6 +158,8 @@ begin
   FEnabled := AEnabled;
   FIgnored := AIgnored;
   FIgnoreReason := AIgnoreReason;
+  FMaxTime := AMaxTime;
+  FTimedOut := false;
 end;
 
 destructor TDUnitXTest.Destroy;
@@ -163,6 +172,9 @@ procedure TDUnitXTest.Execute(const context : ITestExecuteContext);
 begin
   FStartTime := Now();
   try
+    if FMaxTime > 0 then
+      InitialiseTimeOut( FMaxTime );
+
     FMethod();
   finally
     FEndTime := Now();
@@ -262,6 +274,24 @@ end;
 procedure TDUnitXTest.SetIgnoreMemoryLeaks(const AValue: Boolean);
 begin
   FIgnoreMemoryLeaks := AValue;
+end;
+
+function TDUnitXTest.GetMaxTime: cardinal;
+begin
+  Result := FMaxTime;
+end;
+procedure TDUnitXTest.SetMaxTime(const AValue: cardinal);
+begin
+  FMaxTime := AValue;
+end;
+
+function TDUnitXTest.GetTimedOut: Boolean;
+begin
+  Result := FTimedOut;
+end;
+procedure TDUnitXTest.SetTimedOut(const AValue: Boolean);
+begin
+  FTimedOut := AValue;
 end;
 
 procedure TDUnitXTest.SetResult(const value: ITestResult);
