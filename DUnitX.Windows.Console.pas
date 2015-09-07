@@ -28,11 +28,16 @@ unit DUnitX.Windows.Console;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
-  classes,
+  {$IFDEF USE_NS}
+  System.Classes,
+  {$ELSE}
+  Classes,
+  {$ENDIF}
   DUnitX.ConsoleWriter.Base;
 
-{$I DUnitX.inc}
 
 type
   TDUnitXWindowsConsoleWriter = class(TDUnitXConsoleWriterBase)
@@ -57,12 +62,10 @@ type
 implementation
 
 uses
-  {$IFDEF MSWINDOWS}
-    {$if CompilerVersion < 23 }
-      Windows,
-    {$else}
-      WinAPI.Windows, // Delphi XE2 (CompilerVersion 23) added scopes in front of unit names
-    {$ifend}
+  {$IFDEF USE_NS}
+    WinAPI.Windows, // Delphi XE2 (CompilerVersion 23) added scopes in front of unit names
+  {$ELSE}
+    Windows,
   {$ENDIF}
   DUnitX.Utils,
   DUnitX.IoC;

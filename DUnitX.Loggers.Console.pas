@@ -27,12 +27,12 @@
 unit DUnitX.Loggers.Console;
 
 interface
-uses
-  DUnitX.ConsoleWriter.Base,
-  DUnitX.TestFramework,
-  classes;
 
 {$I DUnitX.inc}
+
+uses
+  DUnitX.ConsoleWriter.Base,
+  DUnitX.TestFramework;
 
 type
   ///
@@ -51,36 +51,36 @@ type
     procedure SetConsoleSummaryColor(); virtual;
     procedure SetConsoleWarningColor(); virtual;
   protected
-    procedure OnTestingStarts(const threadId, testCount, testActiveCount : Cardinal);
+    procedure OnTestingStarts(const threadId : TThreadID; const testCount, testActiveCount : Cardinal);
 
-    procedure OnStartTestFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
+    procedure OnStartTestFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 
-    procedure OnSetupFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
-    procedure OnEndSetupFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
+    procedure OnSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
+    procedure OnEndSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 
-    procedure OnBeginTest(const threadId: Cardinal; const Test: ITestInfo);
+    procedure OnBeginTest(const threadId: TThreadID; const Test: ITestInfo);
 
-    procedure OnSetupTest(const threadId: Cardinal; const Test: ITestInfo);
-    procedure OnEndSetupTest(const threadId: Cardinal; const Test: ITestInfo);
+    procedure OnSetupTest(const threadId: TThreadID; const Test: ITestInfo);
+    procedure OnEndSetupTest(const threadId: TThreadID; const Test: ITestInfo);
 
     procedure OnExecuteTest(const threadId : Cardinal; const Test: ITestInfo);
 
     procedure OnTestMemoryLeak(const threadId : Cardinal; const Test: ITestResult);
-    procedure OnTestIgnored(const threadId: Cardinal;const  AIgnored: ITestResult);
-    procedure OnTestError(const threadId: Cardinal; const Error: ITestError);
-    procedure OnTestFailure(const threadId: Cardinal; const Failure: ITestError);
-    procedure OnTestSuccess(const threadId: Cardinal; const Test: ITestResult);
+    procedure OnTestIgnored(const threadId: TThreadID;const  AIgnored: ITestResult);
+    procedure OnTestError(const threadId: TThreadID; const Error: ITestError);
+    procedure OnTestFailure(const threadId: TThreadID; const Failure: ITestError);
+    procedure OnTestSuccess(const threadId: TThreadID; const Test: ITestResult);
     procedure OnLog(const logType : TLogLevel; const msg : string);
 
-    procedure OnTeardownTest(const threadId: Cardinal; const Test: ITestInfo);
-    procedure OnEndTeardownTest(const threadId: Cardinal; const Test: ITestInfo);
+    procedure OnTeardownTest(const threadId: TThreadID; const Test: ITestInfo);
+    procedure OnEndTeardownTest(const threadId: TThreadID; const Test: ITestInfo);
 
-    procedure OnEndTest(const threadId: Cardinal; const Test: ITestResult);
+    procedure OnEndTest(const threadId: TThreadID; const Test: ITestResult);
 
-    procedure OnTearDownFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
-    procedure OnEndTearDownFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
+    procedure OnTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
+    procedure OnEndTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 
-    procedure OnEndTestFixture(const threadId: Cardinal; const results: IFixtureResult);
+    procedure OnEndTestFixture(const threadId: TThreadID; const results: IFixtureResult);
 
     procedure OnTestingEnds(const RunResults: IRunResults);
   public
@@ -91,10 +91,13 @@ type
 implementation
 
 uses
+  {$IFDEF USE_NS}
+  System.SysUtils,
+  {$ELSE}
+  SysUtils,
+  {$ENDIF}
   DUnitX.AutoDetect.Console,
-  DUnitX.IoC,
-  SysUtils;
-
+  DUnitX.IoC;
 
 { TDUnitXConsoleLogger }
 
@@ -113,7 +116,7 @@ begin
   inherited;
 end;
 
-procedure TDUnitXConsoleLogger.OnEndSetupFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
+procedure TDUnitXConsoleLogger.OnEndSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 begin
   if FQuietMode then
     exit;
@@ -122,7 +125,7 @@ begin
   FConsoleWriter.WriteLn;
 end;
 
-procedure TDUnitXConsoleLogger.OnEndSetupTest(const threadId: Cardinal; const Test: ITestInfo);
+procedure TDUnitXConsoleLogger.OnEndSetupTest(const threadId: TThreadID; const Test: ITestInfo);
 begin
   if FQuietMode then
     exit;
@@ -132,17 +135,17 @@ begin
   FConsoleWriter.WriteLn;
 end;
 
-procedure TDUnitXConsoleLogger.OnEndTearDownFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
+procedure TDUnitXConsoleLogger.OnEndTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 begin
 
 end;
 
-procedure TDUnitXConsoleLogger.OnEndTeardownTest(const threadId: Cardinal; const  Test: ITestInfo);
+procedure TDUnitXConsoleLogger.OnEndTeardownTest(const threadId: TThreadID; const  Test: ITestInfo);
 begin
 
 end;
 
-procedure TDUnitXConsoleLogger.OnEndTest(const threadId: Cardinal; const  Test: ITestResult);
+procedure TDUnitXConsoleLogger.OnEndTest(const threadId: TThreadID; const  Test: ITestResult);
 begin
   if FQuietMode then
     exit;
@@ -151,7 +154,7 @@ begin
   FConsoleWriter.WriteLn;
 end;
 
-procedure TDUnitXConsoleLogger.OnEndTestFixture(const threadId: Cardinal; const results: IFixtureResult);
+procedure TDUnitXConsoleLogger.OnEndTestFixture(const threadId: TThreadID; const results: IFixtureResult);
 begin
   if FQuietMode then
     exit;
@@ -160,7 +163,7 @@ begin
   FConsoleWriter.WriteLn;
 end;
 
-procedure TDUnitXConsoleLogger.OnExecuteTest(const threadId: Cardinal; const  Test: ITestInfo);
+procedure TDUnitXConsoleLogger.OnExecuteTest(const threadId: TThreadID; const  Test: ITestInfo);
 begin
   if FQuietMode then
   begin
@@ -176,7 +179,7 @@ begin
   //SetConsoleDefaultColor();
 end;
 
-procedure TDUnitXConsoleLogger.OnTestError(const threadId: Cardinal; const  Error: ITestError);
+procedure TDUnitXConsoleLogger.OnTestError(const threadId: TThreadID; const  Error: ITestError);
 begin
   if FQuietMode then
   begin
@@ -185,7 +188,7 @@ begin
   end;
 end;
 
-procedure TDUnitXConsoleLogger.OnTestFailure(const threadId: Cardinal; const  Failure: ITestError);
+procedure TDUnitXConsoleLogger.OnTestFailure(const threadId: TThreadID; const  Failure: ITestError);
 begin
   if FQuietMode then
   begin
@@ -194,7 +197,7 @@ begin
   end;
 end;
 
-procedure TDUnitXConsoleLogger.OnTestIgnored(const threadId: Cardinal; const AIgnored: ITestResult);
+procedure TDUnitXConsoleLogger.OnTestIgnored(const threadId: TThreadID; const AIgnored: ITestResult);
 begin
   if FQuietMode then
     FConsoleWriter.Write('I');
@@ -222,7 +225,7 @@ begin
   end;
 end;
 
-procedure TDUnitXConsoleLogger.OnSetupFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
+procedure TDUnitXConsoleLogger.OnSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 begin
   if FQuietMode then
     exit;
@@ -232,7 +235,7 @@ begin
 
 end;
 
-procedure TDUnitXConsoleLogger.OnSetupTest(const threadId: Cardinal; const  Test: ITestInfo);
+procedure TDUnitXConsoleLogger.OnSetupTest(const threadId: TThreadID; const  Test: ITestInfo);
 begin
   if FQuietMode then
     exit;
@@ -241,7 +244,7 @@ begin
   FConsoleWriter.WriteLn('Running Setup for : ' + Test.Name);
 end;
 
-procedure TDUnitXConsoleLogger.OnBeginTest(const threadId: Cardinal; const  Test: ITestInfo);
+procedure TDUnitXConsoleLogger.OnBeginTest(const threadId: TThreadID; const  Test: ITestInfo);
 begin
   if FQuietMode then
     exit;
@@ -253,7 +256,7 @@ begin
   SetConsoleDefaultColor();
 end;
 
-procedure TDUnitXConsoleLogger.OnStartTestFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
+procedure TDUnitXConsoleLogger.OnStartTestFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 begin
   if FQuietMode then
     exit;
@@ -267,7 +270,7 @@ begin
 end;
 
 
-procedure TDUnitXConsoleLogger.OnTestSuccess(const threadId: Cardinal; const Test: ITestResult);
+procedure TDUnitXConsoleLogger.OnTestSuccess(const threadId: TThreadID; const Test: ITestResult);
 begin
   if FQuietMode then
   begin
@@ -281,7 +284,7 @@ begin
   FConsoleWriter.Outdent(2);
 end;
 
-procedure TDUnitXConsoleLogger.OnTearDownFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
+procedure TDUnitXConsoleLogger.OnTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 begin
   if FQuietMode then
     exit;
@@ -290,7 +293,7 @@ begin
   FConsoleWriter.WriteLn;
 end;
 
-procedure TDUnitXConsoleLogger.OnTeardownTest(const threadId: Cardinal; const Test: ITestInfo);
+procedure TDUnitXConsoleLogger.OnTeardownTest(const threadId: TThreadID; const Test: ITestInfo);
 begin
   if FQuietMode then
     exit;
@@ -422,7 +425,7 @@ begin
   SetConsoleDefaultColor();
 end;
 
-procedure TDUnitXConsoleLogger.OnTestingStarts(const threadId, testCount, testActiveCount : Cardinal);
+procedure TDUnitXConsoleLogger.OnTestingStarts(const threadId : TThreadID; const testCount, testActiveCount : Cardinal);
 begin
   if FQuietMode then
   begin
@@ -433,7 +436,7 @@ begin
 end;
 
 
-procedure TDUnitXConsoleLogger.OnTestMemoryLeak(const threadId: Cardinal; const Test: ITestResult);
+procedure TDUnitXConsoleLogger.OnTestMemoryLeak(const threadId: TThreadID; const Test: ITestResult);
 begin
   if FQuietMode then
     FConsoleWriter.Write('M');

@@ -1,4 +1,3 @@
-unit DUnitX.CommandLine.OptionDef;
 {***************************************************************************}
 {                                                                           }
 {           DUnitX                                                          }
@@ -25,14 +24,27 @@ unit DUnitX.CommandLine.OptionDef;
 {                                                                           }
 {***************************************************************************}
 
+unit DUnitX.CommandLine.OptionDef;
+
 interface
 
+{$I DUnitX.inc}
+
 uses
+  {$IFDEF USE_NS}
+  System.Classes,
+  System.SysUtils,
+  System.Rtti,
+  System.TypInfo,
+  System.Generics.Collections,
+  {$ELSE}
   Classes,
   SysUtils,
   Rtti,
   TypInfo,
   Generics.Collections,
+  {$ENDIF}
+
   DUnitX.CommandLine.Options;
 
 type
@@ -99,7 +111,11 @@ function StringToBoolean(const value: string): boolean;
 implementation
 
 uses
+  {$IFDEF USE_NS}
+  System.StrUtils;
+  {$ELSE}
   StrUtils;
+  {$ENDIF}
 
 { TOptionDefinition<T> }
 
@@ -200,7 +216,7 @@ end;
 procedure TOptionDefinition<T>.InitDefault;
 begin
   FDefault := Default(T);
-  if not FHasValue and (FTypeInfo.Name = 'Boolean') then
+  if not FHasValue and (GetTypeName(FTypeInfo) = 'Boolean') then
       FDefault := TValue.FromVariant(true).AsType<T>;
 
 end;
@@ -244,7 +260,7 @@ begin
         end;
         tkEnumeration :
         begin
-          if FTypeInfo.Name = 'Boolean' then
+          if GetTypeName(FTypeInfo) = 'Boolean' then
           begin
             v := TValue.From<Boolean>(StringToBoolean(value));
           end

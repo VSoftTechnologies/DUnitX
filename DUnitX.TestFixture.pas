@@ -28,18 +28,23 @@ unit DUnitX.TestFixture;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
+  {$IFDEF USE_NS}
+  System.Generics.Collections,
+  System.Rtti,
+  {$ELSE}
+  Generics.Collections,
+  Rtti,
+  {$ENDIF}
   DUnitX.Types,
   DUnitX.Attributes,
   DUnitX.TestFramework,
   DUnitX.Extensibility,
   DUnitX.InternalInterfaces,
   DUnitX.WeakReference,
-  DUnitX.Generics,
-  Generics.Collections,
-  Rtti;
-
-{$I DUnitX.inc}
+  DUnitX.Generics;
 
 type
   TDUnitXTestFixture = class(TWeakReferencedObject, ITestFixture,ITestFixtureInfo)
@@ -138,9 +143,15 @@ type
 implementation
 
 uses
+  {$IFDEF USE_NS}
+  System.TypInfo,
+  System.SysUtils,
+  System.Generics.Defaults,
+  {$ELSE}
   TypInfo,
   SysUtils,
   Generics.Defaults,
+  {$ENDIF}
   DUnitX.Test,
   DUnitX.Utils;
 

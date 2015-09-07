@@ -28,14 +28,17 @@ unit DUnitX.InternalInterfaces;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
+  {$IFDEF USE_NS}
   TimeSpan,
+  {$ELSE}
+  System.TimeSpan,
+  {$ENDIF}
   DUnitX.Generics,
   DUnitX.Extensibility,
   DUnitX.TestFrameWork;
-
-{$I DUnitX.inc}
-
 type
 
   //These interfaces mirror the Info classes in the framework but expose stuff we need for runtime.
@@ -79,12 +82,6 @@ type
 
 
 implementation
-
-{ TTestList }
-
-uses
-  TypInfo,
-  SysUtils;
 
 
 end.

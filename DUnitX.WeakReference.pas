@@ -43,9 +43,9 @@ Delphi 2010 and has so far proven to be very reliable.
 
 *)
 
-{$I DUnitX.inc}
-
 interface
+
+{$I DUnitX.inc}
 
 type
   /// Implemented by our weak referenced object base class
@@ -99,9 +99,15 @@ type
 implementation
 
 uses
+  {$IFDEF USE_NS}
+  System.TypInfo,
+  System.Classes,
+  System.Sysutils;
+  {$ELSE}
   TypInfo,
   classes,
-  sysutils;
+  SysUtils;
+  {$ENDIF}
 
 {$IFDEF CPUX86}
 

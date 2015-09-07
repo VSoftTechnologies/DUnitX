@@ -31,8 +31,13 @@ interface
 {$I DUnitX.inc}
 
 uses
+  {$IFDEF USE_NS}
+  System.Classes,
+  System.SysUtils,
+  {$ELSE}
+  Classes,
   SysUtils,
-  classes,
+  {$ENDIF}
 {$IFDEF USE_EUREKALOG7}
   ECallStack,
   EDebugInfo,

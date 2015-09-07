@@ -1,8 +1,8 @@
-{***************************************************************************}
+﻿{***************************************************************************}
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2013 Vincent Parrett                              }
+{           Copyright (C) 2015 Vincent Parrett & Contributors               }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -32,11 +32,12 @@ unit DUnitX.CategoryExpression;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
   DUnitX.Extensibility,
   DUnitX.Filters;
 
-{$I DUnitX.inc}
 
 type
   /// <summary>
@@ -72,9 +73,15 @@ type
 implementation
 
 uses
+  {$IFDEF USE_NS}
+  System.Character,
+  System.SysUtils,
+  System.StrUtils;
+  {$ELSE}
   Character,
   SysUtils,
   StrUtils;
+  {$ENDIF}
 
 const
   Operators : array[1..7] of Char = (',', ';', '-', '|', '+', '(', ')') ;

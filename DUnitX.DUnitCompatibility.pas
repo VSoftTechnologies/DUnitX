@@ -30,9 +30,15 @@ unit DUnitX.DUnitCompatibility;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
-  DUnitX.TestFramework,
-  SysUtils;
+  {$IFDEF USE_NS}
+  System.SysUtils,
+  {$ELSE}
+  SysUtils,
+  {$ENDIF}
+  DUnitX.TestFramework;
 
 type
   TTestCase = class

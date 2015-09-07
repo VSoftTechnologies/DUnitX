@@ -29,8 +29,12 @@ unit DUnitX.Loggers.Text;
 interface
 
 uses
-  DUnitX.TestFramework,
-  classes;
+  {$IFDEF USE_NS}
+  System.Classes,
+  {$ELSE}
+  Classes,
+  {$ENDIF}
+  DUnitX.TestFramework;
 
 {$I DUnitX.inc}
 
@@ -40,7 +44,7 @@ type
   private
     //FFileName : string;
   protected
-    procedure OnTestingStarts(const threadId, testCount, testActiveCount: Cardinal);
+    procedure OnTestingStarts(const threadId : TThreadID; const testCount, testActiveCount: Cardinal);
 
     procedure OnStartTestFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
 
@@ -185,7 +189,7 @@ begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnTestingStarts(const threadId, testCount, testActiveCount : Cardinal);
+procedure TDUnitXTextFileLogger.OnTestingStarts(const threadId : TThreadID; const testCount, testActiveCount : Cardinal);
 begin
 
 end;

@@ -43,7 +43,8 @@ uses
   DUnitX.FilterBuilder in '..\DUnitX.FilterBuilder.pas',
   DUnitX.Filters in '..\DUnitX.Filters.pas',
   DUnitX.CategoryExpression in '..\DUnitX.CategoryExpression.pas',
-  DUnitX.TestNameParser in '..\DUnitX.TestNameParser.pas';
+  DUnitX.TestNameParser in '..\DUnitX.TestNameParser.pas',
+  DUnitX.Assert in '..\DUnitX.Assert.pas';
 
 var
   runner : ITestRunner;

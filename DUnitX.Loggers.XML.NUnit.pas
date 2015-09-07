@@ -31,13 +31,16 @@ interface
 {$I DUnitX.inc}
 
 uses
-  classes,
+  {$IFDEF USE_NS}
+  System.Classes,
+  System.SysUtils,
+  {$ELSE}
+  Classes,
   SysUtils,
+  {$ENDIF}
   DUnitX.TestFramework,
   DUnitX.Loggers.Null, 
   Generics.Collections;
-
-//TODO : Rework https://github.com/VSoftTechnologies/Delphi-Fluent-XML so it doesn't use msxml and use it here?
 
 type
   TDUnitXXMLNUnitLogger = class(TDUnitXNullLogger)
@@ -172,7 +175,8 @@ end;
 function TDUnitXXMLNUnitLogger.Format(const Format: string;
   const Args: array of const): String;
 begin
-  Result := SysUtils.Format(Format, Args, FFormatSettings);
+
+  Result := {$IFDEF USE_NS}System.SysUtils.{$ENDIF}Format(Format, Args, FFormatSettings);
 end;
 
 procedure TDUnitXXMLNUnitLogger.Indent;

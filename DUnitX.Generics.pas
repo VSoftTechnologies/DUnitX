@@ -28,11 +28,16 @@ unit DUnitX.Generics;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
+  {$IFDEF USE_NS}
+  System.Generics.Defaults,
+  System.Generics.Collections;
+  {$ELSE}
   Generics.Defaults,
   Generics.Collections;
-
-{$I DUnitX.inc}
+  {$ENDIF}
 
 
 type
@@ -267,7 +272,7 @@ end;
 
 destructor TDUnitXList<T>.Destroy;
 begin
-  FList.Destroy;
+  FList.Free;
   inherited;
 end;
 

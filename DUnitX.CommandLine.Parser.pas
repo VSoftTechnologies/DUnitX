@@ -1,4 +1,3 @@
-unit DUnitX.CommandLine.Parser;
 {***************************************************************************}
 {                                                                           }
 {           DUnitX                                                          }
@@ -25,10 +24,18 @@ unit DUnitX.CommandLine.Parser;
 {                                                                           }
 {***************************************************************************}
 
+unit DUnitX.CommandLine.Parser;
+
 interface
 
+{$I DUnitX.inc}
+
 uses
+  {$IFDEF USE_NS}
+  System.Classes,
+  {$ELSE}
   Classes,
+  {$ENDIF}
   DUnitX.CommandLine.Options,
   DUnitX.CommandLine.OptionDef;
 
@@ -70,9 +77,15 @@ type
 implementation
 
 uses
+  {$IFDEF USE_NS}
+  System.Generics.Collections,
+  System.StrUtils,
+  System.SysUtils;
+  {$ELSE}
   Generics.Collections,
   StrUtils,
   SysUtils;
+  {$ENDIF}
 
 procedure StripQuotes(var value : string);
 var

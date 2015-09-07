@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2012 Vincent Parrett                              }
+{           Copyright (C) 2015 Vincent Parrett & Contributors               }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -28,11 +28,18 @@ unit DUnitX.Assert;
 
 interface
 
-uses
-  Classes,
-  SysUtils;
 
 {$I DUnitX.inc}
+
+uses
+  {$IFDEF USE_NS}
+  System.Classes,
+  System.SysUtils
+  {$ELSE}
+  Classes,
+  SysUtils
+  {$ENDIF}
+  ;
 
 type
   TTestLocalMethod = TProc;

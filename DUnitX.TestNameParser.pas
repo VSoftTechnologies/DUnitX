@@ -47,10 +47,16 @@ type
 implementation
 
 uses
-  SysUtils,
+  {$IFDEF USE_NS}
+  System.Classes,
+  System.SysUtils,
+  Generics.Collections,
+  {$ELSE}
   Classes,
-  DUnitX.Utils,
-  Generics.Collections;
+  SysUtils,
+  Generics.Collections,
+  {$ENDIF}
+  DUnitX.Utils;
 
 { TTestNameParser }
 

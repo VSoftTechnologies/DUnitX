@@ -1,4 +1,3 @@
-unit DUnitX.CommandLine.Options;
 {***************************************************************************}
 {                                                                           }
 {           DUnitX                                                          }
@@ -25,14 +24,26 @@ unit DUnitX.CommandLine.Options;
 {                                                                           }
 {***************************************************************************}
 
+unit DUnitX.CommandLine.Options;
+
 interface
 
+{$I DUnitX.inc}
+
 uses
+  {$IFDEF USE_NS}
+  System.Generics.Collections,
+  System.Rtti,
+  System.TypInfo,
+  System.SysUtils,
+  System.Classes;
+  {$ELSE}
   Generics.Collections,
   Rtti,
   TypInfo,
   SysUtils,
   Classes;
+  {$ENDIF}
 
 type
   ICommandLineParseResult = interface

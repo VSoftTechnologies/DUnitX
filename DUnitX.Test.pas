@@ -28,18 +28,23 @@ unit DUnitX.Test;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
+  {$IFDEF USE_NS}
+  System.Generics.Collections,
+  System.TimeSpan,
+  System.Rtti,
+  {$ELSE}
+  Generics.Collections,
+  TimeSpan,
+  Rtti,
+  {$ENDIF}
   DUnitX.Types,
   DUnitX.Extensibility,
   DUnitX.InternalInterfaces,
   DUnitX.WeakReference,
-  DUnitX.TestFramework,
-  Generics.Collections,
-  TimeSpan,
-  Rtti;
-
-{$I DUnitX.inc}
-
+  DUnitX.TestFramework;
 
 type
   TDUnitXTest = class(TWeakReferencedObject, ITest, ITestInfo, ISetTestResult, ITestExecute)
@@ -109,8 +114,13 @@ type
 implementation
 
 uses
+  {$IFDEF USE_NS}
+  System.SysUtils,
+  System.Generics.Defaults,
+  {$ELSE}
   SysUtils,
   Generics.Defaults,
+  {$ENDIF}
   DUnitX.Utils;
 
 { TDUnitXTest }
@@ -282,7 +292,7 @@ begin
 
   if len > 0 then
   begin
-    //Only keep as many arguements as there are params
+    //Only keep as many arguments as there are params
     SetLength(FArgs, len);
     for index := 0 to Pred(len) do
     begin

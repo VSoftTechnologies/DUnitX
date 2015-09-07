@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2013 Vincent Parrett                              }
+{           Copyright (C) 2015 Vincent Parrett & Contributors               }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -27,6 +27,8 @@
 unit DUnitX.Extensibility.PluginManager;
 
 interface
+
+{$I DUnitX.inc}
 
 uses
   DUnitX.Generics,

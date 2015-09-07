@@ -28,14 +28,21 @@ unit DUnitX.TestResult;
 
 interface
 
+{$I DUnitX.inc}
+
+
 uses
+  {$IFDEF USE_NS}
+  System.SysUtils,
+  System.Timespan,
+  {$ELSE}
+  SysUtils,
   Timespan,
+  {$ENDIF}
   DUnitX.TestFramework,
   DUnitX.WeakReference,
-  DUnitX.InternalInterfaces,
-  SysUtils;
+  DUnitX.InternalInterfaces;
 
-{$I DUnitX.inc}
 
 type
   TDUnitXTestResult = class(TInterfacedObject, ITestResult)

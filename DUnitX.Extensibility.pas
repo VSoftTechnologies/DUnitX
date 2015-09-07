@@ -28,10 +28,18 @@ unit DUnitX.Extensibility;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
+  {$IFDEF USE_NS}
+  System.TimeSpan,
+  System.Rtti,
+  System.Generics.Collections,
+  {$ELSE}
   TimeSpan,
   Rtti,
   Generics.Collections,
+  {$ENDIF}
   DUnitX.Types,
   DUnitX.Generics;
 

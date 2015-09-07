@@ -31,7 +31,11 @@ interface
 {$I DUnitX.inc}
 
 uses
+  {$IFDEF USE_NS}
+  System.Rtti,
+  {$ELSE}
   Rtti,
+  {$ENDIF}
   Generics.Collections,
   DUnitX.Extensibility;
 
@@ -64,11 +68,19 @@ type
 
 implementation
 uses
+  {$IFDEF USE_NS}
+  System.TypInfo,
+  System.Classes,
+  System.Types,
+  System.StrUtils,
+  System.SysUtils,
+  {$ELSE}
   TypInfo,
   Classes,
   Types,
   StrUtils,
   SysUtils,
+  {$ENDIF}
   DUnitX.Attributes,
   DUnitX.Utils,
   DUnitX.TestFramework;

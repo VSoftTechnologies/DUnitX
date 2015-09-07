@@ -28,6 +28,8 @@ unit DUnitX.Utils.XML;
 
 interface
 
+{$I DUnitX.inc}
+
 function IsCharValidXML(wideChar: WideChar): Boolean;
 function StripInvalidXML(const xmlString: string): string;
 function EscapeForXML(const value: string; const isAttribute: boolean = True; const isCDATASection : Boolean = False): string;
@@ -35,7 +37,11 @@ function EscapeForXML(const value: string; const isAttribute: boolean = True; co
 implementation
 
 uses
+  {$IFDEF USE_NS}
+  System.SysUtils;
+  {$ELSE}
   SysUtils;
+  {$ENDIF}
 
 function IsCharValidXML(wideChar: WideChar): Boolean;
 begin

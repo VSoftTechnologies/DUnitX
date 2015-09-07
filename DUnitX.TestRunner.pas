@@ -28,20 +28,26 @@ unit DUnitX.TestRunner;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
-  classes,
+  {$IFDEF USE_NS}
+  System.Classes,
+  System.SysUtils,
+  System.Rtti,
+  System.Generics.Collections,
+  {$ELSE}
+  Classes,
   SysUtils,
   Rtti,
-  DUnitX.TestFramework,
   Generics.Collections,
+  {$ENDIF}
+  DUnitX.TestFramework,
   DUnitX.Extensibility,
   DUnitX.InternalInterfaces,
   DUnitX.Generics,
   DUnitX.WeakReference,
   DUnitX.Filters;
-
-{$I DUnitX.inc}
-
 
 type
   ///  Note - we rely on the fact that there will only ever be 1 testrunner
@@ -806,7 +812,7 @@ begin
       Self.Loggers_EndSetupTest(threadId, test as ITestInfo);
       Result := True;
     except
-      on e: SysUtils.Exception do
+      on e: Exception do
       begin
         errorResult := ExecuteErrorResult(context, threadId, test, e);
       end;
@@ -831,7 +837,7 @@ begin
 
     result := true;
   except
-    on e: SysUtils.Exception do
+    on e: Exception do
     begin
       errorResult := ExecuteErrorResult(context, threadId, test, e);
     end;
