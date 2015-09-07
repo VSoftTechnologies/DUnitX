@@ -71,6 +71,11 @@ type
     [Test]
     procedure TestError;
 
+    [Test]
+    [MaxTime(1000)]
+    procedure TooLong;
+
+
     //Disabled test
     [Test(false)]
     procedure DontCallMe;
@@ -207,6 +212,11 @@ begin
   Assert.IsType<TObject>(x); /// a bit pointless since it's strongly typed.
   x.Free;
 {$ENDIF}
+end;
+
+procedure TMyExampleTests.TooLong;
+begin
+  TThread.Sleep(2000);
 end;
 
 { TExampleFixture2 }

@@ -118,6 +118,7 @@ type
 
   ///	<summary>
   ///	  Marks a test method to fail after the time specified.
+  ///  Currently only support on Win32 & Win64
   ///	</summary>
   ///	<remarks>
   ///	  If [MaxTime(1000]] used then the test will fail if the

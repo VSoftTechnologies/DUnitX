@@ -391,10 +391,10 @@ begin
       testEnabled := testAttrib.Enabled;
       isTestMethod := true;
     end;
-
+    {$IFDEF MSWINDOWS}
     if method.TryGetAttributeOfType<MaxTimeAttribute>(maxTimeAttrib) then
       maxTime := maxTimeAttrib.MaxTime;
-
+    {$ENDIF}
     if method.IsDestructor or method.IsConstructor then
       continue;
 

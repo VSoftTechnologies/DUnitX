@@ -11,6 +11,7 @@ uses
   Classes;
   {$ENDIF}
 
+//TODO : This is only supported on Windows, investigate osx etc.
 
 type
   ITimeout = interface(IUnknown)

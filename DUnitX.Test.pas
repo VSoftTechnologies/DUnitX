@@ -127,8 +127,10 @@ uses
   SysUtils,
   Generics.Defaults,
   {$ENDIF}
-  DUnitX.Utils,
-  DUnitX.Timeout;
+  {$IFDEF MSWINDOWS}
+  DUnitX.Timeout,
+  {$ENDIF}
+  DUnitX.Utils;
 
 { TDUnitXTest }
 
@@ -172,9 +174,10 @@ procedure TDUnitXTest.Execute(const context : ITestExecuteContext);
 begin
   FStartTime := Now();
   try
+    {$IFDEF MSWINDOWS}
     if FMaxTime > 0 then
       InitialiseTimeOut( FMaxTime );
-
+    {$ENDIF}
     FMethod();
   finally
     FEndTime := Now();
