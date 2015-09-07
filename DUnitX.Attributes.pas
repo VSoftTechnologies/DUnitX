@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2012 Vincent Parrett                              }
+{           Copyright (C) 2015 Vincent Parrett & Contributors               }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -28,11 +28,15 @@ unit DUnitX.Attributes;
 
 interface
 
-uses
-  DUnitX.Types,
-  Rtti;
-
 {$I DUnitX.inc}
+
+uses
+  {$IFDEF USE_NS}
+  System.Rtti,
+  {$ELSE}
+  Rtti,
+  {$ENDIF}
+  DUnitX.Types;
 
 type
   /// <summary>
@@ -257,9 +261,14 @@ type
 implementation
 
 uses
+  {$IFDEF USE_NS}
+  System.Types,
+  System.StrUtils,
+  {$ELSE}
+  Types,
   StrUtils,
-  DUnitX.Utils,
-  Types;
+  {$ENDIF}
+  DUnitX.Utils;
 
 { TestFixture }
 

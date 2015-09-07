@@ -3,7 +3,7 @@ program DUnitXExamples_XE8;
 {$APPTYPE CONSOLE}
 
 uses
-  SysUtils,
+  System.SysUtils,
   DUnitX.Examples.General in 'DUnitX.Examples.General.pas',
   DUnitX.ConsoleWriter.Base in '..\DUnitX.ConsoleWriter.Base.pas',
   DUnitX.DUnitCompatibility in '..\DUnitX.DUnitCompatibility.pas',

@@ -2,8 +2,15 @@ unit DUnitX.Timeout;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
+  {$IFDEF USE_NS}
+  System.Classes;
+  {$ELSE}
   Classes;
+  {$ENDIF}
+
 
 type
   ITimeout = interface(IUnknown)
@@ -16,9 +23,13 @@ type
 implementation
 
 uses
+  {$IFDEF USE_NS}
+  WinAPI.Windows,
+  {$ELSE}
+  Windows,
+  {$ENDIF}
   DUnitX.TestFramework,
-  DUnitX.Utils,
-  Windows;
+  DUnitX.Utils;
 
 // The following TimeOut code is based on the code found at
 // https://code.google.com/p/delphitimeouts/
@@ -65,7 +76,12 @@ begin
   SuspendThread(ThreadHandle);
   Ctx.ContextFlags := CONTEXT_FULL;
   GetThreadContext(ThreadHandle, Ctx);
+
+  {$IF DEFINED(CPUX64)}
+  Ctx.Rip := Cardinal(@RaiseTimeOutException);
+  {$ELSE}
   Ctx.Eip := Cardinal(@RaiseTimeOutException);
+  {$ENDIF}
   SetThreadContext(ThreadHandle, Ctx);
   ResumeThread(ThreadHandle);
 end;
@@ -83,7 +99,7 @@ begin
   FTimeoutThread.FreeOnTerminate := false;
   FTimeoutThread.ThreadHandle := AThreadHandle;
   FTimeoutThread.Timeout := ATimeout;
-  FTimeoutThread.Resume;
+  FTimeoutThread.Start;
 end;
 
 destructor TTimeout.Destroy;
@@ -99,7 +115,6 @@ end;
 
 procedure TTimeoutThread.Execute;
 var
-  I: Integer;
   startTime : Cardinal;
   elaspedTime : Cardinal;
 begin
@@ -107,7 +122,9 @@ begin
 
   //Get the tickcount so that we leave timing up to the system.
   startTime := GetTickCount;
-
+  elaspedTime := 0;
+  if Terminated then
+     exit;
   repeat
     //Give some time back to the system to process the test.
     Sleep(1);

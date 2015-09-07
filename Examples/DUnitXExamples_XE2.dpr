@@ -44,7 +44,9 @@ uses
   DUnitX.Filters in '..\DUnitX.Filters.pas',
   DUnitX.CategoryExpression in '..\DUnitX.CategoryExpression.pas',
   DUnitX.TestNameParser in '..\DUnitX.TestNameParser.pas',
-  DUnitX.Assert in '..\DUnitX.Assert.pas';
+  DUnitX.Assert in '..\DUnitX.Assert.pas',
+  DUnitX.Timeout in '..\DUnitX.Timeout.pas',
+  DUnitX.Attributes in '..\DUnitX.Attributes.pas';
 
 var
   runner : ITestRunner;

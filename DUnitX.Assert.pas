@@ -34,12 +34,11 @@ interface
 uses
   {$IFDEF USE_NS}
   System.Classes,
-  System.SysUtils
+  System.SysUtils;
   {$ELSE}
   Classes,
-  SysUtils
+  SysUtils;
   {$ENDIF}
-  ;
 
 type
   TTestLocalMethod = TProc;
