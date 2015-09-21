@@ -67,6 +67,7 @@ type
     class procedure AreEqual<T>(const expected, actual : T; const message : string = '');overload;
 {$ENDIF}
     class procedure AreEqual(const expected, actual : Integer; const message : string = '');overload;
+    class procedure AreEqual(const expected, actual : cardinal; const message : string = '');overload;
     class procedure AreEqual(const expected, actual : boolean; const message : string = '');overload;
 
     class procedure AreEqualMemory(const expected : Pointer; const actual : Pointer; const size : Cardinal; const message : string = '');
@@ -200,6 +201,7 @@ type
     class procedure WillNotRaiseAny(const AMethod : TTestMethod; const msg : string = ''); overload;
 
     class procedure Contains(const theString : string; const subString : string; const ignoreCase : boolean = true; const message : string = '');overload;
+    class procedure DoesNotContain(const theString : string; const subString : string; const ignoreCase : boolean = true; const message : string = '');overload;
     class procedure StartsWith(const subString : string; const theString : string;const ignoreCase : boolean = true; const message : string = '');
     class procedure EndsWith(const subString : string; const theString : string;const ignoreCase : boolean = true; const message : string = '');
     class procedure InheritsFrom(const descendant : TClass; const parent : TClass; const message : string = '');
@@ -340,6 +342,13 @@ begin
   DoAssert;
   if expected <> actual then
     FailFmt('Expected %s but got %s %s' ,[BoolToStr(expected, true), BoolToStr(actual, true), message], ReturnAddress);
+end;
+
+class procedure Assert.AreEqual(const expected, actual: cardinal; const message: string);
+begin
+  DoAssert;
+  if expected <> actual then
+    FailFmt('Expected %d but got %d %s' ,[expected, actual, message], ReturnAddress);
 end;
 
 class procedure Assert.AreEqual(const expected, actual, tolerance: Double; const message: string);
@@ -1044,6 +1053,18 @@ class procedure Assert.DoAssert;
 begin
   if Assigned(fOnAssert) then
     fOnAssert();
+end;
+
+class procedure Assert.DoesNotContain(const theString, subString: string; const ignoreCase: boolean; const message: string);
+begin
+  DoAssert;
+  if ignoreCase then
+  begin
+    if StrUtils.ContainsText(theString, subString) then
+      FailFmt('[%s] does contain [%s] %s',[theString, subString, message], ReturnAddress);
+  end
+  else if StrUtils.ContainsStr(theString, subString) then
+    FailFmt('[%s] does contain [%s] %s',[theString, subString, message], ReturnAddress);
 end;
 
 class procedure Assert.EndsWith(const subString : string; const theString : string; const ignoreCase : boolean; const message : string);
