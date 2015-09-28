@@ -44,39 +44,39 @@ type
   private
     //FFileName : string;
   protected
-    procedure OnTestingStarts(const threadId : TThreadID; const testCount, testActiveCount: Cardinal);
+    procedure OnTestingStarts(const threadId: TThreadID; testCount, testActiveCount: Cardinal);
 
-    procedure OnStartTestFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
+    procedure OnStartTestFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 
-    procedure OnSetupFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
-    procedure OnEndSetupFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
+    procedure OnSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
+    procedure OnEndSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 
-    procedure OnBeginTest(const threadId: Cardinal; const Test: ITestInfo);
+    procedure OnBeginTest(const threadId: TThreadID; const Test: ITestInfo);
 
-    procedure OnSetupTest(const threadId: Cardinal; const Test: ITestInfo);
-    procedure OnEndSetupTest(const threadId: Cardinal; const Test: ITestInfo);
+    procedure OnSetupTest(const threadId: TThreadID; const Test: ITestInfo);
+    procedure OnEndSetupTest(const threadId: TThreadID; const Test: ITestInfo);
 
-    procedure OnExecuteTest(const threadId : Cardinal; const Test: ITestInfo);
+    procedure OnExecuteTest(const threadId: TThreadID; const Test: ITestInfo);
 
 
-    procedure OnTestSuccess(const threadId: Cardinal; const Test: ITestResult);
-    procedure OnTestError(const threadId: Cardinal; const Error: ITestError);
-    procedure OnTestFailure(const threadId: Cardinal; const Failure: ITestError);
-    procedure OnTestIgnored(const threadId: Cardinal; const AIgnored: ITestResult);
-    procedure OnTestMemoryLeak(const threadId : Cardinal; const Test: ITestResult);
+    procedure OnTestSuccess(const threadId: TThreadID; const Test: ITestResult);
+    procedure OnTestError(const threadId: TThreadID; const Error: ITestError);
+    procedure OnTestFailure(const threadId: TThreadID; const Failure: ITestError);
+    procedure OnTestIgnored(const threadId: TThreadID; const AIgnored: ITestResult);
+    procedure OnTestMemoryLeak(const threadId: TThreadID; const Test: ITestResult);
 
     procedure OnLog(const logType: TLogLevel; const msg : string);
 
-    procedure OnTeardownTest(const threadId: Cardinal; const Test: ITestInfo);
-    procedure OnEndTeardownTest(const threadId: Cardinal; const Test: ITestInfo);
+    procedure OnTeardownTest(const threadId: TThreadID; const Test: ITestInfo);
+    procedure OnEndTeardownTest(const threadId: TThreadID; const Test: ITestInfo);
 
-    procedure OnEndTest(const threadId: Cardinal; const Test: ITestResult);
+    procedure OnEndTest(const threadId: TThreadID; const Test: ITestResult);
 
 
-    procedure OnTearDownFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
-    procedure OnEndTearDownFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
+    procedure OnTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
+    procedure OnEndTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 
-    procedure OnEndTestFixture(const threadId: Cardinal; const results: IFixtureResult);
+    procedure OnEndTestFixture(const threadId: TThreadID; const results: IFixtureResult);
 
     procedure OnTestingEnds(const RunResults: IRunResults);
   public
@@ -93,52 +93,52 @@ begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnEndSetupFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
+procedure TDUnitXTextFileLogger.OnEndSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnEndSetupTest(const threadId: Cardinal; const Test: ITestInfo);
+procedure TDUnitXTextFileLogger.OnEndSetupTest(const threadId: TThreadID; const Test: ITestInfo);
 begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnEndTearDownFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
+procedure TDUnitXTextFileLogger.OnEndTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnEndTeardownTest(const threadId: Cardinal; const Test: ITestInfo);
+procedure TDUnitXTextFileLogger.OnEndTeardownTest(const threadId: TThreadID; const Test: ITestInfo);
 begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnEndTest(const threadId: Cardinal; const Test: ITestResult);
+procedure TDUnitXTextFileLogger.OnEndTest(const threadId: TThreadID; const Test: ITestResult);
 begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnEndTestFixture(const threadId: Cardinal; const results: IFixtureResult);
+procedure TDUnitXTextFileLogger.OnEndTestFixture(const threadId: TThreadID; const results: IFixtureResult);
 begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnExecuteTest(const threadId: Cardinal; const Test: ITestInfo);
+procedure TDUnitXTextFileLogger.OnExecuteTest(const threadId: TThreadID; const Test: ITestInfo);
 begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnTestError(const threadId: Cardinal; const Error: ITestError);
+procedure TDUnitXTextFileLogger.OnTestError(const threadId: TThreadID; const Error: ITestError);
 begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnTestFailure(const threadId: Cardinal; const Failure: ITestError);
+procedure TDUnitXTextFileLogger.OnTestFailure(const threadId: TThreadID; const Failure: ITestError);
 begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnTestIgnored(const threadId: Cardinal; const AIgnored: ITestResult);
+procedure TDUnitXTextFileLogger.OnTestIgnored(const threadId: TThreadID; const AIgnored: ITestResult);
 begin
 
 end;
@@ -148,38 +148,38 @@ begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnSetupFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
+procedure TDUnitXTextFileLogger.OnSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnSetupTest(const threadId: Cardinal; const Test: ITestInfo);
+procedure TDUnitXTextFileLogger.OnSetupTest(const threadId: TThreadID; const Test: ITestInfo);
 begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnBeginTest(const threadId: Cardinal; const Test: ITestInfo);
+procedure TDUnitXTextFileLogger.OnBeginTest(const threadId: TThreadID; const Test: ITestInfo);
 begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnStartTestFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
+procedure TDUnitXTextFileLogger.OnStartTestFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 begin
 
 end;
 
 
-procedure TDUnitXTextFileLogger.OnTestSuccess(const threadId: Cardinal; const Test: ITestResult);
+procedure TDUnitXTextFileLogger.OnTestSuccess(const threadId: TThreadID; const Test: ITestResult);
 begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnTearDownFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
+procedure TDUnitXTextFileLogger.OnTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnTeardownTest(const threadId: Cardinal; const Test: ITestInfo);
+procedure TDUnitXTextFileLogger.OnTeardownTest(const threadId: TThreadID; const Test: ITestInfo);
 begin
 
 end;
@@ -189,13 +189,13 @@ begin
 
 end;
 
-procedure TDUnitXTextFileLogger.OnTestingStarts(const threadId : TThreadID; const testCount, testActiveCount : Cardinal);
+procedure TDUnitXTextFileLogger.OnTestingStarts(const threadId: TThreadID; testCount, testActiveCount : Cardinal);
 begin
 
 end;
 
 
-procedure TDUnitXTextFileLogger.OnTestMemoryLeak(const threadId: Cardinal; const Test: ITestResult);
+procedure TDUnitXTextFileLogger.OnTestMemoryLeak(const threadId: TThreadID; const Test: ITestResult);
 begin
 
 end;

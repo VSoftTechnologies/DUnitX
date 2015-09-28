@@ -51,7 +51,7 @@ type
     procedure SetConsoleSummaryColor(); virtual;
     procedure SetConsoleWarningColor(); virtual;
   protected
-    procedure OnTestingStarts(const threadId : TThreadID; const testCount, testActiveCount : Cardinal);
+    procedure OnTestingStarts(const threadId: TThreadID; testCount, testActiveCount: Cardinal);
 
     procedure OnStartTestFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 
@@ -63,10 +63,10 @@ type
     procedure OnSetupTest(const threadId: TThreadID; const Test: ITestInfo);
     procedure OnEndSetupTest(const threadId: TThreadID; const Test: ITestInfo);
 
-    procedure OnExecuteTest(const threadId : Cardinal; const Test: ITestInfo);
+    procedure OnExecuteTest(const threadId: TThreadID; const Test: ITestInfo);
 
-    procedure OnTestMemoryLeak(const threadId : Cardinal; const Test: ITestResult);
-    procedure OnTestIgnored(const threadId: TThreadID;const  AIgnored: ITestResult);
+    procedure OnTestMemoryLeak(const threadId : TThreadID; const Test: ITestResult);
+    procedure OnTestIgnored(const threadId: TThreadID; const  AIgnored: ITestResult);
     procedure OnTestError(const threadId: TThreadID; const Error: ITestError);
     procedure OnTestFailure(const threadId: TThreadID; const Failure: ITestError);
     procedure OnTestSuccess(const threadId: TThreadID; const Test: ITestResult);
@@ -425,7 +425,7 @@ begin
   SetConsoleDefaultColor();
 end;
 
-procedure TDUnitXConsoleLogger.OnTestingStarts(const threadId : TThreadID; const testCount, testActiveCount : Cardinal);
+procedure TDUnitXConsoleLogger.OnTestingStarts(const threadId: TThreadID; testCount, testActiveCount : Cardinal);
 begin
   if FQuietMode then
   begin

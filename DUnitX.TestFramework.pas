@@ -340,82 +340,82 @@ type
     ///	  Called at the start of testing. The default console logger prints the
     ///	  DUnitX banner.
     ///	</summary>
-    procedure OnTestingStarts(const threadId: TThreadID; const testCount, testActiveCount : Cardinal);
+    procedure OnTestingStarts(const threadId: TThreadID; testCount, testActiveCount: Cardinal);
 
     ///	<summary>
     ///	  //Called before a Fixture is run.
     ///	</summary>
-    procedure OnStartTestFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
+    procedure OnStartTestFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 
     ///	<summary>
     ///	  //Called before a fixture Setup method is run
     ///	</summary>
-    procedure OnSetupFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
+    procedure OnSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 
     ///	<summary>
     ///	  Called after a fixture setup method is run.
     ///	</summary>
-    procedure OnEndSetupFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
+    procedure OnEndSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 
     ///	<summary>
     ///	  Called before a Test method is run.
     ///	</summary>
-    procedure OnBeginTest(const threadId : TThreadID;const  Test: ITestInfo);
+    procedure OnBeginTest(const threadId: TThreadID; const Test: ITestInfo);
 
     ///	<summary>
     ///	  Called before a test setup method is run.
     ///	</summary>
-    procedure OnSetupTest(const threadId : TThreadID;const  Test: ITestInfo);
+    procedure OnSetupTest(const threadId: TThreadID; const Test: ITestInfo);
 
     ///	<summary>
     ///	  Called after a test setup method is run.
     ///	</summary>
-    procedure OnEndSetupTest(const threadId : TThreadID;const  Test: ITestInfo);
+    procedure OnEndSetupTest(const threadId: TThreadID; const Test: ITestInfo);
 
     ///	<summary>
     ///	  Called before a Test method is run.
     ///	</summary>
-    procedure OnExecuteTest(const threadId : TThreadID;const  Test: ITestInfo);
+    procedure OnExecuteTest(const threadId: TThreadID; const Test: ITestInfo);
 
     ///	<summary>
     ///	  Called when a test succeeds
     ///	</summary>
-    procedure OnTestSuccess(const threadId : TThreadID;const  Test: ITestResult);
+    procedure OnTestSuccess(const threadId: TThreadID; const Test: ITestResult);
 
     ///	<summary>
     ///	  Called when a test errors.
     ///	</summary>
-    procedure OnTestError(const threadId : TThreadID;const Error: ITestError);
+    procedure OnTestError(const threadId: TThreadID; const Error: ITestError);
 
     ///	<summary>
     ///	  Called when a test fails.
     ///	</summary>
-    procedure OnTestFailure(const threadId : TThreadID;const  Failure: ITestError);
+    procedure OnTestFailure(const threadId: TThreadID; const Failure: ITestError);
 
     /// <summary>
     ///   called when a test is ignored.
     /// </summary>
-    procedure OnTestIgnored(const threadId : TThreadID; const AIgnored: ITestResult);
+    procedure OnTestIgnored(const threadId: TThreadID; const AIgnored: ITestResult);
 
     /// <summary>
     ///   called when a test memory leaks.
     /// </summary>
-    procedure OnTestMemoryLeak(const threadId : TThreadID; const Test: ITestResult);
+    procedure OnTestMemoryLeak(const threadId: TThreadID; const Test: ITestResult);
 
     /// <summary>
     ///   allows tests to write to the log.
     /// </summary>
-    procedure OnLog(const logType : TLogLevel; const msg : string);
+    procedure OnLog(const logType: TLogLevel; const msg: string);
 
     /// <summary>
     ///   called before a Test Teardown method is run.
     /// </summary>
-    procedure OnTeardownTest(const threadId : TThreadID;const  Test: ITestInfo);
+    procedure OnTeardownTest(const threadId: TThreadID; const Test: ITestInfo);
 
     /// <summary>
     ///   called after a test teardown method is run.
     /// </summary>
-    procedure OnEndTeardownTest(const threadId : TThreadID; const Test: ITestInfo);
+    procedure OnEndTeardownTest(const threadId: TThreadID; const Test: ITestInfo);
 
     /// <summary>
     ///   called after a test method and teardown is run.
@@ -425,17 +425,17 @@ type
     /// <summary>
     ///   called before a Fixture Teardown method is called.
     /// </summary>
-    procedure OnTearDownFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
+    procedure OnTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 
     /// <summary>
     ///   called after a Fixture Teardown method is called.
     /// </summary>
-    procedure OnEndTearDownFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
+    procedure OnEndTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 
     /// <summary>
     ///   called after a Fixture has run.
     /// </summary>
-    procedure OnEndTestFixture(const threadId : TThreadID; const results : IFixtureResult);
+    procedure OnEndTestFixture(const threadId: TThreadID; const results: IFixtureResult);
 
     /// <summary>
     ///   called after all fixtures have run.
@@ -534,7 +534,7 @@ type
     class var
       FOptions : TDUnitXOptions;
       FFilter : ITestFilter;
-      FAssertCounters : TDictionary<Cardinal,Cardinal>;
+      FAssertCounters : TDictionary<TThreadID,Cardinal>;
   protected
     class constructor Create;
     class destructor Destroy;
@@ -548,7 +548,7 @@ type
     class procedure RegisterTestFixture(const AClass : TClass; const AName : string = '' );
     class procedure RegisterPlugin(const plugin : IPlugin);
     class function CurrentRunner : ITestRunner;
-    class function GetAssertCount(const AThreadId : Cardinal) : Cardinal;
+    class function GetAssertCount(const AThreadId: TThreadID) : Cardinal;
     ///  Parses the command line options and applies them the the Options object.
     ///  Will throw exception if there are errors.
     class procedure CheckCommandLine;
@@ -751,7 +751,7 @@ end;
 class constructor TDUnitX.Create;
 begin
   FOptions := TDUnitXOptions.Create;
-  FAssertCounters := TDictionary<Cardinal,Cardinal>.Create;
+  FAssertCounters := TDictionary<TThreadID,Cardinal>.Create;
   RegisteredFixtures := TDictionary<TClass,string>.Create;
   RegisteredPlugins  := TList<IPlugin>.Create;
   //Make sure we have at least a dummy memory leak monitor registered.
@@ -760,8 +760,8 @@ begin
   FFilter := nil;
   Assert.OnAssert := procedure
                     var
-                      threadId : Cardinal;
-                      value : cardinal;
+                      threadId: TThreadID;
+                      value: cardinal;
                     begin
                       threadId := TThread.CurrentThread.ThreadID;
                       MonitorEnter(FAssertCounters);
@@ -797,7 +797,7 @@ begin
   FAssertCounters.Free;
 end;
 
-class function TDUnitX.GetAssertCount(const AThreadId: Cardinal): Cardinal;
+class function TDUnitX.GetAssertCount(const AThreadId: TThreadID): Cardinal;
 begin
   result := 0;
   FAssertCounters.TryGetValue(AThreadId,result);

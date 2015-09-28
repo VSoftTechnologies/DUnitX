@@ -56,7 +56,7 @@ type
   private class var
     FRttiContext : TRttiContext;
   public class var
-    FActiveRunners : TDictionary<Cardinal,IWeakReference<ITestRunner>>;
+    FActiveRunners : TDictionary<TThreadID,IWeakReference<ITestRunner>>;
   private
     FLoggers          : TList<ITestLogger>;
     FUseRTTI          : boolean;
@@ -70,32 +70,32 @@ type
   protected
     procedure CountAndFilterTests(const fixtureList: ITestFixtureList; var count, active: Cardinal);
     //Logger calls - sequence ordered
-    procedure Loggers_TestingStarts(const threadId, testCount, testActiveCount : Cardinal);
+    procedure Loggers_TestingStarts(const threadId: TThreadID; testCount, testActiveCount: Cardinal);
 
-    procedure Loggers_StartTestFixture(const threadId : Cardinal; const fixture : ITestFixtureInfo);
+    procedure Loggers_StartTestFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 
-    procedure Loggers_SetupFixture(const threadId : Cardinal; const fixture : ITestFixtureInfo);
-    procedure Loggers_EndSetupFixture(const threadId : Cardinal; const fixture : ITestFixtureInfo);
+    procedure Loggers_SetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
+    procedure Loggers_EndSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 
-    procedure Loggers_BeginTest(const threadId : Cardinal; const Test: ITestInfo);
+    procedure Loggers_BeginTest(const threadId: TThreadID; const Test: ITestInfo);
 
-    procedure Loggers_SetupTest(const threadId : Cardinal; const Test: ITestInfo);
-    procedure Loggers_EndSetupTest(const threadId : Cardinal; const Test: ITestInfo);
+    procedure Loggers_SetupTest(const threadId: TThreadID; const Test: ITestInfo);
+    procedure Loggers_EndSetupTest(const threadId: TThreadID; const Test: ITestInfo);
 
-    procedure Loggers_ExecuteTest(const threadId : Cardinal; const Test: ITestInfo);
+    procedure Loggers_ExecuteTest(const threadId: TThreadID; const Test: ITestInfo);
 
-    procedure Loggers_AddSuccess(const threadId : Cardinal; const Test: ITestResult);
-    procedure Loggers_AddError(const threadId : Cardinal; const Error: ITestError);
-    procedure Loggers_AddFailure(const threadId : Cardinal; const Failure: ITestError);
-    procedure Loggers_AddIgnored(const threadId : Cardinal; const AIgnored: ITestResult);
-    procedure Loggers_AddMemoryLeak(const threadId: Cardinal; const Test: ITestResult);
+    procedure Loggers_AddSuccess(const threadId: TThreadID; const Test: ITestResult);
+    procedure Loggers_AddError(const threadId: TThreadID; const Error: ITestError);
+    procedure Loggers_AddFailure(const threadId: TThreadID; const Failure: ITestError);
+    procedure Loggers_AddIgnored(const threadId: TThreadID; const AIgnored: ITestResult);
+    procedure Loggers_AddMemoryLeak(const threadId: TThreadID; const Test: ITestResult);
 
-    procedure Loggers_EndTest(const threadId : Cardinal; const Test: ITestResult);
-    procedure Loggers_TeardownTest(const threadId : Cardinal; const Test: ITestInfo);
+    procedure Loggers_EndTest(const threadId: TThreadID; const Test: ITestResult);
+    procedure Loggers_TeardownTest(const threadId: TThreadID; const Test: ITestInfo);
 
-    procedure Loggers_TeardownFixture(const threadId : Cardinal; const fixture : ITestFixtureInfo);
+    procedure Loggers_TeardownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 
-    procedure Loggers_EndTestFixture(const threadId : Cardinal; const results : IFixtureResult);
+    procedure Loggers_EndTestFixture(const threadId: TThreadID; const results: IFixtureResult);
 
     procedure Loggers_TestingEnds(const RunResults: IRunResults);
 
@@ -103,25 +103,25 @@ type
     procedure AddLogger(const value: ITestLogger);
     function Execute: IRunResults;
 
-    procedure ExecuteFixtures(const parentFixtureResult : IFixtureResult; const context: ITestExecuteContext; const threadId: Cardinal; const fixtures: ITestFixtureList);
-    procedure ExecuteSetupFixtureMethod(const threadid: cardinal; const fixture: ITestFixture);
-    function  ExecuteTestSetupMethod(const context : ITestExecuteContext; const threadid: cardinal; const fixture: ITestFixture; const test: ITest; out errorResult: ITestResult; const memoryAllocationProvider : IMemoryLeakMonitor): boolean;
+    procedure ExecuteFixtures(const parentFixtureResult: IFixtureResult; const context: ITestExecuteContext; const threadId: TThreadID; const fixtures: ITestFixtureList);
+    procedure ExecuteSetupFixtureMethod(const threadId: TThreadID; const fixture: ITestFixture);
+    function  ExecuteTestSetupMethod(const context: ITestExecuteContext; const threadId: TThreadID; const fixture: ITestFixture; const test: ITest; out errorResult: ITestResult; const memoryAllocationProvider: IMemoryLeakMonitor): boolean;
 
-    procedure ExecuteTests(const context : ITestExecuteContext; const threadId: Cardinal; const fixture: ITestFixture; const fixtureResult : IFixtureResult);
+    procedure ExecuteTests(const context: ITestExecuteContext; const threadId: TThreadID; const fixture: ITestFixture; const fixtureResult: IFixtureResult);
 
-    function ExecuteTest(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const memoryAllocationProvider : IMemoryLeakMonitor) : ITestResult;
-    function ExecuteSuccessfulResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const message: string = '') : ITestResult;
-    function ExecuteFailureResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const exception : Exception) : ITestError;
-    function ExecuteTimedOutResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const exception : Exception) : ITestError;
-    function ExecuteErrorResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const exception : Exception) : ITestError;
-    function ExecuteIgnoredResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const ignoreReason : string) : ITestResult;
+    function ExecuteTest(const context: ITestExecuteContext; const threadId: TThreadID; const test: ITest; const memoryAllocationProvider: IMemoryLeakMonitor): ITestResult;
+    function ExecuteSuccessfulResult(const context: ITestExecuteContext; const threadId: TThreadID; const test: ITest; const message: string = ''): ITestResult;
+    function ExecuteFailureResult(const context: ITestExecuteContext; const threadId: TThreadID; const test: ITest; const exception: Exception): ITestError;
+    function ExecuteTimedOutResult(const context: ITestExecuteContext; const threadId: TThreadID; const test: ITest; const exception: Exception) : ITestError;
+    function ExecuteErrorResult(const context: ITestExecuteContext; const threadId: TThreadID; const test: ITest; const exception: Exception): ITestError;
+    function ExecuteIgnoredResult(const context: ITestExecuteContext; const threadId: TThreadID; const test: ITest; const ignoreReason: string): ITestResult;
 
-    function CheckMemoryAllocations(const test: ITest; out errorResult: ITestResult; const memoryAllocationProvider : IMemoryLeakMonitor) : boolean;
+    function CheckMemoryAllocations(const test: ITest; out errorResult: ITestResult; const memoryAllocationProvider: IMemoryLeakMonitor): Boolean;
 
-    function ExecuteTestTearDown(const context: ITestExecuteContext; const threadId: Cardinal; const fixture: ITestFixture; const test: ITest; out errorResult: ITestResult; const memoryAllocationProvider : IMemoryLeakMonitor) : boolean;
-    procedure ExecuteTearDownFixtureMethod(const context: ITestExecuteContext; const threadId: Cardinal; const fixture: ITestFixture);
+    function ExecuteTestTearDown(const context: ITestExecuteContext; const threadId: TThreadID; const fixture: ITestFixture; const test: ITest; out errorResult: ITestResult; const memoryAllocationProvider: IMemoryLeakMonitor): Boolean;
+    procedure ExecuteTearDownFixtureMethod(const context: ITestExecuteContext; const threadId: TThreadID; const fixture: ITestFixture);
 
-    procedure RecordResult(const context: ITestExecuteContext; const threadId: cardinal; const fixtureResult : IFixtureResult; const testResult: ITestResult);
+    procedure RecordResult(const context: ITestExecuteContext; const threadId: TThreadID; const fixtureResult: IFixtureResult; const testResult: ITestResult);
 
     function GetUseRTTI: Boolean;
     procedure SetUseRTTI(const value: Boolean);
@@ -179,7 +179,7 @@ begin
   Self.Log(TLogLevel.Information,msg);
 end;
 
-procedure TDUnitXTestRunner.Loggers_AddError(const threadId : Cardinal; const Error: ITestError);
+procedure TDUnitXTestRunner.Loggers_AddError(const threadId: TThreadID; const Error: ITestError);
 var
   logger : ITestLogger;
 begin
@@ -189,7 +189,7 @@ begin
   end;
 end;
 
-procedure TDUnitXTestRunner.Loggers_AddFailure(const threadId : Cardinal; const Failure: ITestError);
+procedure TDUnitXTestRunner.Loggers_AddFailure(const threadId: TThreadID; const Failure: ITestError);
 var
   logger : ITestLogger;
 begin
@@ -199,7 +199,7 @@ begin
   end;
 end;
 
-procedure TDUnitXTestRunner.Loggers_AddIgnored(const threadId: Cardinal; const AIgnored: ITestResult);
+procedure TDUnitXTestRunner.Loggers_AddIgnored(const threadId: TThreadID; const AIgnored: ITestResult);
 var
   logger : ITestLogger;
 begin
@@ -209,7 +209,7 @@ begin
   end;
 end;
 
-procedure TDUnitXTestRunner.Loggers_AddMemoryLeak(const threadId: Cardinal; const Test: ITestResult);
+procedure TDUnitXTestRunner.Loggers_AddMemoryLeak(const threadId: TThreadID; const Test: ITestResult);
 var
   logger : ITestLogger;
 begin
@@ -225,7 +225,7 @@ begin
     FLoggers.Add(value);
 end;
 
-procedure TDUnitXTestRunner.Loggers_AddSuccess(const threadId : Cardinal; const Test: ITestResult);
+procedure TDUnitXTestRunner.Loggers_AddSuccess(const threadId: TThreadID; const Test: ITestResult);
 var
   logger : ITestLogger;
 begin
@@ -265,7 +265,7 @@ end;
 class constructor TDUnitXTestRunner.Create;
 begin
   FRttiContext := TRttiContext.Create;
-  FActiveRunners := TDictionary<Cardinal,IWeakReference<ITestRunner>>.Create;
+  FActiveRunners := TDictionary<TThreadID,IWeakReference<ITestRunner>>.Create;
 end;
 
 function TDUnitXTestRunner.CheckMemoryAllocations(const test: ITest; out errorResult: ITestResult; const memoryAllocationProvider: IMemoryLeakMonitor): boolean;
@@ -356,7 +356,7 @@ end;
 
 destructor TDUnitXTestRunner.Destroy;
 var
-  tId : Cardinal;
+  tId: TThreadID;
 begin
   MonitorEnter(TDUnitXTestRunner.FActiveRunners);
   try
@@ -378,7 +378,7 @@ begin
   FRttiContext.Free;
 end;
 
-procedure TDUnitXTestRunner.RecordResult(const context: ITestExecuteContext; const threadId: cardinal; const fixtureResult : IFixtureResult; const testResult: ITestResult);
+procedure TDUnitXTestRunner.RecordResult(const context: ITestExecuteContext; const threadId: TThreadID; const fixtureResult : IFixtureResult; const testResult: ITestResult);
 begin
   case testResult.ResultType of
     TTestResultType.Pass:
@@ -445,7 +445,7 @@ begin
   end;
 end;
 
-procedure TDUnitXTestRunner.Loggers_EndSetupFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
+procedure TDUnitXTestRunner.Loggers_EndSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 var
   logger : ITestLogger;
 begin
@@ -453,7 +453,7 @@ begin
      logger.OnEndSetupFixture(threadId,fixture);
 end;
 
-procedure TDUnitXTestRunner.Loggers_EndSetupTest(const threadId: Cardinal; const Test: ITestInfo);
+procedure TDUnitXTestRunner.Loggers_EndSetupTest(const threadId: TThreadID; const Test: ITestInfo);
 var
   logger : ITestLogger;
 begin
@@ -477,7 +477,7 @@ begin
 
 end;
 
-procedure TDUnitXTestRunner.Loggers_EndTest(const threadId : Cardinal; const Test: ITestResult);
+procedure TDUnitXTestRunner.Loggers_EndTest(const threadId: TThreadID; const Test: ITestResult);
 var
   logger : ITestLogger;
 begin
@@ -486,7 +486,7 @@ begin
 
 end;
 
-procedure TDUnitXTestRunner.Loggers_EndTestFixture(const threadId : Cardinal; const results: IFixtureResult);
+procedure TDUnitXTestRunner.Loggers_EndTestFixture(const threadId: TThreadID; const results: IFixtureResult);
 var
   logger : ITestLogger;
 begin
@@ -496,7 +496,7 @@ begin
   end;
 end;
 
-procedure TDUnitXTestRunner.Loggers_ExecuteTest(const threadId: Cardinal; const Test: ITestInfo);
+procedure TDUnitXTestRunner.Loggers_ExecuteTest(const threadId: TThreadID; const Test: ITestInfo);
 var
   logger : ITestLogger;
 begin
@@ -537,7 +537,7 @@ function TDUnitXTestRunner.Execute: IRunResults;
 var
   fixtureList : ITestFixtureList;
   context : ITestExecuteContext;
-  threadId : Cardinal;
+  threadId : TThreadID;
   testCount : Cardinal;
   testActiveCount : Cardinal;
   fixtures : IInterface;
@@ -574,7 +574,7 @@ begin
 end;
 
 function TDUnitXTestRunner.ExecuteErrorResult(
-  const context: ITestExecuteContext; const threadId: cardinal;
+  const context: ITestExecuteContext; const threadId: TThreadID;
   const test: ITest; const exception: Exception) : ITestError;
 begin
   Result := TDUnitXTestError.Create(test as ITestInfo, TTestResultType.Error, exception, ExceptAddr, exception.Message);
@@ -595,14 +595,14 @@ begin
 end;
 
 function TDUnitXTestRunner.ExecuteFailureResult(
-  const context: ITestExecuteContext; const threadId: cardinal;
+  const context: ITestExecuteContext; const threadId: TThreadID;
   const test: ITest; const exception : Exception) : ITestError;
 begin
   //TODO: Does test failure require its own results interface and class?
   Result := TDUnitXTestError.Create(test as ITestInfo, TTestResultType.Failure, exception, ExceptAddr, exception.Message);
 end;
 
-procedure TDUnitXTestRunner.ExecuteFixtures(const parentFixtureResult : IFixtureResult; const context: ITestExecuteContext; const threadId: Cardinal; const fixtures: ITestFixtureList);
+procedure TDUnitXTestRunner.ExecuteFixtures(const parentFixtureResult : IFixtureResult; const context: ITestExecuteContext; const threadId: TThreadID; const fixtures: ITestFixtureList);
 var
   fixture: ITestFixture;
   fixtureResult : IFixtureResult;
@@ -643,12 +643,12 @@ begin
   end;
 end;
 
-function TDUnitXTestRunner.ExecuteIgnoredResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const ignoreReason: string): ITestResult;
+function TDUnitXTestRunner.ExecuteIgnoredResult(const context: ITestExecuteContext; const threadId: TThreadID; const test: ITest; const ignoreReason: string): ITestResult;
 begin
   result := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Ignored, ignoreReason);
 end;
 
-procedure TDUnitXTestRunner.ExecuteSetupFixtureMethod(const threadid: cardinal; const fixture : ITestFixture);
+procedure TDUnitXTestRunner.ExecuteSetupFixtureMethod(const threadId: TThreadID; const fixture : ITestFixture);
 begin
   try
     Self.Loggers_SetupFixture(threadid, fixture as ITestFixtureInfo);
@@ -665,12 +665,12 @@ begin
   end;
 end;
 
-function TDUnitXTestRunner.ExecuteSuccessfulResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const message: string) : ITestResult;
+function TDUnitXTestRunner.ExecuteSuccessfulResult(const context: ITestExecuteContext; const threadId: TThreadID; const test: ITest; const message: string) : ITestResult;
 begin
   Result := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Pass, message);
 end;
 
-procedure TDUnitXTestRunner.ExecuteTearDownFixtureMethod(const context: ITestExecuteContext; const threadId: Cardinal; const fixture: ITestFixture);
+procedure TDUnitXTestRunner.ExecuteTearDownFixtureMethod(const context: ITestExecuteContext; const threadId: TThreadID; const fixture: ITestFixture);
 begin
   try
     Self.Loggers_TeardownFixture(threadId, fixture as ITestFixtureInfo);
@@ -686,7 +686,7 @@ begin
   end;
 end;
 
-function TDUnitXTestRunner.ExecuteTest(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const memoryAllocationProvider : IMemoryLeakMonitor) : ITestResult;
+function TDUnitXTestRunner.ExecuteTest(const context: ITestExecuteContext; const threadId: TThreadID; const test: ITest; const memoryAllocationProvider : IMemoryLeakMonitor) : ITestResult;
 var
   testExecute: ITestExecute;
   assertBeforeCount : Cardinal;
@@ -723,7 +723,7 @@ begin
   end;
 end;
 
-procedure TDUnitXTestRunner.ExecuteTests(const context : ITestExecuteContext; const threadId: Cardinal; const fixture: ITestFixture; const fixtureResult : IFixtureResult);
+procedure TDUnitXTestRunner.ExecuteTests(const context : ITestExecuteContext; const threadId: TThreadID; const fixture: ITestFixture; const fixtureResult : IFixtureResult);
 var
   tests : IEnumerable<ITest>;
   test : ITest;
@@ -795,7 +795,7 @@ begin
   end;
 end;
 
-function TDUnitXTestRunner.ExecuteTestSetupMethod(const context : ITestExecuteContext; const threadid: cardinal; const fixture: ITestFixture; const test: ITest; out errorResult: ITestResult; const memoryAllocationProvider : IMemoryLeakMonitor): boolean;
+function TDUnitXTestRunner.ExecuteTestSetupMethod(const context : ITestExecuteContext; const threadId: TThreadID; const fixture: ITestFixture; const test: ITest; out errorResult: ITestResult; const memoryAllocationProvider : IMemoryLeakMonitor): boolean;
 begin
   Result := False;
   errorResult := nil;
@@ -824,7 +824,7 @@ begin
 end;
 
 function TDUnitXTestRunner.ExecuteTestTearDown(const context:
-  ITestExecuteContext; const threadId: Cardinal; const fixture: ITestFixture; const test: ITest; out errorResult: ITestResult; const memoryAllocationProvider : IMemoryLeakMonitor): boolean;
+  ITestExecuteContext; const threadId: TThreadID; const fixture: ITestFixture; const test: ITest; out errorResult: ITestResult; const memoryAllocationProvider : IMemoryLeakMonitor): boolean;
 begin
   Result := False;
   errorResult := nil;
@@ -849,7 +849,7 @@ end;
 
 
 
-function TDUnitXTestRunner.ExecuteTimedOutResult(const context: ITestExecuteContext; const threadId: cardinal; const test: ITest; const exception: Exception): ITestError;
+function TDUnitXTestRunner.ExecuteTimedOutResult(const context: ITestExecuteContext; const threadId: TThreadID; const test: ITest; const exception: Exception): ITestError;
 begin
   Result := TDUnitXTestError.Create(test as ITestInfo, TTestResultType.Failure, exception, ExceptAddr, exception.Message);
 end;
@@ -885,7 +885,7 @@ begin
   Self.Log(TLogLevel.Information,msg);
 end;
 
-procedure TDUnitXTestRunner.Loggers_SetupFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
+procedure TDUnitXTestRunner.Loggers_SetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 var
   logger : ITestLogger;
 begin
@@ -893,7 +893,7 @@ begin
     logger.OnSetupFixture(threadId,fixture);
 end;
 
-procedure TDUnitXTestRunner.Loggers_SetupTest(const threadId: Cardinal; const Test: ITestInfo);
+procedure TDUnitXTestRunner.Loggers_SetupTest(const threadId: TThreadID; const Test: ITestInfo);
 var
   logger : ITestLogger;
 begin
@@ -901,7 +901,7 @@ begin
     logger.OnSetupTest(threadId,Test);
 end;
 
-procedure TDUnitXTestRunner.Loggers_BeginTest(const threadId : Cardinal; const Test: ITestInfo);
+procedure TDUnitXTestRunner.Loggers_BeginTest(const threadId: TThreadID; const Test: ITestInfo);
 var
   logger : ITestLogger;
 begin
@@ -909,7 +909,7 @@ begin
     logger.OnBeginTest(threadId, Test);
 end;
 
-procedure TDUnitXTestRunner.Loggers_StartTestFixture(const threadId : Cardinal; const fixture: ITestFixtureInfo);
+procedure TDUnitXTestRunner.Loggers_StartTestFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 var
   logger : ITestLogger;
 begin
@@ -917,7 +917,7 @@ begin
     logger.OnStartTestFixture(threadId, fixture);
 end;
 
-procedure TDUnitXTestRunner.Loggers_TeardownFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
+procedure TDUnitXTestRunner.Loggers_TeardownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 var
   logger : ITestLogger;
 begin
@@ -925,7 +925,7 @@ begin
     logger.OnTearDownFixture(threadId, fixture);
 end;
 
-procedure TDUnitXTestRunner.Loggers_TeardownTest(const threadId: Cardinal; const Test: ITestInfo);
+procedure TDUnitXTestRunner.Loggers_TeardownTest(const threadId: TThreadID; const Test: ITestInfo);
 var
   logger : ITestLogger;
 begin
@@ -941,7 +941,7 @@ begin
     logger.OnTestingEnds(RunResults);
 end;
 
-procedure TDUnitXTestRunner.Loggers_TestingStarts(const threadId, testCount, testActiveCount : Cardinal);
+procedure TDUnitXTestRunner.Loggers_TestingStarts(const threadId: TThreadID; testCount, testActiveCount: Cardinal);
 var
   logger : ITestLogger;
 begin
