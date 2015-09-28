@@ -35,27 +35,27 @@ type
   ///  A Base class for loggers that do not need to use every interface method.
   TDUnitXNullLogger = class(TInterfacedObject,ITestLogger)
   protected
-    procedure OnBeginTest(const threadId: TThreadID; const Test: ITestInfo);
-    procedure OnEndSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
-    procedure OnEndSetupTest(const threadId: TThreadID; const Test: ITestInfo);
-    procedure OnEndTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
-    procedure OnEndTeardownTest(const threadId: TThreadID; const Test: ITestInfo);
-    procedure OnEndTest(const threadId: TThreadID; const Test: ITestResult);
-    procedure OnEndTestFixture(const threadId: TThreadID; const results: IFixtureResult);
-    procedure OnExecuteTest(const threadId: TThreadID; const Test: ITestInfo);
-    procedure OnLog(const logType: TLogLevel; const msg: string);
-    procedure OnSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
-    procedure OnSetupTest(const threadId: TThreadID; const Test: ITestInfo);
-    procedure OnStartTestFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
-    procedure OnTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
-    procedure OnTeardownTest(const threadId: TThreadID; const Test: ITestInfo);
-    procedure OnTestError(const threadId: TThreadID; const Error: ITestError);
-    procedure OnTestFailure(const threadId: TThreadID; const Failure: ITestError);
-    procedure OnTestMemoryLeak(const threadId: TThreadID; const Test: ITestResult);
-    procedure OnTestIgnored(const threadId: TThreadID; const AIgnored: ITestResult);
-    procedure OnTestSuccess(const threadId: TThreadID; const Test: ITestResult);
-    procedure OnTestingEnds(const RunResults: IRunResults);
-    procedure OnTestingStarts(const threadId: TThreadID; testCount, testActiveCount: Cardinal);
+    procedure OnBeginTest(const threadId: TThreadID; const Test: ITestInfo); virtual;
+    procedure OnEndSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo); virtual;
+    procedure OnEndSetupTest(const threadId: TThreadID; const Test: ITestInfo); virtual;
+    procedure OnEndTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo); virtual;
+    procedure OnEndTeardownTest(const threadId: TThreadID; const Test: ITestInfo); virtual;
+    procedure OnEndTest(const threadId: TThreadID; const Test: ITestResult); virtual;
+    procedure OnEndTestFixture(const threadId: TThreadID; const results: IFixtureResult); virtual;
+    procedure OnExecuteTest(const threadId: TThreadID; const Test: ITestInfo); virtual;
+    procedure OnLog(const logType: TLogLevel; const msg: string); virtual;
+    procedure OnSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo); virtual;
+    procedure OnSetupTest(const threadId: TThreadID; const Test: ITestInfo); virtual;
+    procedure OnStartTestFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo); virtual;
+    procedure OnTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo); virtual;
+    procedure OnTeardownTest(const threadId: TThreadID; const Test: ITestInfo); virtual;
+    procedure OnTestError(const threadId: TThreadID; const Error: ITestError); virtual;
+    procedure OnTestFailure(const threadId: TThreadID; const Failure: ITestError); virtual;
+    procedure OnTestMemoryLeak(const threadId: TThreadID; const Test: ITestResult); virtual;
+    procedure OnTestIgnored(const threadId: TThreadID; const AIgnored: ITestResult); virtual;
+    procedure OnTestSuccess(const threadId: TThreadID; const Test: ITestResult); virtual;
+    procedure OnTestingEnds(const RunResults: IRunResults); virtual;
+    procedure OnTestingStarts(const threadId: TThreadID; testCount, testActiveCount: Cardinal); virtual;
   end;
 
 implementation
