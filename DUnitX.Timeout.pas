@@ -83,7 +83,7 @@ begin
   FTimeoutThread.FreeOnTerminate := false;
   FTimeoutThread.ThreadHandle := AThreadHandle;
   FTimeoutThread.Timeout := ATimeout;
-  FTimeoutThread.Resume;
+  FTimeoutThread.Start;
 end;
 
 destructor TTimeout.Destroy;
@@ -99,14 +99,14 @@ end;
 
 procedure TTimeoutThread.Execute;
 var
-  I: Integer;
   startTime : Cardinal;
-  elaspedTime : Cardinal;
+  elapsedTime : Cardinal;
 begin
   inherited;
 
   //Get the tickcount so that we leave timing up to the system.
   startTime := GetTickCount;
+  elapsedTime := 0;
 
   repeat
     //Give some time back to the system to process the test.
@@ -115,8 +115,8 @@ begin
     if Terminated then
       Break;
 
-    elaspedTime := GetElapsedTime(startTime);
-  until (elaspedTime >= Timeout);
+    elapsedTime := GetElapsedTime(startTime);
+  until (elapsedTime >= Timeout);
 
   //If we haven't been terminated then we have timed out.
   if not Terminated then
