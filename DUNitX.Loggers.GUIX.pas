@@ -85,27 +85,27 @@ type
     function GetNode(FullName: String): TTreeViewItem;
     procedure BuildTree(parentNode: TTreeViewItem; const fixtureList: ITestFixtureList);
   protected
-    procedure OnBeginTest(const threadId: Cardinal; const Test: ITestInfo);
-    procedure OnEndSetupFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
-    procedure OnEndSetupTest(const threadId: Cardinal; const Test: ITestInfo);
-    procedure OnEndTearDownFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
-    procedure OnEndTeardownTest(const threadId: Cardinal; const Test: ITestInfo);
-    procedure OnEndTest(const threadId: Cardinal; const Test: ITestResult);
-    procedure OnEndTestFixture(const threadId: Cardinal; const results: IFixtureResult);
-    procedure OnExecuteTest(const threadId: Cardinal; const Test: ITestInfo);
+    procedure OnBeginTest(const threadId: TThreadID; const Test: ITestInfo);
+    procedure OnEndSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
+    procedure OnEndSetupTest(const threadId: TThreadID; const Test: ITestInfo);
+    procedure OnEndTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
+    procedure OnEndTeardownTest(const threadId: TThreadID; const Test: ITestInfo);
+    procedure OnEndTest(const threadId: TThreadID; const Test: ITestResult);
+    procedure OnEndTestFixture(const threadId: TThreadID; const results: IFixtureResult);
+    procedure OnExecuteTest(const threadId: TThreadID; const Test: ITestInfo);
     procedure OnLog(const logType: TLogLevel; const msg: string);
-    procedure OnSetupFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
-    procedure OnSetupTest(const threadId: Cardinal; const Test: ITestInfo);
-    procedure OnStartTestFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
-    procedure OnTearDownFixture(const threadId: Cardinal; const fixture: ITestFixtureInfo);
-    procedure OnTeardownTest(const threadId: Cardinal; const Test: ITestInfo);
-    procedure OnTestError(const threadId: Cardinal; const Error: ITestError);
-    procedure OnTestFailure(const threadId: Cardinal; const Failure: ITestError);
-    procedure OnTestSuccess(const threadId: Cardinal; const Test: ITestResult);
-    procedure OnTestMemoryLeak(const threadId : Cardinal; const AIgnored: ITestResult);
-    procedure OnTestIgnored(const threadId: Cardinal; const Ignored: ITestResult);
+    procedure OnSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
+    procedure OnSetupTest(const threadId: TThreadID; const Test: ITestInfo);
+    procedure OnStartTestFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
+    procedure OnTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
+    procedure OnTeardownTest(const threadId: TThreadID; const Test: ITestInfo);
+    procedure OnTestError(const threadId: TThreadID; const Error: ITestError);
+    procedure OnTestFailure(const threadId: TThreadID; const Failure: ITestError);
+    procedure OnTestSuccess(const threadId: TThreadID; const Test: ITestResult);
+    procedure OnTestMemoryLeak(const threadId: TThreadID; const AIgnored: ITestResult);
+    procedure OnTestIgnored(const threadId: TThreadID; const Ignored: ITestResult);
     procedure OnTestingEnds(const RunResults: IRunResults);
-    procedure OnTestingStarts(const threadId: Cardinal; const testCount: Cardinal; const testActiveCount: Cardinal);
+    procedure OnTestingStarts(const threadId: TThreadID; testCount, testActiveCount: Cardinal);
   public
     { Public declarations }
   end;
@@ -232,37 +232,37 @@ begin
   until Assigned(Result) or (i >= TestTree.GlobalCount);
 end;
 
-procedure TGUIXTestRunner.OnBeginTest(const threadId: Cardinal;
+procedure TGUIXTestRunner.OnBeginTest(const threadId: TThreadID;
   const Test: ITestInfo);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnEndSetupFixture(const threadId: Cardinal;
+procedure TGUIXTestRunner.OnEndSetupFixture(const threadId: TThreadID;
   const fixture: ITestFixtureInfo);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnEndSetupTest(const threadId: Cardinal;
+procedure TGUIXTestRunner.OnEndSetupTest(const threadId: TThreadID;
   const Test: ITestInfo);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnEndTearDownFixture(const threadId: Cardinal;
+procedure TGUIXTestRunner.OnEndTearDownFixture(const threadId: TThreadID;
   const fixture: ITestFixtureInfo);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnEndTeardownTest(const threadId: Cardinal;
+procedure TGUIXTestRunner.OnEndTeardownTest(const threadId: TThreadID;
   const Test: ITestInfo);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnEndTest(const threadId: Cardinal;
+procedure TGUIXTestRunner.OnEndTest(const threadId: TThreadID;
   const Test: ITestResult);
 var
   failItem: TListViewItem;
@@ -284,7 +284,7 @@ begin
   end;
 end;
 
-procedure TGUIXTestRunner.OnEndTestFixture(const threadId: Cardinal;
+procedure TGUIXTestRunner.OnEndTestFixture(const threadId: TThreadID;
   const results: IFixtureResult);
 var
   fixtureNode: TTestNode;
@@ -309,7 +309,7 @@ begin
 
 end;
 
-procedure TGUIXTestRunner.OnExecuteTest(const threadId: Cardinal;
+procedure TGUIXTestRunner.OnExecuteTest(const threadId: TThreadID;
   const Test: ITestInfo);
 begin
 
@@ -320,49 +320,49 @@ begin
 
 end;
 
-procedure TGUIXTestRunner.OnSetupFixture(const threadId: Cardinal;
+procedure TGUIXTestRunner.OnSetupFixture(const threadId: TThreadID;
   const fixture: ITestFixtureInfo);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnSetupTest(const threadId: Cardinal;
+procedure TGUIXTestRunner.OnSetupTest(const threadId: TThreadID;
   const Test: ITestInfo);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnStartTestFixture(const threadId: Cardinal;
+procedure TGUIXTestRunner.OnStartTestFixture(const threadId: TThreadID;
   const fixture: ITestFixtureInfo);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnTearDownFixture(const threadId: Cardinal;
+procedure TGUIXTestRunner.OnTearDownFixture(const threadId: TThreadID;
   const fixture: ITestFixtureInfo);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnTeardownTest(const threadId: Cardinal;
+procedure TGUIXTestRunner.OnTeardownTest(const threadId: TThreadID;
   const Test: ITestInfo);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnTestError(const threadId: Cardinal;
+procedure TGUIXTestRunner.OnTestError(const threadId: TThreadID;
   const Error: ITestError);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnTestFailure(const threadId: Cardinal;
+procedure TGUIXTestRunner.OnTestFailure(const threadId: TThreadID;
   const Failure: ITestError);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnTestIgnored(const threadId: Cardinal;
+procedure TGUIXTestRunner.OnTestIgnored(const threadId: TThreadID;
   const Ignored: ITestResult);
 begin
 
@@ -373,19 +373,19 @@ begin
 
 end;
 
-procedure TGUIXTestRunner.OnTestingStarts(const threadId, testCount,
+procedure TGUIXTestRunner.OnTestingStarts(const threadId: TThreadID; testCount,
   testActiveCount: Cardinal);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnTestMemoryLeak(const threadId: Cardinal;
+procedure TGUIXTestRunner.OnTestMemoryLeak(const threadId: TThreadID;
   const AIgnored: ITestResult);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnTestSuccess(const threadId: Cardinal;
+procedure TGUIXTestRunner.OnTestSuccess(const threadId: TThreadID;
   const Test: ITestResult);
 begin
 
