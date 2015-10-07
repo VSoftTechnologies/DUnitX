@@ -83,7 +83,8 @@ uses
   {$ENDIF}
   DUnitX.Attributes,
   DUnitX.Utils,
-  DUnitX.TestFramework;
+  DUnitX.TestFramework,
+  DUnitX.ResStrs;
 
 { TDUnitXFixtureProvider }
 
@@ -324,7 +325,7 @@ begin
       if (repeatAttrib.Count = 0) then
       begin
         ignoredTest := True;
-        ignoredReason := 'Repeat Set to 0. Test Ignored.';
+        ignoredReason := STestIgnoredRepeatSet;
       end
       else
       if (repeatAttrib.Count > 1) then

@@ -111,6 +111,7 @@ function StringToBoolean(const value: string): boolean;
 implementation
 
 uses
+  DUnitX.ResStrs,
   {$IFDEF USE_NS}
   System.StrUtils;
   {$ELSE}
@@ -123,13 +124,12 @@ uses
 
 function StringToBoolean(const value: string): boolean;
 begin
-  if  MatchText(value, trueStrings) then
+  if MatchText(value, trueStrings) then
     result := true
   else if MatchText(value,falseStrings) then
     result := false
   else
-    raise Exception.Create('Invalid value, not boolean');
-
+    raise Exception.Create(SInvalidValueBool);
 end;
 
 
@@ -138,7 +138,7 @@ constructor TOptionDefinition<T>.Create(const longName, shortName: string; const
 begin
   FTypeInfo := TypeInfo(T);
   if not (FTypeInfo.Kind in [tkInteger,tkEnumeration,tkFloat,tkString,tkSet,tkLString,tkWString,tkInt64,tkUString]) then
-    raise Exception.Create('Invalid Option type - only string, integer, float, boolean, enum and sets are supported');
+    raise Exception.Create(SInvalidOptionType);
 
   FLongName := longName;
   FShortName := shortName;
@@ -268,7 +268,7 @@ begin
           begin
             intVal := GetEnumValue(FTypeInfo,value);
             if intVal < 0 then
-              raise Exception.Create('Invalid Enum Value : ' + value);
+              raise Exception.Create(SInvalidEnum + value);
 
             v := TValue.FromOrdinal(FTypeInfo,intVal);
           end;
@@ -279,7 +279,7 @@ begin
            v := TValue.From<Double>(floatVal);
         end;
       else
-        raise Exception.Create('invalid option type');
+        raise Exception.Create(SInvalidOpt);
         //what?
       end;
       FProc(v.AsType<T>);

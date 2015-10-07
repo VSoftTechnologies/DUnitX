@@ -32,10 +32,15 @@ interface
 
 
 uses
-  classes,
+  {$IFDEF USE_NS}
+  System.Classes,
+  {$ELSE}
+  Classes,
+  {$ENDIF}
   DUnitX.TestFramework;
 
 implementation
+
 uses
   DUnitX.MemoryLeakMonitor.Default,
   DUnitX.IoC;

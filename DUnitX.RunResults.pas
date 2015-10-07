@@ -99,6 +99,7 @@ type
 implementation
 
 uses
+  DUnitX.ResStrs,
   {$IFDEF USE_NS}
   System.DateUtils,
   System.SysUtils;
@@ -254,7 +255,7 @@ end;
 
 function TDUnitXRunResults.ToString: string;
 begin
-  result := Format('Test Passed : %d' +#13#10,[FPassCount]);
+  result := Format(STestsPassed +#13#10,[FPassCount]);
 end;
 
 end.

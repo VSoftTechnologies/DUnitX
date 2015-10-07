@@ -113,7 +113,7 @@ type
     FIgnoreMemoryLeaks : Boolean;
   public
     constructor Create(const AIgnoreMemoryLeaks : Boolean = True);
-    property IgnoreMemoryLeaks : Boolean read FIgnoreMemoryLeaks;
+    property IgnoreLeaks : Boolean read FIgnoreMemoryLeaks;
   end;
 
   ///	<summary>

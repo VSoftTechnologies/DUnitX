@@ -123,11 +123,18 @@ begin
   SetLength(Result, digits);
   pow := 1 shl (digits - 1);
   if value <> 0 then
-  for counter := 0 to digits - 1 do
-  begin
-    if (value and (pow shr counter)) <> 0 then
-      Result[counter+1] := '1';
-  end;
+    for counter := 0 to digits - 1 do
+    begin
+      if (value and (pow shr counter)) <> 0 then
+      begin
+      	{$IFDEF NEXTGEN}
+        Result.Remove(counter, 1);
+        Result.Insert(counter, '1');
+	{$ELSE}
+	Result[counter+1] := '1';
+	{$ENDIF}
+      end;
+    end;
 end;
 
 procedure TTestCase.Check(const condition: Boolean; const msg: string);

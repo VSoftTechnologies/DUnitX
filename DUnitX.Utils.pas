@@ -313,7 +313,7 @@ type
 
   {$REGION 'Documentation'}
   ///	<summary>
-  ///	  Extends <see cref="Rtti.TRttiField">TRttiField</see> for easier RTTI
+  ///	  Extends <see cref="System.Rtti.TRttiField">TRttiField</see> for easier RTTI
   ///	  use.
   ///	</summary>
   {$ENDREGION}
@@ -352,7 +352,7 @@ type
 
   {$REGION 'Documentation'}
   ///	<summary>
-  ///	  Extends <see cref="Rtti.TRttiInvokableType">TRttiInvokableType</see>
+  ///	  Extends <see cref="System.Rtti.TRttiInvokableType">TRttiInvokableType</see>
   ///	  for easier RTTI use.
   ///	</summary>
   {$ENDREGION}
@@ -366,7 +366,7 @@ type
 
   {$REGION 'Documentation'}
   ///	<summary>
-  ///	  Extends <see cref="Rtti.TRttiMember">TRttiMember</see> for easier RTTI
+  ///	  Extends <see cref="System.Rtti.TRttiMember">TRttiMember</see> for easier RTTI
   ///	  use.
   ///	</summary>
   {$ENDREGION}
@@ -383,7 +383,7 @@ type
 
   {$REGION 'Documentation'}
   ///	<summary>
-  ///	  Extends <see cref="Rtti.TRttiMethod">TRttiMethod</see> for easier RTTI
+  ///	  Extends <see cref="System.Rtti.TRttiMethod">TRttiMethod</see> for easier RTTI
   ///	  use.
   ///	</summary>
   {$ENDREGION}
@@ -397,7 +397,7 @@ type
 
   {$REGION 'Documentation'}
   ///	<summary>
-  ///	  Extends <see cref="Rtti.TRttiObject">TRttiObject</see> for easier RTTI
+  ///	  Extends <see cref="System.Rtti.TRttiObject">TRttiObject</see> for easier RTTI
   ///	  use.
   ///	</summary>
   {$ENDREGION}
@@ -413,7 +413,7 @@ type
 
   {$REGION 'Documentation'}
   ///	<summary>
-  ///	  Extends <see cref="Rtti.TRttiParameter">TRttiParameter</see> for easier
+  ///	  Extends <see cref="System.Rtti.TRttiParameter">TRttiParameter</see> for easier
   ///	  RTTI use.
   ///	</summary>
   {$ENDREGION}
@@ -424,7 +424,7 @@ type
 
   {$REGION 'Documentation'}
   ///	<summary>
-  ///	  Extends <see cref="Rtti.TRttiProperty">TRttiProperty</see> for easier
+  ///	  Extends <see cref="System.Rtti.TRttiProperty">TRttiProperty</see> for easier
   ///	  RTTI use.
   ///	</summary>
   {$ENDREGION}
@@ -460,7 +460,7 @@ type
 
   {$REGION 'Documentation'}
   ///	<summary>
-  ///	  Extends <see cref="Rtti.TRttiType">TRttiType</see> for easier RTTI use.
+  ///	  Extends <see cref="System.Rtti.TRttiType">TRttiType</see> for easier RTTI use.
   ///	</summary>
   {$ENDREGION}
   TRttiTypeHelper = class helper for TRttiType
@@ -585,7 +585,7 @@ type
 
   {$REGION 'Documentation'}
   ///	<summary>
-  ///	  Extends <see cref="Rtti.TValue">TValue</see> for easier RTTI use.
+  ///	  Extends <see cref="System.Rtti.TValue">TValue</see> for easier RTTI use.
   ///	</summary>
   {$ENDREGION}
   TValueHelper = record helper for TValue
@@ -656,9 +656,30 @@ type
     property RttiType: TRttiType read GetRttiType;
   end;
 
+  {$IFDEF DELPHI_XE3_UP}
+  PPropInfoExt = ^TPropInfoExt;
+  TPropInfoExt = record
+    PropType: PPTypeInfo;
+    GetProc: Pointer;
+    SetProc: Pointer;
+    StoredProc: Pointer;
+    Index: Integer;
+    Default: Integer;
+    NameIndex: SmallInt;
+    NameLength : Byte;
+    NameData : array[0..255] of Byte;
+    function NameFld: TTypeInfoFieldAccessor; inline;
+    function Tail: PPropInfoExt; inline;
+  end;
+  {$ENDIF}
+ 
   TRttiPropertyExtension = class(TRttiInstanceProperty)
   private
+    {$IFDEF DELPHI_XE3_UP}
+    FPropInfo: TPropInfoExt;
+    {$ELSE}
     FPropInfo: TPropInfo;
+    {$ENDIF}
     FGetter: TFunc<Pointer, TValue>;
     FSetter: TProc<Pointer, TValue>;
     class var
@@ -776,7 +797,6 @@ var
   attribute : TCustomAttribute;
 begin
   result := nil;
-
   for attribute in attributes do
   begin
     if attribute.ClassType = AttributeClass then
@@ -959,7 +979,7 @@ begin
       AResult := TValue.From(ASource.GetReferenceToRawData, ATarget);
       Result := True;
     end else
-    if TryGetRttiType(ASource.TypeInfo, LType) and (ATarget.Name = 'IList')
+    if TryGetRttiType(ASource.TypeInfo, LType) and (GetTypeName(ATarget) = 'IList')
       and LType.IsGenericTypeOf('IList') and LType.TryGetMethod('AsList', LMethod) then
     begin
       LInterface := LMethod.Invoke(ASource, []).AsInterface;
@@ -1325,6 +1345,7 @@ var
   s: string;
 begin
   s := UTF8ToString(ATypeInfo.Name);
+  {$IFNDEF NEXTGEN}
   i := Pos('<', s);
   if i > 0 then
   begin
@@ -1334,6 +1355,13 @@ begin
   begin
     Result := ''
   end;
+  {$ELSE}
+  i := s.IndexOf('<');
+  if i > -1 then
+    Result := s.SubString(Succ(i), s.Length - (Succ(i) + 1))
+  else
+    Result := string.Empty; 
+  {$ENDIF}
 end;
 
 function FindType(const AName: string; out AType: TRttiType): Boolean;
@@ -1410,13 +1438,9 @@ begin
   for i := Low(Values) to High(Values) do
   begin
     if i = 0 then
-    begin
-      Result := Values[i];
-    end
+      Result := Values[i]
     else
-    begin
       Result := Result + Delimiter + Values[i];
-    end;
   end;
 end;
 
@@ -1490,15 +1514,15 @@ function CompareValue(const Left, Right: TValue): Integer;
 begin
   if Left.IsOrdinal and Right.IsOrdinal then
   begin
-    Result := CompareValue(Left.AsOrdinal, Right.AsOrdinal);
+    Result := {$IFDEF USE_NS}System.Math.{$ENDIF}CompareValue(Left.AsOrdinal, Right.AsOrdinal);
   end else
   if Left.IsFloat and Right.IsFloat then
   begin
-    Result := CompareValue(Left.AsFloat, Right.AsFloat);
+    Result := {$IFDEF USE_NS}System.Math.{$ENDIF}CompareValue(Left.AsFloat, Right.AsFloat);
   end else
   if Left.IsString and Right.IsString then
   begin
-    Result := CompareStr(Left.AsString, Right.AsString);
+    Result := {$IFDEF USE_NS}System.SysUtils.{$ENDIF}CompareStr(Left.AsString, Right.AsString);
   end else
   begin
     Result := 0;
@@ -1517,72 +1541,72 @@ begin
       end else
       if Right.IsSingle then
       begin
-        Result := SameValue(Left.AsOrdinal, Right.AsSingle);
+        Result := {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(Left.AsOrdinal, Right.AsSingle);
       end else
       if Right.IsDouble then
       begin
-        Result := SameValue(Left.AsOrdinal, Right.AsDouble);
+        Result := {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(Left.AsOrdinal, Right.AsDouble);
       end
       else
       begin
-        Result := SameValue(Left.AsOrdinal, Right.AsExtended);
+        Result := {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(Left.AsOrdinal, Right.AsExtended);
       end;
     end else
     if Left.IsSingle then
     begin
       if Right.IsOrdinal then
       begin
-        Result := SameValue(Left.AsSingle, Right.AsOrdinal);
+        Result := {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(Left.AsSingle, Right.AsOrdinal);
       end else
       if Right.IsSingle then
       begin
-        Result := SameValue(Left.AsSingle, Right.AsSingle);
+        Result := {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(Left.AsSingle, Right.AsSingle);
       end else
       if Right.IsDouble then
       begin
-        Result := SameValue(Left.AsSingle, Right.AsDouble);
+        Result := {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(Left.AsSingle, Right.AsDouble);
       end
       else
       begin
-        Result := SameValue(Left.AsSingle, Right.AsExtended);
+        Result := {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(Left.AsSingle, Right.AsExtended);
       end;
     end else
     if Left.IsDouble then
     begin
       if Right.IsOrdinal then
       begin
-        Result := SameValue(Left.AsDouble, Right.AsOrdinal);
+        Result := {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(Left.AsDouble, Right.AsOrdinal);
       end else
       if Right.IsSingle then
       begin
-        Result := SameValue(Left.AsDouble, Right.AsSingle);
+        Result := {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(Left.AsDouble, Right.AsSingle);
       end else
       if Right.IsDouble then
       begin
-        Result := SameValue(Left.AsDouble, Right.AsDouble);
+        Result := {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(Left.AsDouble, Right.AsDouble);
       end
       else
       begin
-        Result := SameValue(Left.AsDouble, Right.AsExtended);
+        Result := {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(Left.AsDouble, Right.AsExtended);
       end;
     end
     else
     begin
       if Right.IsOrdinal then
       begin
-        Result := SameValue(Left.AsExtended, Right.AsOrdinal);
+        Result := {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(Left.AsExtended, Right.AsOrdinal);
       end else
       if Right.IsSingle then
       begin
-        Result := SameValue(Left.AsExtended, Right.AsSingle);
+        Result := {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(Left.AsExtended, Right.AsSingle);
       end else
       if Right.IsDouble then
       begin
-        Result := SameValue(Left.AsExtended, Right.AsDouble);
+        Result := {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(Left.AsExtended, Right.AsDouble);
       end
       else
       begin
-        Result := SameValue(Left.AsExtended, Right.AsExtended);
+        Result := {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(Left.AsExtended, Right.AsExtended);
       end;
     end;
   end else
@@ -1959,14 +1983,10 @@ begin
   if SkipSelf then
   begin
     if Length(Args) > 1 then
-    begin
       Result := Result + TValue.ToString(Args[1]);
-    end;
   end
   else
-  begin
-    Result := Result + TValue.ToString(Args[0])
-  end;
+    Result := Result + TValue.ToString(Args[0]);
   Result := Result + ')';
 end;
 
@@ -2116,9 +2136,7 @@ begin
   args := SplitString(ExtractGenericArguments(Handle), ',');
   SetLength(Result, Length(args));
   for i := 0 to Pred(Length(args)) do
-  begin
     FindType(args[i], Result[i]);
-  end;
 end;
 
 function TRttiTypeHelper.GetGenericTypeDefinition(
@@ -2133,24 +2151,19 @@ begin
   begin
     // naive implementation - but will work in most cases
     if (i = 0) and (Length(args) = 1) then
-    begin
-      args[i] := 'T';
-    end
+      args[i] := 'T'
     else
-    begin
       args[i] := 'T' + IntToStr(Succ(i));
-    end;
   end;
   if IsPublicType and AIncludeUnitName then
-  begin
-    s := QualifiedName;
-    Result := Copy(s, 1, Pos('<', s)) + MergeStrings(args, ',') + '>';
-  end
+    s := QualifiedName
   else
-  begin
     s := Name;
-    Result := Copy(s, 1, Pos('<', s)) + MergeStrings(args, ',') + '>';
-  end;
+  {$IFNDEF NEXTGEN}
+  Result := Copy(s, 1, Pos('<', s)) + MergeStrings(args, ',') + '>';
+  {$ELSE}
+  Result := s.SubString(0, s.IndexOf('<') + 1) + MergeStrings(args, ',') + '>';
+  {$ENDIF}
 end;
 
 function TRttiTypeHelper.GetIsInterface: Boolean;
@@ -2310,8 +2323,11 @@ var
   s: string;
 begin
   s := Name;
-  Result := (Copy(s, 1, Succ(Length(BaseTypeName))) = (BaseTypeName + '<'))
-    and (Copy(s, Length(s), 1) = '>');
+  {$IFNDEF NEXTGEN}
+  Result := (Copy(s, 1, Succ(Length(BaseTypeName))) = (BaseTypeName + '<')) and (Copy(s, Length(s), 1) = '>');
+  {$ELSE}
+  Result := (s.SubString(0, Succ(BaseTypeName.Length)) = (BaseTypeName + '<')) and (s.SubString(s.Length-1, 1) = '>');
+  {$ENDIF}
 end;
 
 function TRttiTypeHelper.IsInheritedFrom(const OtherTypeName: string): Boolean;
@@ -2360,16 +2376,16 @@ begin
   begin
     args := SplitString(ExtractGenericArguments(Handle), ',');
     for i := Low(args) to High(args) do
-    begin
       args[i] := Context.GetType(TypeArguments[i]).QualifiedName;
-    end;
+    {$IFNDEF NEXTGEN}
     s := Copy(QualifiedName, 1, Pos('<', QualifiedName)) + MergeStrings(args, ',') + '>';
+    {$ELSE}
+    s := QualifiedName.SubString(0, QualifiedName.IndexOf('<') + 1) + MergeStrings(args, ',') + '>';
+    {$ENDIF}
     Result := Context.FindType(s);
   end
   else
-  begin
     Result := nil;
-  end;
 end;
 
 function TRttiTypeHelper.TryGetConstructor(out AMethod: TRttiMethod): boolean;
@@ -2590,20 +2606,33 @@ begin
   case Value.VType of
     vtInteger: Result := Value.VInteger;
     vtBoolean: Result := Value.VBoolean;
+{$IFNDEF NEXTGEN}
     vtChar: Result := string(Value.VChar);
+{$ENDIF}
     vtExtended: Result := Value.VExtended^;
+{$IFNDEF NEXTGEN}
     vtString: Result := string(Value.VString^);
+{$ENDIF}
     vtPointer: Result := TValue.From<Pointer>(Value.VPointer);
+{$IFNDEF NEXTGEN}
     vtPChar: Result := string(Value.VPChar);
+{$ENDIF}
     vtObject: Result := Value.VObject;
     vtClass: Result := Value.VClass;
     vtWideChar: Result := string(Value.VWideChar);
     vtPWideChar: Result := string(Value.VPWideChar);
+{$IFNDEF NEXTGEN}
     vtAnsiString: Result := string(AnsiString(Value.VAnsiString));
+{$ENDIF}
     vtCurrency: Result := Value.VCurrency^;
     vtVariant: Result := TValue.FromVariant(Value.VVariant^);
     vtInterface: Result := TValue.From<IInterface>(IInterface(Value.VInterface));
-    vtWideString: Result := WideString(Value.VWideString);
+    vtWideString:
+{$IFNDEF NEXTGEN}
+      Result := WideString(Value.VWideString);
+{$ELSE}
+      Result := string(Value.VWideString);
+{$ENDIF}
     vtInt64: Result := Value.VInt64^;
     vtUnicodeString: Result := string(Value.VUnicodeString);
   end;
@@ -2752,17 +2781,12 @@ begin
   for i := Low(Values) to High(Values) do
   begin
     if i > Low(Values) then
-    begin
       Result := Result + ', ';
-    end;
+
     if Values[i].IsString then
-    begin
-      Result := Result + '''' + TValue.ToString(Values[i]) + '''';
-    end
+      Result := Result + '''' + TValue.ToString(Values[i]) + ''''
     else
-    begin
       Result := Result + TValue.ToString(Values[i]);
-    end;
   end;
 end;
 
@@ -2774,11 +2798,13 @@ begin
       Result.VType := vtInteger;
       Result.VInteger := AsInteger;
     end;
+{$IFNDEF NEXTGEN}
     tkChar:
     begin
       Result.VType := vtChar;
       Result.VChar := AsType<AnsiChar>;
     end;
+{$ENDIF}
     tkEnumeration:
     begin
       if IsBoolean then
@@ -2825,9 +2851,7 @@ var
 begin
   SetLength(Result, Length(Values));
   for i := Low(Values) to High(Values) do
-  begin
     Result[i] := Values[i].ToVarRec;
-  end;
 end;
 
 class function TValueHelper.ToString(const Value: TValue): string;
@@ -2865,7 +2889,7 @@ begin
       LInterface := Value.AsInterface;
       LObject := LInterface as TObject;
       Result := Format('%s($%x) as %s', [StripUnitName(LObject.ClassName),
-        NativeInt(LInterface), StripUnitName(string(Value.TypeInfo.Name))]);
+        NativeInt(LInterface), StripUnitName(GetTypeName(Value.TypeInfo))]);
     end
   else
     Result := Value.ToString;
@@ -2933,15 +2957,28 @@ end;
 
 type
   TRttiObjectAccess = class helper for TRttiObject
-    procedure Init(Parent: TRttiType; PropInfo: PPropInfo);
+    procedure Init(Parent: TRttiType; PropInfo: {$IFDEF DELPHI_XE3_UP}PPropInfoExt{$ELSE}PPropInfo {$ENDIF});
   end;
 
-procedure TRttiObjectAccess.Init(Parent: TRttiType; PropInfo: PPropInfo);
+procedure TRttiObjectAccess.Init(Parent: TRttiType; PropInfo: {$IFDEF DELPHI_XE3_UP}PPropInfoExt{$ELSE}PPropInfo {$ENDIF});
 begin
   Self.FParent := Parent;
   Self.FHandle := PropInfo;
 end;
 
+{$IFDEF DELPHI_XE3_UP}
+{ TPropInfoExt }
+
+function TPropInfoExt.NameFld: TTypeInfoFieldAccessor;
+begin
+  Result.SetData(@NameLength);
+end;
+
+function TPropInfoExt.Tail: PPropInfoExt;
+begin
+  Result := PPropInfoExt(NameFld.Tail);
+end;
+{$ENDIF}
 { TRttiPropertyExtension }
 
 class constructor TRttiPropertyExtension.Create;
@@ -2967,11 +3004,23 @@ begin
   FRegister.Free;
 end;
 
-constructor TRttiPropertyExtension.Create(Parent: PTypeInfo;
-  const Name: string; PropertyType: PTypeInfo);
+constructor TRttiPropertyExtension.Create(Parent: PTypeInfo; const Name: string; PropertyType: PTypeInfo);
+
+{$IFDEF DELPHI_XE3_UP}
+var
+  M: TMarshaller;
+{$ENDIF}
 begin
   FPropInfo.PropType := Pointer(NativeInt(PropertyType) - SizeOf(PTypeInfo));
+  {$IFNDEF DELPHI_XE3_UP}
   FPropInfo.Name := ShortString(Name);
+  {$ELSE}
+  if Name.Length > 255 then
+    FPropInfo.NameLength := 255
+  else
+    FPropInfo.NameLength := Name.Length;
+  Move(M.AsAnsi(Name).ToPointer^, FPropInfo.NameData[0], FPropInfo.NameLength);
+  {$ENDIF}
   Init(GetRttiType(Parent), @FPropInfo);
 
   FRegister.Add(TPair<PTypeInfo, string>.Create(Parent, Name), Self);
@@ -3003,23 +3052,22 @@ end;
 
 class function TRttiPropertyExtension.FindByName(Parent: TRttiType;
   const PropertyName: string): TRttiPropertyExtension;
+var
+  LPropertyExtension: TRttiPropertyExtension;
 begin
-  for Result in FRegister.Values do
+  for LPropertyExtension in FRegister.Values do
   begin
-    if (Result.Parent = Parent) and SameText(Result.Name, PropertyName) then
+    if (LPropertyExtension.Parent = Parent) and SameText(LPropertyExtension.Name, PropertyName) then
     begin
+      Result := LPropertyExtension;
       Exit;
     end;
   end;
 
   if Assigned(Parent.BaseType) then
-  begin
-    Result := FindByName(Parent.BaseType, PropertyName);
-  end
+    Result := FindByName(Parent.BaseType, PropertyName)
   else
-  begin
-    Result := nil;
-  end;
+    Result := nil
 end;
 
 class function TRttiPropertyExtension.FindByName(
@@ -3030,6 +3078,7 @@ var
   LProp: TRttiPropertyExtension;
 begin
   Result := nil;
+  {$IFNDEF NEXTGEN}
   LScope := Copy(FullPropertyName, 1, LastDelimiter('.', FullPropertyName) - 1);
   LName := Copy(FullPropertyName, LastDelimiter('.', FullPropertyName) + 1);
   for LProp in FRegister.Values do
@@ -3041,6 +3090,19 @@ begin
       Break;
     end;
   end;
+  {$ELSE}
+  LScope := FullPropertyName.SubString(0, FullPropertyName.LastDelimiter('.'));
+  LName := FullPropertyName.SubString(FullPropertyName.LastDelimiter('.') + 1);
+  for LProp in FRegister.Values do
+  begin
+    if (string.Compare(LProp.Name, LName, [coIgnoreCase]) = 0)
+      and LProp.Parent.AsInstance.MetaclassType.QualifiedClassName.EndsWith(LScope, True) then
+    begin
+      Result := LProp;
+      Break;
+    end;
+  end;  
+  {$ENDIF}
 end;
 
 function TRttiPropertyExtension.GetIsReadable: Boolean;
@@ -3118,6 +3180,7 @@ var
 begin
   Result := nil;
 
+  {$IFNDEF NEXTGEN}
   if S <> '' then
   begin
     { Determine the length of the resulting array }
@@ -3144,6 +3207,34 @@ begin
     // copy the remaining part in case the string does not end in a delimiter
     Result[SplitPoints] := Copy(S, StartIdx, Length(S) - StartIdx + 1);
   end;
+  {$ELSE}
+  if S <> string.Empty then
+  begin
+    { Determine the length of the resulting array }
+    SplitPoints := 0;
+    for I := 0 to S.Length - 1 do
+      if S.IsDelimiter(Delimiters, i) then
+        Inc(SplitPoints);
+
+    SetLength(Result, SplitPoints + 1);
+
+    { Split the string and fill the resulting array }
+    StartIdx := 0;
+    CurrentSplit := 0;
+    repeat
+      FoundIdx := S.IndexOfAny(Delimiters.ToCharArray, StartIdx);
+      if FoundIdx <> -1 then
+      begin
+        Result[CurrentSplit] := S.SubString(StartIdx, FoundIdx - StartIdx);
+        Inc(CurrentSplit);
+        StartIdx := FoundIdx + 1;
+      end;
+    until CurrentSplit = SplitPoints;
+
+    // copy the remaining part in case the string does not end in a delimiter
+    Result[SplitPoints] := S.SubString(StartIdx, S.Length - StartIdx + 1);
+  end;
+  {$ENDIF}
 
 end;
 

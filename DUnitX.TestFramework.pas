@@ -61,7 +61,6 @@ uses
 {$HPPEMIT '#else'}
 {$HPPEMIT '# pragma comment(lib, "DUnitXRuntime")'}
 {$HPPEMIT '#endif'}
-//TODO: Automatic support for https://code.google.com/p/delphi-code-coverage/ would be cool
 
 
 type
@@ -420,7 +419,7 @@ type
     /// <summary>
     ///   called after a test method and teardown is run.
     /// </summary>
-    procedure OnEndTest(const threadId : TThreadID;const  Test: ITestResult);
+    procedure OnEndTest(const threadId: TThreadID; const Test: ITestResult);
 
     /// <summary>
     ///   called before a Fixture Teardown method is called.
@@ -622,8 +621,7 @@ uses
   Types,
   Generics.Defaults,
   {$ENDIF}
-
-
+  DUnitX.ResStrs,
   DUnitX.ConsoleWriter.Base,
   DUnitX.Banner,
   DUnitX.OptionsDefinition,
@@ -682,8 +680,8 @@ procedure ShowUsage(consoleWriter : IDUnitXConsoleWriter);
 begin
   if consoleWriter <> nil then
     consoleWriter.SetColour(ccBrightYellow,ccDefault);
-  Writeline(consoleWriter, Format('Usage : %s options', [ExtractFileName(ParamStr(0))])+#13#10);
-  Writeline(consoleWriter, ' Options :');
+  Writeline(consoleWriter, Format(SUsage, [ExtractFileName(ParamStr(0))])+#13#10);
+  Writeline(consoleWriter, SOptions);
   if consoleWriter <> nil then
     consoleWriter.SetColour(ccBrightWhite,ccDefault);
 
@@ -760,8 +758,8 @@ begin
   FFilter := nil;
   Assert.OnAssert := procedure
                     var
-                      threadId: TThreadID;
-                      value: cardinal;
+                      threadId : TThreadID;
+                      value : cardinal;
                     begin
                       threadId := TThread.CurrentThread.ThreadID;
                       MonitorEnter(FAssertCounters);
@@ -784,7 +782,7 @@ var
   ref : IWeakReference<ITestRunner>;
 begin
   if not TDUnitXTestRunner.FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId,ref) then
-    raise Exception.Create('No Runner found for current thread');
+    raise Exception.Create(SNoRunner);
   result := ref.Data;
 
 end;
@@ -807,7 +805,7 @@ end;
 class procedure TDUnitX.RegisterPlugin(const plugin: IPlugin);
 begin
   if plugin = nil then
-    raise Exception.Create('Nil plug registered!');
+    raise Exception.Create(SNilPlugin);
   RegisteredPlugins.Add(plugin);
 end;
 

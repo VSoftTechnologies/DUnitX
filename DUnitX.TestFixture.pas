@@ -160,7 +160,7 @@ uses
 constructor TDUnitXTestFixture.Create(const AName : string; const ACategory : string; const AClass : TClass; const AUnitName : string);
 var
   fixtureAttrib   : TestFixtureAttribute;
-  IgnoreMemoryLeak: IgnoreMemoryLeaks;
+  IgnoreMemoryLeakAttrib: IgnoreMemoryLeaks;
   {$IFDEF DELPHI_XE_UP}
   method : TRttiMethod;
   {$ENDIF}
@@ -205,8 +205,8 @@ begin
 
   FIgnoreMemoryLeaks := False;
   rType := FRttiContext.GetType(FTestClass);
-  if rType.TryGetAttributeOfType<IgnoreMemoryLeaks>(IgnoreMemoryLeak) then
-    FIgnoreMemoryLeaks := IgnoreMemoryLeak.IgnoreMemoryLeaks;
+  if rType.TryGetAttributeOfType<IgnoreMemoryLeaks>(IgnoreMemoryLeakAttrib) then
+    FIgnoreMemoryLeaks := IgnoreMemoryLeakAttrib.IgnoreLeaks;
 
   fixtureAttrib := nil;
   if rType.TryGetAttributeOfType<TestFixtureAttribute>(fixtureAttrib) then
@@ -356,7 +356,7 @@ var
  IgnoreMemoryLeak: IgnoreMemoryLeaks;
 begin
   if AMethod.TryGetAttributeOfType<IgnoreMemoryLeaks>(IgnoreMemoryLeak) then
-    result := IgnoreMemoryLeak.IgnoreMemoryLeaks
+    result := IgnoreMemoryLeak.IgnoreLeaks
   else
     result := FIgnoreMemoryLeaks;
 end;

@@ -116,49 +116,58 @@ type
     function ExecuteErrorResult(const context: ITestExecuteContext; const threadId: TThreadID; const test: ITest; const exception: Exception): ITestError;
     function ExecuteIgnoredResult(const context: ITestExecuteContext; const threadId: TThreadID; const test: ITest; const ignoreReason: string): ITestResult;
 
-    function CheckMemoryAllocations(const test: ITest; out errorResult: ITestResult; const memoryAllocationProvider: IMemoryLeakMonitor): Boolean;
+    function CheckMemoryAllocations(const test: ITest; out errorResult: ITestResult; const memoryAllocationProvider: IMemoryLeakMonitor): boolean;
 
-    function ExecuteTestTearDown(const context: ITestExecuteContext; const threadId: TThreadID; const fixture: ITestFixture; const test: ITest; out errorResult: ITestResult; const memoryAllocationProvider: IMemoryLeakMonitor): Boolean;
+    function ExecuteTestTearDown(const context: ITestExecuteContext; const threadId: TThreadID; const fixture: ITestFixture; const test: ITest; out errorResult: ITestResult; const memoryAllocationProvider: IMemoryLeakMonitor): boolean;
     procedure ExecuteTearDownFixtureMethod(const context: ITestExecuteContext; const threadId: TThreadID; const fixture: ITestFixture);
 
     procedure RecordResult(const context: ITestExecuteContext; const threadId: TThreadID; const fixtureResult: IFixtureResult; const testResult: ITestResult);
 
     function GetUseRTTI: Boolean;
     procedure SetUseRTTI(const value: Boolean);
-    function GetFailsOnNoAsserts : boolean;
-    procedure SetFailsOnNoAsserts(const value : boolean);
+    function GetFailsOnNoAsserts: boolean;
+    procedure SetFailsOnNoAsserts(const value: boolean);
 
-    procedure Log(const logType : TLogLevel; const msg : string);overload;
-    procedure Log(const msg : string);overload;
+    procedure Log(const logType: TLogLevel; const msg: string); overload;
+    procedure Log(const msg: string); overload;
 
     //for backwards compatibilty with DUnit tests.
-    procedure Status(const msg : string);overload;
+    procedure Status(const msg: string); overload;
 
     //redirects WriteLn to our loggers.
-    procedure WriteLn(const msg : string);overload;
-    procedure WriteLn;overload;
+    procedure WriteLn(const msg: string); overload;
+    procedure WriteLn; overload;
 
     //internals
     procedure RTTIDiscoverFixtureClasses;
-    function BuildFixtures : IInterface;
+    function BuildFixtures: IInterface;
 
-    procedure AddStatus(const threadId; const msg : string);
+    procedure AddStatus(const threadId; const msg: string);
 
-    function CreateFixture(const AInstance : TObject; const AFixtureClass: TClass; const AName: string; const ACategory : string): ITestFixture;
+    function CreateFixture(const AInstance: TObject; const AFixtureClass: TClass; const AName: string; const ACategory: string): ITestFixture;
 
     class constructor Create;
     class destructor Destroy;
   public
     constructor Create; overload;
-    constructor Create(const AListener : ITestLogger); overload;
-    constructor Create(const AListeners : array of ITestLogger); overload;
-    destructor Destroy;override;
-    class function GetActiveRunner : ITestRunner;
+    constructor Create(const AListener: ITestLogger); overload;
+    constructor Create(const AListeners: array of ITestLogger); overload;
+    destructor Destroy; override;
+    class function GetActiveRunner: ITestRunner;
   end;
 
 implementation
 
 uses
+  {$IFDEF USE_NS}
+  System.TypInfo,
+  System.StrUtils,
+  System.Types,
+  {$ELSE}
+  TypInfo,
+  StrUtils,
+  Types,  
+  {$ENDIF}
   DUnitX.Attributes,
   DUnitX.CommandLine.Options,
   DUnitX.TestFixture,
@@ -168,9 +177,7 @@ uses
   DUnitX.Utils,
   DUnitX.IoC,
   DUnitX.Extensibility.PluginManager,
-  TypInfo,
-  StrUtils,
-  Types;
+  DUnitX.ResStrs;
 
 { TDUnitXTestRunner }
 
@@ -296,21 +303,21 @@ begin
   begin
     // The leak occurred in the setup/teardown
     Result := False;
-    LMsg := Format('%d bytes were leaked in the setup/teardown methods', [LSetUpMemoryAllocated + LTearDownMemoryAllocated]) + LMsg;
+    LMsg := Format(SSetupTeardownBytesLeaked, [LSetUpMemoryAllocated + LTearDownMemoryAllocated]) + LMsg;
     errorResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.MemoryLeak, LMsg);
   end
   else if (LSetUpMemoryAllocated + LTearDownMemoryAllocated = 0) then
   begin
     // The leak occurred in the test only
     Result := False;
-    LMsg := Format('%d bytes were leaked in the test method', [LTestMemoryAllocated]) + LMsg;
+    LMsg := Format(STestBytesLeaked, [LTestMemoryAllocated]) + LMsg;
     errorResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.MemoryLeak, LMsg);
   end
   else
   begin
     // The leak occurred in the setup/teardown/test
     Result := False;
-    LMsg := Format('%d bytes were leaked in the setup/test/teardown methods', [LSetUpMemoryAllocated + LTestMemoryAllocated + LTearDownMemoryAllocated]) + LMsg;
+    LMsg := Format(SSetupTestTeardownBytesLeaked, [LSetUpMemoryAllocated + LTestMemoryAllocated + LTearDownMemoryAllocated]) + LMsg;
     errorResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.MemoryLeak, LMsg);
   end;
 end;
@@ -388,25 +395,25 @@ begin
       end;
     TTestResultType.Failure:
       begin
-        Log(TLogLevel.Error, 'Test failed : ' + testResult.Test.Name + ' : ' + testResult.Message);
+        Log(TLogLevel.Error, STestFailed + testResult.Test.Name + ' : ' + testResult.Message);
         context.RecordResult(fixtureResult, testResult);
         Self.Loggers_AddFailure(threadId, ITestError(testResult));
       end;
     TTestResultType.Error:
       begin
-        Log(TLogLevel.Error, 'Test Error : ' + testResult.Test.Name + ' : ' + testResult.Message);
+        Log(TLogLevel.Error, STestError + testResult.Test.Name + ' : ' + testResult.Message);
         context.RecordResult(fixtureResult, testResult);
         Self.Loggers_AddError(threadId, ITestError(testResult));
       end;
     TTestResultType.Ignored :
       begin
-        Log(TLogLevel.Error, 'Test Ignored : ' + testResult.Test.Name + ' : ' + testResult.Message);
+        Log(TLogLevel.Error, STestIgnored + testResult.Test.Name + ' : ' + testResult.Message);
         context.RecordResult(fixtureResult,testResult);
         Self.Loggers_AddIgnored(threadId, testResult);
       end;
     TTestResultType.MemoryLeak :
       begin
-        Log(TLogLevel.Error, 'Test Leaked Memory : ' + testResult.Test.Name + ' : ' + testResult.Message);
+        Log(TLogLevel.Error, STestLeaked + testResult.Test.Name + ' : ' + testResult.Message);
         context.RecordResult(fixtureResult,testResult);
         Self.Loggers_AddMemoryLeak(threadId, testResult);
       end;
@@ -466,10 +473,10 @@ begin
       on e : Exception do
       begin
         try
-           logger.OnLog(TLogLevel.Error,'Error in OnEndSetupEvent : ' + e.Message);
+           logger.OnLog(TLogLevel.Error, SOnEndSetupEventError + e.Message);
         except
           on e : Exception do
-            System.Write('unable to log error in OnEndSetupTest event : ' + e.Message);
+            System.Write(SOnEndSetupTestLogError + e.Message);
         end;
       end;
     end;
@@ -657,9 +664,8 @@ begin
   except
     on e: Exception do
     begin
-      Log(TLogLevel.Error, 'Error in Fixture Setup. Fixture: ' + fixture.Name + ' Error: ' + e.Message);
-      Log(TLogLevel.Error, 'Skipping Fixture.');
-
+      Log(TLogLevel.Error, Format(SFixtureSetupError, [fixture.Name, e.Message]));
+      Log(TLogLevel.Error, SSkippingFixture);
       raise;
     end;
   end;
@@ -679,8 +685,7 @@ begin
     on e: Exception do
     begin
       //TODO: ExecuteErrorResult(context, threadId, test, 'Test does not support ITestExecute');
-      Log(TLogLevel.Error, 'Error in Fixture TearDown. Fixture: ' + fixture.Name + ' Error: ' + e.Message);
-
+      Log(TLogLevel.Error, Format(SFixtureTeardownError, [fixture.Name,e.Message]));
       raise;
     end;
   end;
@@ -706,11 +711,11 @@ begin
       memoryAllocationProvider.PostTest;
     end;
 
-    if (FFailsOnNoAsserts) then
+    if FFailsOnNoAsserts then
     begin
       assertAfterCount := TDUnitX.GetAssertCount(threadId);
       if (assertBeforeCount = assertAfterCount)  then
-        raise ETestFailure.Create('No assertions were made during the test');
+        raise ETestFailure.Create(SNoAssertions);
     end;
 
     Result := ExecuteSuccessfulResult(context, threadId, test,FLogMessages.Text);
@@ -719,7 +724,7 @@ begin
   else
   begin
     //This will be handled by the caller as a test error.
-    raise Exception.CreateFmt('%s does not support ITestExecute', [test.Name]);
+    raise Exception.CreateFmt(SITestExecuteNotSupported, [test.Name]);
   end;
 end;
 

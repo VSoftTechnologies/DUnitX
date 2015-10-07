@@ -22,33 +22,20 @@
 {  See the License for the specific language governing permissions and      }
 {  limitations under the License.                                           }
 {                                                                           }
-{ This unit is contains ideas borrowed largely from NUnit                   }
-{ Copyright © 2012-2014 Charlie Poole                                       }
-{ License  : http://nunit.org/index.php?p=vsTestAdapterLicense&r=2.6.3      }
-{                                                                           }
 {***************************************************************************}
 
-unit DUnitX.Types;
-
-{$I DUnitX.inc}
+unit DUnitX.Constants;
 
 interface
 
-uses
-{$IFDEF USE_NS}
-  System.Rtti;
-{$ELSE}
-  Rtti;
-{$ENDIF}
-
-type
-  {$IFDEF DELPHI_XE_UP}
-  TValueArray = TArray<TValue>;
+const
+  {$IFDEF NEXTGEN}
+  MinStringOffset : integer = 0;
+  MaxStringOffset : integer = 1;
   {$ELSE}
-  TValueArray = array of TValue;
+  MinStringOffset : integer = 1;
+  MaxStringOffset : integer = 0;
   {$ENDIF}
-
-
 
 implementation
 
