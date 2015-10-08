@@ -171,12 +171,16 @@ begin
 end;
 
 procedure TDUnitXTest.Execute(const context : ITestExecuteContext);
+{$IFDEF MSWINDOWS}
+var
+  timeout : ITimeout;
+{$ENDIF}
 begin
   FStartTime := Now();
   try
     {$IFDEF MSWINDOWS}
     if FMaxTime > 0 then
-      InitialiseTimeOut( FMaxTime );
+      timeout := InitialiseTimeOut( FMaxTime );
     {$ENDIF}
     FMethod();
   finally

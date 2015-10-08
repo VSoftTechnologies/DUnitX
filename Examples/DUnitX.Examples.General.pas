@@ -72,7 +72,7 @@ type
     procedure TestError;
 
     [Test]
-    [MaxTime(1000)]
+    [MaxTime(2000)]
     procedure TooLong;
 
 
@@ -141,9 +141,13 @@ type
 implementation
 
 uses
-  Windows,
+  {$IFDEF USE_NS}
+  System.SysUtils,
+  System.Classes,
+  {$ELSE}
   SysUtils,
-  classes,
+  Classes,
+  {$ENDIF}
   DUnitX.DUnitCompatibility;
 
 { TMyExampleTests }
@@ -218,9 +222,9 @@ end;
 procedure TMyExampleTests.TooLong;
 begin
   {$IFDEF DELPHI_XE_UP}
-   TThread.Sleep(2000);
+   TThread.Sleep(5000);
   {$ELSE}
-    Windows.Sleep(2000);
+    Windows.Sleep(5000);
   {$ENDIF}
 end;
 

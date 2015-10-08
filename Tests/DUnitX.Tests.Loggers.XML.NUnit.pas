@@ -29,12 +29,17 @@ unit DUnitX.Tests.Loggers.XML.NUnit;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
+  {$IFDEF USE_NS}
+  System.Classes,
+  {$ELSE}
   Classes,
+  {$ENDIF}
   DUnitX.TestFramework,
   DUnitX.Loggers.XML.NUnit;
 
-{$I DUnitX.inc}
 
 type
   {$M+}
@@ -55,10 +60,17 @@ type
 implementation
 
 uses
+  {$IFDEF USE_NS}
+  System.Rtti,
+  System.SysUtils,
+  System.TimeSpan,
+  System.DateUtils,
+  {$ELSE}
   Rtti,
   SysUtils,
   TimeSpan,
   DateUtils,
+  {$ENDIF}
 {$IFNDEF DELPHI_XE_DOWN}
   Delphi.Mocks,
 {$ENDIF}

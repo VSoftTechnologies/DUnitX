@@ -63,6 +63,7 @@ var
   index: integer;
   count: Integer;
 begin
+  {$IFNDEF NEXTGEN}
   count := Length(xmlString);
   setLength(result, count);
   for index := 1 to Count do
@@ -72,6 +73,23 @@ begin
     else
       result[index] := ' ';
   end;
+  {$ELSE}
+  count := xmlString.Length;
+  setLength(result, count);
+  for index := 0 to Count - 1 do
+  begin
+    if IsCharValidXML(WideChar(xmlString.Chars[index])) then
+    begin
+      result := result.Remove(index, 1);
+      result := result.Insert(index, xmlString.Chars[index]);
+    end
+    else
+    begin
+      result := result.Remove(index, 1);
+      result := result.Insert(index, ' ');
+    end;
+  end;
+  {$ENDIF}
 end;
 
 

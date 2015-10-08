@@ -55,8 +55,9 @@ uses
   {$ELSE}
   Windows,
   {$ENDIF}
-  DUnitX.TestFramework,
-  DUnitX.Utils;
+  DUnitX.ResStrs,
+  System.Diagnostics,
+  DUnitX.TestFramework;
 
 // The following TimeOut code is based on the code found at
 // https://code.google.com/p/delphitimeouts/
@@ -93,7 +94,7 @@ end;
 
 procedure RaiseTimeOutException;
 begin
-  raise ETimedOut.Create('Operation Timed Out');
+  raise ETimedOut.Create(SOperationTimedOut);
 end;
 
 procedure TTimeoutThread.TimeoutThread;
@@ -142,25 +143,25 @@ end;
 
 procedure TTimeoutThread.Execute;
 var
-  startTime : Cardinal;
-  elapsedTime : Cardinal;
+  elapsedTime : Int64;
+  stopwatch : TStopWatch;
 begin
   inherited;
-
-  //Get the tickcount so that we leave timing up to the system.
-  startTime := GetTickCount;
+  stopwatch := TStopWatch.Create;
+  stopwatch.Reset;
+  stopwatch.Start;
   elapsedTime := 0;
 
   if Terminated then
      exit;
   repeat
     //Give some time back to the system to process the test.
-    Sleep(1);
+    Sleep(20);
 
     if Terminated then
       Break;
 
-    elapsedTime := GetElapsedTime(startTime);
+    elapsedTime :=  stopwatch.ElapsedMilliseconds;
   until (elapsedTime >= Timeout);
 
   //If we haven't been terminated then we have timed out.

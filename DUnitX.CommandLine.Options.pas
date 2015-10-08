@@ -192,7 +192,6 @@ var
   option : IOptionDefintion;
   helpString : string;
 begin
-  //TODO : Improve formatting!
   for option in AllRegisteredOptions do
   begin
     if option.Hidden then

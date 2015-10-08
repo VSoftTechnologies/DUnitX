@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2013 Vincent Parrett                              }
+{           Copyright (C) 2015 Vincent Parrett & Contributors               }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -28,8 +28,19 @@ unit DUnitX.Expert.CodeGen.SourceFile;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
-  SysUtils, Classes, ToolsAPI;
+  {$IFDEF USE_NS}
+  System.SysUtils,
+  System.Classes,
+  ToolsAPI;
+  {$ELSE}
+  SysUtils,
+  Classes,
+  ToolsAPI;
+  {$ENDIF}
+
 
 type
   TSourceFile = class(TInterfacedObject, IOTAFile)

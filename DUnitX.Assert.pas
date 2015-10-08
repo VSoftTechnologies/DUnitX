@@ -355,7 +355,7 @@ class procedure Assert.AreEqual(const expected, actual: cardinal; const message:
 begin
   DoAssert;
   if expected <> actual then
-    FailFmt('Expected %d but got %d %s' ,[expected, actual, message], ReturnAddress);
+    FailFmt(SUnexpectedErrorInt ,[expected, actual, message], ReturnAddress);
 end;
 
 class procedure Assert.AreEqual(const expected, actual, tolerance: Double; const message: string);
@@ -385,7 +385,7 @@ class procedure Assert.AreEqualMemory(const expected : Pointer; const actual : P
 begin
   DoAssert;
   if not CompareMem(expected, actual, size) then
-    Fail('Memory values are not equal. ' + message, ReturnAddress);
+    Fail(SMemoryValuesNotEqual + message, ReturnAddress);
 end;
 
 class procedure Assert.AreNotEqual(const expected, actual, tolerance: Extended; const message: string);
@@ -813,7 +813,7 @@ end;
 
 class procedure Assert.NotImplemented;
 begin
-  Assert.Fail('Not implemented!'); //TODO : resource string
+  Assert.Fail(SNotImplemented);
 end;
 
 {$IFDEF DELPHI_XE_UP}
@@ -1068,10 +1068,10 @@ begin
   if ignoreCase then
   begin
     if StrUtils.ContainsText(theString, subString) then
-      FailFmt('[%s] does contain [%s] %s',[theString, subString, message], ReturnAddress); //TODO : ResourceString
+      FailFmt(SStrDoesNotContain,[theString, subString, message], ReturnAddress);
   end
   else if StrUtils.ContainsStr(theString, subString) then
-    FailFmt('[%s] does contain [%s] %s',[theString, subString, message], ReturnAddress); //TODO : ResourceString
+    FailFmt(SStrDoesNotContain,[theString, subString, message], ReturnAddress);
 end;
 
 class procedure Assert.EndsWith(const subString : string; const theString : string; const ignoreCase : boolean; const message : string);

@@ -115,7 +115,7 @@ type
     class function ToArray(const values : TList<string>) : TArray<string>;
   end;
 
-  function GetElapsedTime(const ALastTick : Cardinal) : Cardinal;
+//  function GetElapsedTime(const ALastTick : Cardinal) : Cardinal;
 
 type
   {$REGION 'Documentation'}
@@ -769,15 +769,13 @@ uses
   System.Generics.Defaults,
   System.Math,
   System.StrUtils,
-  System.SysConst,
-  WinAPI.Windows;
+  System.SysConst;
   {$ELSE}
   Classes,
   Generics.Defaults,
   Math,
   StrUtils,
-  SysConst,
-  Windows;
+  SysConst;
   {$ENDIF}
 
 var
@@ -3247,17 +3245,6 @@ begin
   SetLength(result,values.Count);
   for i := 0 to values.Count - 1 do
     result[i] := values[i];
-end;
-
-function GetElapsedTime(const ALastTick : Cardinal) : Cardinal;
-var
-  CurrentTick : Cardinal;
-begin
-  CurrentTick := GetTickCount;
-  if CurrentTick >= ALastTick then
-    Result := CurrentTick - ALastTick
-  else
-    Result := (High(Cardinal) - ALastTick) + CurrentTick;
 end;
 
 

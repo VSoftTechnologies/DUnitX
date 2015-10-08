@@ -188,8 +188,8 @@ begin
   FFormatSettings.ThousandSeparator := ',';
   FFormatSettings.DecimalSeparator := '.';
   {$ELSE}
-  oldThousandSeparator        := SysUtils.ThousandSeparator;
-  oldDecimalSeparator         := SysUtils.DecimalSeparator;
+  oldThousandSeparator        := {$IFDEF USE_NS}System.{$ENDIF}SysUtils.ThousandSeparator;
+  oldDecimalSeparator         := {$IFDEF USE_NS}System.{$ENDIF}DecimalSeparator;
   try
     SysUtils.ThousandSeparator := ',';
     SysUtils.DecimalSeparator := '.';
@@ -201,8 +201,8 @@ begin
   FOutputStream.WriteBuffer(preamble[0], Length(preamble));
   {$IFNDEF DELPHI_XE_UP}
   finally
-    SysUtils.ThousandSeparator := oldThousandSeparator;
-    SysUtils.DecimalSeparator  := oldDecimalSeparator;
+    {$IFDEF USE_NS}System.{$ENDIF}SysUtils.ThousandSeparator := oldThousandSeparator;
+    {$IFDEF USE_NS}System.{$ENDIF}SysUtils.DecimalSeparator  := oldDecimalSeparator;
   end;
   {$ENDIF}
 

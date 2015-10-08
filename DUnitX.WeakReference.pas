@@ -249,7 +249,6 @@ begin
   end;
 end;
 
-
 procedure TWeakReferencedObject.AfterConstruction;
 begin
   // Release the constructor's implicit refcount

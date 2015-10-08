@@ -28,6 +28,8 @@ unit DUnitX.Tests.Example;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
   DUnitX.TestFramework;
 
@@ -125,8 +127,11 @@ type
 implementation
 
 uses
+  {$IFDEF USE_NS}
+  System.SysUtils,
+  {$ELSE}
   SysUtils,
-  classes,
+  {$ENDIF}
   DUnitX.DUnitCompatibility;
 
 { TMyExampleTests }

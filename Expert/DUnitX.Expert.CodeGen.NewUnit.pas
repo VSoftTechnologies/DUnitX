@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2013 Vincent Parrett                              }
+{           Copyright (C) 2015 Vincent Parrett & Contributors               }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -23,6 +23,7 @@
 {  limitations under the License.                                           }
 {                                                                           }
 {***************************************************************************}
+
 
 unit DUnitX.Expert.CodeGen.NewUnit;
 // This is done to Warnings that I can't control, as Embarcadero has

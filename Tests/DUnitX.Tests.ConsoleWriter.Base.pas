@@ -28,8 +28,14 @@ unit DUnitX.Tests.ConsoleWriter.Base;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
+  {$IFDEF USE_NS}
+  System.Classes,
+  {$ELSE}
   Classes,
+  {$ENDIF}
   DUnitX.TestFramework,
   DUnitX.ConsoleWriter.Base;
 
@@ -80,7 +86,11 @@ type
 implementation
 
 uses
+  {$IFDEF USE_NS}
+  System.SysUtils;
+  {$ELSE}
   SysUtils;
+  {$ENDIF}
 
 type
   TDUnitXConsoleWriterTester = class(TDUnitXConsoleWriterBase, IDUnitXConsoleWriterTester)

@@ -110,7 +110,7 @@ type
   end;
 
   //Trying to implement IEnumerable<T> in the same class as IEnumerable does not
-  //seem to be possible in delphi.. it's and excercise in extreme frustration!
+  //seem to be impossible in delphi.. it's and excercise in extreme frustration!
 
   //Simple base IEnumerable Base implementation
   TDUnitXEnumerable = class(TInterfacedObject, IEnumerable)

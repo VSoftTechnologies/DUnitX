@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2013 Vincent Parrett                              }
+{           Copyright (C) 2015 Vincent Parrett & Contributors               }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -27,6 +27,7 @@
 unit DUnitX.Expert.CodeGen.NewTestProject;
 
 interface
+
 uses
   ToolsAPI,
   DUnitX.Expert.CodeGen.NewProject;
@@ -40,6 +41,7 @@ type
   end;
 
 implementation
+
 uses
   DUnitX.Expert.CodeGen.SourceFile,
   DunitX.Expert.CodeGen.Templates;

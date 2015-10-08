@@ -555,7 +555,7 @@ begin
   fixtures := BuildFixtures;
   fixtureList := fixtures as ITestFixtureList;
   if fixtureList.Count = 0 then
-    raise ENoTestsRegistered.Create('No Test Fixtures found');
+    raise ENoTestsRegistered.Create(SNoFixturesFound);
 
   testCount := 0;
   //TODO: Count the active tests that we have.
@@ -820,7 +820,7 @@ begin
       Self.Loggers_EndSetupTest(threadId, test as ITestInfo);
       Result := True;
     except
-      on e: Exception do
+      on e: {$IFDEF USE_NS}System.SysUtils.{$ENDIF}Exception do
       begin
         errorResult := ExecuteErrorResult(context, threadId, test, e);
       end;
@@ -845,7 +845,7 @@ begin
 
     result := true;
   except
-    on e: Exception do
+    on e: {$IFDEF USE_NS}System.SysUtils.{$ENDIF}Exception do
     begin
       errorResult := ExecuteErrorResult(context, threadId, test, e);
     end;

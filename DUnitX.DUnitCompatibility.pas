@@ -55,11 +55,15 @@ type
     procedure CheckEquals(const expected, actual: Cardinal; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
     procedure CheckEquals(const expected, actual: int64; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
     procedure CheckEquals(const expected, actual: UnicodeString; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
+{$IFNDEF NEXTGEN}
     procedure CheckEquals(const expected, actual: AnsiString; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
     procedure CheckEquals(const expected, actual: ShortString; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
+{$ENDIF}
     procedure CheckEqualsString(const expected, actual: string; const msg: string = '');deprecated  'Use DUnitX.Assert class';
+{$IFNDEF NEXTGEN}
     procedure CheckEquals(const expected, actual: WideString; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
     procedure CheckEqualsWideString(const expected, actual: WideString; const msg: string = '');deprecated  'Use DUnitX.Assert class';
+{$ENDIF}
     procedure CheckEqualsMem(const expected, actual: pointer; const size:longword; const msg : string='');deprecated  'Use DUnitX.Assert class';
     procedure CheckEquals(const expected, actual: Boolean; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
     procedure CheckEqualsBin(const expected, actual: longword; const msg: string = ''; digits: integer=32);deprecated  'Use DUnitX.Assert class';
@@ -71,8 +75,10 @@ type
     procedure CheckNotEquals(const expected: extended; const actual: extended; const delta: extended = 0; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
     procedure CheckNotEquals(const expected, actual: string; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
     procedure CheckNotEqualsString(const expected, actual: string; const msg: string = '');deprecated  'Use DUnitX.Assert class';
+{$IFNDEF NEXTGEN}
     procedure CheckNotEquals(const expected, actual: WideString; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
     procedure CheckNotEqualsWideString(const expected, actual: WideString; const msg: string = '');deprecated  'Use DUnitX.Assert class';
+{$ENDIF}
     procedure CheckNotEqualsMem(const expected, actual: pointer; const size:longword; const msg : string='');deprecated  'Use DUnitX.Assert class';
     procedure CheckNotEquals(const expected, actual: Boolean; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
     procedure CheckNotEqualsBin(const expected, actual: longword; const msg: string = ''; digits: integer=32);deprecated  'Use DUnitX.Assert class';

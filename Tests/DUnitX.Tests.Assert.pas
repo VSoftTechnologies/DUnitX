@@ -184,8 +184,13 @@ type
 implementation
 
 uses
+  {$IFDEF USE_NS}
+  System.SysUtils,
+  System.Classes;
+  {$ELSE}
   SysUtils,
   Classes;
+  {$ENDIF}
 
 type
   {$M+}
