@@ -87,6 +87,7 @@ type
   TCustomAttributeClass = class of TCustomAttribute;
 
   TAttributeUtils = class
+  public
     class function ContainsAttribute(const attributes : TArray<TCustomAttribute>; const AttributeClass : TCustomAttributeClass) : boolean;
     class function FindAttribute(const attributes : TArray<TCustomAttribute>; const AttributeClass : TCustomAttributeClass) : TCustomAttribute;overload;
     class function FindAttribute(const attributes : TArray<TCustomAttribute>; const AttributeClass : TCustomAttributeClass; var attribute  : TCustomAttribute; const startIndex : integer = 0) : integer;overload;

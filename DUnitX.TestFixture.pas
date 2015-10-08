@@ -48,7 +48,7 @@ uses
 
 type
   TDUnitXTestFixture = class(TWeakReferencedObject, ITestFixture,ITestFixtureInfo)
-  class var
+  private class var
     FRttiContext  : TRttiContext;
   private
     FTestClass    : TClass;
