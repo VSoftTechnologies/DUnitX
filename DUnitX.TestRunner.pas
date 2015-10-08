@@ -715,7 +715,7 @@ begin
     begin
       assertAfterCount := TDUnitX.GetAssertCount(threadId);
       if (assertBeforeCount = assertAfterCount)  then
-        raise ETestFailure.Create(SNoAssertions);
+        raise ENoAssertionsMade.Create(SNoAssertions);
     end;
 
     Result := ExecuteSuccessfulResult(context, threadId, test,FLogMessages.Text);
