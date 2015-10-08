@@ -581,6 +581,7 @@ type
   ETestFailure = class(EAbort);
   ETestPass = class(EAbort);
   ETimedOut = class(EAbort);
+  ENoAssertionsMade = class(ETestFailure);
 
   ENoTestsRegistered = class(ETestFrameworkException);
   ECommandLineError = class(ETestFrameworkException);

@@ -704,7 +704,7 @@ begin
     begin
       assertAfterCount := TDUnitX.GetAssertCount(threadId);
       if (assertBeforeCount = assertAfterCount)  then
-        raise ETestFailure.Create('No assertions were made during the test');
+        raise ENoAssertionsMade.Create('No assertions were made during the test');
     end;
 
     Result := ExecuteSuccessfulResult(context, threadId, test,FLogMessages.Text);
