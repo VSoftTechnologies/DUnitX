@@ -28,6 +28,8 @@ unit DUnitX.Loggers.Text;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
   {$IFDEF USE_NS}
   System.Classes,
@@ -36,7 +38,6 @@ uses
   {$ENDIF}
   DUnitX.TestFramework;
 
-{$I DUnitX.inc}
 
 type
   // Simple text file logger.

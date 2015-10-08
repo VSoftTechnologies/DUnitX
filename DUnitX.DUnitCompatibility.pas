@@ -245,6 +245,7 @@ begin
 {$ENDIF}
 end;
 
+{$IFNDEF NEXTGEN}
 procedure TTestCase.CheckEquals(const expected, actual: AnsiString; const msg: string);
 begin
 {$IFDEF DELPHI_XE_UP}
@@ -262,12 +263,14 @@ begin
   Assert.IsTrue(expected = actual, msg);
 {$ENDIF}
 end;
+{$ENDIF}
 
 procedure TTestCase.CheckEqualsString(const expected, actual: string; const msg: string);
 begin
   Assert.AreEqual(expected,actual,true,msg);
 end;
 
+{$IFNDEF NEXTGEN}
 procedure TTestCase.CheckEquals(const expected, actual: WideString; const msg: string);
 begin
   Assert.AreEqual(expected,actual,true,msg);
@@ -277,6 +280,7 @@ procedure TTestCase.CheckEqualsWideString(const expected, actual: WideString; co
 begin
   Assert.AreEqual(expected,actual,true,msg);
 end;
+{$ENDIF}
 
 procedure TTestCase.CheckEqualsMem(const expected, actual: pointer; const size:longword; const msg : string = '');
 begin
@@ -348,6 +352,7 @@ begin
   Assert.AreNotEqual(expected,actual,true,msg);
 end;
 
+{$IFNDEF NEXTGEN}
 procedure TTestCase.CheckNotEquals(const expected, actual: WideString; const msg: string);
 begin
   Assert.AreNotEqual(expected,actual,true,msg);
@@ -357,6 +362,7 @@ procedure TTestCase.CheckNotEqualsWideString(const expected, actual: WideString;
 begin
   Assert.AreNotEqual(expected,actual,true,msg);
 end;
+{$ENDIF}
 
 procedure TTestCase.CheckNotEqualsMem(const expected, actual: pointer; const size:longword; const msg:string='');
 begin

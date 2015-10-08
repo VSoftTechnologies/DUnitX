@@ -234,14 +234,22 @@ implementation
 uses
   DUnitX.ResStrs,
   Generics.Defaults,
-  Math,
   {$IFDEF SUPPORTS_REGEX}
   System.RegularExpressions,
   {$ENDIF}
+  {$IFDEF USE_NS}
+  System.Math,
+  System.Rtti,
+  System.StrUtils,
+  System.TypInfo,
+  System.Variants;
+  {$ELSE}
+  Math,
   Rtti,
   StrUtils,
   TypInfo,
   Variants;
+  {$ENDIF}
 
 {$IFDEF DELPHI_XE_DOWN}
 function IsBadPointer(P: Pointer):Boolean;register;
@@ -1067,10 +1075,10 @@ begin
   DoAssert;
   if ignoreCase then
   begin
-    if StrUtils.ContainsText(theString, subString) then
+    if {$IFDEF USE_NS}System.{$ENDIF}StrUtils.ContainsText(theString, subString) then
       FailFmt(SStrDoesNotContain,[theString, subString, message], ReturnAddress);
   end
-  else if StrUtils.ContainsStr(theString, subString) then
+  else if {$IFDEF USE_NS}System.{$ENDIF}StrUtils.ContainsStr(theString, subString) then
     FailFmt(SStrDoesNotContain,[theString, subString, message], ReturnAddress);
 end;
 

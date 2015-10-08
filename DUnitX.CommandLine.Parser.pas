@@ -179,7 +179,7 @@ begin
     else
     begin
       //don't recognise the start so report it and continue.
-      parseErrors.AddError('Unknown option start : ' + values.Strings[i]);
+      parseErrors.AddError(SUnknownOptionStart + values.Strings[i]);
       continue;
     end;
 
