@@ -52,11 +52,12 @@ implementation
 uses
   {$IFDEF USE_NS}
   WinAPI.Windows,
+  System.Diagnostics,
   {$ELSE}
   Windows,
+  Diagnostics,
   {$ENDIF}
   DUnitX.ResStrs,
-  System.Diagnostics,
   DUnitX.TestFramework;
 
 // The following TimeOut code is based on the code found at

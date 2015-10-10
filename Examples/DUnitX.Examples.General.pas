@@ -144,9 +144,11 @@ uses
   {$IFDEF USE_NS}
   System.SysUtils,
   System.Classes,
+  WinApi.Windows,
   {$ELSE}
   SysUtils,
   Classes,
+  Windows,
   {$ENDIF}
   DUnitX.DUnitCompatibility;
 
