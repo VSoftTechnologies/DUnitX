@@ -140,6 +140,7 @@ type
     procedure SetTestInOwnThread(const value : boolean);
 
     procedure ExecuteFixtureTearDown;
+    procedure InitFixtureInstance;
 
     property Name                       : string read GetName;
     property NameSpace                  : string read GetNameSpace;

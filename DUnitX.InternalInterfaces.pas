@@ -63,6 +63,7 @@ type
   ITestExecute = interface
     ['{C59443A9-8C7D-46CE-83A1-E40309A1B384}']
     procedure Execute(const context : ITestExecuteContext);
+    procedure UpdateInstance(const fixtureInstance : TObject);
   end;
 
   ITestCaseExecute = interface(ITestExecute)

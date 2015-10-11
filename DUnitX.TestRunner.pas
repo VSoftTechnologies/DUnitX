@@ -628,6 +628,9 @@ begin
 
     Self.Loggers_StartTestFixture(threadId, fixture as ITestFixtureInfo);
     try
+      //Initialize the fixture as it may have been destroyed in a previous run (when using gui runner).
+      if fixture.HasTests then
+        fixture.InitFixtureInstance;
       //only run the setup method if there are actually tests
       if fixture.HasTests and Assigned(fixture.SetupFixtureMethod) then
         //TODO: Errors from here need to be logged into each test below us

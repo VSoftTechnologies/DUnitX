@@ -95,6 +95,7 @@ type
 
     //ITestExecute
     procedure Execute(const context : ITestExecuteContext);virtual;
+    procedure UpdateInstance(const fixtureInstance : TObject);virtual;
   public
     constructor Create(const AFixture : ITestFixture; const AMethodName : string; const AName : string; const ACategory  : string; const AMethod : TTestMethod; const AEnabled : boolean;
                        const AIgnored : boolean = false; const AIgnoreReason : string = ''; const AMaxTime : Cardinal = 0);
@@ -110,6 +111,7 @@ type
   protected
     function GetName: string; override;
     procedure Execute(const context : ITestExecuteContext); override;
+    procedure UpdateInstance(const fixtureInstance : TObject);override;
   public
     constructor Create(const AInstance : TObject; const AFixture : ITestFixture; const AMethodName : string; const ACaseName : string; const AName : string; const ACategory  : string; const AMethod : TRttiMethod;
                        const AEnabled : boolean; const AArgs : TValueArray);reintroduce;
@@ -301,6 +303,11 @@ begin
   FTimedOut := AValue;
 end;
 
+procedure TDUnitXTest.UpdateInstance(const fixtureInstance: TObject);
+begin
+  TMethod(FMethod).Data := fixtureInstance;
+end;
+
 procedure TDUnitXTest.SetResult(const value: ITestResult);
 begin
 
@@ -362,6 +369,12 @@ end;
 function TDUnitXTestCase.GetName: string;
 begin
   Result := FName + '.' + FCaseName;
+end;
+
+procedure TDUnitXTestCase.UpdateInstance(const fixtureInstance: TObject);
+begin
+  inherited;
+  FInstance := fixtureInstance;
 end;
 
 end.
