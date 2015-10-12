@@ -2959,10 +2959,23 @@ type
     procedure Init(Parent: TRttiType; PropInfo: {$IFDEF DELPHI_XE3_UP}PPropInfoExt{$ELSE}PPropInfo {$ENDIF});
   end;
 
+{$IFNDEF DELPHI_XE2_UP}
+type
+  UIntPtr = NativeUInt;
+{$ENDIF}
+
 procedure TRttiObjectAccess.Init(Parent: TRttiType; PropInfo: {$IFDEF DELPHI_XE3_UP}PPropInfoExt{$ELSE}PPropInfo {$ENDIF});
+const
+{$IFDEF AUTOREFCOUNT}
+  FHANDLE_OFFSET = (SizeOf(Pointer) * 2);
+  FPARENT_OFFSET = (SizeOf(Pointer) * 3);
+{$ELSE}
+  FHANDLE_OFFSET = (SizeOf(Pointer) * 1);
+  FPARENT_OFFSET = (SizeOf(Pointer) * 2);
+{$ENDIF}
 begin
-  Self.FParent := Parent;
-  Self.FHandle := PropInfo;
+  PPointer(UIntPtr(Self) + FPARENT_OFFSET)^ := Parent;
+  PPointer(UIntPtr(Self) + FHANDLE_OFFSET)^ := PropInfo;
 end;
 
 {$IFDEF DELPHI_XE3_UP}
@@ -3004,7 +3017,6 @@ begin
 end;
 
 constructor TRttiPropertyExtension.Create(Parent: PTypeInfo; const Name: string; PropertyType: PTypeInfo);
-
 {$IFDEF DELPHI_XE3_UP}
 var
   M: TMarshaller;
