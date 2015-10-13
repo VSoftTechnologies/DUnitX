@@ -38,6 +38,8 @@ uses
 type
 
   TNewUnit = class(TNotifierObject,IOTACreator,IOTAModuleCreator)
+  private
+    FPersonality : string;
   protected
     //Specific to class
     FFormName : String;
@@ -71,6 +73,7 @@ type
     property ImplFileName : string read GetImplFileName write SetImplFileName;
     property IntfFileName : string read GetIntfFileName write SetIntfFileName;
     property AncestorName : string read GetAncestorName write SetAncestorName;
+    property Personality : string read FPersonality write FPersonality;
   end;
 
 

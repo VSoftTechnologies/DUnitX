@@ -42,13 +42,26 @@ uses
   {$ELSE}
   Dialogs,
   {$ENDIF}
+  {$IFDEF DELPHIX_SEATTLE_UP}
+  DUnitX.Expert.ProjectWizardEx,
+  DUnitX.Expert.NewUnitWizardEx;
+  {$ELSE}
   DUnitX.Expert.ProjectWizard,
   DUnitX.Expert.NewUnitWizard;
+  {$ENDIF}
 
 procedure Register;
 begin
+  {$IFDEF DELPHIX_SEATTLE_UP}
+  TDUnitXNewProjectWizard.RegisterDUnitXProjectWizard(sDelphiPersonality);
+  TDUnitXNewProjectWizard.RegisterDUnitXProjectWizard(sCBuilderPersonality);
+
+  TDUnitXNewUnitWizard.RegisterDUnitXNewUnitWizard(sDelphiPersonality);
+  TDUnitXNewUnitWizard.RegisterDUnitXNewUnitWizard(sCBuilderPersonality);
+  {$ELSE}
   RegisterPackageWizard(TDUnitXNewProjectWizard.Create);
   RegisterPackageWizard(TDUnitXNewUnitWizard.Create);
+  {$ENDIF}
 end;
 
 end.

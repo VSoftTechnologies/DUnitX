@@ -111,7 +111,6 @@
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <DCC_Description>DUnitX IDE Expert</DCC_Description>
-        <VerInfo_Locale>1033</VerInfo_Locale>
         <DCC_RemoteDebug>false</DCC_RemoteDebug>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
@@ -126,10 +125,9 @@
         </DelphiCompile>
         <DCCReference Include="rtl.dcp"/>
         <DCCReference Include="designide.dcp"/>
+        <DCCReference Include="ExpertsCreators.dcp"/>
         <DCCReference Include="DUnitX.Expert.CodeGen.SourceFile.pas"/>
-        <DCCReference Include="DUnitX.Expert.ProjectWizard.pas"/>
         <DCCReference Include="DUnitX.Expert.Registration.pas"/>
-        <DCCReference Include="DUnitX.Expert.NewUnitWizard.pas"/>
         <DCCReference Include="DUnitX.Expert.Forms.NewUnitWizard.pas">
             <Form>frmDunitXNewUnit</Form>
             <FormType>dfm</FormType>
@@ -143,6 +141,8 @@
         <DCCReference Include="DUnitX.Expert.CodeGen.Templates.pas"/>
         <DCCReference Include="DUnitX.Expert.CodeGen.NewProject.pas"/>
         <DCCReference Include="DUnitX.Expert.CodeGen.NewTestUnit.pas"/>
+        <DCCReference Include="DUnitX.Expert.NewUnitWizardEx.pas"/>
+        <DCCReference Include="DUnitX.Expert.ProjectWizardEx.pas"/>
         <RcItem Include="DUnitX.Expert.NewProject.ico">
             <ResourceType>ICON</ResourceType>
             <ResourceId>DUnitXNewProjectIcon</ResourceId>
@@ -222,13 +222,19 @@
                     <VersionInfoKeys Name="theme"/>
                 </VersionInfoKeys>
                 <Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\bcboffice2k190.bpl">Embarcadero C++Builder Office 2000 Servers Package</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\bcbofficexp190.bpl">Embarcadero C++Builder Office XP Servers Package</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k190.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp190.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\bcboffice2k230.bpl">Embarcadero C++Builder Office 2000 Servers Package</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\bcbofficexp230.bpl">Embarcadero C++Builder Office XP Servers Package</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k230.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp230.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
                 </Excluded_Packages>
             </Delphi.Personality>
             <Deployment Version="2">
+                <DeployFile LocalName="C:\Users\Public\Documents\Embarcadero\Studio\17.0\Bpl\DUnitX_IDE_Expert_D10Seattle.bpl" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win32">
+                        <RemoteName>DUnitX_IDE_Expert_D10Seattle.bpl</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployClass Name="ProjectiOSDeviceResourceRules"/>
                 <DeployClass Name="ProjectOSXResource">
                     <Platform Name="OSX32">

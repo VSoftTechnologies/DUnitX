@@ -32,6 +32,8 @@ interface
 
 resourcestring
 
+ { Delphi template code }
+
  STestDPR = 'program %0:s;'#13#10 +
  #13#10 +
  '{$IFNDEF TESTINSIGHT}'#13#10 +
@@ -165,6 +167,102 @@ resourcestring
  'end;'#13#10;
 
  SDefaultClassName = 'TMyTestObject';
+
+ { C++Builder template code }
+
+ STestCBPROJ = '#include <System.Sysutils.hpp>'#13#10 +
+ '#include <DUnitX.Loggers.Console.hpp>'#13#10 +
+ '#include <DUnitX.Loggers.Xml.NUnit.hpp>'#13#10 +
+ '#include <DUnitX.TestFramework.hpp>'#13#10 +
+ '#include <stdio.h>'#13#10 +
+ #13#10 +
+ 'int main()'#13#10 +
+ '{'#13#10 +
+ '  try'#13#10 +
+ '  {'#13#10 +
+ '    TDUnitX::CheckCommandLine();'#13#10 +
+ '    _di_ITestRunner runner = TDUnitX::CreateRunner();'#13#10 +
+ '    _di_ITestLogger logger(*new TDUnitXConsoleLogger(true));'#13#10 +
+ '    runner->AddLogger(logger);'#13#10 +
+ #13#10 +
+ '    _di_ITestLogger nunitLogger(*new TDUnitXXMLNUnitFileLogger(TDUnitX::Options->XMLOutputFile));'#13#10 +
+ '    runner->AddLogger(nunitLogger);'#13#10 +
+ #13#10 +
+ '    _di_IRunResults results = runner->Execute();'#13#10 +
+ #13#10 +
+ '#if !defined(CI)'#13#10 +
+ '    if (TDUnitX::Options->ExitBehavior == TDUnitXExitBehavior::Pause)'#13#10 +
+ '    {'#13#10 +
+ '      printf("Done.. press <Enter> key to quit.");'#13#10 +
+ '      getchar();'#13#10 +
+ '    }'#13#10 +
+ '#endif'#13#10 +
+ #13#10 +
+ '    return results->AllPassed ? EXIT_SUCCESS : EXIT_FAILURE;'#13#10 +
+ '  }'#13#10 +
+ '  catch(System::Sysutils::Exception& Ex)'#13#10 +
+ '  {'#13#10 +
+ '    printf("Exception: ''''%s''''\n", AnsiString(Ex.Message).c_str());'#13#10 +
+ '  }'#13#10 +
+ '  return EXIT_FAILURE;'#13#10 +
+ '}';
+
+ STestCPPUnit = '#include <DUnitX.TestFramework.hpp>'#13#10 +
+ '#include <stdio.h>'#13#10 +
+ #13#10 +
+ '#pragma option --xrtti'#13#10 +
+ #13#10 +
+ 'class __declspec(delphirtti) %1:s : public TObject'#13#10 +
+ '{'#13#10 +
+ 'public:'#13#10 +
+ '%2:s' +
+ #13#10 +
+ '__published:'#13#10 +
+ '%3:s' +
+ '};'#13#10 +
+ #13#10 +
+ #13#10 +
+ '%4:s' +
+ #13#10 +
+ '%5:s' +
+ #13#10 +
+ 'static void registerTests()'#13#10 +
+ '{'#13#10 +
+ '  TDUnitX::RegisterTestFixture(__classid(%1:s));'#13#10 +
+ '}'#13#10 +
+ '#pragma startup registerTests 33';
+
+ SSetupTearDownCPPIntf =
+ '  virtual void __fastcall SetUp();'#13#10 +
+ '  virtual void __fastcall TearDown();'#13#10;
+
+ SSetupTearDownCPPImpl =
+ 'void __fastcall %0:s::SetUp()'#13#10 +
+ '{'#13#10 +
+ '}'#13#10 +
+ #13#10 +
+ 'void __fastcall %0:s::TearDown()'#13#10 +
+ '{'#13#10 +
+ '}'#13#10;
+
+ SSampleMethodsCPPIntf =
+ '  void __fastcall Test1();'#13#10 +
+ '  void __fastcall Test2();'#13#10;
+
+ SSampleMethodsCPPImpl =
+ 'void __fastcall %0:s::Test1()'#13#10 +
+ '{'#13#10 +
+ '  // TODO'#13#10 +
+ '  String s("Hello");'#13#10 +
+ '  Dunitx::Testframework::Assert::IsTrue(s == "Hello");'#13#10 +
+ '}'#13#10 +
+ #13#10 +
+ 'void __fastcall %0:s::Test2()'#13#10 +
+ '{'#13#10 +
+ '  // TODO'#13#10 +
+ '  String s("Hello");'#13#10 +
+ '  Dunitx::Testframework::Assert::IsTrue(s == "Bonjour"); // This fails for illustrative purposes'#13#10 +
+ '}'#13#10;
 
 
 implementation
