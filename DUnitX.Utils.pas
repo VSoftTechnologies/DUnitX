@@ -2955,9 +2955,20 @@ begin
 end;
 
 type
+ // Declare compatible members of TRttiObject in System.Rtti.pas
+  TRttiObjectFieldRef = class abstract
+    FHandle: Pointer;
+    FRttiDataSize: Integer;
+    FPackage: Pointer{TRttiPackage};
+    FParent: Pointer{TRttiObject};
+    FAttributeGetter: Pointer{TFunc<TArray<TCustomAttribute>>};
+  end;
+
   TRttiObjectAccess = class helper for TRttiObject
+  public
     procedure Init(Parent: TRttiType; PropInfo: {$IFDEF DELPHI_XE3_UP}PPropInfoExt{$ELSE}PPropInfo {$ENDIF});
   end;
+
 
 {$IFNDEF DELPHI_XE2_UP}
 type
@@ -2974,8 +2985,10 @@ const
   FPARENT_OFFSET = (SizeOf(Pointer) * 2);
 {$ENDIF}
 begin
-  PPointer(UIntPtr(Self) + FPARENT_OFFSET)^ := Parent;
-  PPointer(UIntPtr(Self) + FHANDLE_OFFSET)^ := PropInfo;
+//if TRttiObject.InstanceSize <> TRttiObjectFieldRef.InstanceSize then
+//  assert;
+  TRttiObjectFieldRef(Self).FParent := Parent;
+  TRttiObjectFieldRef(Self).FHandle := PropInfo;
 end;
 
 {$IFDEF DELPHI_XE3_UP}
