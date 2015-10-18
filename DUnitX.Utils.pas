@@ -1070,15 +1070,21 @@ begin
 end;
 
 function ConvStr2Float(const ASource: TValue; ATarget: PTypeInfo; out AResult: TValue): Boolean;
+var
+  lFormatSettings : TFormatSettings;
+  lValue : string;
 begin
+  lFormatSettings.DecimalSeparator := '.';
+  lValue := StringReplace(ASource.AsString, ',', '.', [rfReplaceAll]);
+
   if ATarget = TypeInfo(TDate) then
-    AResult := TValue.From<TDate>(StrToDateDef(ASource.AsString, 0))
+    AResult := TValue.From<TDate>(StrToDateDef(lValue, 0))
   else if ATarget = TypeInfo(TDateTime) then
-    AResult := TValue.From<TDateTime>(StrToDateTimeDef(ASource.AsString, 0))
+    AResult := TValue.From<TDateTime>(StrToDateTimeDef(lValue, 0))
   else if ATarget = TypeInfo(TTime) then
-    AResult := TValue.From<TTime>(StrToTimeDef(ASource.AsString, 0))
+    AResult := TValue.From<TTime>(StrToTimeDef(lValue, 0))
   else
-    AResult := TValue.FromFloat(ATarget, StrToFloatDef(ASource.AsString, 0));
+    AResult := TValue.FromFloat(ATarget, StrToFloatDef(lValue, 0, lFormatSettings));
   Result := True;
 end;
 
@@ -2969,11 +2975,6 @@ type
     procedure Init(Parent: TRttiType; PropInfo: {$IFDEF DELPHI_XE3_UP}PPropInfoExt{$ELSE}PPropInfo {$ENDIF});
   end;
 
-
-{$IFNDEF DELPHI_XE2_UP}
-type
-  UIntPtr = NativeUInt;
-{$ENDIF}
 
 procedure TRttiObjectAccess.Init(Parent: TRttiType; PropInfo: {$IFDEF DELPHI_XE3_UP}PPropInfoExt{$ELSE}PPropInfo {$ENDIF});
 const
