@@ -330,7 +330,7 @@ end;
 
 procedure TTestCase.CheckNotEquals(const expected, actual: int64; const msg: string);
 begin
-{$IFNDEF DELPHI_XE_DOWN}}
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreNotEqual<int64>(expected,actual,msg);
 {$ELSE}
   Assert.IsFalse(expected = actual, msg);
@@ -371,7 +371,7 @@ end;
 
 procedure TTestCase.CheckNotEquals(const expected, actual: Boolean; const msg: string);
 begin
-{$IFNDEF DELPHI_XE_DOWN}}
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreNotEqual<boolean>(expected,actual,msg);
 {$ELSE}
   Assert.IsFalse(expected = actual, msg);
