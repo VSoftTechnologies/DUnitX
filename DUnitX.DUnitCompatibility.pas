@@ -211,7 +211,7 @@ end;
 
 procedure TTestCase.CheckEquals(const expected, actual: integer; const msg: string);
 begin
-{$IFDEF DELPHI_XE_UP}
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreEqual<integer>(expected,actual,msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);
@@ -220,7 +220,7 @@ end;
 
 procedure TTestCase.CheckEquals(const expected, actual: Cardinal; const msg: string);
 begin
-{$IFDEF DELPHI_XE_UP}
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreEqual<Cardinal>(expected,actual,msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);
@@ -229,7 +229,7 @@ end;
 
 procedure TTestCase.CheckEquals(const expected, actual: int64; const msg: string);
 begin
-{$IFDEF DELPHI_XE_UP}
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreEqual<Int64>(expected,actual,msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);
@@ -238,7 +238,7 @@ end;
 
 procedure TTestCase.CheckEquals(const expected, actual: UnicodeString; const msg: string);
 begin
-{$IFDEF DELPHI_XE_UP}
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreEqual(expected, actual, msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);
@@ -248,7 +248,7 @@ end;
 {$IFNDEF NEXTGEN}
 procedure TTestCase.CheckEquals(const expected, actual: AnsiString; const msg: string);
 begin
-{$IFDEF DELPHI_XE_UP}
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreEqual<AnsiString>(expected,actual,msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);
@@ -257,7 +257,7 @@ end;
 
 procedure TTestCase.CheckEquals(const expected, actual: ShortString; const msg: string);
 begin
-{$IFDEF DELPHI_XE_UP}
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreEqual<ShortString>(expected,actual,msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);
@@ -289,7 +289,7 @@ end;
 
 procedure TTestCase.CheckEquals(const expected, actual: Boolean; const msg: string);
 begin
-{$IFDEF DELPHI_XE_UP}
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreEqual<Boolean>(expected,actual,msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);
@@ -298,7 +298,7 @@ end;
 
 procedure TTestCase.CheckEqualsBin(const expected, actual: longword; const msg: string; digits: integer);
 begin
-{$IFDEF DELPHI_XE_UP}
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreEqual(IntToBin(expected, digits), IntToBin(actual, digits),msg);
 {$ELSE}
   Assert.IsTrue(IntToBin(expected, digits) = IntToBin(actual, digits), msg);
@@ -312,7 +312,7 @@ end;
 
 procedure TTestCase.CheckNotEquals(const expected, actual: integer; const msg: string);
 begin
-{$IFDEF DELPHI_XE_UP}
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreNotEqual<integer>(expected,actual,msg);
 {$ELSE}
   Assert.IsFalse(expected = actual, msg);
@@ -321,7 +321,7 @@ end;
 
 procedure TTestCase.CheckNotEquals(const expected, actual: Cardinal; const msg: string);
 begin
-{$IFDEF DELPHI_XE_UP}
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreNotEqual<Cardinal>(expected,actual,msg);
 {$ELSE}
   Assert.IsFalse(expected = actual, msg);
@@ -330,7 +330,7 @@ end;
 
 procedure TTestCase.CheckNotEquals(const expected, actual: int64; const msg: string);
 begin
-{$IFDEF DELPHI_XE_UP}
+{$IFNDEF DELPHI_XE_DOWN}}
   Assert.AreNotEqual<int64>(expected,actual,msg);
 {$ELSE}
   Assert.IsFalse(expected = actual, msg);
@@ -371,7 +371,7 @@ end;
 
 procedure TTestCase.CheckNotEquals(const expected, actual: Boolean; const msg: string);
 begin
-{$IFDEF DELPHI_XE_UP}
+{$IFNDEF DELPHI_XE_DOWN}}
   Assert.AreNotEqual<boolean>(expected,actual,msg);
 {$ELSE}
   Assert.IsFalse(expected = actual, msg);
@@ -380,7 +380,7 @@ end;
 
 procedure TTestCase.CheckNotEqualsBin(const expected, actual: longword; const msg: string; digits: integer);
 begin
-{$IFDEF DELPHI_XE_UP}
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreNotEqual<longword>(expected,actual,msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);
@@ -404,7 +404,7 @@ end;
 
 procedure TTestCase.CheckSame(const expected, actual: IUnknown; const msg: string);
 begin
-{$IFDEF DELPHI_XE_UP}
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreEqual<IInterface>(expected,actual,msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);
@@ -413,7 +413,7 @@ end;
 
 procedure TTestCase.CheckSame(const expected, actual: TObject; const msg: string);
 begin
-{$IFDEF DELPHI_XE_UP}
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreEqual<TObject>(expected,actual,msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);
