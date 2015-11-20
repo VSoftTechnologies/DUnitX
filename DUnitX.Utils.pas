@@ -2963,6 +2963,7 @@ end;
 type
  // Declare compatible members of TRttiObject in System.Rtti.pas
   TRttiObjectFieldRef = class abstract
+  public
     FHandle: Pointer;
     FRttiDataSize: Integer;
     FPackage: Pointer{TRttiPackage};
