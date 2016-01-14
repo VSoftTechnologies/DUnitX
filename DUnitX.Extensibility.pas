@@ -28,10 +28,18 @@ unit DUnitX.Extensibility;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
+  {$IFDEF USE_NS}
+  System.TimeSpan,
+  System.Rtti,
+  System.Generics.Collections,
+  {$ELSE}
   TimeSpan,
   Rtti,
   Generics.Collections,
+  {$ENDIF}
   DUnitX.Types,
   DUnitX.Generics;
 
@@ -132,6 +140,7 @@ type
     procedure SetTestInOwnThread(const value : boolean);
 
     procedure ExecuteFixtureTearDown;
+    procedure InitFixtureInstance;
 
     property Name                       : string read GetName;
     property NameSpace                  : string read GetNameSpace;

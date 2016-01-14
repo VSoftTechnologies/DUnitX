@@ -28,15 +28,22 @@ unit DUnitX.FixtureResult;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
-  classes,
+  {$IFDEF USE_NS}
+  System.Classes,
+  System.TimeSpan,
+  System.Diagnostics,
+  {$ELSE}
+  Classes,
   TimeSpan,
   Diagnostics,
+  {$ENDIF}
   DUnitX.Generics,
   DUnitX.TestFramework,
   DUnitX.InternalInterfaces;
 
-{$I DUnitX.inc}
 
 type
   TDUnitXFixtureResult = class(TInterfacedObject,IFixtureResult,IFixtureResultBuilder)
@@ -98,8 +105,13 @@ type
 implementation
 
 uses
+  {$IFDEF USE_NS}
+  System.DateUtils,
+  System.SysUtils;
+  {$ELSE}
   DateUtils,
   SysUtils;
+  {$ENDIF}
 
 const
   UNDEFINED_DATETIME = 0;

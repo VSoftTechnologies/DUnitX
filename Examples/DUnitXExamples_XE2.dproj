@@ -145,6 +145,9 @@
 			<DCCReference Include="..\DUnitX.Filters.pas"/>
 			<DCCReference Include="..\DUnitX.CategoryExpression.pas"/>
 			<DCCReference Include="..\DUnitX.TestNameParser.pas"/>
+			<DCCReference Include="..\DUnitX.Assert.pas"/>
+			<DCCReference Include="..\DUnitX.Timeout.pas"/>
+			<DCCReference Include="..\DUnitX.Attributes.pas"/>
 			<BuildConfiguration Include="Debug">
 				<Key>Cfg_2</Key>
 				<CfgParent>Base</CfgParent>

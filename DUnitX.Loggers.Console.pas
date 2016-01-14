@@ -27,12 +27,12 @@
 unit DUnitX.Loggers.Console;
 
 interface
-uses
-  DUnitX.ConsoleWriter.Base,
-  DUnitX.TestFramework,
-  classes;
 
 {$I DUnitX.inc}
+
+uses
+  DUnitX.ConsoleWriter.Base,
+  DUnitX.TestFramework;
 
 type
   ///
@@ -91,10 +91,14 @@ type
 implementation
 
 uses
+  DUnitX.ResStrs,
+  {$IFDEF USE_NS}
+  System.SysUtils,
+  {$ELSE}
+  SysUtils,
+  {$ENDIF}
   DUnitX.AutoDetect.Console,
-  DUnitX.IoC,
-  SysUtils;
-
+  DUnitX.IoC;
 
 { TDUnitXConsoleLogger }
 
@@ -103,8 +107,7 @@ begin
   FQuietMode := quietMode;
   FConsoleWriter := TDUnitXIoC.DefaultContainer.Resolve<IDUnitXConsoleWriter>();
   if FConsoleWriter = nil then
-    raise Exception.Create('No ConsoleWriter Class is registered.' + #13#10 +
-                           'You will need to include DUnitX.Windows.Console or DUnitX.MACOS.Console in you application');
+    raise Exception.Create(SNoConsoleWriterClassRegistered);
 end;
 
 destructor TDUnitXConsoleLogger.Destroy;
@@ -171,7 +174,7 @@ begin
 
   //SetConsoleRunTestColor();
   //FConsoleWriter.Indent(1);
-  FConsoleWriter.WriteLn('Executing Test : ' + Test.Name);
+  FConsoleWriter.WriteLn(SExecutingTest + Test.Name);
   FConsoleWriter.WriteLn;
   //SetConsoleDefaultColor();
 end;
@@ -228,7 +231,7 @@ begin
     exit;
 
   FConsoleWriter.Indent(1);
-  FConsoleWriter.WriteLn('Running Fixture Setup Method : ' + fixture.SetupFixtureMethodName);
+  FConsoleWriter.WriteLn(SRunningFixtureSetup + fixture.SetupFixtureMethodName);
 
 end;
 
@@ -238,7 +241,7 @@ begin
     exit;
 
   SetConsoleSetupTestColor();
-  FConsoleWriter.WriteLn('Running Setup for : ' + Test.Name);
+  FConsoleWriter.WriteLn(SRunningSetup + Test.Name);
 end;
 
 procedure TDUnitXConsoleLogger.OnBeginTest(const threadId: TThreadID; const  Test: ITestInfo);
@@ -248,7 +251,7 @@ begin
 
   SetConsoleRunTestColor();
   FConsoleWriter.Indent(1);
-  FConsoleWriter.WriteLn('Test : ' +  Test.FullName);
+  FConsoleWriter.WriteLn(STest +  Test.FullName);
   FConsoleWriter.WriteLn('-------------------------------------------------');
   SetConsoleDefaultColor();
 end;
@@ -260,7 +263,7 @@ begin
 
   SetConsoleWarningColor();
   FConsoleWriter.Indent(2);
-  FConsoleWriter.WriteLn('Fixture : ' + fixture.FullName);
+  FConsoleWriter.WriteLn(SFixture + fixture.FullName);
   FConsoleWriter.WriteLn('-------------------------------------------------');
   FConsoleWriter.Indent(1);
   SetConsoleDefaultColor();
@@ -276,7 +279,7 @@ begin
   end;
   FConsoleWriter.Indent(2);
   SetConsolePassColor;
-  FConsoleWriter.WriteLn('Success.');
+  FConsoleWriter.WriteLn(SSuccess);
   SetConsoleDefaultColor;
   FConsoleWriter.Outdent(2);
 end;
@@ -286,7 +289,7 @@ begin
   if FQuietMode then
     exit;
 
-  FConsoleWriter.WriteLn('Running Fixture Teardown Method : ' + fixture.TearDownFixtureMethodName);
+  FConsoleWriter.WriteLn(SRunningFixtureTeardown + fixture.TearDownFixtureMethodName);
   FConsoleWriter.WriteLn;
 end;
 
@@ -297,7 +300,7 @@ begin
 
   FConsoleWriter.WriteLn;
   FConsoleWriter.Indent(1);
-  FConsoleWriter.WriteLn('Running Teardown for Test : ' + test.Name);
+  FConsoleWriter.WriteLn(SRunningTestTeardown + test.Name);
   FConsoleWriter.WriteLn;
   FConsoleWriter.Outdent(1);
 end;
@@ -314,49 +317,49 @@ begin
   else
   begin
     FConsoleWriter.OutDent(1);
-    FConsoleWriter.WriteLn('Done testing.');
+    FConsoleWriter.WriteLn(SDoneTesting);
   end;
 
   SetConsoleSummaryColor();
-  FConsoleWriter.WriteLn(Format('Tests Found   : %d',[RunResults.TestCount]));
+  FConsoleWriter.WriteLn(Format(STestsFound, [RunResults.TestCount]));
 
   if RunResults.IgnoredCount > 0 then
     SetConsoleWarningColor()
   else
     SetConsoleDefaultColor();
-  FConsoleWriter.WriteLn(Format('Tests Ignored : %d',[RunResults.IgnoredCount]));
+  FConsoleWriter.WriteLn(Format(STestsIgnored, [RunResults.IgnoredCount]));
 
 
   if RunResults.PassCount > 0 then
     SetConsolePassColor()
   else
     SetConsoleDefaultColor();
-  FConsoleWriter.WriteLn(Format('Tests Passed  : %d',[RunResults.PassCount]));
+  FConsoleWriter.WriteLn(Format(STestsPassed, [RunResults.PassCount]));
 
   if RunResults.MemoryLeakCount > 0 then
     SetConsoleWarningColor()
   else
     SetConsoleDefaultColor();
-  FConsoleWriter.WriteLn(Format('Tests Leaked  : %d',[RunResults.MemoryLeakCount]));
+  FConsoleWriter.WriteLn(Format(STestsLeaked, [RunResults.MemoryLeakCount]));
 
   if RunResults.FailureCount > 0 then
     SetConsoleErrorColor()
   else
     SetConsoleDefaultColor();
-  FConsoleWriter.WriteLn(Format('Tests Failed  : %d',[RunResults.FailureCount]));
+  FConsoleWriter.WriteLn(Format(STestsFailed, [RunResults.FailureCount]));
 
   if RunResults.ErrorCount > 0 then
     SetConsoleErrorColor()
   else
     SetConsoleDefaultColor();
-  FConsoleWriter.WriteLn(Format('Tests Errored : %d',[RunResults.ErrorCount]));
+  FConsoleWriter.WriteLn(Format(STestsErrored,[RunResults.ErrorCount]));
 
 
   if RunResults.FailureCount > 0  then
   begin
     SetConsoleErrorColor();
     FConsoleWriter.WriteLn;
-    FConsoleWriter.WriteLn('Failing Tests');
+    FConsoleWriter.WriteLn(SFailingTests);
     FConsoleWriter.WriteLn;
     SetConsoleDefaultColor();
 
@@ -368,7 +371,7 @@ begin
         SetConsoleErrorColor();
         FConsoleWriter.WriteLn('  ' + testResult.Test.FullName);
         SetConsoleDefaultColor();
-        FConsoleWriter.WriteLn('  Message: ' + testResult.Message);
+        FConsoleWriter.WriteLn(SMessage + testResult.Message);
         FConsoleWriter.WriteLn;
       end;
     end;
@@ -379,7 +382,7 @@ begin
   begin
     SetConsoleErrorColor();
     FConsoleWriter.WriteLn;
-    FConsoleWriter.WriteLn('Tests With Errors');
+    FConsoleWriter.WriteLn(STestsWithErrors);
     FConsoleWriter.WriteLn;
     SetConsoleDefaultColor();
 
@@ -390,7 +393,7 @@ begin
         SetConsoleErrorColor();
         FConsoleWriter.WriteLn('  ' + testResult.Test.FullName);
         SetConsoleDefaultColor();
-        FConsoleWriter.WriteLn('  Message: ' + testResult.Message);
+        FConsoleWriter.WriteLn(SMessage + testResult.Message);
         FConsoleWriter.WriteLn;
       end;
     end;
@@ -401,7 +404,7 @@ begin
   begin
     SetConsoleWarningColor();
     FConsoleWriter.WriteLn;
-    FConsoleWriter.WriteLn('Tests With Memory Leak');
+    FConsoleWriter.WriteLn(STestsWithLeak);
     FConsoleWriter.WriteLn;
     SetConsoleDefaultColor();
 
@@ -412,7 +415,7 @@ begin
         SetConsoleWarningColor();
         FConsoleWriter.WriteLn('  ' + testResult.Test.FullName);
         SetConsoleDefaultColor();
-        FConsoleWriter.WriteLn('  Message: ' + testResult.Message);
+        FConsoleWriter.WriteLn(SMessage + testResult.Message);
         FConsoleWriter.WriteLn;
       end;
     end;
@@ -426,7 +429,7 @@ procedure TDUnitXConsoleLogger.OnTestingStarts(const threadId: TThreadID; testCo
 begin
   if FQuietMode then
   begin
-    FConsoleWriter.WriteLn(Format('DUnitX - [%s] - Starting Tests.',[ExtractFileName(ParamStr(0))]));
+    FConsoleWriter.WriteLn(Format(SStartingTests, [ExtractFileName(ParamStr(0))]));
     FConsoleWriter.WriteLn;
     exit;
   end;

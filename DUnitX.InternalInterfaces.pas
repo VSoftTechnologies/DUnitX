@@ -28,14 +28,17 @@ unit DUnitX.InternalInterfaces;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
+  {$IFDEF USE_NS}
+  System.TimeSpan,
+  {$ELSE}
   TimeSpan,
+  {$ENDIF}
   DUnitX.Generics,
   DUnitX.Extensibility,
   DUnitX.TestFrameWork;
-
-{$I DUnitX.inc}
-
 type
 
   //These interfaces mirror the Info classes in the framework but expose stuff we need for runtime.
@@ -60,6 +63,7 @@ type
   ITestExecute = interface
     ['{C59443A9-8C7D-46CE-83A1-E40309A1B384}']
     procedure Execute(const context : ITestExecuteContext);
+    procedure UpdateInstance(const fixtureInstance : TObject);
   end;
 
   ITestCaseExecute = interface(ITestExecute)
@@ -79,12 +83,6 @@ type
 
 
 implementation
-
-{ TTestList }
-
-uses
-  TypInfo,
-  SysUtils;
 
 
 end.

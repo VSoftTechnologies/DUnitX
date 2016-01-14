@@ -1,4 +1,3 @@
-unit DUnitX.CommandLine.Options;
 {***************************************************************************}
 {                                                                           }
 {           DUnitX                                                          }
@@ -25,14 +24,26 @@ unit DUnitX.CommandLine.Options;
 {                                                                           }
 {***************************************************************************}
 
+unit DUnitX.CommandLine.Options;
+
 interface
 
+{$I DUnitX.inc}
+
 uses
+  {$IFDEF USE_NS}
+  System.Generics.Collections,
+  System.Rtti,
+  System.TypInfo,
+  System.SysUtils,
+  System.Classes;
+  {$ELSE}
   Generics.Collections,
   Rtti,
   TypInfo,
   SysUtils,
   Classes;
+  {$ENDIF}
 
 type
   ICommandLineParseResult = interface
@@ -114,7 +125,8 @@ implementation
 uses
   DUnitX.Utils,
   DUnitX.CommandLine.Parser,
-  DUnitX.Commandline.OptionDef;
+  DUnitX.Commandline.OptionDef,
+  DUnitX.ResStrs;
 
 
 { TOptionsRegistry }
@@ -122,13 +134,13 @@ uses
 class function TOptionsRegistry.RegisterOption<T>(const longName, shortName: string; const Action: TProc<T>): IOptionDefintion;
 begin
   if longName = '' then
-    raise Exception.Create('Name required - use RegisterUnamed to register unamed options');
+    raise Exception.Create(SNameRequired);
 
   if FOptionsLookup.ContainsKey(LowerCase(longName)) then
-    raise Exception.Create('Option : ' + longName + 'already registered');
+    raise Exception.Create(Format(SOptionAlreadyRegistered, [longName]));
 
   if FOptionsLookup.ContainsKey(LowerCase(shortName)) then
-    raise Exception.Create('Option : ' + shortName + 'already registered');
+    raise Exception.Create(Format(SOptionAlreadyRegistered, [shortName]));
 
   result := TOptionDefinition<T>.Create(longName,shortName,Action);
 
@@ -180,7 +192,6 @@ var
   option : IOptionDefintion;
   helpString : string;
 begin
-  //TODO : Improve formatting!
   for option in AllRegisteredOptions do
   begin
     if option.Hidden then

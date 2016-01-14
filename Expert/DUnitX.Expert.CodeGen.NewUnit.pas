@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2013 Vincent Parrett                              }
+{           Copyright (C) 2015 Vincent Parrett & Contributors               }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -24,6 +24,7 @@
 {                                                                           }
 {***************************************************************************}
 
+
 unit DUnitX.Expert.CodeGen.NewUnit;
 // This is done to Warnings that I can't control, as Embarcadero has
 // deprecated the functions, but due to design you are still required to
@@ -37,6 +38,8 @@ uses
 type
 
   TNewUnit = class(TNotifierObject,IOTACreator,IOTAModuleCreator)
+  private
+    FPersonality : string;
   protected
     //Specific to class
     FFormName : String;
@@ -70,6 +73,7 @@ type
     property ImplFileName : string read GetImplFileName write SetImplFileName;
     property IntfFileName : string read GetIntfFileName write SetIntfFileName;
     property AncestorName : string read GetAncestorName write SetAncestorName;
+    property Personality : string read FPersonality write FPersonality;
   end;
 
 

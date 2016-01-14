@@ -37,10 +37,17 @@ unit DUnitX.IoC;
 interface
 
 uses
+  {$IFDEF USE_NS}
+  System.Generics.Collections,
+  System.TypInfo,
+  System.Rtti,
+  System.SysUtils;
+  {$ELSE}
   Generics.Collections,
   TypInfo,
   Rtti,
   SysUtils;
+  {$ENDIF}
 
 type
   TActivatorDelegate<TInterface: IInterface> = reference to function: TInterface;
@@ -112,6 +119,9 @@ type
 
 implementation
 
+uses
+  DUnitX.ResStrs;
+
 { TActivator }
 
 class constructor TClassActivator.Create;
@@ -154,7 +164,7 @@ begin
           begin
             obj := ctor(AClass);
             if not Supports(obj, guid, Result) and raiseOnError then
-              EIoCResolutionException.CreateFmt('The implementation registered (%s) does not implement %s', [AClass.ClassName, typeInfo.Name]);
+              EIoCResolutionException.CreateFmt(SRegisteredImplementationError, [AClass.ClassName, typeInfo.Name]);
           end;
         Exit;
       end;
@@ -196,7 +206,7 @@ begin
   begin
     //cannot replace a singleton that has already been instanciated (Instance property is only used by singletons)
     if rego.Instance <> nil then
-      raise EIoCRegistrationException.Create(Format('An implementation for type %s with name %s is already registered with IoC',[typeInfo.Name, name]));
+      raise EIoCRegistrationException.Create(Format(SImplementationAlreadyRegistered, [typeInfo.Name, name]));
     rego.Initialize(delegate, singleton);
   end;
 end;
@@ -242,7 +252,7 @@ end;
 function TDUnitXIoC.GetInterfaceKey(const typeInfo: PTypeInfo; const AName: string): string;
 begin
   //By default the key is the interface name unless otherwise found.
-  Result := string(typeInfo.Name);
+  Result := GetTypeName(typeInfo);
 
   if AName <> '' then
     Result := Result + '_' + AName;
@@ -263,7 +273,7 @@ begin
   if not FContainerInfo.TryGetValue(key, registration) then
   begin
     if FRaiseIfNotFound then
-      raise EIoCResolutionException.CreateFmt('No implementation registered for type %s', [typeInfo.Name])
+      raise EIoCResolutionException.CreateFmt(SNoImplementationRegistered, [typeInfo.Name])
     //If we are not meant to raise exceptions, then handle the registration not being set.
     else
       Exit;
@@ -272,7 +282,7 @@ begin
   Result := registration.ActivatorDelegate();
   if Result = nil then
     if FRaiseIfNotFound then
-      raise EIoCResolutionException.CreateFmt('The activator delegate failed to return an instance %s', [typeInfo.Name]);
+      raise EIoCResolutionException.CreateFmt(SNoInstance, [typeInfo.Name]);
 end;
 
 procedure TDUnitXIoC.RegisterSingleton<TInterface>(const instance: TInterface; const name: string);

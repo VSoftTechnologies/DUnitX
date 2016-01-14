@@ -1,8 +1,8 @@
-{***************************************************************************}
+﻿{***************************************************************************}
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2013 Vincent Parrett                              }
+{           Copyright (C) 2015 Vincent Parrett & Contributors               }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -32,11 +32,12 @@ unit DUnitX.CategoryExpression;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
   DUnitX.Extensibility,
   DUnitX.Filters;
 
-{$I DUnitX.inc}
 
 type
   /// <summary>
@@ -72,22 +73,28 @@ type
 implementation
 
 uses
+  DUnitX.Constants,
+  {$IFDEF USE_NS}
+  System.Character,
+  System.SysUtils,
+  System.StrUtils;
+  {$ELSE}
   Character,
   SysUtils,
   StrUtils;
+  {$ENDIF}
 
 const
   Operators : array[1..7] of Char = (',', ';', '-', '|', '+', '(', ')') ;
-
 { TCategoryExpression }
 
 constructor TCategoryExpression.Create(const text: string);
 begin
   FText := text;
   if FText <> ''then
-    FNext := 1
+    FNext := MinStringOffset
   else
-    FNext := MaxInt; //force end of text
+    FNext := MaxInt - MaxStringOffset; //force end of text
 end;
 
 class function TCategoryExpression.CreateFilter(const text : string): ITestFilter;
@@ -102,7 +109,7 @@ begin
   end;
 end;
 
-
+{$IFNDEF NEXTGEN}
 function IndexOfAny(const value : string; const AnyOf: array of Char; StartIndex : Integer): Integer;
 var
   i, j : Integer;
@@ -123,6 +130,7 @@ begin
   end;
   Result := -1;
 end;
+{$ENDIF}
 
 function TCategoryExpression.GetExpression : ITestFilter;
 var
@@ -201,7 +209,24 @@ var
   idx   : integer;
 begin
   SkipWhiteSpace;
+  {$IFDEF NEXTGEN}
+  if EndOfText then
+    FToken := string.Empty
+  else if NextIsOperator then
+  begin
+    FToken := FText.Substring(FNext, 1);
+    Inc(FNext);
+  end
+  else
+  begin
+    idx := FText.IndexOfAny(Operators, FNext);
+    if idx < 0 then
+      idx := FText.Length;
 
+    FToken := FText.Substring(FNext, idx - FNext).TrimRight;
+    FNext := idx;
+  end;
+  {$ELSE}
   if EndOfText then
     FToken := ''
   else if NextIsOperator then
@@ -218,18 +243,24 @@ begin
     FToken := TrimRight(Copy(FText,FNext, idx - FNext));
     FNext := idx;
   end;
+  {$ENDIF}
   result := FToken;
 end;
 
 function TCategoryExpression.EndOfText : boolean;
 begin
-	 result :=  FNext > Length(FText);
+	 result :=  FNext > Length(FText) - MaxStringOffset;
 end;
 
 procedure TCategoryExpression.SkipWhiteSpace;
 begin
+  {$IFDEF NEXTGEN}
+  while( (FNext < (FText.Length - 1)) and FText.Chars[FNext].IsWhiteSpace ) do
+    Inc(FNext);
+  {$ELSE}
   while( (FNext < Length(Ftext)) and {$IFDEF DELPHI_XE4_UP}FText[FNext].IsWhiteSpace{$ELSE}TCharacter.IsWhiteSpace(FText[FNext]){$ENDIF} ) do
     Inc(FNext);
+  {$ENDIF}
 end;
 
 function TCategoryExpression.NextIsOperator : boolean;
@@ -241,7 +272,11 @@ begin
   begin
     for op in Operators do
     begin
+      {$IFDEF NEXTGEN}
+      if FText.Chars[FNext] = op then
+      {$ELSE}
       if FText[FNext] = op then
+      {$ENDIF}
         Exit(true);
     end;
   end;

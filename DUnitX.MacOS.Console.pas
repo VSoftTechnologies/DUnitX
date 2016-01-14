@@ -42,11 +42,16 @@ unit DUnitX.MacOS.Console;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
-  classes,
+  {$IFDEF USE_NS}
+  System.Classes,
+  {$ELSE}
+  Classes,
+  {$ENDIF}
   DUnitX.ConsoleWriter.Base;
 
-{$I DUnitX.inc}
 
 type
    /// <summary>

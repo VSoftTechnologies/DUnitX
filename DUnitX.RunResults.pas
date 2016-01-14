@@ -28,16 +28,23 @@ unit DUnitX.RunResults;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
+  {$IFDEF USE_NS}
+  System.Classes,
+  System.TimeSpan,
+  System.Diagnostics,
+  System.Generics.Collections,
+  {$ELSE}
+  Classes,
   TimeSpan,
   Diagnostics,
+  Generics.Collections,
+  {$ENDIF}
   DUnitX.TestFramework,
   DUnitX.InternalInterfaces,
-  Generics.Collections,
-  DUnitX.Generics,
-  classes;
-
-{$I DUnitX.inc}
+  DUnitX.Generics;
 
 
 type
@@ -92,8 +99,14 @@ type
 implementation
 
 uses
+  DUnitX.ResStrs,
+  {$IFDEF USE_NS}
+  System.DateUtils,
+  System.SysUtils;
+  {$ELSE}
   DateUtils,
   SysUtils;
+  {$ENDIF}
 
 { TDUnitXTestResults }
 
@@ -242,7 +255,7 @@ end;
 
 function TDUnitXRunResults.ToString: string;
 begin
-  result := Format('Test Passed : %d' +#13#10,[FPassCount]);
+  result := Format(STestsPassed +#13#10,[FPassCount]);
 end;
 
 end.

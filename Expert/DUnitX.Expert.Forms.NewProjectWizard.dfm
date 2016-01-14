@@ -28,7 +28,6 @@ object frmDunitXNewProject: TfrmDunitXNewProject
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Test Unit Options'
     TabOrder = 2
-    ExplicitWidth = 240
     DesignSize = (
       268
       113)
@@ -47,7 +46,6 @@ object frmDunitXNewProject: TfrmDunitXNewProject
       Anchors = [akLeft, akTop, akRight]
       Caption = 'Create Setup and TearDown Methods'
       TabOrder = 0
-      ExplicitWidth = 208
     end
     object chkCreateSampleMethods: TCheckBox
       Left = 16
@@ -57,7 +55,6 @@ object frmDunitXNewProject: TfrmDunitXNewProject
       Anchors = [akLeft, akTop, akRight]
       Caption = 'Create Sample Test Methods'
       TabOrder = 1
-      ExplicitWidth = 208
     end
     object edtClassName: TEdit
       Left = 16
@@ -66,7 +63,6 @@ object frmDunitXNewProject: TfrmDunitXNewProject
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 2
-      ExplicitWidth = 208
     end
   end
   object btnOK: TButton
@@ -79,8 +75,6 @@ object frmDunitXNewProject: TfrmDunitXNewProject
     Default = True
     ModalResult = 1
     TabOrder = 3
-    ExplicitLeft = 92
-    ExplicitTop = 178
   end
   object btnCancel: TButton
     Left = 201
@@ -92,8 +86,6 @@ object frmDunitXNewProject: TfrmDunitXNewProject
     Caption = 'Cancel'
     ModalResult = 2
     TabOrder = 4
-    ExplicitLeft = 173
-    ExplicitTop = 178
   end
   object chkCreateTestUnit: TCheckBox
     Left = 8
@@ -106,7 +98,6 @@ object frmDunitXNewProject: TfrmDunitXNewProject
     State = cbChecked
     TabOrder = 1
     OnClick = chkCreateTestUnitClick
-    ExplicitWidth = 240
   end
   object chkAddToProjectGroup: TCheckBox
     Left = 8
@@ -118,6 +109,5 @@ object frmDunitXNewProject: TfrmDunitXNewProject
     Checked = True
     State = cbChecked
     TabOrder = 0
-    ExplicitWidth = 240
   end
 end

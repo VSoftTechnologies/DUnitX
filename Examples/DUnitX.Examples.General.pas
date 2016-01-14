@@ -71,6 +71,11 @@ type
     [Test]
     procedure TestError;
 
+    [Test]
+    [MaxTime(2000)]
+    procedure TooLong;
+
+
     //Disabled test
     [Test(false)]
     procedure DontCallMe;
@@ -136,8 +141,15 @@ type
 implementation
 
 uses
+  {$IFDEF USE_NS}
+  System.SysUtils,
+  System.Classes,
+  WinApi.Windows,
+  {$ELSE}
   SysUtils,
-  classes,
+  Classes,
+  Windows,
+  {$ENDIF}
   DUnitX.DUnitCompatibility;
 
 { TMyExampleTests }
@@ -207,6 +219,15 @@ begin
   Assert.IsType<TObject>(x); /// a bit pointless since it's strongly typed.
   x.Free;
 {$ENDIF}
+end;
+
+procedure TMyExampleTests.TooLong;
+begin
+  {$IFDEF DELPHI_XE_UP}
+   TThread.Sleep(5000);
+  {$ELSE}
+    Windows.Sleep(5000);
+  {$ENDIF}
 end;
 
 { TExampleFixture2 }

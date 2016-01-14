@@ -32,27 +32,36 @@ unit DUnitX.TestFramework;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
+  {$IFDEF USE_NS}
+  System.Classes,
+  System.SysUtils,
+  System.TypInfo,
+  System.Rtti,
+  System.TimeSpan,
+  System.Generics.Collections,
+  {$ELSE}
   Classes,
   SysUtils,
   TypInfo,
   Rtti,
   TimeSpan,
+  Generics.Collections,
+  {$ENDIF}
   DUnitX.Assert,
   DUnitX.Attributes,
   DUnitX.Generics,
   DUnitX.Extensibility,
-  DUnitX.Filters,
-  Generics.Collections;
+  DUnitX.Filters;
 
 {$HPPEMIT '#if defined(USEPACKAGES)'}
 {$HPPEMIT '# pragma comment(lib, "DUnitXRuntime.bpi")'}
 {$HPPEMIT '#else'}
 {$HPPEMIT '# pragma comment(lib, "DUnitXRuntime")'}
 {$HPPEMIT '#endif'}
-//TODO: Automatic support for https://code.google.com/p/delphi-code-coverage/ would be cool
 
-{$I DUnitX.inc}
 
 type
   TestFixtureAttribute = DUnitX.Attributes.TestFixtureAttribute;
@@ -81,6 +90,11 @@ type
   {$SCOPEDENUMS ON}
   TLogLevel = (Information, Warning, Error);
   {$SCOPEDENUMS OFF}
+
+  {$IFDEF DELPHI_2010}
+  TThreadID = Cardinal;
+  {$ENDIF}
+
 
 const
   TLogLevelDesc : array[TLogLevel] of string = ('Info', 'Warn', 'Err');
@@ -581,6 +595,7 @@ type
   ETestFailure = class(EAbort);
   ETestPass = class(EAbort);
   ETimedOut = class(EAbort);
+  ENoAssertionsMade = class(ETestFailure);
 
   ENoTestsRegistered = class(ETestFrameworkException);
   ECommandLineError = class(ETestFrameworkException);
@@ -593,6 +608,21 @@ const
 implementation
 
 uses
+  {$IFDEF USE_NS}
+  System.Variants,
+  System.Math,
+  System.StrUtils,
+  System.Types,
+  System.RegularExpressions,
+  System.Generics.Defaults,
+  {$ELSE}
+  Variants,
+  Math,
+  StrUtils,
+  Types,
+  Generics.Defaults,
+  {$ENDIF}
+  DUnitX.ResStrs,
   DUnitX.ConsoleWriter.Base,
   DUnitX.Banner,
   DUnitX.OptionsDefinition,
@@ -603,15 +633,7 @@ uses
   DUnitX.MemoryLeakMonitor.Default,
   DUnitX.FixtureProviderPlugin,
   DUnitX.FilterBuilder,
-  DUnitX.WeakReference,
-  Variants,
-  Math,
-  StrUtils,
-  Types,
-  {$IFDEF SUPPORTS_REGEX}
-  RegularExpressions,
-  {$ENDIF}
-  Generics.Defaults;
+  DUnitX.WeakReference;
 
 { TDUnitXOptions }
 
@@ -659,8 +681,8 @@ procedure ShowUsage(consoleWriter : IDUnitXConsoleWriter);
 begin
   if consoleWriter <> nil then
     consoleWriter.SetColour(ccBrightYellow,ccDefault);
-  Writeline(consoleWriter, Format('Usage : %s options', [ExtractFileName(ParamStr(0))])+#13#10);
-  Writeline(consoleWriter, ' Options :');
+  Writeline(consoleWriter, Format(SUsage, [ExtractFileName(ParamStr(0))])+#13#10);
+  Writeline(consoleWriter, SOptions);
   if consoleWriter <> nil then
     consoleWriter.SetColour(ccBrightWhite,ccDefault);
 
@@ -737,8 +759,8 @@ begin
   FFilter := nil;
   Assert.OnAssert := procedure
                     var
-                      threadId: TThreadID;
-                      value: cardinal;
+                      threadId : TThreadID;
+                      value : cardinal;
                     begin
                       threadId := TThread.CurrentThread.ThreadID;
                       MonitorEnter(FAssertCounters);
@@ -761,7 +783,7 @@ var
   ref : IWeakReference<ITestRunner>;
 begin
   if not TDUnitXTestRunner.FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId,ref) then
-    raise Exception.Create('No Runner found for current thread');
+    raise Exception.Create(SNoRunner);
   result := ref.Data;
 
 end;
@@ -784,7 +806,7 @@ end;
 class procedure TDUnitX.RegisterPlugin(const plugin: IPlugin);
 begin
   if plugin = nil then
-    raise Exception.Create('Nil plug registered!');
+    raise Exception.Create(SNilPlugin);
   RegisteredPlugins.Add(plugin);
 end;
 

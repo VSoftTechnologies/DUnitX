@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2013 Vincent Parrett                              }
+{           Copyright (C) 2015 Vincent Parrett & Contributors               }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -27,9 +27,17 @@
 unit DUnitX.Expert.ProjectWizard;
 
 interface
+
+{$I DUnitX.inc}
+
 uses
   ToolsApi,
+  {$IFDEF USE_NS}
+  VCL.Graphics;
+  {$ELSE}
   Graphics;
+  {$ENDIF}
+
 
 type
    TDUnitXNewProjectWizard = class(TNotifierObject,IOTAWizard,IOTARepositoryWizard, IOTARepositoryWizard80, IOTAProjectWizard)

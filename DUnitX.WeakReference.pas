@@ -43,9 +43,9 @@ Delphi 2010 and has so far proven to be very reliable.
 
 *)
 
-{$I DUnitX.inc}
-
 interface
+
+{$I DUnitX.inc}
 
 type
   /// Implemented by our weak referenced object base class
@@ -72,7 +72,7 @@ type
   public
     procedure AfterConstruction; override;
     procedure BeforeDestruction; override;
-    class function NewInstance: TObject; override;
+    {$IFDEF NEXTGEN}[Result: Unsafe]{$ENDIF} class function NewInstance: TObject; override;
     property RefCount: Integer read FRefCount;
   end;
 
@@ -99,52 +99,57 @@ type
 implementation
 
 uses
+  DUnitX.ResStrs,
+  {$IFDEF USE_NS}
+  System.TypInfo,
+  System.Classes,
+  System.Sysutils,
+  System.SyncObjs;
+  {$ELSE}
   TypInfo,
   classes,
-  sysutils;
+  SysUtils,
+  SyncObjs;
+  {$ENDIF}
 
-{$IFDEF CPUX86}
+{$IFNDEF DELPHI_XE2_UP}
+type
+  TInterlocked = class
+  public
+    class function Increment(var Target: Integer): Integer; static; inline;
+    class function Decrement(var Target: Integer): Integer; static; inline;
+    class function Add(var Target: Integer; Increment: Integer): Integer;static;
+  end;
 
-function InterlockedAdd(var Addend: Integer; Increment: Integer): Integer;
-asm
-      MOV   ECX,EAX
-      MOV   EAX,EDX
- LOCK XADD  [ECX],EAX
-      ADD   EAX,EDX
+class function TInterlocked.Decrement(var Target: Integer): Integer;
+begin
+    result := Add(Target,-1);
 end;
 
-
-function InterlockedDecrement(var Addend: Integer): Integer;
-asm
-      MOV   EDX,-1
-      JMP   InterlockedAdd
+class function TInterlocked.Increment(var Target: Integer): Integer;
+begin
+  result := Add(Target,1);
 end;
 
-function InterlockedIncrement(var Addend: Integer): Integer;
+class function TInterlocked.Add(var Target: Integer; Increment: Integer): Integer;
+{$IFNDEF CPUX86}
 asm
-      MOV   EDX,1
-      JMP   InterlockedAdd
+  .NOFRAME
+  MOV  EAX,EDX
+  LOCK XADD [RCX].Integer,EAX
+  ADD  EAX,EDX
 end;
-
-
-{$ELSE}
-function InterlockedDecrement(var Addend: LongInt): LongInt;
+{$ELSE CPUX86}
 asm
-      .NOFRAME
-      MOV   EAX,-1
- LOCK XADD  [RCX].Integer,EAX
-      DEC   EAX
+  MOV  ECX,EDX
+  XCHG EAX,EDX
+  LOCK XADD [EDX],EAX
+  ADD  EAX,ECX
 end;
-
-function InterlockedIncrement(var Addend: LongInt): LongInt;
-asm
-      MOV   EAX,1
- LOCK XADD  [RCX].Integer,EAX
-      INC   EAX
-end;
-
-
 {$ENDIF}
+{$ENDIF DELPHI_XE2_UPE2}
+
+
 
 constructor TWeakReference<T>.Create(const data: T);
 var
@@ -158,7 +163,7 @@ begin
     weakRef.AddWeakRef(@FData);
   end
   else
-    raise Exception.Create('TWeakReference can only be used with objects derived from TWeakReferencedObject');
+    raise Exception.Create(SWeakReferenceError);
 end;
 
 function TWeakReference<T>.Data: T;
@@ -244,11 +249,10 @@ begin
   end;
 end;
 
-
 procedure TWeakReferencedObject.AfterConstruction;
 begin
   // Release the constructor's implicit refcount
-  InterlockedDecrement(FRefCount);
+  TInterlocked.Decrement(FRefCount);
 end;
 
 procedure TWeakReferencedObject.BeforeDestruction;
@@ -288,15 +292,14 @@ begin
     Result := E_NOINTERFACE;
 end;
 
-
 function TWeakReferencedObject._AddRef: Integer;
 begin
-  Result := InterlockedIncrement(FRefCount);
+  Result := TInterlocked.Increment(FRefCount);
 end;
 
 function TWeakReferencedObject._Release: Integer;
 begin
-  Result := InterlockedDecrement(FRefCount);
+  Result := TInterlocked.Decrement(FRefCount);
   if Result = 0  then
     Destroy;
 end;

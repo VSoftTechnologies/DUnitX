@@ -31,7 +31,11 @@ interface
 {$I DUnitX.inc}
 
 uses
-  classes,
+  {$IFDEF USE_NS}
+  System.Classes,
+  {$ELSE}
+  Classes,
+  {$ENDIF}
   DUnitX.TestFramework;
 
 type

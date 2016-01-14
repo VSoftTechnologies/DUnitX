@@ -35,7 +35,11 @@ unit DUnitX.Types;
 interface
 
 uses
+{$IFDEF USE_NS}
+  System.Rtti;
+{$ELSE}
   Rtti;
+{$ENDIF}
 
 type
   {$IFDEF DELPHI_XE_UP}

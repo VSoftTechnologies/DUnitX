@@ -121,8 +121,13 @@ type
 implementation
 
 uses
+  {$IFDEF USE_NS}
+  System.Math,
+  System.SysUtils;
+  {$ELSE}
   Math,
   SysUtils;
+  {$ENDIF}
 
 var
   _TimesRun: Integer;

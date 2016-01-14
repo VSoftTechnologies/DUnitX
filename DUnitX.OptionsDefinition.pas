@@ -28,6 +28,8 @@ unit DUnitX.OptionsDefinition;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
   DUnitX.TestFramework;
 

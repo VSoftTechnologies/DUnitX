@@ -47,10 +47,16 @@ type
 implementation
 
 uses
-  SysUtils,
+  {$IFDEF USE_NS}
+  System.Classes,
+  System.SysUtils,
+  Generics.Collections,
+  {$ELSE}
   Classes,
-  DUnitX.Utils,
-  Generics.Collections;
+  SysUtils,
+  Generics.Collections,
+  {$ENDIF}
+  DUnitX.Utils;
 
 { TTestNameParser }
 
@@ -60,6 +66,7 @@ var
 begin
   nest := 0;
   result := -1;
+  {$IFNDEF NEXTGEN}
   while index < Length(arg) do
   begin
     case arg[index] of
@@ -80,7 +87,28 @@ begin
     end;
     Inc(index)
   end;
+  {$ELSE}
+  while index < arg.Length - 1 do
+  begin
+    case arg.Chars[index] of
+      ',' :
+      begin
+        if nest = 0 then
+          exit(index);
+      end;
+      '"' :
+      begin
+        Inc(index);
+        while (index < arg.Length - 1) and (arg.Chars[index] <> '"')  do
+          Inc(index);
 
+      end;
+      '(','<' : Inc(nest);
+      ')','>' : Dec(nest);
+    end;
+    Inc(index)
+  end;  
+  {$ENDIF}
 end;
 
 class function TTestNameParser.GetTestName(const arg: string; var index: integer): string;
@@ -89,6 +117,7 @@ var
 begin
   result := '';
   sep := GetSeparator(arg,index);
+  {$IFNDEF NEXTGEN}  
   if sep > 0 then
   begin
     result := Trim(Copy(arg,index, sep - index));
@@ -99,7 +128,18 @@ begin
     result := Trim(Copy(arg,index, Length(arg)));
     index := Length(arg);
   end;
-
+  {$ELSE}
+  if sep > -1 then
+  begin
+    result := arg.Substring(index, sep - index).Trim;
+    index := sep + 1;
+  end
+  else
+  begin
+    result := arg.Substring(index).Trim;
+    index := arg.Length - 1;
+  end; 
+  {$ENDIF}
 end;
 
 class function TTestNameParser.Parse(const arg: string): TArray<string>;
@@ -112,8 +152,13 @@ begin
   try
     if arg <> '' then
     begin
+      {$IFNDEF NEXTGEN}  
       i := 1;
       while i < Length(arg) do
+      {$ELSE}
+      i := 0;
+      while i < arg.Length - 1 do
+      {$ENDIF}
       begin
         sName := GetTestName(arg,i);
         if sName <> '' then

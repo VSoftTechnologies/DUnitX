@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2013 Vincent Parrett                              }
+{           Copyright (C) 2015 Vincent Parrett & Contributors               }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -33,8 +33,8 @@ uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
   FMX.Types, FMX.Graphics, FMX.Controls, FMX.Forms, FMX.Dialogs, FMX.StdCtrls,
   System.Actions, FMX.ActnList, FMX.Layouts, FMX.TreeView, FMX.Edit,
-  DUnitX.TestFramework, DUnitX.Extensibility, DUnitX.InternalInterfaces, FMX.ListView.Types,
-  FMX.ListView, FMX.ListBox, Generics.Collections, FMX.Memo;
+  DUnitX.TestFramework, DUnitX.Extensibility, DUnitX.InternalInterfaces, FMX.ListView.Types, FMX.ListView.Appearances,
+  FMX.ListView, FMX.ListBox, Generics.Collections, FMX.Memo, FMX.ScrollBox, FMX.Controls.Presentation, System.IniFiles;
 
 type
   TGUIXTestRunner = class(TForm, ITestLogger)
@@ -69,21 +69,28 @@ type
     Label6: TLabel;
     FailTestMessage: TMemo;
     Label8: TLabel;
+    SelectFailedButton: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure RunExecute(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FailListItemClick(const Sender: TObject;
       const AItem: TListViewItem);
+    procedure TestTreeChangeCheck(Sender: TObject);
+    procedure SelectFailedButtonClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
     FTestRunner: ITestRunner;
     FFixtureList: ITestFixtureList;
     FLastResult: IRunResults;
     FFailedTests: TDictionary<String, ITestResult>;
-    function CreateNode(Owner: TComponent; Text: String; TestFullName: String): TTreeViewItem;
+    function CreateNode(Owner: TComponent; Test: ITest): TTreeViewItem; overload;
+    function CreateNode(Owner: TComponent; Text: String; TestFullName: String): TTreeViewItem; overload;
     function GetNode(FullName: String): TTreeViewItem;
     procedure BuildTree(parentNode: TTreeViewItem; const fixtureList: ITestFixtureList);
+    procedure BuildEnabledTestList;
+    procedure SaveConfiguration(AIniFile: TCustomIniFile);
   protected
     procedure OnBeginTest(const threadId: TThreadID; const Test: ITestInfo);
     procedure OnEndSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
@@ -124,10 +131,14 @@ type
   strict private
     FFullName: String;
     FImage: TImage;
+    FTest: ITest;
+    FResultType: TTestResultType;
   public
-    constructor Create(Owner: TComponent; Text: String; TestFullName: String); reintroduce;
+    constructor Create(Owner: TComponent; Test: ITest; Text: String; TestFullName: String); reintroduce;
     destructor Destroy; override;
     property FullName: String read FFullName;
+    property Test: ITest read FTest;
+    property ResultType: TTestResultTYpe read FResultType write FResultType;
     procedure SetResultType(resultType: TTestResultType);
     procedure Reload;
   end;
@@ -136,42 +147,119 @@ type
 
 {$R *.fmx}
 
+const
+  TEST_INI_FILE = 'dunitx.ini';
+
 { TGUIXTestRunner }
+
+procedure TGUIXTestRunner.BuildEnabledTestList;
+  procedure SetEnabled(Item: TTreeViewItem);
+  var
+    J: Integer;
+  begin
+    if Assigned(TTestNode(Item).Test) then
+      TTestNode(Item).Test.Enabled := Item.IsChecked;
+    for J := 0 to Item.Count - 1 do
+      SetEnabled(Item.Items[J]);
+  end;
+var
+  I: Integer;
+begin
+  for I := 0 to TestTree.Count - 1 do
+    SetEnabled(TestTree.Items[I]);
+end;
 
 procedure TGUIXTestRunner.BuildTree(parentNode: TTreeViewItem;
   const fixtureList: ITestFixtureList);
+const
+  DisabledTests = 'DisabledTests';
 var
   fixture : ITestFixture;
   test : ITest;
   fixtureNode : TTreeViewItem;
   testNode : TTreeViewItem;
+  LIniFile : TCustomIniFile;
 begin
-  for fixture in fixtureList do
-  begin
-    fixtureNode := CreateNode(TestTree, fixture.Name, fixture.FullName);
-
-    if Assigned(parentNode) then begin
-      fixtureNode.Parent := parentNode;
-    end
-    else begin
-      fixtureNode.Parent := TestTree;
-    end;
-
-    if fixture.HasChildFixtures then
-      BuildTree(fixtureNode, fixture.Children);
-    for test in fixture.Tests do
+  LIniFile := TMemIniFile.Create(ExtractFilePath(ParamStr(0)) + TEST_INI_FILE);
+  try
+    for fixture in fixtureList do
     begin
-      testNode := CreateNode(TestTree, test.Name, test.Fixture.FullName + '.' + test.Name);
-      testNode.Parent := fixtureNode;
+      fixtureNode := CreateNode(TestTree, fixture.Name, fixture.FullName);
+
+      if Assigned(parentNode) then begin
+        fixtureNode.Parent := parentNode;
+      end
+      else begin
+        fixtureNode.Parent := TestTree;
+      end;
+
+      if fixture.HasChildFixtures then
+        BuildTree(fixtureNode, fixture.Children);
+      for test in fixture.Tests do
+      begin
+        testNode := CreateNode(TestTree, test);
+        testNode.Parent := fixtureNode;
+        testNode.IsChecked := LIniFile.ReadBool(DisabledTests, TTestNode(testNode).FullName, True);
+      end;
+      fixtureNode.ExpandAll;
     end;
-    fixtureNode.ExpandAll;
+  finally
+    LIniFile.Free;
   end;
 end;
 
 
+procedure TGUIXTestRunner.SaveConfiguration(AIniFile: TCustomIniFile);
+const
+  DisabledTests = 'DisabledTests';
+
+  procedure WriteValues(Item: TTreeViewItem);
+  var
+    J: Integer;
+  begin
+    if Assigned(TTestNode(Item).Test) and not Item.IsChecked then
+      AIniFile.WriteBool(DisabledTests, TTestNode(Item).FullName, False);
+    for J := 0 to Item.Count - 1 do
+      WriteValues(Item.Items[J]);
+  end;
+
+var
+  I: Integer;
+begin
+  if AIniFile.SectionExists(DisabledTests) then
+    AIniFile.EraseSection(DisabledTests);
+
+  for I := 0 to TestTree.Count - 1 do
+    WriteValues(TestTree.Items[I]);
+end;
+
+procedure TGUIXTestRunner.SelectFailedButtonClick(Sender: TObject);
+  procedure SetChecked(Item: TTreeViewItem);
+  var
+    J: Integer;
+  begin
+    if Assigned(TTestNode(Item).Test) then
+      Item.IsChecked := (TTestNode(Item).ResultType = TTestResultType.Failure)
+                        or (TTestNode(Item).ResultType = TTestResultType.Error)
+                        or (TTestNode(Item).ResultType = TTestResultType.MemoryLeak);
+    for J := 0 to Item.Count - 1 do
+      SetChecked(Item.Items[J]);
+  end;
+var
+  I: Integer;
+begin
+  for I := 0 to TestTree.Count - 1 do
+    SetChecked(TestTree.Items[I]);
+end;
+
+function TGUIXTestRunner.CreateNode(Owner: TComponent; Test: ITest): TTreeViewItem;
+begin
+  Result := TTestNode.Create(Owner, Test, Test.Name, Test.Fixture.FullName + '.' + Test.Name);
+end;
+
 function TGUIXTestRunner.CreateNode(Owner: TComponent; Text: String; TestFullName: String): TTreeViewItem;
 begin
-  Result := TTestNode.Create(Owner, Text, TestFullName);
+  Result := TTestNode.Create(Owner, nil, Text, TestFullName);
 end;
 
 procedure TGUIXTestRunner.FailListItemClick(const Sender: TObject;
@@ -185,6 +273,19 @@ begin
   FailTestFinishTime.Text := TimeToStr(testResult.FinishTime);
   FailTestMessage.Text := testResult.Message;
   StackTrace.Text := testResult.StackTrace;
+end;
+
+procedure TGUIXTestRunner.FormClose(Sender: TObject; var Action: TCloseAction);
+var
+  LIniFile: TCustomIniFile;
+begin
+  LIniFile := TMemIniFile.Create(ExtractFilePath(ParamStr(0)) + TEST_INI_FILE);
+  try
+    SaveConfiguration(LIniFile);
+    LIniFile.UpdateFile;
+  finally
+    LIniFile.Free;
+  end;
 end;
 
 procedure TGUIXTestRunner.FormCreate(Sender: TObject);
@@ -405,7 +506,8 @@ begin
   MemoryLeaked.Text := '';
   FFailedTests.Clear;
   FailList.Selected := nil;
-  FailList.ClearItems;
+  FailList.Items.Clear;
+  BuildEnabledTestList;
   FLastResult := FTestRunner.Execute;
   TotalRuns.Text := IntToStr(FLastResult.TestCount);
   FailTests.Text := IntToStr(FLastResult.FailureCount);
@@ -414,20 +516,25 @@ begin
 end;
 
 
+procedure TGUIXTestRunner.TestTreeChangeCheck(Sender: TObject);
+var
+  I: Integer;
+begin
+  for I := 0 to TTreeViewItem(Sender).Count - 1 do
+    TTreeViewItem(Sender).Items[I].IsChecked := TTreeViewItem(Sender).IsChecked;
+end;
+
 { TTestNode }
 
-constructor TTestNode.Create(Owner: TComponent; Text, TestFullName: String);
+constructor TTestNode.Create(Owner: TComponent; Test: ITest; Text, TestFullName: String);
 begin
   inherited Create(Owner);
   Self.Text := Text;
   FFullName := TestFullName;
+  FTest := Test;
   FImage := TImage.Create(Owner);
   FImage.Parent := Self;
-  {$IFDEF DELPHI_XE6_UP}
-    FImage.Align := TAlignLayout.Right;
-  {$ELSE}
-    FImage.Align := TAlignLayout.alRight;
-  {$ENDIF}
+  FImage.Align := TAlignLayout.Right;
 
   FImage.Bitmap.Create(15, 15);
   FImage.Bitmap.Clear(TAlphaColorRec.Gray);
@@ -447,6 +554,7 @@ end;
 
 procedure TTestNode.SetResultType(resultType: TTestResultType);
 begin
+ FResultType := resultType;
  case resultType of
    TTestResultType.Pass: begin
      FImage.Bitmap.Clear(TAlphaColorRec.Green);

@@ -1,9 +1,43 @@
+{***************************************************************************}
+{                                                                           }
+{           DUnitX                                                          }
+{                                                                           }
+{           Copyright (C) 2015 Vincent Parrett & Contributors               }
+{                                                                           }
+{           vincent@finalbuilder.com                                        }
+{           http://www.finalbuilder.com                                     }
+{                                                                           }
+{                                                                           }
+{***************************************************************************}
+{                                                                           }
+{  Licensed under the Apache License, Version 2.0 (the "License");          }
+{  you may not use this file except in compliance with the License.         }
+{  You may obtain a copy of the License at                                  }
+{                                                                           }
+{      http://www.apache.org/licenses/LICENSE-2.0                           }
+{                                                                           }
+{  Unless required by applicable law or agreed to in writing, software      }
+{  distributed under the License is distributed on an "AS IS" BASIS,        }
+{  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. }
+{  See the License for the specific language governing permissions and      }
+{  limitations under the License.                                           }
+{                                                                           }
+{***************************************************************************}
+
 unit DUnitX.Timeout;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
+  {$IFDEF USE_NS}
+  System.Classes;
+  {$ELSE}
   Classes;
+  {$ENDIF}
+
+//TODO : This is currently only supported on Windows, need to investigate osx etc.
 
 type
   ITimeout = interface(IUnknown)
@@ -16,9 +50,15 @@ type
 implementation
 
 uses
-  DUnitX.TestFramework,
-  DUnitX.Utils,
-  Windows;
+  {$IFDEF USE_NS}
+  WinAPI.Windows,
+  System.Diagnostics,
+  {$ELSE}
+  Windows,
+  Diagnostics,
+  {$ENDIF}
+  DUnitX.ResStrs,
+  DUnitX.TestFramework;
 
 // The following TimeOut code is based on the code found at
 // https://code.google.com/p/delphitimeouts/
@@ -55,7 +95,7 @@ end;
 
 procedure RaiseTimeOutException;
 begin
-  raise ETimedOut.Create('Operation Timed Out');
+  raise ETimedOut.Create(SOperationTimedOut);
 end;
 
 procedure TTimeoutThread.TimeoutThread;
@@ -65,7 +105,12 @@ begin
   SuspendThread(ThreadHandle);
   Ctx.ContextFlags := CONTEXT_FULL;
   GetThreadContext(ThreadHandle, Ctx);
+
+  {$IFDEF CPUX64}
+  Ctx.Rip := Cardinal(@RaiseTimeOutException);
+  {$ELSE}
   Ctx.Eip := Cardinal(@RaiseTimeOutException);
+  {$ENDIF}
   SetThreadContext(ThreadHandle, Ctx);
   ResumeThread(ThreadHandle);
 end;
@@ -99,23 +144,25 @@ end;
 
 procedure TTimeoutThread.Execute;
 var
-  startTime : Cardinal;
-  elapsedTime : Cardinal;
+  elapsedTime : Int64;
+  stopwatch : TStopWatch;
 begin
   inherited;
-
-  //Get the tickcount so that we leave timing up to the system.
-  startTime := GetTickCount;
+  stopwatch := TStopWatch.Create;
+  stopwatch.Reset;
+  stopwatch.Start;
   elapsedTime := 0;
 
+  if Terminated then
+     exit;
   repeat
     //Give some time back to the system to process the test.
-    Sleep(1);
+    Sleep(20);
 
     if Terminated then
       Break;
 
-    elapsedTime := GetElapsedTime(startTime);
+    elapsedTime :=  stopwatch.ElapsedMilliseconds;
   until (elapsedTime >= Timeout);
 
   //If we haven't been terminated then we have timed out.

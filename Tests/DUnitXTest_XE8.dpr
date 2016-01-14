@@ -3,7 +3,7 @@ program DUnitXTest_XE8;
 {$APPTYPE CONSOLE}
 {$STRONGLINKTYPES ON}
 uses
-  SysUtils,
+  System.SysUtils,
   DUnitX.Loggers.Console in '..\DUnitX.Loggers.Console.pas',
   DUnitX.Loggers.Text in '..\DUnitX.Loggers.Text.pas',
   DUnitX.MacOS.Console in '..\DUnitX.MacOS.Console.pas',
@@ -62,7 +62,8 @@ uses
   DUnitX.Tests.Inheritance in 'DUnitX.Tests.Inheritance.pas',
   DUnitX.Tests.ConsoleWriter.Base in 'DUnitX.Tests.ConsoleWriter.Base.pas',
   DUnitX.Assert in '..\DUnitX.Assert.pas',
-  DUnitX.Types in '..\DUnitX.Types.pas';
+  DUnitX.Types in '..\DUnitX.Types.pas',
+  DUnitX.Attributes in '..\DUnitX.Attributes.pas';
 
 var
   runner : ITestRunner;

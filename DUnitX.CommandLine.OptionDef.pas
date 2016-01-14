@@ -1,4 +1,3 @@
-unit DUnitX.CommandLine.OptionDef;
 {***************************************************************************}
 {                                                                           }
 {           DUnitX                                                          }
@@ -25,14 +24,27 @@ unit DUnitX.CommandLine.OptionDef;
 {                                                                           }
 {***************************************************************************}
 
+unit DUnitX.CommandLine.OptionDef;
+
 interface
 
+{$I DUnitX.inc}
+
 uses
+  {$IFDEF USE_NS}
+  System.Classes,
+  System.SysUtils,
+  System.Rtti,
+  System.TypInfo,
+  System.Generics.Collections,
+  {$ELSE}
   Classes,
   SysUtils,
   Rtti,
   TypInfo,
   Generics.Collections,
+  {$ENDIF}
+
   DUnitX.CommandLine.Options;
 
 type
@@ -99,7 +111,12 @@ function StringToBoolean(const value: string): boolean;
 implementation
 
 uses
+  DUnitX.ResStrs,
+  {$IFDEF USE_NS}
+  System.StrUtils;
+  {$ELSE}
   StrUtils;
+  {$ENDIF}
 
 { TOptionDefinition<T> }
 
@@ -107,13 +124,12 @@ uses
 
 function StringToBoolean(const value: string): boolean;
 begin
-  if  MatchText(value, trueStrings) then
+  if MatchText(value, trueStrings) then
     result := true
   else if MatchText(value,falseStrings) then
     result := false
   else
-    raise Exception.Create('Invalid value, not boolean');
-
+    raise Exception.Create(SInvalidValueBool);
 end;
 
 
@@ -122,7 +138,7 @@ constructor TOptionDefinition<T>.Create(const longName, shortName: string; const
 begin
   FTypeInfo := TypeInfo(T);
   if not (FTypeInfo.Kind in [tkInteger,tkEnumeration,tkFloat,tkString,tkSet,tkLString,tkWString,tkInt64,tkUString]) then
-    raise Exception.Create('Invalid Option type - only string, integer, float, boolean, enum and sets are supported');
+    raise Exception.Create(SInvalidOptionType);
 
   FLongName := longName;
   FShortName := shortName;
@@ -200,7 +216,7 @@ end;
 procedure TOptionDefinition<T>.InitDefault;
 begin
   FDefault := Default(T);
-  if not FHasValue and (FTypeInfo.Name = 'Boolean') then
+  if not FHasValue and (GetTypeName(FTypeInfo) = 'Boolean') then
       FDefault := TValue.FromVariant(true).AsType<T>;
 
 end;
@@ -244,7 +260,7 @@ begin
         end;
         tkEnumeration :
         begin
-          if FTypeInfo.Name = 'Boolean' then
+          if GetTypeName(FTypeInfo) = 'Boolean' then
           begin
             v := TValue.From<Boolean>(StringToBoolean(value));
           end
@@ -252,7 +268,7 @@ begin
           begin
             intVal := GetEnumValue(FTypeInfo,value);
             if intVal < 0 then
-              raise Exception.Create('Invalid Enum Value : ' + value);
+              raise Exception.Create(SInvalidEnum + value);
 
             v := TValue.FromOrdinal(FTypeInfo,intVal);
           end;
@@ -263,7 +279,7 @@ begin
            v := TValue.From<Double>(floatVal);
         end;
       else
-        raise Exception.Create('invalid option type');
+        raise Exception.Create(SInvalidOpt);
         //what?
       end;
       FProc(v.AsType<T>);

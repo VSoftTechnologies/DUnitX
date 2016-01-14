@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2013 Vincent Parrett                              }
+{           Copyright (C) 2015 Vincent Parrett & Contributors               }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -27,22 +27,33 @@
 unit DUnitX.Expert.CodeGen.NewTestProject;
 
 interface
+
+{$I DUnitX.inc}
+
 uses
   ToolsAPI,
   DUnitX.Expert.CodeGen.NewProject;
 
 type
-  TTestProjectFile = class(TNewProject)
+  TTestProjectFile = class({$IFNDEF DELPHIX_SEATTLE_UP}TNewProject{$ELSE}TNewProjectEx{$ENDIF})
   protected
     function NewProjectSource(const ProjectName: string): IOTAFile; override;
   public
-    constructor Create;
+    constructor Create; overload;
+    constructor Create(const APersonality: string); overload;
   end;
 
 implementation
+
 uses
   DUnitX.Expert.CodeGen.SourceFile,
-  DunitX.Expert.CodeGen.Templates;
+  DunitX.Expert.CodeGen.Templates,
+  {$IFDEF USE_NS}
+  System.SysUtils;
+  {$ELSE}
+  SysUtils;
+  {$ENDIF}
+
 
 { TProjectFile }
 
@@ -53,9 +64,31 @@ begin
   FFileName := '';
 end;
 
-function TTestProjectFile.NewProjectSource(const ProjectName: string): IOTAFile;
+constructor TTestProjectFile.Create(const APersonality: string);
 begin
+  Create;
+  {$IFDEF DELPHIX_SEATTLE_UP}
+  Personality := APersonality;
+  {$ENDIF}
+end;
+
+function TTestProjectFile.NewProjectSource(const ProjectName: string): IOTAFile;
+{$IFDEF DELPHIX_SEATTLE_UP}
+var
+  TestProjectCode: string;
+{$ENDIF}
+begin
+  {$IFNDEF DELPHIX_SEATTLE_UP}
   result := TSourceFile.Create(STestDPR,[ProjectName]);
+  {$ELSE}
+  if Personality.isEmpty or SameText(Personality, sDelphiPersonality) then
+    TestProjectCode := STestDPR
+  else
+    if SameText(Personality, sCBuilderPersonality) then
+      TestProjectCode := STestCBPROJ;
+
+  result := TSourceFile.Create(TestProjectCode,[ProjectName]);
+  {$ENDIF}
 end;
 
 end.

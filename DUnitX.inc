@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2013 Vincent Parrett                              }
+{           Copyright (C) 2015 Vincent Parrett & Contributors               }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -37,7 +37,15 @@
   Unsupported Compiler Version (Delphi 2010 or later required!)
 {$ENDIF}
 
+//Use namespaces
+{$DEFINE USE_NS}
 
+
+
+{$DEFINE DELPHI_XE8_DOWN}
+{$DEFINE DELPHI_XE8_DOWN}
+{$DEFINE DELPHI_XE7_DOWN}
+{$DEFINE DELPHI_XE6_DOWN}
 {$DEFINE DELPHI_XE5_DOWN}
 {$DEFINE DELPHI_XE4_DOWN}
 {$DEFINE DELPHI_XE3_DOWN}
@@ -49,15 +57,16 @@
   {$DEFINE DELPHI_2010}
   {$DEFINE DELPHI_2010_UP}
   {$DEFINE CPUX86}
+  {$UNDEF USE_NS}
 {$ENDIF VER210}
 
 {$IFDEF VER220} // RAD Studio XE
   {$DEFINE DELPHI_2010_UP}
   {$DEFINE DELPHI_XE}
   {$DEFINE DELPHI_XE_UP}
-  {$DEFINE SUPPORTS_REGEX}
   {$DEFINE CPUX86}
   {$UNDEF DELPHI_2010_DOWN}
+  {$UNDEF USE_NS}
 {$ENDIF VER220}
 
 {$IFDEF VER230} // RAD Studio XE2
@@ -66,6 +75,7 @@
   {$DEFINE DELPHI_XE2}
   {$DEFINE DELPHI_XE2_UP}
   {$DEFINE SUPPORTS_REGEX}
+  {$DEFINE USE_NS}
   {$UNDEF DELPHI_2010_DOWN}
   {$UNDEF DELPHI_XE_DOWN}
 {$ENDIF VER230}
@@ -90,6 +100,7 @@
   {$DEFINE DELPHI_XE4}
   {$DEFINE DELPHI_XE4_UP}
   {$DEFINE SUPPORTS_REGEX}
+  {$DEFINE USE_NS}
   {$UNDEF DELPHI_2010_DOWN}
   {$UNDEF DELPHI_XE_DOWN}
   {$UNDEF DELPHI_XE2_DOWN}
@@ -105,6 +116,7 @@
   {$DEFINE DELPHI_XE5}
   {$DEFINE DELPHI_XE5_UP}
   {$DEFINE SUPPORTS_REGEX}
+  {$DEFINE USE_NS}
   {$UNDEF DELPHI_2010_DOWN}
   {$UNDEF DELPHI_XE_DOWN}
   {$UNDEF DELPHI_XE2_DOWN}
@@ -122,6 +134,7 @@
   {$DEFINE DELPHI_XE6}
   {$DEFINE DELPHI_XE6_UP}
   {$DEFINE SUPPORTS_REGEX}
+  {$DEFINE USE_NS}
   {$UNDEF DELPHI_2010_DOWN}
   {$UNDEF DELPHI_XE_DOWN}
   {$UNDEF DELPHI_XE2_DOWN}
@@ -141,6 +154,7 @@
   {$DEFINE DELPHI_XE7}
   {$DEFINE DELPHI_XE7_UP}
   {$DEFINE SUPPORTS_REGEX}
+  {$DEFINE USE_NS}
   {$UNDEF DELPHI_2010_DOWN}
   {$UNDEF DELPHI_XE_DOWN}
   {$UNDEF DELPHI_XE2_DOWN}
@@ -163,6 +177,7 @@
   {$DEFINE DELPHI_XE8_UP}
   
   {$DEFINE SUPPORTS_REGEX}
+  {$DEFINE USE_NS}
   {$UNDEF DELPHI_2010_DOWN}
   {$UNDEF DELPHI_XE_DOWN}
   {$UNDEF DELPHI_XE2_DOWN}
@@ -171,6 +186,32 @@
   {$UNDEF DELPHI_XE5_DOWN}
   {$UNDEF DELPHI_XE6_DOWN}
   {$UNDEF DELPHI_XE7_DOWN}
+{$ENDIF VER290}
+
+{$IFDEF VER300} // RAD Studio 10 Seattle
+  {$DEFINE DELPHI_2010_UP}
+  {$DEFINE DELPHI_XE_UP}
+  {$DEFINE DELPHI_XE2_UP}
+  {$DEFINE DELPHI_XE3_UP}
+  {$DEFINE DELPHI_XE4_UP}
+  {$DEFINE DELPHI_XE5_UP}
+  {$DEFINE DELPHI_XE6_UP}
+  {$DEFINE DELPHI_XE7}
+  {$DEFINE DELPHI_XE7_UP}
+  {$DEFINE DELPHI_XE8_UP}
+  {$DEFINE DELPHIX_SEATTLE_UP}
+  {$DEFINE DELPHIX_SEATTLE}
+  {$DEFINE SUPPORTS_REGEX}
+  {$DEFINE USE_NS}
+  {$UNDEF DELPHI_2010_DOWN}
+  {$UNDEF DELPHI_XE_DOWN}
+  {$UNDEF DELPHI_XE2_DOWN}
+  {$UNDEF DELPHI_XE3_DOWN}
+  {$UNDEF DELPHI_XE4_DOWN}
+  {$UNDEF DELPHI_XE5_DOWN}
+  {$UNDEF DELPHI_XE6_DOWN}
+  {$UNDEF DELPHI_XE7_DOWN}
+  {$UNDEF DELPHI_XE8_DOWN}
 {$ENDIF VER290}
 
 
@@ -182,4 +223,5 @@
 {$IFNDEF DUNITX-DEBUG}
   {$D-}
 {$ENDIF}
+
 

@@ -28,18 +28,23 @@ unit DUnitX.Test;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
+  {$IFDEF USE_NS}
+  System.Generics.Collections,
+  System.TimeSpan,
+  System.Rtti,
+  {$ELSE}
+  Generics.Collections,
+  TimeSpan,
+  Rtti,
+  {$ENDIF}
   DUnitX.Types,
   DUnitX.Extensibility,
   DUnitX.InternalInterfaces,
   DUnitX.WeakReference,
-  DUnitX.TestFramework,
-  Generics.Collections,
-  TimeSpan,
-  Rtti;
-
-{$I DUnitX.inc}
-
+  DUnitX.TestFramework;
 
 type
   TDUnitXTest = class(TWeakReferencedObject, ITest, ITestInfo, ISetTestResult, ITestExecute)
@@ -90,6 +95,7 @@ type
 
     //ITestExecute
     procedure Execute(const context : ITestExecuteContext);virtual;
+    procedure UpdateInstance(const fixtureInstance : TObject);virtual;
   public
     constructor Create(const AFixture : ITestFixture; const AMethodName : string; const AName : string; const ACategory  : string; const AMethod : TTestMethod; const AEnabled : boolean;
                        const AIgnored : boolean = false; const AIgnoreReason : string = ''; const AMaxTime : Cardinal = 0);
@@ -105,6 +111,7 @@ type
   protected
     function GetName: string; override;
     procedure Execute(const context : ITestExecuteContext); override;
+    procedure UpdateInstance(const fixtureInstance : TObject);override;
   public
     constructor Create(const AInstance : TObject; const AFixture : ITestFixture; const AMethodName : string; const ACaseName : string; const AName : string; const ACategory  : string; const AMethod : TRttiMethod;
                        const AEnabled : boolean; const AArgs : TValueArray);reintroduce;
@@ -115,10 +122,17 @@ type
 implementation
 
 uses
+  {$IFDEF USE_NS}
+  System.SysUtils,
+  System.Generics.Defaults,
+  {$ELSE}
   SysUtils,
   Generics.Defaults,
-  DUnitX.Utils,
-  DUnitX.Timeout;
+  {$ENDIF}
+  {$IFDEF MSWINDOWS}
+  DUnitX.Timeout,
+  {$ENDIF}
+  DUnitX.Utils;
 
 { TDUnitXTest }
 
@@ -159,12 +173,17 @@ begin
 end;
 
 procedure TDUnitXTest.Execute(const context : ITestExecuteContext);
+{$IFDEF MSWINDOWS}
+var
+  timeout : ITimeout;
+{$ENDIF}
 begin
   FStartTime := Now();
   try
+    {$IFDEF MSWINDOWS}
     if FMaxTime > 0 then
-      InitialiseTimeOut( FMaxTime );
-
+      timeout := InitialiseTimeOut( FMaxTime );
+    {$ENDIF}
     FMethod();
   finally
     FEndTime := Now();
@@ -284,6 +303,11 @@ begin
   FTimedOut := AValue;
 end;
 
+procedure TDUnitXTest.UpdateInstance(const fixtureInstance: TObject);
+begin
+  TMethod(FMethod).Data := fixtureInstance;
+end;
+
 procedure TDUnitXTest.SetResult(const value: ITestResult);
 begin
 
@@ -312,7 +336,7 @@ begin
 
   if len > 0 then
   begin
-    //Only keep as many arguements as there are params
+    //Only keep as many arguments as there are params
     SetLength(FArgs, len);
     for index := 0 to Pred(len) do
     begin
@@ -345,6 +369,12 @@ end;
 function TDUnitXTestCase.GetName: string;
 begin
   Result := FName + '.' + FCaseName;
+end;
+
+procedure TDUnitXTestCase.UpdateInstance(const fixtureInstance: TObject);
+begin
+  inherited;
+  FInstance := fixtureInstance;
 end;
 
 end.

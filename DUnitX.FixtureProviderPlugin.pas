@@ -31,7 +31,11 @@ interface
 {$I DUnitX.inc}
 
 uses
+  {$IFDEF USE_NS}
+  System.Rtti,
+  {$ELSE}
   Rtti,
+  {$ENDIF}
   Generics.Collections,
   DUnitX.Extensibility;
 
@@ -64,14 +68,23 @@ type
 
 implementation
 uses
+  {$IFDEF USE_NS}
+  System.TypInfo,
+  System.Classes,
+  System.Types,
+  System.StrUtils,
+  System.SysUtils,
+  {$ELSE}
   TypInfo,
   Classes,
   Types,
   StrUtils,
   SysUtils,
+  {$ENDIF}
   DUnitX.Attributes,
   DUnitX.Utils,
-  DUnitX.TestFramework;
+  DUnitX.TestFramework,
+  DUnitX.ResStrs;
 
 { TDUnitXFixtureProvider }
 
@@ -312,7 +325,7 @@ begin
       if (repeatAttrib.Count = 0) then
       begin
         ignoredTest := True;
-        ignoredReason := 'Repeat Set to 0. Test Ignored.';
+        ignoredReason := STestIgnoredRepeatSet;
       end
       else
       if (repeatAttrib.Count > 1) then
@@ -379,10 +392,10 @@ begin
       testEnabled := testAttrib.Enabled;
       isTestMethod := true;
     end;
-
+    {$IFDEF MSWINDOWS}
     if method.TryGetAttributeOfType<MaxTimeAttribute>(maxTimeAttrib) then
       maxTime := maxTimeAttrib.MaxTime;
-
+    {$ENDIF}
     if method.IsDestructor or method.IsConstructor then
       continue;
 

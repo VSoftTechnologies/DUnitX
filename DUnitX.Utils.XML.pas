@@ -28,6 +28,8 @@ unit DUnitX.Utils.XML;
 
 interface
 
+{$I DUnitX.inc}
+
 function IsCharValidXML(wideChar: WideChar): Boolean;
 function StripInvalidXML(const xmlString: string): string;
 function EscapeForXML(const value: string; const isAttribute: boolean = True; const isCDATASection : Boolean = False): string;
@@ -35,7 +37,11 @@ function EscapeForXML(const value: string; const isAttribute: boolean = True; co
 implementation
 
 uses
+  {$IFDEF USE_NS}
+  System.SysUtils;
+  {$ELSE}
   SysUtils;
+  {$ENDIF}
 
 function IsCharValidXML(wideChar: WideChar): Boolean;
 begin
@@ -57,6 +63,7 @@ var
   index: integer;
   count: Integer;
 begin
+  {$IFNDEF NEXTGEN}
   count := Length(xmlString);
   setLength(result, count);
   for index := 1 to Count do
@@ -66,6 +73,23 @@ begin
     else
       result[index] := ' ';
   end;
+  {$ELSE}
+  count := xmlString.Length;
+  setLength(result, count);
+  for index := 0 to Count - 1 do
+  begin
+    if IsCharValidXML(WideChar(xmlString.Chars[index])) then
+    begin
+      result := result.Remove(index, 1);
+      result := result.Insert(index, xmlString.Chars[index]);
+    end
+    else
+    begin
+      result := result.Remove(index, 1);
+      result := result.Insert(index, ' ');
+    end;
+  end;
+  {$ENDIF}
 end;
 
 

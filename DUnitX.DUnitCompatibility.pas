@@ -30,9 +30,15 @@ unit DUnitX.DUnitCompatibility;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
-  DUnitX.TestFramework,
-  SysUtils;
+  {$IFDEF USE_NS}
+  System.SysUtils,
+  {$ELSE}
+  SysUtils,
+  {$ENDIF}
+  DUnitX.TestFramework;
 
 type
   TTestCase = class
@@ -49,11 +55,15 @@ type
     procedure CheckEquals(const expected, actual: Cardinal; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
     procedure CheckEquals(const expected, actual: int64; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
     procedure CheckEquals(const expected, actual: UnicodeString; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
+{$IFNDEF NEXTGEN}
     procedure CheckEquals(const expected, actual: AnsiString; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
     procedure CheckEquals(const expected, actual: ShortString; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
+{$ENDIF}
     procedure CheckEqualsString(const expected, actual: string; const msg: string = '');deprecated  'Use DUnitX.Assert class';
+{$IFNDEF NEXTGEN}
     procedure CheckEquals(const expected, actual: WideString; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
     procedure CheckEqualsWideString(const expected, actual: WideString; const msg: string = '');deprecated  'Use DUnitX.Assert class';
+{$ENDIF}
     procedure CheckEqualsMem(const expected, actual: pointer; const size:longword; const msg : string='');deprecated  'Use DUnitX.Assert class';
     procedure CheckEquals(const expected, actual: Boolean; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
     procedure CheckEqualsBin(const expected, actual: longword; const msg: string = ''; digits: integer=32);deprecated  'Use DUnitX.Assert class';
@@ -65,8 +75,10 @@ type
     procedure CheckNotEquals(const expected: extended; const actual: extended; const delta: extended = 0; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
     procedure CheckNotEquals(const expected, actual: string; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
     procedure CheckNotEqualsString(const expected, actual: string; const msg: string = '');deprecated  'Use DUnitX.Assert class';
+{$IFNDEF NEXTGEN}
     procedure CheckNotEquals(const expected, actual: WideString; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
     procedure CheckNotEqualsWideString(const expected, actual: WideString; const msg: string = '');deprecated  'Use DUnitX.Assert class';
+{$ENDIF}
     procedure CheckNotEqualsMem(const expected, actual: pointer; const size:longword; const msg : string='');deprecated  'Use DUnitX.Assert class';
     procedure CheckNotEquals(const expected, actual: Boolean; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
     procedure CheckNotEqualsBin(const expected, actual: longword; const msg: string = ''; digits: integer=32);deprecated  'Use DUnitX.Assert class';
@@ -117,11 +129,18 @@ begin
   SetLength(Result, digits);
   pow := 1 shl (digits - 1);
   if value <> 0 then
-  for counter := 0 to digits - 1 do
-  begin
-    if (value and (pow shr counter)) <> 0 then
-      Result[counter+1] := '1';
-  end;
+    for counter := 0 to digits - 1 do
+    begin
+      if (value and (pow shr counter)) <> 0 then
+      begin
+      	{$IFDEF NEXTGEN}
+        Result.Remove(counter, 1);
+        Result.Insert(counter, '1');
+	{$ELSE}
+	Result[counter+1] := '1';
+	{$ENDIF}
+      end;
+    end;
 end;
 
 procedure TTestCase.Check(const condition: Boolean; const msg: string);
@@ -192,7 +211,7 @@ end;
 
 procedure TTestCase.CheckEquals(const expected, actual: integer; const msg: string);
 begin
-{$IFDEF DELPHI_XE_UP}
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreEqual<integer>(expected,actual,msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);
@@ -201,7 +220,7 @@ end;
 
 procedure TTestCase.CheckEquals(const expected, actual: Cardinal; const msg: string);
 begin
-{$IFDEF DELPHI_XE_UP}
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreEqual<Cardinal>(expected,actual,msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);
@@ -210,7 +229,7 @@ end;
 
 procedure TTestCase.CheckEquals(const expected, actual: int64; const msg: string);
 begin
-{$IFDEF DELPHI_XE_UP}
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreEqual<Int64>(expected,actual,msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);
@@ -219,16 +238,17 @@ end;
 
 procedure TTestCase.CheckEquals(const expected, actual: UnicodeString; const msg: string);
 begin
-{$IFDEF DELPHI_XE_UP}
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreEqual(expected, actual, msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);
 {$ENDIF}
 end;
 
+{$IFNDEF NEXTGEN}
 procedure TTestCase.CheckEquals(const expected, actual: AnsiString; const msg: string);
 begin
-{$IFDEF DELPHI_XE_UP}
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreEqual<AnsiString>(expected,actual,msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);
@@ -237,18 +257,20 @@ end;
 
 procedure TTestCase.CheckEquals(const expected, actual: ShortString; const msg: string);
 begin
-{$IFDEF DELPHI_XE_UP}
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreEqual<ShortString>(expected,actual,msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);
 {$ENDIF}
 end;
+{$ENDIF}
 
 procedure TTestCase.CheckEqualsString(const expected, actual: string; const msg: string);
 begin
   Assert.AreEqual(expected,actual,true,msg);
 end;
 
+{$IFNDEF NEXTGEN}
 procedure TTestCase.CheckEquals(const expected, actual: WideString; const msg: string);
 begin
   Assert.AreEqual(expected,actual,true,msg);
@@ -258,6 +280,7 @@ procedure TTestCase.CheckEqualsWideString(const expected, actual: WideString; co
 begin
   Assert.AreEqual(expected,actual,true,msg);
 end;
+{$ENDIF}
 
 procedure TTestCase.CheckEqualsMem(const expected, actual: pointer; const size:longword; const msg : string = '');
 begin
@@ -266,7 +289,7 @@ end;
 
 procedure TTestCase.CheckEquals(const expected, actual: Boolean; const msg: string);
 begin
-{$IFDEF DELPHI_XE_UP}
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreEqual<Boolean>(expected,actual,msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);
@@ -275,7 +298,7 @@ end;
 
 procedure TTestCase.CheckEqualsBin(const expected, actual: longword; const msg: string; digits: integer);
 begin
-{$IFDEF DELPHI_XE_UP}
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreEqual(IntToBin(expected, digits), IntToBin(actual, digits),msg);
 {$ELSE}
   Assert.IsTrue(IntToBin(expected, digits) = IntToBin(actual, digits), msg);
@@ -289,7 +312,7 @@ end;
 
 procedure TTestCase.CheckNotEquals(const expected, actual: integer; const msg: string);
 begin
-{$IFDEF DELPHI_XE_UP}
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreNotEqual<integer>(expected,actual,msg);
 {$ELSE}
   Assert.IsFalse(expected = actual, msg);
@@ -298,7 +321,7 @@ end;
 
 procedure TTestCase.CheckNotEquals(const expected, actual: Cardinal; const msg: string);
 begin
-{$IFDEF DELPHI_XE_UP}
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreNotEqual<Cardinal>(expected,actual,msg);
 {$ELSE}
   Assert.IsFalse(expected = actual, msg);
@@ -307,7 +330,7 @@ end;
 
 procedure TTestCase.CheckNotEquals(const expected, actual: int64; const msg: string);
 begin
-{$IFDEF DELPHI_XE_UP}
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreNotEqual<int64>(expected,actual,msg);
 {$ELSE}
   Assert.IsFalse(expected = actual, msg);
@@ -329,6 +352,7 @@ begin
   Assert.AreNotEqual(expected,actual,true,msg);
 end;
 
+{$IFNDEF NEXTGEN}
 procedure TTestCase.CheckNotEquals(const expected, actual: WideString; const msg: string);
 begin
   Assert.AreNotEqual(expected,actual,true,msg);
@@ -338,6 +362,7 @@ procedure TTestCase.CheckNotEqualsWideString(const expected, actual: WideString;
 begin
   Assert.AreNotEqual(expected,actual,true,msg);
 end;
+{$ENDIF}
 
 procedure TTestCase.CheckNotEqualsMem(const expected, actual: pointer; const size:longword; const msg:string='');
 begin
@@ -346,7 +371,7 @@ end;
 
 procedure TTestCase.CheckNotEquals(const expected, actual: Boolean; const msg: string);
 begin
-{$IFDEF DELPHI_XE_UP}
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreNotEqual<boolean>(expected,actual,msg);
 {$ELSE}
   Assert.IsFalse(expected = actual, msg);
@@ -355,7 +380,7 @@ end;
 
 procedure TTestCase.CheckNotEqualsBin(const expected, actual: longword; const msg: string; digits: integer);
 begin
-{$IFDEF DELPHI_XE_UP}
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreNotEqual<longword>(expected,actual,msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);
@@ -379,7 +404,7 @@ end;
 
 procedure TTestCase.CheckSame(const expected, actual: IUnknown; const msg: string);
 begin
-{$IFDEF DELPHI_XE_UP}
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreEqual<IInterface>(expected,actual,msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);
@@ -388,7 +413,7 @@ end;
 
 procedure TTestCase.CheckSame(const expected, actual: TObject; const msg: string);
 begin
-{$IFDEF DELPHI_XE_UP}
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreEqual<TObject>(expected,actual,msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);

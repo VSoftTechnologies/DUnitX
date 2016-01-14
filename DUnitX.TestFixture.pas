@@ -28,24 +28,30 @@ unit DUnitX.TestFixture;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
+  {$IFDEF USE_NS}
+  System.Generics.Collections,
+  System.Rtti,
+  {$ELSE}
+  Generics.Collections,
+  Rtti,
+  {$ENDIF}
   DUnitX.Types,
   DUnitX.Attributes,
   DUnitX.TestFramework,
   DUnitX.Extensibility,
   DUnitX.InternalInterfaces,
   DUnitX.WeakReference,
-  DUnitX.Generics,
-  Generics.Collections,
-  Rtti;
-
-{$I DUnitX.inc}
+  DUnitX.Generics;
 
 type
   TDUnitXTestFixture = class(TWeakReferencedObject, ITestFixture,ITestFixtureInfo)
-  class var
+  private class var
     FRttiContext  : TRttiContext;
   private
+    FFixtureType  : TRttiType;
     FTestClass    : TClass;
     FUnitName     : string;
     FName         : string;
@@ -114,6 +120,8 @@ type
     procedure OnMethodExecuted(const AMethod : TTestMethod);
 
     procedure ExecuteFixtureTearDown;
+    procedure InitFixtureInstance;
+    procedure InternalInitFixtureInstance(const isConstructing : boolean);
 
     function AddTest(const AMethodName : string; const AMethod : TTestMethod; const AName : string; const ACategory  : string; const AEnabled : boolean = true;const AIgnored : boolean = false; const AIgnoreReason : string = ''; const AMaxTime :cardinal = 0) : ITest;
     function AddTestCase(const AMethodName : string; const ACaseName : string; const AName : string; const ACategory  : string; const AMethod : TRttiMethod; const AEnabled : boolean; const AArgs : TValueArray) : ITest;
@@ -138,9 +146,15 @@ type
 implementation
 
 uses
+  {$IFDEF USE_NS}
+  System.TypInfo,
+  System.SysUtils,
+  System.Generics.Defaults,
+  {$ELSE}
   TypInfo,
   SysUtils,
   Generics.Defaults,
+  {$ENDIF}
   DUnitX.Test,
   DUnitX.Utils;
 
@@ -149,11 +163,7 @@ uses
 constructor TDUnitXTestFixture.Create(const AName : string; const ACategory : string; const AClass : TClass; const AUnitName : string);
 var
   fixtureAttrib   : TestFixtureAttribute;
-  IgnoreMemoryLeak: IgnoreMemoryLeaks;
-  {$IFDEF DELPHI_XE_UP}
-  method : TRttiMethod;
-  {$ENDIF}
-  rType : TRttiType;
+  IgnoreMemoryLeakAttrib: IgnoreMemoryLeaks;
   i : integer;
   categories : TArray<string>;
   cat : string;
@@ -193,39 +203,15 @@ begin
   FEnabled := True;
 
   FIgnoreMemoryLeaks := False;
-  rType := FRttiContext.GetType(FTestClass);
-  if rType.TryGetAttributeOfType<IgnoreMemoryLeaks>(IgnoreMemoryLeak) then
-    FIgnoreMemoryLeaks := IgnoreMemoryLeak.IgnoreMemoryLeaks;
+  FFixtureType := FRttiContext.GetType(FTestClass);
+  if FFixtureType.TryGetAttributeOfType<IgnoreMemoryLeaks>(IgnoreMemoryLeakAttrib) then
+    FIgnoreMemoryLeaks := IgnoreMemoryLeakAttrib.IgnoreLeaks;
 
   fixtureAttrib := nil;
-  if rType.TryGetAttributeOfType<TestFixtureAttribute>(fixtureAttrib) then
+  if FFixtureType.TryGetAttributeOfType<TestFixtureAttribute>(fixtureAttrib) then
     FDescription := fixtureAttrib.Description;
 
-
-  if FFixtureInstance = nil then
-  begin
-    //it's a dummy namespace fixture, don't bother with the rest.
-    if rType.Handle = TypeInfo(TObject) then
-    begin
-      FFixtureInstance := FTestClass.Create;
-      exit;
-    end;
-
-
-    FIgnoreFixtureSetup := false;
-    {$IFDEF DELPHI_XE_UP}
-    //NOTE: Causes Delphi 2010 to be inconsistent with produced exe. Will sometimes crash with AV when generating fixtures.
-    //If there is a parameterless constructor declared then we will use that as the
-    //fixture Setup method.
-    if rType.TryGetConstructor(method) then
-    begin
-      FIgnoreFixtureSetup := true;
-      FFixtureInstance := method.Invoke(TRttiInstanceType(rtype).MetaclassType, []).AsObject;
-    end
-    else
-    {$ENDIF}
-      FFixtureInstance := FTestClass.Create;
-  end;
+  InternalInitFixtureInstance(true);
 end;
 
 destructor TDUnitXTestFixture.Destroy;
@@ -345,7 +331,7 @@ var
  IgnoreMemoryLeak: IgnoreMemoryLeaks;
 begin
   if AMethod.TryGetAttributeOfType<IgnoreMemoryLeaks>(IgnoreMemoryLeak) then
-    result := IgnoreMemoryLeak.IgnoreMemoryLeaks
+    result := IgnoreMemoryLeak.IgnoreLeaks
   else
     result := FIgnoreMemoryLeaks;
 end;
@@ -423,6 +409,53 @@ end;
 function TDUnitXTestFixture.GetUnitName: string;
 begin
   result := FUnitName;
+end;
+
+procedure TDUnitXTestFixture.InitFixtureInstance;
+begin
+  InternalInitFixtureInstance(false);
+end;
+
+procedure TDUnitXTestFixture.InternalInitFixtureInstance(const isConstructing: boolean);
+var
+  test : ITest;
+{$IFDEF DELPHI_XE_UP}
+   method : TRttiMethod;
+{$ENDIF}
+
+begin
+  if FFixtureInstance = nil then
+  begin
+    //it's a dummy namespace fixture, don't bother with the rest.
+    if FFixtureType.Handle = TypeInfo(TObject) then
+    begin
+      FFixtureInstance := FTestClass.Create;
+      exit;
+    end;
+
+
+    FIgnoreFixtureSetup := false;
+    {$IFDEF DELPHI_XE_UP}
+    //NOTE: Causes Delphi 2010 to be inconsistent with produced exe. Will sometimes crash with AV when generating fixtures.
+    //If there is a parameterless constructor declared then we will use that as the
+    //fixture Setup method.
+    if FFixtureType.TryGetConstructor(method) then
+    begin
+      FIgnoreFixtureSetup := true;
+      FFixtureInstance := method.Invoke(TRttiInstanceType(FFixtureType).MetaclassType, []).AsObject;
+    end
+    else
+    {$ENDIF}
+      FFixtureInstance := FTestClass.Create;
+
+    //Don't do this if we are called from the constructor as it's not needed.
+    if not isConstructing then
+    begin
+      //The fixture instance has changed, need to update the tests to run on the new instance.
+      for test in FTests do
+        (test as ITestExecute).UpdateInstance(FFixtureInstance);
+    end;
+  end;
 end;
 
 function TDUnitXTestFixture.IsNameSpaceOnly: boolean;

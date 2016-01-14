@@ -132,6 +132,9 @@
         <DCCReference Include="..\DUnitX.Assert.pas"/>
         <DCCReference Include="..\DUnitX.Types.pas"/>
         <DCCReference Include="..\DUnitX.Timeout.pas"/>
+        <DCCReference Include="..\DUnitX.ResStrs.pas"/>
+        <DCCReference Include="..\DUnitX.Constants.pas"/>
+        <DCCReference Include="..\DUnitX.Attributes.pas"/>
         <None Include="..\DUnitX.inc"/>
         <None Include="..\DUnitX.Stacktrace.inc"/>
         <None Include="..\DUnitX.MemoryLeaks.inc"/>

@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2013 Vincent Parrett                              }
+{           Copyright (C) 2015 Vincent Parrett & Contributors               }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -22,10 +22,6 @@
 {  See the License for the specific language governing permissions and      }
 {  limitations under the License.                                           }
 {                                                                           }
-{ This unit is largely a port of the NUnit filters classes                  }
-{ Copyright © 2012-2014 Charlie Poole                                       }
-{ License  : http://nunit.org/index.php?p=vsTestAdapterLicense&r=2.6.3      }
-{                                                                           }
 {***************************************************************************}
 
 unit DUnitX.Filters;
@@ -34,12 +30,17 @@ unit DUnitX.Filters;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
+  {$IFDEF USE_NS}
+  System.Classes,
+  {$ELSE}
   Classes,
+  {$ENDIF}
   Generics.Collections,
   DUnitX.Extensibility;
 
-{$I DUnitX.inc}
 
 type
 	/// <summary>
@@ -194,9 +195,15 @@ type
 implementation
 
 uses
+  {$IFDEF USE_NS}
+  System.Generics.Defaults,
+  System.StrUtils,
+  System.SysUtils;
+  {$ELSE}
   Generics.Defaults,
   StrUtils,
   SysUtils;
+  {$ENDIF}
 
 { TTestFilter }
 

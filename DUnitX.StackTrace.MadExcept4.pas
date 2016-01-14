@@ -31,8 +31,13 @@ interface
 {$I DUnitX.inc}
 
 uses
+{$IFDEF USE_NS}
+  System.SysUtils,
+  System.Classes,
+{$ELSE}
   SysUtils,
-  classes,
+  Classes,
+{$ENDIF}
 {$IFDEF USE_MADEXCEPT4}
   madStackTrace,
 {$ENDIF}

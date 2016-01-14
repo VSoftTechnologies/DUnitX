@@ -27,6 +27,7 @@
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
 			<DCC_ImageBase>00400000</DCC_ImageBase>
+            <DCC_UnitSearchPath>..\;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
 			<DCC_Description>DUnitX IDE Expert</DCC_Description>
 			<VerInfo_Locale>1033</VerInfo_Locale>
 			<DesignOnlyPackage>true</DesignOnlyPackage>
