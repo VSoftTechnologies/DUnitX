@@ -141,6 +141,7 @@ var
   categories : TArray<string>;
   cat        : string;
 begin
+  inherited Create;
   FFixture := TWeakReference<ITestFixture>.Create(AFixture);
   FMethodName := AMethodName;
   FName := AName;
@@ -310,7 +311,7 @@ end;
 
 procedure TDUnitXTest.SetResult(const value: ITestResult);
 begin
-
+    //TODO : what was meant to happen here?? Is this called?
 end;
 
 { TDUnitXTestCase }

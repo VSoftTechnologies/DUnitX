@@ -168,6 +168,7 @@ var
   categories : TArray<string>;
   cat : string;
 begin
+  inherited Create;
   FTestClass := AClass;
   FUnitName := AUnitName;
   FTests := TTestList.Create;

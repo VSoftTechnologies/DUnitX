@@ -275,15 +275,18 @@ uses
 
 constructor TestFixtureAttribute.Create;
 begin
+  inherited;
 end;
 
 constructor TestFixtureAttribute.Create(const AName: string);
 begin
+  inherited Create;
   FName := AName;
 end;
 
 constructor TestFixtureAttribute.Create(const AName: string; const ADescription : string);
 begin
+  inherited Create;
   FName := AName;
   FDescription := ADescription;
 end;
@@ -300,11 +303,13 @@ end;
 
 constructor TestAttribute.Create;
 begin
+  inherited;
   FEnabled := True;
 end;
 
 constructor TestAttribute.Create(const AEnabled: boolean);
 begin
+  inherited Create;
   FEnabled := AEnabled;
 end;
 
@@ -312,6 +317,7 @@ end;
 
 constructor CategoryAttribute.Create(const ACategory: string);
 begin
+  inherited Create;
   FCategory := ACategory;
 end;
 
@@ -319,6 +325,7 @@ end;
 
 constructor IgnoreAttribute.Create(const AReason: string);
 begin
+  inherited Create;
   FReason := AReason;
 end;
 
@@ -326,6 +333,7 @@ end;
 
 constructor RepeatTestAttribute.Create(const ACount: Cardinal);
 begin
+  inherited Create;
   FCount := ACount;
 end;
 
@@ -337,6 +345,7 @@ var
   l : integer;
   lValues : TStringDynArray;
 begin
+  inherited Create;
   FCaseInfo.Name := ACaseName;
   lValues := SplitString(AValues,ASeperator);
   l := Length(lValues);
