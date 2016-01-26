@@ -254,7 +254,7 @@ type
     function GetName: String;
     function GetValues: TValueArray;
   public
-    constructor Create(const ACaseName : string; const AValues : string;const ASeperator : string = ',');overload;
+    constructor Create(const ACaseName : string; const AValues : string;const ASeparator : string = ',');overload;
     property Name : String read GetName;
     property Values : TValueArray read GetValues;
   end;
@@ -339,7 +339,7 @@ end;
 
 { TestCaseAttribute }
 
-constructor TestCaseAttribute.Create(const ACaseName: string; const AValues: string;const ASeperator : string);
+constructor TestCaseAttribute.Create(const ACaseName: string; const AValues: string;const ASeparator : string);
 var
   i: Integer;
   l : integer;
@@ -347,7 +347,7 @@ var
 begin
   inherited Create;
   FCaseInfo.Name := ACaseName;
-  lValues := SplitString(AValues,ASeperator);
+  lValues := SplitString(AValues,ASeparator);
   l := Length(lValues);
   SetLength(FCaseInfo.Values,l);
   for i := 0 to l -1 do

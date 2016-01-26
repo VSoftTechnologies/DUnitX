@@ -151,7 +151,7 @@ const
   EXPECTED_RESULTS_FORMAT_STR = '<test-results total="%d" notrun="%d" date="%s" time="%s" >';
   EXPECTED_APP_NAME_FORMAT_STR = '<application name="%s" />';
 begin
-  //TODO: Break this unit tests into three seperate specific tests for each of the header sections.
+  //TODO: Break this unit tests into three separate specific tests for each of the header sections.
   mockStream := TStringStream.Create('', TEncoding.UTF8);
   logger := TDUnitXXMLNUnitLogger.Create(mockStream);
   logger.OnTestingStarts(0, 40, 30);
