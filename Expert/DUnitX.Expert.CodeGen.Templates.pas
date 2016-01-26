@@ -149,7 +149,7 @@ resourcestring
  '    // Simple single Test'#13#10 +
  '    [Test]'#13#10 +
  '    procedure Test1;'#13#10 +
- '    // Test with TestCase Atribute to supply parameters.'#13#10 +
+ '    // Test with TestCase Attribute to supply parameters.'#13#10 +
  '    [Test]'#13#10 +
  '    [TestCase(''TestA'',''1,2'')]'#13#10 +
  '    [TestCase(''TestB'',''3,4'')]'#13#10 +
