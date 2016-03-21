@@ -235,6 +235,7 @@ end;
 
 constructor TNameFilter.Create;
 begin
+  inherited;
   FNames := TList<string>.Create(TComparer<string>.Construct(
   function(const Left, Right : string) : integer
   begin
@@ -299,6 +300,7 @@ end;
 
 constructor TAndFilter.Create(const filters: TArray<ITestFilter>);
 begin
+  inherited Create;
   FFilters := TList<ITestFilter>.Create;
   Add(filters);
 end;
@@ -316,6 +318,7 @@ end;
 
 constructor TAndFilter.Create(const filter: ITestFilter);
 begin
+  inherited Create;
   FFilters := TList<ITestFilter>.Create;
   Add(filter);
 end;
@@ -347,6 +350,7 @@ end;
 
 constructor TOrFilter.Create(const filters: TArray<ITestFilter>);
 begin
+  inherited Create;
   FFilters := TList<ITestFilter>.Create;
   Add(filters);
 end;
@@ -364,6 +368,7 @@ end;
 
 constructor TOrFilter.Create(const filter: ITestFilter);
 begin
+  inherited Create;
   FFilters := TList<ITestFilter>.Create;
   Add(filter);
 end;
@@ -390,6 +395,7 @@ end;
 
 constructor TNotFilter.Create(const baseFilter: ITestFilter; const topLevel: boolean);
 begin
+  inherited Create;
   FBaseFilter := baseFilter;
   FTopLevel := topLevel;
 end;

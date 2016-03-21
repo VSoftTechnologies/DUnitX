@@ -75,13 +75,13 @@ begin
                                           end);
   def.AllowMultiple := true;
 
-  def := TOptionsRegistry.RegisterOption<string>('include','i','Specify the categories to include',
+  TOptionsRegistry.RegisterOption<string>('include','i','Specify the categories to include',
                                           procedure(value :string)
                                           begin
                                              TDUnitX.Options.Include := value;
                                           end);
 
-  def := TOptionsRegistry.RegisterOption<string>('exclude','e','Specify the categories to exclude',
+  TOptionsRegistry.RegisterOption<string>('exclude','e','Specify the categories to exclude',
                                           procedure(value :string)
                                           begin
                                              TDUnitX.Options.Exclude := value;
@@ -102,7 +102,7 @@ begin
                                              TDUnitX.Options.LogLevel := value
                                           end);
 
-  def := TOptionsRegistry.RegisterOption<TDUnitXExitBehavior>('exitbehavior','exit','Exit behavior - Continue, Pause',
+  TOptionsRegistry.RegisterOption<TDUnitXExitBehavior>('exitbehavior','exit','Exit behavior - Continue, Pause',
                                           procedure(value : TDUnitXExitBehavior)
                                           begin
                                              TDUnitX.Options.ExitBehavior := value

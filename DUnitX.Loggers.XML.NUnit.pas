@@ -183,6 +183,7 @@ var
   oldDecimalSeparator: Char;
   {$ENDIF}
 begin
+  inherited Create;
   {$IFDEF DELPHI_XE_UP }
   FFormatSettings := TFormatSettings.Create;
   FFormatSettings.ThousandSeparator := ',';

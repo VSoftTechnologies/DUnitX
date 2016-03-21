@@ -245,7 +245,7 @@ end;
 
 procedure TDUnitXTestRunner.AddStatus(const threadId; const msg: string);
 begin
-
+    //TODO : What should be here???
 end;
 
 function TDUnitXTestRunner.BuildFixtures  : IInterface;
@@ -324,6 +324,7 @@ end;
 
 constructor TDUnitXTestRunner.Create;
 begin
+  inherited;
   FLoggers := TList<ITestLogger>.Create;
   FFixtureClasses := TDictionary<TClass,string>.Create;
   FUseRTTI := False;

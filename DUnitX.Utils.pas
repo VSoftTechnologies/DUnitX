@@ -1440,6 +1440,7 @@ function MergeStrings(Values: TStringDynArray; const Delimiter: string): string;
 var
   i: Integer;
 begin
+  result := '';
   for i := Low(Values) to High(Values) do
   begin
     if i = 0 then
@@ -1685,7 +1686,7 @@ class function TArrayHelper.Create<T>(const a, b: T): TArray<T>;
 begin
   SetLength(result,2);
   result[0] := a;
-  result[0] := b;
+  result[1] := b;
 end;
 
 { TObjectHelper }
@@ -2050,7 +2051,7 @@ class function TRttiParameterHelper.Equals(const Left,
 var
   i: Integer;
 begin
-  Result := Length(Left) = Length(Left);
+  Result := Length(Left) = Length(Right);
   if Result then
   begin
     for i := Low(Left) to High(Left) do
@@ -2548,7 +2549,7 @@ class function TValueHelper.Equals(const Left, Right: TArray<TValue>): Boolean;
 var
   i: Integer;
 begin
-  Result := Length(Left) = Length(Left);
+  Result := Length(Left) = Length(Right);
   if Result then
   begin
     for i := Low(Left) to High(Left) do
@@ -2963,6 +2964,7 @@ end;
 type
  // Declare compatible members of TRttiObject in System.Rtti.pas
   TRttiObjectFieldRef = class abstract
+  public
     FHandle: Pointer;
     FRttiDataSize: Integer;
     FPackage: Pointer{TRttiPackage};
@@ -3036,6 +3038,7 @@ var
   M: TMarshaller;
 {$ENDIF}
 begin
+  inherited Create;
   FPropInfo.PropType := Pointer(NativeInt(PropertyType) - SizeOf(PTypeInfo));
   {$IFNDEF DELPHI_XE3_UP}
   FPropInfo.Name := ShortString(Name);
