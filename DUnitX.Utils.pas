@@ -875,6 +875,34 @@ begin
   Result := False;
 end;
 
+function ConvStr2DynArray(const ASource: TValue; ATarget: PTypeInfo; out AResult: TValue): Boolean;
+var
+  s: string;
+  values: TStringDynArray;
+  i: Integer;
+  p: Pointer;
+  v1, v2: TValue;
+  elType: PTypeInfo;
+begin
+  s := ASource.AsString;
+  if StartsStr('[', s) and EndsStr(']', s) then
+    s := Copy(s, 2, Length(s) - 2);
+  values := SplitString(s, ',');
+  i := Length(values);
+  p := nil;
+  DynArraySetLength(p, ATarget, 1, @i);
+  TValue.MakeWithoutCopy(@p, ATarget, AResult);
+  elType := ATarget.TypeData.DynArrElType^;
+  for i := 0 to High(values) do
+  begin
+    v1 := TValue.FromString(values[i]);
+    if not v1.TryConvert(elType, v2) then
+      Exit(False);
+    AResult.SetArrayElement(i, v2);
+  end;
+  Result := True;
+end;
+
 function ConvAny2Nullable(const ASource: TValue; ATarget: PTypeInfo; out AResult: TValue): Boolean;
 var
   LType: TRttiType;
@@ -1304,7 +1332,7 @@ const
       // tkSet, tkClass, tkMethod, tkWChar, tkLString, tkWString
       ConvFail, ConvFail, ConvFail, ConvFail, ConvFail, ConvFail,
       // tkVariant, tkArray, tkRecord, tkInterface, tkInt64, tkDynArray
-      ConvFail, ConvFail, ConvFail, ConvFail, ConvStr2Ord, ConvFail,
+      ConvFail, ConvFail, ConvFail, ConvFail, ConvStr2Ord, ConvStr2DynArray,
       // tkUString, tkClassRef, tkPointer, tkProcedure
       ConvFail, ConvFail, ConvFail, ConvFail
     ),
