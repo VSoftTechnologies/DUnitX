@@ -55,12 +55,16 @@ interface
 uses
  {$IFDEF MSWINDOWS}
      DUnitX.Windows.Console;
- {$ELSE}
+ {$ENDIF MSWINDOWS}
+ {$IFDEF MACOS}
      // Simplification as MacOS console supports Ansi, and other terminals
      // on platforms other than windows typically support some form of
      // ANSI colors.
-     DUnitX.MacOS.Console;
- {$ENDIF}
+    DUnitX.MacOS.Console;
+ {$ENDIF MACOS}
+ {$IFDEF LINUX}
+    DUnitX.Linux.Console;
+ {$ENDIF LINUX}
 
 implementation
 
