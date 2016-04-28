@@ -1,0 +1,72 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{578B7A11-D6C6-468D-8C4F-BC822BA313A8}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="Tests\DUnitXTest_D10Berlin.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Examples\DUnitXExamples_D10Berlin.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Expert\DUnitX_IDE_Expert_D10Berlin.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Examples\DUnitXFiremonkeyGUI_D10Berlin.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="DUnitXTest_D10Berlin">
+        <MSBuild Projects="Tests\DUnitXTest_D10Berlin.dproj"/>
+    </Target>
+    <Target Name="DUnitXTest_D10Berlin:Clean">
+        <MSBuild Projects="Tests\DUnitXTest_D10Berlin.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="DUnitXTest_D10Berlin:Make">
+        <MSBuild Projects="Tests\DUnitXTest_D10Berlin.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="DUnitXExamples_D10Berlin">
+        <MSBuild Projects="Examples\DUnitXExamples_D10Berlin.dproj"/>
+    </Target>
+    <Target Name="DUnitXExamples_D10Berlin:Clean">
+        <MSBuild Projects="Examples\DUnitXExamples_D10Berlin.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="DUnitXExamples_D10Berlin:Make">
+        <MSBuild Projects="Examples\DUnitXExamples_D10Berlin.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="DUnitX_IDE_Expert_D10Berlin">
+        <MSBuild Projects="Expert\DUnitX_IDE_Expert_D10Berlin.dproj"/>
+    </Target>
+    <Target Name="DUnitX_IDE_Expert_D10Berlin:Clean">
+        <MSBuild Projects="Expert\DUnitX_IDE_Expert_D10Berlin.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="DUnitX_IDE_Expert_D10Berlin:Make">
+        <MSBuild Projects="Expert\DUnitX_IDE_Expert_D10Berlin.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="DUnitXFiremonkeyGUI_D10Berlin">
+        <MSBuild Projects="Examples\DUnitXFiremonkeyGUI_D10Berlin.dproj"/>
+    </Target>
+    <Target Name="DUnitXFiremonkeyGUI_D10Berlin:Clean">
+        <MSBuild Projects="Examples\DUnitXFiremonkeyGUI_D10Berlin.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="DUnitXFiremonkeyGUI_D10Berlin:Make">
+        <MSBuild Projects="Examples\DUnitXFiremonkeyGUI_D10Berlin.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="DUnitXTest_D10Berlin;DUnitXExamples_D10Berlin;DUnitX_IDE_Expert_D10Berlin;DUnitXFiremonkeyGUI_D10Berlin"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="DUnitXTest_D10Berlin:Clean;DUnitXExamples_D10Berlin:Clean;DUnitX_IDE_Expert_D10Berlin:Clean;DUnitXFiremonkeyGUI_D10Berlin:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="DUnitXTest_D10Berlin:Make;DUnitXExamples_D10Berlin:Make;DUnitX_IDE_Expert_D10Berlin:Make;DUnitXFiremonkeyGUI_D10Berlin:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>
