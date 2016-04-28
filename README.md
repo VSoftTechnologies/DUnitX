@@ -24,7 +24,7 @@ DUnitX Planned Features
 
 This is far from a complete list, but a few planned features are listed here to help indicate future direction.
 
- * GUI Test Runner
+ * ~~GUI Test Runner~~ - Use TestInsight
  * Multi-threaded tests - the ability to have test fixtures run in their own
   threads.
  * Remote logging - Simple way to run tests on remote machines (just an idea at this point) 
