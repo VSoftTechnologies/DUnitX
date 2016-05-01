@@ -1,14 +1,10 @@
-program DUnitXExamples_XE;
+program DUnitXVCLGUI_D10Seattle;
 
-{$DEFINE GUI}
-
-{$IFNDEF GUI}
-{$APPTYPE CONSOLE}
-{$ENDIF}
+{$R *.res}
 
 uses
-  SysUtils,
-  DUnitX.Loggers.GUI.VCL,
+  Vcl.Forms,
+  System.SysUtils,
   DUnitX.Examples.General in 'DUnitX.Examples.General.pas',
   DUnitX.Loggers.Text in '..\DUnitX.Loggers.Text.pas',
   DUnitX.Loggers.XML.NUnit in '..\DUnitX.Loggers.XML.NUnit.pas',
@@ -48,46 +44,16 @@ uses
   DUnitX.FilterBuilder in '..\DUnitX.FilterBuilder.pas',
   DUnitX.Filters in '..\DUnitX.Filters.pas',
   DUnitX.CategoryExpression in '..\DUnitX.CategoryExpression.pas',
-  DUnitX.TestNameParser in '..\DUnitX.TestNameParser.pas';
+  DUnitX.TestNameParser in '..\DUnitX.TestNameParser.pas',
+  DUnitX.Loggers.GUI.VCL in '..\DUnitX.Loggers.GUI.VCL.pas' {GUIVCLTestRunner},
+  DUnitX.Examples.AssertFailureCompare in 'DUnitX.Examples.AssertFailureCompare.pas',
+  DUnitX.Timeout in '..\DUnitX.Timeout.pas',
+  DUnitX.Exceptions in '..\DUnitX.Exceptions.pas',
+  DUnitX.ResStrs in '..\DUnitX.ResStrs.pas',
+  DUnitX.Examples.UITest in 'DUnitX.Examples.UITest.pas' {frmUITest};
 
-var
-  runner : ITestRunner;
-  results : IRunResults;
-  logger : ITestLogger;
-  nunitLogger : ITestLogger;
 begin
-  {$IFDEF GUI}
-    DUnitX.Loggers.GUI.VCL.Run;
-    exit;
-  {$ENDIF}
-
-  try
-    TDUnitX.CheckCommandLine;
-
-    //Create the runner
-    runner := TDUnitX.CreateRunner;
-    runner.UseRTTI := True;
-    //tell the runner how we will log things
-    logger := TDUnitXConsoleLogger.Create(false);
-    //generate an xml log file
-    nunitLogger := TDUnitXXMLNUnitFileLogger.Create(TDUnitX.Options.XMLOutputFile);
-    runner.AddLogger(logger);
-    runner.AddLogger(nunitLogger);
-
-    //Run tests
-    results := runner.Execute;
-    if not results.AllPassed then
-      System.ExitCode := EXIT_ERRORS;
-
-    {$IFNDEF CI}
-    if TDUnitX.Options.ExitBehavior = TDUnitXExitBehavior.Pause then
-    begin
-      System.Write('Done.. press <Enter> key to quit.');
-      System.Readln;
-    end;
-    {$ENDIF}
-  except
-    on E: Exception do
-      System.Writeln(E.ClassName, ': ', E.Message);
-  end;
+  Application.Initialize;
+  Application.CreateForm(TGUIVCLTestRunner, GUIVCLTestRunner);
+  Application.Run;
 end.

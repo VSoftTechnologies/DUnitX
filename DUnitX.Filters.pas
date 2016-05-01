@@ -133,11 +133,13 @@ type
   protected
     procedure Add(const name : string);overload;
     procedure Add(const names : TArray<string>);overload;
+    procedure Add(const names : TStringList);overload;
     function Match(const test: ITest): Boolean;override;
   public
     constructor Create;overload;
     constructor Create(const AName : string);overload;
     constructor Create(const ANames : TArray<string>);overload;
+    constructor Create(const ANames : TStringList);overload;
     destructor Destroy;override;
   end;
 
@@ -228,9 +230,7 @@ var
   name: string;
 begin
   for name in names do
-  begin
-    FNames.Add(name)
-  end;
+    FNames.Add(name);
 end;
 
 constructor TNameFilter.Create;
@@ -250,6 +250,20 @@ begin
     if not FNames.Contains(name) then
       FNames.Add(name)
   end;
+end;
+
+procedure TNameFilter.Add(const names: TStringList);
+var
+  name: string;
+begin
+  for name in names do
+    FNames.Add(name);
+end;
+
+constructor TNameFilter.Create(const ANames: TStringList);
+begin
+  Create;
+  Add(ANames);
 end;
 
 constructor TNameFilter.Create(const ANames: TArray<string>);

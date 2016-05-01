@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2015 Vincent Parrett & Contributors               }
+{           Copyright (C) 2016 Vincent Parrett                              }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -24,62 +24,61 @@
 {                                                                           }
 {***************************************************************************}
 
-unit DUnitX.InternalInterfaces;
+unit DUnitX.Examples.AssertFailureCompare;
 
 interface
 
 {$I DUnitX.inc}
 
 uses
-  {$IFDEF USE_NS}
-  System.TimeSpan,
-  {$ELSE}
-  TimeSpan,
-  {$ENDIF}
-  DUnitX.Generics,
-  DUnitX.Extensibility,
-  DUnitX.TestFrameWork;
+  DUnitX.TestFramework;
 
 type
-  //These interfaces mirror the Info classes in the framework but expose stuff we need for runtime.
-
-  ISetTestResult = interface
-    ['{B50D50E9-3609-40BF-847D-53B5BF19B5C7}']
-    procedure SetResult(const value : ITestResult);
-  end;
-
-  //Used by the TestExecute method.
-  ITestExecuteContext = interface
-    ['{DE4ADB3F-3B5B-4B90-8659-0BFA578977CC}']
-    procedure RecordFixture(const fixtureResult : IFixtureResult);
-    procedure RecordResult(const fixtureResult : IFixtureResult; const testResult : ITestResult);
-    procedure RollupResults;
-  end;
-
-  ITestFixtureContext = interface
-    ['{C3B85C73-1FE8-4558-8AB0-7E8075821D35}']
-  end;
-
-  ITestExecute = interface
-    ['{C59443A9-8C7D-46CE-83A1-E40309A1B384}']
-    procedure Execute(const context : ITestExecuteContext);
-    procedure UpdateInstance(const fixtureInstance : TObject);
-  end;
-
-  ITestCaseExecute = interface(ITestExecute)
-    ['{49781E22-C127-4BED-A9D5-84F9AAACE96C}']
-    function GetCaseName : string;
-  end;
-
-  IFixtureResultBuilder = interface
-    ['{2604E655-349D-4379-9796-1C708CAD7307}']
-    procedure AddTestResult(const AResult : ITestResult);
-    procedure AddChild(const AFixtureResult : IFixtureResult);
-    procedure RollUpResults;
-   // function Combine(const AFixtureResult : IFixtureResult) : IFixtureResult;
-   // function AreEqual(const AFixtureResult : IFixtureResult) : boolean;
+  [TestFixture]
+  TDUnitXAssertFailureCompare = class
+  public
+    [Test]
+    procedure TestDefaultString;
+    [Test]
+    procedure TestXMLWithFormat;
+    [Test]
+    procedure TestXMLWithoutFormat;
+    [Test]
+    procedure TestCSVWithFormat;
   end;
 
 implementation
+
+uses
+  {$IFDEF USE_NS}
+  System.SysUtils,
+  {$ELSE}
+  SysUtils,
+  {$ENDIF}
+  DUnitX.ComparableFormat.Xml,
+  DUnitX.ComparableFormat.Csv;
+
+procedure TDUnitXAssertFailureCompare.TestCSVWithFormat;
+begin
+  Assert.AreEqual('VALUE1,value2,"val, 3",value4,value5', 'VALUE1,value2,"val, 3",VALUE4,value5', TDUnitXComparableFormatCsv, False);
+end;
+
+procedure TDUnitXAssertFailureCompare.TestDefaultString;
+begin
+  Assert.AreEqual('Some fairly long string with a lot of characters and info.', 'Some long string with a lot of characters and info.');
+end;
+
+procedure TDUnitXAssertFailureCompare.TestXMLWithFormat;
+begin
+  Assert.AreEqual('<TestXMLWithFormat><testnode>value1</testnode></TestXMLWithFormat>', '<TestXMLWithFormat><testnode>value2</testnode></TestXMLWithFormat>', TDUnitXComparableFormatXml);
+end;
+
+procedure TDUnitXAssertFailureCompare.TestXMLWithoutFormat;
+begin
+  Assert.AreEqual('<TestXMLWithoutFormat><testnode>value1</testnode></TestXMLWithoutFormat>', '<TestXMLWithoutFormat><testnode>value2</testnode></TestXMLWithoutFormat>');
+end;
+
+initialization
+  TDUnitX.RegisterTestFixture(TDUnitXAssertFailureCompare);
 
 end.

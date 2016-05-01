@@ -88,6 +88,9 @@ type
 
     procedure TestMeAnyway;
 
+    [Test]
+    procedure LogMessageTypes;
+
   published
 
     [Ignore('Because I said so!!!')]
@@ -166,6 +169,13 @@ begin
   TDUnitX.CurrentRunner.Status('IgnoreMe called');
   raise Exception.Create('IgnoreMe was called when it has IgnoreAttibute !!!!');
 
+end;
+
+procedure TMyExampleTests.LogMessageTypes;
+begin
+  TDUnitX.CurrentRunner.Log(TLogLevel.Information, 'Information');
+  TDUnitX.CurrentRunner.Log(TLogLevel.Warning, 'Warning');
+  TDUnitX.CurrentRunner.Log(TLogLevel.Error, 'Error');
 end;
 
 procedure TMyExampleTests.Setup;

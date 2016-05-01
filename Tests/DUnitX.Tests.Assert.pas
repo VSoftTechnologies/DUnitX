@@ -37,7 +37,6 @@ type
   {$M+}
   [TestFixture]
   TTestsAssert = class
-  private
   published
     [Test]
     procedure Pass_Throws_ETestPass_Exception;
@@ -186,11 +185,12 @@ implementation
 uses
   {$IFDEF USE_NS}
   System.SysUtils,
-  System.Classes;
+  System.Classes,
   {$ELSE}
   SysUtils,
-  Classes;
+  Classes,
   {$ENDIF}
+  DUnitX.Exceptions;
 
 type
   {$M+}
@@ -590,7 +590,7 @@ begin
     procedure
     begin
       Assert.AreEqual(ACTUAL_STRING, EXPECTED_STRING);
-    end, ETestFailure, Format('[%s] is Not Equal to [%s] %s', [ACTUAL_STRING, EXPECTED_STRING, '']));
+    end, ETestFailureStrCompare, Format('[%s] is Not Equal to [%s] %s', [ACTUAL_STRING, EXPECTED_STRING, '']));
 end;
 
 procedure TTestsAssert.AreEqual_String_Throws_No_Exception_When_Values_Are_Equal;

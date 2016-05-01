@@ -24,7 +24,7 @@
 {                                                                           }
 {***************************************************************************}
 
-unit DUnitX.InternalInterfaces;
+unit DUnitX.Exceptions;
 
 interface
 
@@ -32,54 +32,56 @@ interface
 
 uses
   {$IFDEF USE_NS}
-  System.TimeSpan,
+  System.SysUtils,
   {$ELSE}
-  TimeSpan,
+  SysUtils,
   {$ENDIF}
-  DUnitX.Generics,
-  DUnitX.Extensibility,
-  DUnitX.TestFrameWork;
+  DUnitX.ComparableFormat;
 
 type
-  //These interfaces mirror the Info classes in the framework but expose stuff we need for runtime.
+  ETestFrameworkException = class(Exception);
 
-  ISetTestResult = interface
-    ['{B50D50E9-3609-40BF-847D-53B5BF19B5C7}']
-    procedure SetResult(const value : ITestResult);
+  ENotImplemented = class(ETestFrameworkException);
+
+  //base exception for any internal exceptions which cause the test to stop
+  EAbort = class(ETestFrameworkException);
+
+  ETestFailure = class(EAbort);
+
+  ETestFailureStrCompare = class(ETestFailure)
+  private
+    FActual: string;
+    FExpected: string;
+    FMsg: string;
+    FFormat: TDUnitXComparableFormatClass;
+  public
+    property Actual: string read FActual;
+    property Expected: string read FExpected;
+    property Msg: string read FMsg;
+    property Format: TDUnitXComparableFormatClass read FFormat;
+
+    constructor Create(const aExpected, aActual, aMessage: string; const aFormat: TDUnitXComparableFormatClass); reintroduce;
   end;
 
-  //Used by the TestExecute method.
-  ITestExecuteContext = interface
-    ['{DE4ADB3F-3B5B-4B90-8659-0BFA578977CC}']
-    procedure RecordFixture(const fixtureResult : IFixtureResult);
-    procedure RecordResult(const fixtureResult : IFixtureResult; const testResult : ITestResult);
-    procedure RollupResults;
-  end;
+  ETestPass = class(EAbort);
+  ETimedOut = class(EAbort);
+  ENoAssertionsMade = class(ETestFailure);
 
-  ITestFixtureContext = interface
-    ['{C3B85C73-1FE8-4558-8AB0-7E8075821D35}']
-  end;
-
-  ITestExecute = interface
-    ['{C59443A9-8C7D-46CE-83A1-E40309A1B384}']
-    procedure Execute(const context : ITestExecuteContext);
-    procedure UpdateInstance(const fixtureInstance : TObject);
-  end;
-
-  ITestCaseExecute = interface(ITestExecute)
-    ['{49781E22-C127-4BED-A9D5-84F9AAACE96C}']
-    function GetCaseName : string;
-  end;
-
-  IFixtureResultBuilder = interface
-    ['{2604E655-349D-4379-9796-1C708CAD7307}']
-    procedure AddTestResult(const AResult : ITestResult);
-    procedure AddChild(const AFixtureResult : IFixtureResult);
-    procedure RollUpResults;
-   // function Combine(const AFixtureResult : IFixtureResult) : IFixtureResult;
-   // function AreEqual(const AFixtureResult : IFixtureResult) : boolean;
-  end;
+  ENoTestsRegistered = class(ETestFrameworkException);
+  ECommandLineError = class(ETestFrameworkException);
 
 implementation
+
+uses
+  DUnitX.ResStrs;
+
+constructor ETestFailureStrCompare.Create(const aExpected, aActual, aMessage: string; const aFormat: TDUnitXComparableFormatClass);
+begin
+  FExpected := aExpected;
+  FActual := aActual;
+  FMsg := aMessage;
+  FFormat := aFormat;
+  inherited Create({$IFDEF USE_NS}System.{$ENDIF}SysUtils.Format(SNotEqualErrorStr,[aExpected, aActual, aMessage]));
+end;
 
 end.

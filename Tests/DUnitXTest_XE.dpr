@@ -26,7 +26,6 @@ uses
   DUnitX.StackTrace.JCL in '..\DUnitX.StackTrace.JCL.pas',
   DUnitX.StackTrace.MadExcept3 in '..\DUnitX.StackTrace.MadExcept3.pas',
   DUnitX.StackTrace.MadExcept4 in '..\DUnitX.StackTrace.MadExcept4.pas',
-  DUnitX.Loggers.GUI in '..\DUnitX.Loggers.GUI.pas' {Form1},
   DUnitX.StackTrace.EurekaLog7 in '..\DUnitX.StackTrace.EurekaLog7.pas',
   DUnitX.Loggers.Null in '..\DUnitX.Loggers.Null.pas',
   DUnitX.FixtureResult in '..\DUnitX.FixtureResult.pas',
@@ -96,7 +95,7 @@ begin
     //We don;t want this happening when running under CI.
     if TDUnitX.Options.ExitBehavior = TDUnitXExitBehavior.Pause then
     begin
-      System.Write('Done.. press <Enter> key to quit.');
+      System.Write('Done...  Press <Enter> key to quit.');
       System.Readln;
     end;
     {$ENDIF}

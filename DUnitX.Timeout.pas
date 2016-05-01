@@ -58,7 +58,8 @@ uses
   Diagnostics,
   {$ENDIF}
   DUnitX.ResStrs,
-  DUnitX.TestFramework;
+  DUnitX.TestFramework,
+  DUnitX.Exceptions;
 
 // The following TimeOut code is based on the code found at
 // https://code.google.com/p/delphitimeouts/

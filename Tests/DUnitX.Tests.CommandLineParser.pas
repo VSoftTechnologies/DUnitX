@@ -27,6 +27,8 @@ unit DUnitX.Tests.CommandLineParser;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
   DUnitX.TestFramework,
   DUnitX.CommandLine.Options,
@@ -124,7 +126,9 @@ begin
     sList.Free;
   end;
   Assert.IsFalse(parseResult.HasErrors);
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreEqual<TExampleEnum>(enTwo,test);
+{$ENDIF}
 end;
 
 procedure TCommandLineParserTests.Can_Parse_Multiple_Unnamed_Parameters;
@@ -222,7 +226,9 @@ begin
     sList.Free;
   end;
   Assert.IsFalse(parseResult.HasErrors);
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreEqual<TExampleSet>(test,[enOne,enThree]);
+{$ENDIF}
 end;
 
 procedure TCommandLineParserTests.Can_Parse_Unnamed_Parameter;

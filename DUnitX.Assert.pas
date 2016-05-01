@@ -28,17 +28,18 @@ unit DUnitX.Assert;
 
 interface
 
-
 {$I DUnitX.inc}
 
 uses
   {$IFDEF USE_NS}
   System.Classes,
-  System.SysUtils;
+  System.SysUtils,
   {$ELSE}
   Classes,
-  SysUtils;
+  SysUtils,
   {$ENDIF}
+  DUnitX.ComparableFormat,
+  DUnitX.Exceptions;
 
 type
   TTestLocalMethod = TProc;
@@ -48,8 +49,6 @@ type
   Assert = class
   private
     class var fOnAssert: TProc;
-    class var fTestFailure: ExceptClass;
-    class var fTestPass: ExceptClass;
     class procedure CheckExceptionClass(E: Exception; const exceptionClass: ExceptClass);
     class procedure CheckExceptionClassDescendant(E: Exception; const exceptionClass: ExceptClass);
     class function AddLineBreak(const msg: string): string;
@@ -57,12 +56,15 @@ type
   public
     class procedure Pass(const message : string = '');
     class procedure Fail(const message : string = ''; const errorAddrs : pointer = nil);
+    class procedure FailStrCompare(const expected, actual: string; const compformat: TDUnitXComparableFormatClass = nil; const message : string = ''; const errorAddrs : pointer = nil);
     class procedure FailFmt(const message : string; const args: array of const; const errorAddrs : pointer = nil);
 
     class procedure NotImplemented;
 
-    class procedure AreEqual(const expected : string; const actual : string; const ignoreCase : boolean; const message : string = '');overload;
-    class procedure AreEqual(const expected : string; const actual : string; const message : string = '');overload;
+    class procedure AreEqual(const expected, actual : string; const compformat: TDUnitXComparableFormatClass; const ignoreCase : boolean; const message : string = '');overload;
+    class procedure AreEqual(const expected, actual : string; const compformat: TDUnitXComparableFormatClass; const message : string = '');overload;
+    class procedure AreEqual(const expected, actual : string; const ignoreCase : boolean; const message : string = '');overload;
+    class procedure AreEqual(const expected, actual : string; const message : string = '');overload;
     class procedure AreEqual(const expected, actual : Double; const tolerance : Double; const message : string = '');overload;
     class procedure AreEqual(const expected, actual : Double; const message : string = '');overload;
     class procedure AreEqual(const expected, actual : Extended; const tolerance : Extended; const message : string = '');overload;
@@ -221,8 +223,8 @@ type
     {$ENDIF}
 
     class property OnAssert: TProc read fOnAssert write fOnAssert;
-    class property TestFailure: ExceptClass read fTestFailure write fTestFailure;
-    class property TestPass: ExceptClass read fTestPass write fTestPass;
+//    class property TestFailure: ExceptClass read fTestFailure write fTestFailure;
+//    class property TestPass: ExceptClass read fTestPass write fTestPass;
   end;
 
 {$IFDEF DELPHI_XE_DOWN}
@@ -357,6 +359,23 @@ begin
   DoAssert;
   if expected <> actual then
     FailFmt(SUnexpectedErrorStr ,[BoolToStr(expected, true), BoolToStr(actual, true), message], ReturnAddress);
+end;
+
+class procedure Assert.AreEqual(const expected, actual: string; const compformat: TDUnitXComparableFormatClass; const ignoreCase: boolean; const message: string);
+begin
+  DoAssert;
+  if ignoreCase then
+  begin
+    if not SameText(expected,actual) then
+      FailStrCompare(expected, actual, compformat, message, ReturnAddress);
+  end
+  else if not SameStr(expected,actual) then
+    FailStrCompare(expected, actual, compformat, message, ReturnAddress);
+end;
+
+class procedure Assert.AreEqual(const expected, actual: string; const compformat: TDUnitXComparableFormatClass; const message: string);
+begin
+  AreEqual(expected, actual, compformat, true, message);
 end;
 
 class procedure Assert.AreEqual(const expected, actual: cardinal; const message: string);
@@ -597,10 +616,10 @@ class procedure Assert.Fail(const message : string; const errorAddrs : pointer);
 begin
   //If we have been given a return then use it. (makes the exception appear on level above in the stack)
   if errorAddrs <> nil then
-    raise fTestFailure.Create(message) at errorAddrs
+    raise ETestFailure.Create(message) at errorAddrs
   else
     //Otherwise use the return address we can currently get to for where to raise the exception
-    raise fTestFailure.Create(message) at ReturnAddress;
+    raise ETestFailure.Create(message) at ReturnAddress;
 end;
 
 class procedure Assert.FailFmt(const message: string; const args: array of const; const errorAddrs: pointer);
@@ -608,9 +627,19 @@ begin
   Fail(Format(message, args), errorAddrs);
 end;
 
+class procedure Assert.FailStrCompare(const expected, actual: string; const compformat : TDUnitXComparableFormatClass; const message: string; const errorAddrs: pointer);
+begin
+  //If we have been given a return then use it. (makes the exception appear on level above in the stack)
+  if errorAddrs <> nil then
+    raise ETestFailureStrCompare.Create(expected, actual, message, compformat) at errorAddrs
+  else
+    //Otherwise use the return address we can currently get to for where to raise the exception
+    raise ETestFailureStrCompare.Create(expected, actual, message, compformat) at ReturnAddress;
+end;
+
 class procedure Assert.Pass(const message: string);
 begin
-  raise fTestPass.Create(message);
+  raise ETestPass.Create(message);
 end;
 
 class function Assert.Implements<T>(value: IInterface; const message: string) : T;
@@ -1019,16 +1048,9 @@ begin
   Assert.AreEqual(expected, actual, true, message);
 end;
 
-class procedure Assert.AreEqual(const expected, actual : string;  const ignoreCase : boolean; const message: string);
+class procedure Assert.AreEqual(const expected, actual : string; const ignoreCase : boolean; const message: string);
 begin
-  DoAssert;
-  if ignoreCase then
-  begin
-    if not SameText(expected,actual) then
-      FailFmt(SNotEqualErrorStr,[expected,actual,message], ReturnAddress);
-  end
-  else if not SameStr(expected,actual) then
-    FailFmt(SNotEqualErrorStr,[expected,actual,message], ReturnAddress);
+  AreEqual(expected, actual, nil, ignoreCase, message);
 end;
 
 class procedure Assert.CheckExceptionClass(E: Exception; const exceptionClass: ExceptClass);

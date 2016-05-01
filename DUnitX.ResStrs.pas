@@ -126,6 +126,7 @@ resourcestring
   STestsWithErrors = 'Tests With Errors';
   STestsWithLeak = 'Tests With Memory Leak';
   SStartingTests = 'DUnitX - [%s] - Starting Tests.';
+  SApplicationName = 'DUnitX - [%s]';
 
   SRunning = 'Running ';
 
@@ -155,6 +156,7 @@ resourcestring
   SNotImplemented = 'Not Implemented!';
 
   SOperationTimedOut = 'Operation Timed Out';
+
 implementation
 
 end.
