@@ -54,7 +54,8 @@ uses
   DUnitX.Loggers.GUI.VCL.RichEdit in '..\DUnitX.Loggers.GUI.VCL.RichEdit.pas',
   DUnitX.ComparableFormat in '..\DUnitX.ComparableFormat.pas',
   DUnitX.ComparableFormat.Xml in '..\DUnitX.ComparableFormat.Xml.pas',
-  DUnitX.ComparableFormat.Csv in '..\DUnitX.ComparableFormat.Csv.pas';
+  DUnitX.ComparableFormat.Csv in '..\DUnitX.ComparableFormat.Csv.pas',
+  DUnitX.Assert in '..\DUnitX.Assert.pas';
 
 begin
   Application.Initialize;

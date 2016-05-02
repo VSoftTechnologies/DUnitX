@@ -410,19 +410,30 @@ end;
 procedure TGUIVCLTestRunner.actFindInTextExecute(Sender: TObject);
 var
   LineNum: integer;
+  Found: boolean;
 begin
+  Found := False;
+
   if tvwTests.Selected <> nil then
   begin
+    pgeResults.ActivePage := tabText;
     if FTestBookmarkList.TryGetValue(tvwTests.Selected.Text, LineNum) then
     begin
-      pgeResults.ActivePage := tabText;
       rchText.Perform(EM_LINESCROLL, 0, LineNum - rchText.Perform(EM_GETFIRSTVISIBLELINE, 0, 0));
+      Found := True;
     end;
   end;
+
+  if not Found then
+    MessageDlg(SCouldNotFindResultsForTest, mtInformation, [mbOK], 0);
 end;
 
 procedure TGUIVCLTestRunner.actFindInStructuredExecute(Sender: TObject);
+var
+  Found: boolean;
 begin
+  Found := False;
+
   if tvwTests.Selected <> nil then
   begin
     pgeResults.ActivePage := tabStructured;
@@ -438,11 +449,15 @@ begin
         begin
           tvwResults.Selected := ResultNode;
           tvwResults.Selected.Expand(True);
+          Found := True;
           Stop := True;
         end;
       end
     );
   end;
+
+  if not Found then
+    MessageDlg(SCouldNotFindResultsForTest, mtInformation, [mbOK], 0);
 end;
 
 procedure TGUIVCLTestRunner.actTestsInvertExecute(Sender: TObject);

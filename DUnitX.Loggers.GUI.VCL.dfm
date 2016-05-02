@@ -47,9 +47,9 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
       TabOrder = 0
       object tvwTests: TTreeView
         Left = 1
-        Top = 90
+        Top = 118
         Width = 542
-        Height = 354
+        Height = 326
         Hint = 'Hierarchy of test cases. Checked test cases will be run.'
         Align = alClient
         BorderStyle = bsNone
@@ -81,7 +81,7 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
         Left = 1
         Top = 37
         Width = 542
-        Height = 26
+        Height = 54
         ActionManager = ActionManager
         Caption = 'tbrTests'
         Color = clMenuBar
@@ -97,7 +97,7 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
       end
       object pnlFilter: TPanel
         Left = 1
-        Top = 63
+        Top = 91
         Width = 542
         Height = 27
         Align = alTop
@@ -457,9 +457,11 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
         Items = <
           item
             Action = actRunSelected
+            Caption = '&Run Selected Only'
           end
           item
             Action = actRun
+            Caption = 'R&un'
           end>
       end
       item
@@ -476,10 +478,12 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
         Items = <
           item
             Action = actRun
+            Caption = '&Run'
             ImageIndex = 1
           end
           item
             Action = actRunSelected
+            Caption = 'R&un Selected Only'
           end
           item
             Caption = '-'
@@ -503,6 +507,7 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
           end
           item
             Action = actFindInStructured
+            Caption = 'Fin&d Result in Structured'
           end
           item
             Action = actFindInText

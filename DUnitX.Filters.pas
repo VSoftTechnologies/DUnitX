@@ -41,7 +41,6 @@ uses
   Generics.Collections,
   DUnitX.Extensibility;
 
-
 type
 	/// <summary>
 	/// Interface to be implemented by filters applied to tests.
@@ -133,13 +132,13 @@ type
   protected
     procedure Add(const name : string);overload;
     procedure Add(const names : TArray<string>);overload;
-    procedure Add(const names : TStringList);overload;
+    procedure Add(const names : TStrings);overload;
     function Match(const test: ITest): Boolean;override;
   public
     constructor Create;overload;
     constructor Create(const AName : string);overload;
     constructor Create(const ANames : TArray<string>);overload;
-    constructor Create(const ANames : TStringList);overload;
+    constructor Create(const ANames : TStrings);overload;
     destructor Destroy;override;
   end;
 
@@ -148,7 +147,6 @@ type
     function Match(const test: ITest): Boolean;override;
     function Categories : TList<string>;
   end;
-
 
   TAndFilter = class(TTestFilter,ITestFilter,IAndFilter)
   private
@@ -252,7 +250,7 @@ begin
   end;
 end;
 
-procedure TNameFilter.Add(const names: TStringList);
+procedure TNameFilter.Add(const names: TStrings);
 var
   name: string;
 begin
@@ -260,7 +258,7 @@ begin
     FNames.Add(name);
 end;
 
-constructor TNameFilter.Create(const ANames: TStringList);
+constructor TNameFilter.Create(const ANames: TStrings);
 begin
   Create;
   Add(ANames);

@@ -157,6 +157,8 @@ resourcestring
 
   SOperationTimedOut = 'Operation Timed Out';
 
+  SCouldNotFindResultsForTest = 'Could not find results for test.';
+
 implementation
 
 end.

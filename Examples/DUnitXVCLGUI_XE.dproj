@@ -109,6 +109,7 @@
 			<DCCReference Include="..\DUnitX.ComparableFormat.pas"/>
 			<DCCReference Include="..\DUnitX.ComparableFormat.Xml.pas"/>
 			<DCCReference Include="..\DUnitX.ComparableFormat.Csv.pas"/>
+			<DCCReference Include="..\DUnitX.Assert.pas"/>
 			<BuildConfiguration Include="Debug">
 				<Key>Cfg_2</Key>
 				<CfgParent>Base</CfgParent>
