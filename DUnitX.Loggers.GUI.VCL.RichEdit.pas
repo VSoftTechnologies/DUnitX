@@ -128,12 +128,11 @@ end;
 procedure TDUnitXGUIVCLRichEditLogger.OnEndSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 begin
   Outdent(1);
-  //WriteBlankLine;
 end;
 
 procedure TDUnitXGUIVCLRichEditLogger.OnEndSetupTest(const threadId: TThreadID; const Test: ITestInfo);
 begin
-  //WriteBlankLine;
+  //Empty
 end;
 
 procedure TDUnitXGUIVCLRichEditLogger.OnEndTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
@@ -149,7 +148,6 @@ end;
 procedure TDUnitXGUIVCLRichEditLogger.OnEndTest(const threadId: TThreadID; const Test: ITestResult);
 begin
   Outdent(1);
-  //WriteBlankLine;
 end;
 
 procedure TDUnitXGUIVCLRichEditLogger.OnEndTestFixture(const threadId: TThreadID; const results: IFixtureResult);
@@ -240,51 +238,54 @@ begin
   OutDent(1);
   Write(SDoneTesting);
 
-  SetConsoleSummaryColor();
+  SetConsoleSummaryColor;
   Write(Format(STestsFound, [RunResults.TestCount]));
 
   if RunResults.IgnoredCount > 0 then
     SetConsoleWarningColor()
-  else SetConsoleDefaultColor();
+  else
+    SetConsoleDefaultColor;
   Write(Format(STestsIgnored, [RunResults.IgnoredCount]));
-
 
   if RunResults.PassCount > 0 then
     SetConsolePassColor()
-  else SetConsoleDefaultColor();
+  else
+    SetConsoleDefaultColor;
   Write(Format(STestsPassed, [RunResults.PassCount]));
 
   if RunResults.MemoryLeakCount > 0 then
     SetConsoleWarningColor()
-  else SetConsoleDefaultColor();
+  else
+    SetConsoleDefaultColor;
   Write(Format(STestsLeaked, [RunResults.MemoryLeakCount]));
 
   if RunResults.FailureCount > 0 then
     SetConsoleErrorColor()
-  else SetConsoleDefaultColor();
+  else
+    SetConsoleDefaultColor;
   Write(Format(STestsFailed, [RunResults.FailureCount]));
 
   if RunResults.ErrorCount > 0 then
     SetConsoleErrorColor()
-  else SetConsoleDefaultColor();
+  else
+    SetConsoleDefaultColor;
   Write(Format(STestsErrored,[RunResults.ErrorCount]));
-
 
   if RunResults.FailureCount > 0  then
   begin
-    SetConsoleErrorColor();
+    SetConsoleErrorColor;
     WriteBlankLine;
     Write(SFailingTests);
     WriteBlankLine;
-    SetConsoleDefaultColor();
+    SetConsoleDefaultColor;
 
     for TestResult in RunResults.GetAllTestResults do
     begin
       if TestResult.ResultType = TTestResultType.Failure then
       begin
-        SetConsoleErrorColor();
+        SetConsoleErrorColor;
         Write('  ' + TestResult.Test.FullName);
-        SetConsoleDefaultColor();
+        SetConsoleDefaultColor;
         Write(SMessage + TestResult.Message);
         WriteBlankLine;
       end;
@@ -294,19 +295,19 @@ begin
 
   if RunResults.ErrorCount > 0  then
   begin
-    SetConsoleErrorColor();
+    SetConsoleErrorColor;
     WriteBlankLine;
     Write(STestsWithErrors);
     WriteBlankLine;
-    SetConsoleDefaultColor();
+    SetConsoleDefaultColor;
 
     for TestResult in RunResults.GetAllTestResults do
     begin
       if TestResult.ResultType = TTestResultType.Error then
       begin
-        SetConsoleErrorColor();
+        SetConsoleErrorColor;
         Write('  ' + TestResult.Test.FullName);
-        SetConsoleDefaultColor();
+        SetConsoleDefaultColor;
         Write(SMessage + TestResult.Message);
         WriteBlankLine;
       end;
@@ -316,19 +317,19 @@ begin
 
   if RunResults.MemoryLeakCount > 0  then
   begin
-    SetConsoleWarningColor();
+    SetConsoleWarningColor;
     WriteBlankLine;
     Write(STestsWithLeak);
     WriteBlankLine;
-    SetConsoleDefaultColor();
+    SetConsoleDefaultColor;
 
     for TestResult in RunResults.GetAllTestResults do
     begin
       if TestResult.ResultType = TTestResultType.MemoryLeak then
       begin
-        SetConsoleWarningColor();
+        SetConsoleWarningColor;
         Write('  ' + TestResult.Test.FullName);
-        SetConsoleDefaultColor();
+        SetConsoleDefaultColor;
         Write(SMessage + TestResult.Message);
         WriteBlankLine;
       end;
@@ -336,7 +337,7 @@ begin
     WriteBlankLine;
   end;
 
-  SetConsoleDefaultColor();
+  SetConsoleDefaultColor;
 end;
 
 procedure TDUnitXGUIVCLRichEditLogger.OnTestingStarts(const threadId: TThreadID; testCount, testActiveCount : Cardinal);

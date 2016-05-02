@@ -223,8 +223,6 @@ type
     {$ENDIF}
 
     class property OnAssert: TProc read fOnAssert write fOnAssert;
-//    class property TestFailure: ExceptClass read fTestFailure write fTestFailure;
-//    class property TestPass: ExceptClass read fTestPass write fTestPass;
   end;
 
 {$IFDEF DELPHI_XE_DOWN}
