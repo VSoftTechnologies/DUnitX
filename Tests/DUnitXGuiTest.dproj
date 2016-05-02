@@ -71,9 +71,6 @@
 			<DCCReference Include="..\DUnitX.StackTrace.JCL.pas"/>
 			<DCCReference Include="..\DUnitX.StackTrace.MadExcept3.pas"/>
 			<DCCReference Include="..\DUnitX.StackTrace.MadExcept4.pas"/>
-			<DCCReference Include="..\DUnitX.Loggers.GUI.pas">
-				<Form>DUnitXGuiLoggerForm</Form>
-			</DCCReference>
 			<DCCReference Include="..\DUnitX.StackTrace.EurekaLog7.pas"/>
 			<DCCReference Include="DUnitX.Tests.Assert.pas"/>
 			<DCCReference Include="DUnitX.Tests.DUnitCompatibility.pas"/>
