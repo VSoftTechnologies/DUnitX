@@ -55,7 +55,8 @@ uses
   DUnitX.ComparableFormat in '..\DUnitX.ComparableFormat.pas',
   DUnitX.ComparableFormat.Xml in '..\DUnitX.ComparableFormat.Xml.pas',
   DUnitX.ComparableFormat.Csv in '..\DUnitX.ComparableFormat.Csv.pas',
-  DUnitX.Assert in '..\DUnitX.Assert.pas';
+  DUnitX.Assert in '..\DUnitX.Assert.pas',
+  DUnitX.Assert.Ex in '..\DUnitX.Assert.Ex.pas';
 
 begin
   Application.Initialize;

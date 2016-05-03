@@ -51,6 +51,7 @@ uses
   Generics.Collections,
   {$ENDIF}
   DUnitX.Assert,
+  DUnitX.Assert.Ex,
   DUnitX.Attributes,
   DUnitX.Generics,
   DUnitX.Extensibility,
@@ -126,7 +127,7 @@ type
 {$ENDIF}
 
   // inherit because redeclaration raises ICE
-  Assert = class(DUnitX.Assert.Assert);
+  Assert = class(DUnitX.Assert.Ex.Assert);
 
   {$M+}
   ITestFixtureInfo = interface;
@@ -885,10 +886,19 @@ begin
 end;
 {$ENDIF}
 
+procedure InitAssert;
+begin
+  Assert.TestFailure := ETestFailure;
+  Assert.TestPass := ETestPass;
+end;
+
 {$IFNDEF DELPHI_XE3}
 
 initialization
   TDUnitX.RegisterPlugin(TDUnitXFixtureProviderPlugin.Create);
+  InitAssert;
+
+finalization
 
 {$ENDIF}
 

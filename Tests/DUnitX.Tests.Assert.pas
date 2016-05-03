@@ -28,10 +28,10 @@ unit DUnitX.Tests.Assert;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
   DUnitX.TestFramework;
-
-{$I DUnitX.inc}
 
 type
   {$M+}
@@ -52,8 +52,6 @@ type
     procedure Fail_Throws_ETestFailure_Exception_With_Caller_Address_Reference;
     [Test]
     procedure AreEqual_String_Throws_No_Exception_When_Values_Are_Equal;
-    [Test]
-    procedure AreEqual_String_Throws_ETestFailure_When_Values_Are_NotEqual;
     [Test]
     procedure AreEqual_Extended_Throws_No_Exception_When_Values_Are_Equal;
     [Test]
@@ -84,6 +82,9 @@ type
     procedure AreEqualMemory_Throws_No_Exception_When_Pointers_Are_Equal;
     [Test]
     procedure AreEqualMemory_Throws_ETestFailure_When_Pointers_Are_NotEqual;
+    [Test]
+    procedure
+        AreEqual_String_Throws_ETestFailureStrCompare_When_Values_Are_NotEqual_Ex;
     [Test]
     procedure AreEqual_Throws_No_Exception_When_Values_Are_Exactly_Equal;
     [Test]
@@ -581,7 +582,8 @@ begin
     end, Exception);
 end;
 
-procedure TTestsAssert.AreEqual_String_Throws_ETestFailure_When_Values_Are_NotEqual;
+procedure
+    TTestsAssert.AreEqual_String_Throws_ETestFailureStrCompare_When_Values_Are_NotEqual_Ex;
 const
   ACTUAL_STRING = 'the brown dog jumped something';
   EXPECTED_STRING = 'SOMETHING JUMPED THE BROWN DOG';

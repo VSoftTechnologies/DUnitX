@@ -597,6 +597,16 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
       Caption = 'Find Result in Structured'
       OnExecute = actFindInStructuredExecute
     end
+    object actCopyExpected: TAction
+      Category = 'Results'
+      Caption = 'Copy Expected to Clipboard'
+      OnExecute = actCopyExpectedExecute
+    end
+    object actCopyActual: TAction
+      Category = 'Results'
+      Caption = 'Copy Actual to Clipboard'
+      OnExecute = actCopyActualExecute
+    end
   end
   object ActionImages: TImageList
     DrawingStyle = dsTransparent
@@ -1564,6 +1574,15 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
     Top = 156
     object itmComparePop: TMenuItem
       Action = actCompare
+    end
+    object N2: TMenuItem
+      Caption = '-'
+    end
+    object itmCopyExpected: TMenuItem
+      Action = actCopyExpected
+    end
+    object itmCopyActual: TMenuItem
+      Action = actCopyActual
     end
   end
   object popTests: TPopupActionBar

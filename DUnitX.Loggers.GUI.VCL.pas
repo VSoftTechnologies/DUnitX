@@ -158,8 +158,15 @@ type
     imgTests: TImage;
     imgResults: TImage;
     edtFilter: TButtonedEdit;
+    actCopyActual: TAction;
+    actCopyExpected: TAction;
+    N2: TMenuItem;
+    itmCopyExpected: TMenuItem;
+    itmCopyActual: TMenuItem;
     procedure actTestsUnselectAllExecute(Sender: TObject);
     procedure actCompareExecute(Sender: TObject);
+    procedure actCopyActualExecute(Sender: TObject);
+    procedure actCopyExpectedExecute(Sender: TObject);
     procedure actResultsCollapseAllExecute(Sender: TObject);
     procedure actResultsExpandAllExecute(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -204,6 +211,8 @@ type
     procedure ProcessTestResult(const Test: ITestResult);
     procedure ProcessMessagesForNode(const ResultNode: TResultNode; const Test: ITestResult);
     procedure UpdateFormActions;
+    function GetSelectedResultsNode: TResultNode;
+    function GetComparableResultsNode: TResultNode;
   protected
     procedure OnBeginTest(const threadId: TThreadID; const Test: ITestInfo);
     procedure OnEndSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
@@ -251,7 +260,7 @@ uses
   Math,
   {$ENDIF}
   DUnitX.Filters,
-  DUnitX.Exceptions;
+  DUnitX.Exceptions, Clipbrd;
 
 const
   cTestNodeStateUnchecked = 1;
@@ -308,32 +317,44 @@ var
   ExpFile: string;
   ActFile: string;
 begin
-  if tvwResults.Selected <> nil then
+  ResultNode := GetComparableResultsNode;
+  if ResultNode <> nil then
   begin
-    if tvwResults.Selected.Level = 2 then
-      ResultNode := tvwResults.Selected.Parent as TResultNode
-    else ResultNode := tvwResults.Selected as TResultNode;
+    if ResultNode.Format = TDUnitXComparableFormatXml then
+      FileExt := 'xml'
+    else if ResultNode.Format = TDUnitXComparableFormatCsv then
+      FileExt := 'csv'
+    else FileExt := '';
 
-    if ResultNode.IsComparable then
-    begin
-      if ResultNode.Format = TDUnitXComparableFormatXml then
-        FileExt := 'xml'
-      else if ResultNode.Format = TDUnitXComparableFormatCsv then
-        FileExt := 'csv'
-      else FileExt := '';
-
-      //Save files
-      ExpFile := PathUtils.MakeTempFile(ResultNode.Expected, FileExt);
-      ActFile := PathUtils.MakeTempFile(ResultNode.Actual, FileExt);
-      try
-        //Spawn BC
-        PathUtils.Compare(ExpFile, ActFile);
-      finally
-        TFile.Delete(ExpFile);
-        TFile.Delete(ActFile);
-      end;
+    //Save files
+    ExpFile := PathUtils.MakeTempFile(ResultNode.Expected, FileExt);
+    ActFile := PathUtils.MakeTempFile(ResultNode.Actual, FileExt);
+    try
+      //Spawn BC
+      PathUtils.Compare(ExpFile, ActFile);
+    finally
+      TFile.Delete(ExpFile);
+      TFile.Delete(ActFile);
     end;
   end;
+end;
+
+procedure TGUIVCLTestRunner.actCopyActualExecute(Sender: TObject);
+var
+  ResultNode: TResultNode;
+begin
+  ResultNode := GetComparableResultsNode;
+  if ResultNode <> nil then
+    Clipboard.AsText := ResultNode.Actual;
+end;
+
+procedure TGUIVCLTestRunner.actCopyExpectedExecute(Sender: TObject);
+var
+  ResultNode: TResultNode;
+begin
+  ResultNode := GetComparableResultsNode;
+  if ResultNode <> nil then
+    Clipboard.AsText := ResultNode.Expected;
 end;
 
 procedure TGUIVCLTestRunner.actResultsCollapseAllExecute(Sender: TObject);
@@ -349,6 +370,23 @@ end;
 procedure TGUIVCLTestRunner.FormDestroy(Sender: TObject);
 begin
   FTestBookmarkList.Free;
+end;
+
+function TGUIVCLTestRunner.GetComparableResultsNode: TResultNode;
+var
+  Selected: TResultNode;
+begin
+  Result := nil;
+
+  Selected := GetSelectedResultsNode;
+  if Selected <> nil then
+  begin
+    if Selected.Level = 2 then
+      Selected := Selected.Parent as TResultNode;
+
+    if Selected.IsComparable then
+      Result := Selected;
+  end;
 end;
 
 function TGUIVCLTestRunner.GetNodeByTestFullName(const TestFullName: string): TTreeNode;
@@ -373,6 +411,14 @@ begin
 
   if Result = nil then
     raise Exception.Create('Could not find node for test: ' + TestFullName);
+end;
+
+function TGUIVCLTestRunner.GetSelectedResultsNode: TResultNode;
+begin
+  Result := nil;
+
+  if tvwResults.Selected <> nil then
+    Result := tvwResults.Selected as TResultNode;
 end;
 
 procedure TGUIVCLTestRunner.actRunExecute(Sender: TObject);
@@ -901,15 +947,10 @@ begin
   actFindInStructured.Enabled := actResultsExpandAll.Enabled;
   actFindInText.Enabled := actResultsExpandAll.Enabled;
 
-  actCompare.Enabled := False;
+  actCompare.Enabled := GetComparableResultsNode <> nil;
 
-  if tvwResults.Selected <> nil then
-  begin
-    if (tvwResults.Selected.Level = 2) then
-      actCompare.Enabled := (tvwResults.Selected.Parent as TResultNode).IsComparable
-    else if (tvwResults.Selected.Level = 1) then
-      actCompare.Enabled := (tvwResults.Selected as TResultNode).IsComparable
-  end;
+  actCopyActual.Enabled := actCompare.Enabled;
+  actCopyExpected.Enabled := actCompare.Enabled;
 end;
 
 procedure TGUIVCLTestRunner.WMLoadTests(var message: TMessage);
