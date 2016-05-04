@@ -764,6 +764,7 @@ begin
 
     if tvwTests.Items.Count > 0 then
     begin
+      tvwTests.AlphaSort(True);
       tvwTests.Selected := tvwTests.Items[0];
       tvwTests.TopItem := tvwTests.Selected;
     end;
