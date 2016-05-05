@@ -37,7 +37,6 @@ interface
 uses
   DUnitX.TestFramework;
 
-
 type
   {$M+}
   [TestFixture('ExampleFixture1','General Example Tests')]
@@ -91,11 +90,14 @@ type
     [Test]
     procedure LogMessageTypes;
 
-  published
-
+    [Test]
     [Ignore('Because I said so!!!')]
-    procedure IgnoreMe;
+    procedure IgnoreMePublic;
 
+  published
+    //Because this is a published method, it doesn't require the [Test] attribute
+    [Ignore('Because he said so!!!')]
+    procedure IgnoreMePublished;
   end;
 
   [TestFixture]
@@ -157,18 +159,22 @@ uses
 
 { TMyExampleTests }
 
-
 procedure TMyExampleTests.DontCallMe;
 begin
   TDUnitX.CurrentRunner.Status('DontCallMe called');
   raise Exception.Create('DontCallMe was called!!!!');
 end;
 
-procedure TMyExampleTests.IgnoreMe;
+procedure TMyExampleTests.IgnoreMePublic;
 begin
-  TDUnitX.CurrentRunner.Status('IgnoreMe called');
-  raise Exception.Create('IgnoreMe was called when it has IgnoreAttibute !!!!');
+  TDUnitX.CurrentRunner.Status('IgnoreMePublic called');
+  raise Exception.Create('IgnoreMePublic was called when it has IgnoreAttibute !!!!');
+end;
 
+procedure TMyExampleTests.IgnoreMePublished;
+begin
+  TDUnitX.CurrentRunner.Status('IgnoreMePublished called');
+  raise Exception.Create('IgnoreMePublished was called when it has IgnoreAttibute !!!!');
 end;
 
 procedure TMyExampleTests.LogMessageTypes;
@@ -213,7 +219,6 @@ begin
   TDUnitX.CurrentRunner.Status(Format('TestOnce called with %d %d',[param1,param2]));
 end;
 
-
 procedure TMyExampleTests.TestTwo;
 {$IFDEF DELPHI_XE_UP}
 var
@@ -234,7 +239,7 @@ end;
 procedure TMyExampleTests.TooLong;
 begin
   {$IFDEF DELPHI_XE_UP}
-   TThread.Sleep(5000);
+    TThread.Sleep(5000);
   {$ELSE}
     Windows.Sleep(5000);
   {$ENDIF}
@@ -268,12 +273,12 @@ end;
 
 constructor TExampleFixture3.Create;
 begin
-
+  //Empty
 end;
 
 destructor TExampleFixture3.Destroy;
 begin
-
+  //Empty
   inherited;
 end;
 
