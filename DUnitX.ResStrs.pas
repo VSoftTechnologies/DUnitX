@@ -37,6 +37,7 @@ resourcestring
   SUnexpectedErrorInt = 'Expected %d but got %d %s';
   SUnexpectedErrorStr = 'Expected %s but got %s %s';
   SUnexpectedErrorDbl = 'Expected %g but got %g %s';
+  SUnexpectedErrorGUID = 'Expected %s but got %s %s';
   SNotEqualErrorStr = 'Expected %s is not equal to actual %s %s';
   SMemoryValuesNotEqual = 'Memory values are not equal. ';
   SEqualsErrorExt = '%g equals actual %g %s';
@@ -45,6 +46,7 @@ resourcestring
   SEqualsErrorInt = 'Expected %d equals actual %d %s';
   SEqualsErrorDbl = '%g equals actual %g %s';
   SEqualsErrorObj = 'Object [%s] Equals Object [%s] %s';
+  SEqualsErrorGUID = 'Expected %s equals actual %s %s';
   SEqualsErrorIntf = 'references are the same. %s';
   SMemoryValuesEqual = 'Memory values are equal. ';
   SNotEqualErrorIntf = 'references are Not the same. %s';

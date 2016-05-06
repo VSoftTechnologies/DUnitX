@@ -81,6 +81,8 @@ type
     class procedure AreEqual(const expected, actual : cardinal; const message : string = '');overload;
     class procedure AreEqual(const expected, actual : boolean; const message : string = '');overload;
 
+    class procedure AreEqual(const expected, actual: TGUID; const message : string = '');overload;
+
     class procedure AreEqualMemory(const expected : Pointer; const actual : Pointer; const size : Cardinal; const message : string = '');
 
     class procedure AreNotEqual(const expected : string; const actual : string; const ignoreCase : boolean = true; const message : string = '');overload;
@@ -97,6 +99,7 @@ type
     class procedure AreNotEqual<T>(const expected, actual : T; const message : string = '');overload;
 {$ENDIF}
     class procedure AreNotEqual(const expected, actual : Integer; const message : string = '');overload;
+    class procedure AreNotEqual(const expected, actual : TGUID; const message : string = '');overload;
     class procedure AreNotEqualMemory(const expected : Pointer; const actual : Pointer; const size : Cardinal; const message : string = '');
 
     class procedure AreSame(const expected, actual : TObject; const message : string = '');overload;
@@ -1123,6 +1126,20 @@ begin
   end
   else if not {$IFDEF USE_NS}System.StrUtils.{$ENDIF}StartsStr(subString,theString) then
     FailFmt(SStrDoesNotStartWith, [theString,subString,message], ReturnAddress);
+end;
+
+class procedure Assert.AreEqual(const expected, actual: TGUID; const message: string);
+begin
+  DoAssert;
+  if not IsEqualGUID(expected, actual) then
+    FailFmt(SUnexpectedErrorGUID, [GUIDToString(expected), GUIDToString(actual), message], ReturnAddress);
+end;
+
+class procedure Assert.AreNotEqual(const expected, actual: TGUID; const message: string);
+begin
+  DoAssert;
+  if IsEqualGUID(expected, actual) then
+    FailFmt(SEqualsErrorGUID,[GUIDToString(expected), GUIDToString(actual), message], ReturnAddress);
 end;
 
 end.
