@@ -30,8 +30,13 @@ interface
 
 {$I DUnitX.inc}
 
+// Be aware that editing this in the higher versions of RAD Studio (10 Seattle for sure)
+// results in the form designer continuously adding units to the uses that are
+// already there.  I have been unable to find a workaround short of editing the
+// file outside of the IDE...  The units are: System.ImageList and System.Actions
+
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   Winapi.Windows,
   Winapi.Messages,
   System.SysUtils,
@@ -58,7 +63,7 @@ uses
   System.Generics.Collections,
   System.ImageList,
   System.Actions,
-  {$ELSE}
+{$ELSE}
   Windows,
   Messages,
   SysUtils,
@@ -83,7 +88,7 @@ uses
   ActnPopup,
   Generics.Defaults,
   Generics.Collections,
-  {$ENDIF}
+{$ENDIF}
   DUnitX.TestFrameWork,
   DUnitX.Extensibility,
   DUnitX.InternalInterfaces,
@@ -192,6 +197,7 @@ type
     FFixtureList: ITestFixtureList;
     FFailureNode: TTreeNode;
     FErrorNode: TTreeNode;
+    FWarningNode: TTreeNode;
     FMemoryLeakNode: TTreeNode;
     FIgnoredNode: TTreeNode;
     FPassedNode: TTreeNode;
@@ -207,7 +213,7 @@ type
     procedure UnselectAll;
     function NeedRunner: ITestRunner;
     function GetNodeByTestFullName(const TestFullName: string): TTreeNode;
-    procedure SetNodeTestResult(const Node: TTreeNode; const TestResult: TTestResultType);
+    procedure SetNodeTestResult(const Node: TTreeNode; const ImageIndex: integer);
     procedure ProcessTestResult(const Test: ITestResult);
     procedure ProcessMessagesForNode(const ResultNode: TResultNode; const Test: ITestResult);
     procedure UpdateFormActions;
@@ -254,13 +260,15 @@ uses
   System.IOUtils,
   System.StrUtils,
   System.Math,
+  Vcl.Clipbrd,
   {$ELSE}
   IOUtils,
   StrUtils,
   Math,
+  Clipbrd,
   {$ENDIF}
   DUnitX.Filters,
-  DUnitX.Exceptions, Clipbrd;
+  DUnitX.Exceptions;
 
 const
   cTestNodeStateUnchecked = 1;
@@ -537,6 +545,7 @@ end;
 function TGUIVCLTestRunner.NeedRunner: ITestRunner;
 begin
   Result := TDUnitX.CreateRunner([Self, TDUnitXGUIVCLRichEditLogger.Create(rchText, FTestBookmarkList)]);
+  Result.FailsOnNoAsserts := True;
 end;
 
 procedure TGUIVCLTestRunner.OnBeginTest(const threadId: TThreadID; const Test: ITestInfo);
@@ -565,13 +574,8 @@ begin
 end;
 
 procedure TGUIVCLTestRunner.OnEndTest(const threadId: TThreadID; const Test: ITestResult);
-var
-  Node: TTreeNode;
 begin
   ProcessTestResult(Test);
-
-  Node := GetNodeByTestFullName(Test.Test.FullName);
-  SetNodeTestResult(Node, Test.ResultType);
 end;
 
 procedure TGUIVCLTestRunner.OnEndTestFixture(const threadId: TThreadID; const results: IFixtureResult);
@@ -646,6 +650,7 @@ procedure TGUIVCLTestRunner.OnTestingEnds(const RunResults: IRunResults);
 begin
   PruneOrExpand(FFailureNode, STestsFailed, True);
   PruneOrExpand(FErrorNode, STestsErrored, True);
+  PruneOrExpand(FWarningNode, STestsWarning, True);
   PruneOrExpand(FMemoryLeakNode, STestsLeaked, True);
   PruneOrExpand(FIgnoredNode, STestsIgnored, True);
   PruneOrExpand(FPassedNode, STestsPassed, False);
@@ -702,7 +707,12 @@ begin
   if Test.QueryInterface(ITestError, Error) = 0 then
   begin
     case Test.ResultType of
-      TTestResultType.Failure   : ParentNode := FFailureNode;
+      TTestResultType.Failure:
+      begin
+        if Test.Message = SNoAssertions then
+          ParentNode := FWarningNode
+        else ParentNode := FFailureNode;
+      end;
       TTestResultType.Error     : ParentNode := FErrorNode;
       TTestResultType.MemoryLeak: ParentNode := FMemoryLeakNode;
     else
@@ -740,11 +750,13 @@ begin
   ResultNode.TestNode := GetNodeByTestFullName(Test.Test.FullName);
   if ResultNode.ImageIndex < 0 then
   begin
-    ResultNode.ImageIndex := cTestResultImageMap[Test.ResultType];
+    ResultNode.ImageIndex := ResultNode.Parent.ImageIndex;
     ResultNode.SelectedIndex := ResultNode.ImageIndex;
   end;
 
   ProcessMessagesForNode(ResultNode, Test);
+
+  SetNodeTestResult(ResultNode.TestNode, ResultNode.ImageIndex);
 end;
 
 procedure TGUIVCLTestRunner.LoadTests;
@@ -795,9 +807,9 @@ begin
   UpdateFormActions;
 end;
 
-procedure TGUIVCLTestRunner.SetNodeTestResult(const Node: TTreeNode; const TestResult: TTestResultType);
+procedure TGUIVCLTestRunner.SetNodeTestResult(const Node: TTreeNode; const ImageIndex: integer);
 begin
-  Node.ImageIndex := cTestResultImageMap[TestResult];
+  Node.ImageIndex := ImageIndex;
   Node.SelectedIndex := Node.ImageIndex;
 end;
 
@@ -842,6 +854,10 @@ begin
   FErrorNode := tvwResults.Items.Add(nil, '');
   FErrorNode.ImageIndex := cTestResultImageMap[TTestResultType.Error];
   FErrorNode.SelectedIndex := FErrorNode.ImageIndex;
+
+  FWarningNode := tvwResults.Items.Add(nil, '');
+  FWarningNode.ImageIndex := 3;
+  FWarningNode.SelectedIndex := FWarningNode.ImageIndex;
 
   FMemoryLeakNode := tvwResults.Items.Add(nil, '');
   FMemoryLeakNode.ImageIndex := cTestResultImageMap[TTestResultType.MemoryLeak];

@@ -123,6 +123,7 @@ resourcestring
   STestsLeaked = 'Tests Leaked  : %d';
   STestsFailed = 'Tests Failed  : %d';
   STestsErrored = 'Tests Errored : %d';
+  STestsWarning = 'Tests with Warnings : %d';
   SFailingTests = 'Failing Tests';
   SMessage = '  Message: ';
   STestsWithErrors = 'Tests With Errors';
