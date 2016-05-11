@@ -51,6 +51,7 @@ type
 
   Assert = class
   private
+    class var fIgnoreCaseDefault: boolean;
     class var fOnAssert: TProc;
     class var fTestFailure: ExceptClass;
     class var fTestPass: ExceptClass;
@@ -85,7 +86,8 @@ type
 
     class procedure AreEqualMemory(const expected : Pointer; const actual : Pointer; const size : Cardinal; const message : string = '');
 
-    class procedure AreNotEqual(const expected : string; const actual : string; const ignoreCase : boolean = true; const message : string = '');overload;
+    class procedure AreNotEqual(const expected : string; const actual : string; const ignoreCase : boolean; const message : string = '');overload;
+    class procedure AreNotEqual(const expected : string; const actual : string; const message : string = '');overload;
 
     class procedure AreNotEqual(const expected, actual : Extended; const tolerance : Extended; const message : string = '');overload;
     class procedure AreNotEqual(const expected, actual : Extended; const message : string = '');overload;
@@ -214,10 +216,14 @@ type
     /// </summary>
     class procedure WillNotRaiseAny(const AMethod : TTestMethod; const msg : string = ''); overload;
 
-    class procedure Contains(const theString : string; const subString : string; const ignoreCase : boolean = true; const message : string = '');overload;
-    class procedure DoesNotContain(const theString : string; const subString : string; const ignoreCase : boolean = true; const message : string = '');overload;
-    class procedure StartsWith(const subString : string; const theString : string;const ignoreCase : boolean = true; const message : string = '');
-    class procedure EndsWith(const subString : string; const theString : string;const ignoreCase : boolean = true; const message : string = '');
+    class procedure Contains(const theString : string; const subString : string; const ignoreCase : boolean; const message : string = ''); overload;
+    class procedure Contains(const theString : string; const subString : string; const message : string = ''); overload;
+    class procedure DoesNotContain(const theString : string; const subString : string; const ignoreCase : boolean; const message : string = ''); overload;
+    class procedure DoesNotContain(const theString : string; const subString : string; const message : string = ''); overload;
+    class procedure StartsWith(const subString : string; const theString : string; const ignoreCase : boolean; const message : string = ''); overload;
+    class procedure StartsWith(const subString : string; const theString : string; const message : string = ''); overload;
+    class procedure EndsWith(const subString : string; const theString : string; const ignoreCase : boolean; const message : string = ''); overload;
+    class procedure EndsWith(const subString : string; const theString : string; const message : string = ''); overload;
     class procedure InheritsFrom(const descendant : TClass; const parent : TClass; const message : string = '');
 {$IFDEF DELPHI_XE_UP}
     //Delphi 2010 compiler bug breaks this
@@ -231,6 +237,9 @@ type
     class property OnAssert: TProc read fOnAssert write fOnAssert;
     class property TestFailure: ExceptClass read fTestFailure write fTestFailure;
     class property TestPass: ExceptClass read fTestPass write fTestPass;
+    class property IgnoreCaseDefault: boolean read fIgnoreCaseDefault write fIgnoreCaseDefault;
+
+    class constructor Create;
   end;
 
 {$IFDEF DELPHI_XE_DOWN}
@@ -619,6 +628,11 @@ end;
 class procedure Assert.Pass(const message: string);
 begin
   raise fTestPass.Create(message);
+end;
+
+class procedure Assert.StartsWith(const subString, theString, message: string);
+begin
+  Assert.StartsWith(subString, theString, fIgnoreCaseDefault, message);
 end;
 
 class function Assert.Implements<T>(value: IInterface; const message: string) : T;
@@ -1024,7 +1038,7 @@ end;
 
 class procedure Assert.AreEqual(const expected : string; const actual : string; const message : string);
 begin
-  Assert.AreEqual(expected, actual, true, message);
+  Assert.AreEqual(expected, actual, fIgnoreCaseDefault, message);
 end;
 
 class procedure Assert.AreEqual(const expected, actual : string;  const ignoreCase : boolean; const message: string);
@@ -1060,6 +1074,11 @@ begin
     FailFmt(SCheckExceptionClassDescError, [E.ClassName, exceptionClass.ClassName, E.message], ReturnAddress);
 end;
 
+class procedure Assert.Contains(const theString, subString, message: string);
+begin
+  Contains(theString, subString, fIgnoreCaseDefault, message);
+end;
+
 class procedure Assert.Contains(const theString : string; const subString : string; const ignoreCase : boolean; const message : string);
 begin
   DoAssert;
@@ -1072,10 +1091,20 @@ begin
     FailFmt(SStrDoesNotContain, [theString,subString,message], ReturnAddress);
 end;
 
+class constructor Assert.Create;
+begin
+  fIgnoreCaseDefault := true;
+end;
+
 class procedure Assert.DoAssert;
 begin
   if Assigned(fOnAssert) then
     fOnAssert();
+end;
+
+class procedure Assert.DoesNotContain(const theString, subString, message: string);
+begin
+  DoesNotContain(theString, subString, fIgnoreCaseDefault, message);
 end;
 
 class procedure Assert.DoesNotContain(const theString, subString: string; const ignoreCase: boolean; const message: string);
@@ -1140,6 +1169,16 @@ begin
   DoAssert;
   if IsEqualGUID(expected, actual) then
     FailFmt(SEqualsErrorGUID,[GUIDToString(expected), GUIDToString(actual), message], ReturnAddress);
+end;
+
+class procedure Assert.AreNotEqual(const expected, actual, message: string);
+begin
+  AreNotEqual(expected, actual, fIgnoreCaseDefault, message);
+end;
+
+class procedure Assert.EndsWith(const subString, theString, message: string);
+begin
+  Assert.EndsWith(subString, theString, fIgnoreCaseDefault, message);
 end;
 
 end.

@@ -190,6 +190,8 @@ type
     [TestCase( 'not in the string', 'something else,the substring is not here,false' )]
     [TestCase( 'not in the string - case sensitive', 'something else,the substring is not here,true' )]
     procedure EndsWith_SubString_Is_Not_At_End( const subString, theString: string; caseSensitive: boolean );
+    [Test]
+    procedure IgnoreCaseDefault;
   end;
 
 implementation
@@ -283,6 +285,32 @@ begin
 
   Assert.WillRaise(MyProc, ETestFailure);
   MyProc := nil;
+end;
+
+procedure TTestsAssert.IgnoreCaseDefault;
+const
+  cStr1 = 'String';
+  cStr2 = 'STRING';
+var
+  OldVal: Boolean;
+begin
+  //Don't assume start value
+  OldVal := Assert.IgnoreCaseDefault;
+  try
+    Assert.IgnoreCaseDefault := True;
+    Assert.WillNotRaiseAny(procedure begin Assert.AreEqual(cStr1, cStr2) end);
+    Assert.WillNotRaiseAny(procedure begin Assert.StartsWith(cStr1, cStr2) end);
+    Assert.WillNotRaiseAny(procedure begin Assert.EndsWith(cStr1, cStr2) end);
+    Assert.WillRaise(procedure begin Assert.AreNotEqual(cStr1, cStr2) end, ETestFailure);
+
+    Assert.IgnoreCaseDefault := False;
+    Assert.WillRaise(procedure begin Assert.AreEqual(cStr1, cStr2) end, ETestFailureStrCompare);
+    Assert.WillRaise(procedure begin Assert.StartsWith(cStr1, cStr2) end, ETestFailure);
+    Assert.WillRaise(procedure begin Assert.EndsWith(cStr1, cStr2) end, ETestFailure);
+    Assert.WillNotRaiseAny(procedure begin Assert.AreNotEqual(cStr1, cStr2) end);
+  finally
+    Assert.IgnoreCaseDefault := OldVal;
+  end;
 end;
 
 procedure TTestsAssert.Pass_Throws_ETestPass_Exception;
@@ -939,7 +967,7 @@ begin
     end, ETestFailure);
 end;
 
-
 initialization
   TDUnitX.RegisterTestFixture(TTestsAssert);
+
 end.

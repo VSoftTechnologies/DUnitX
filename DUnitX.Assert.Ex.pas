@@ -77,7 +77,7 @@ end;
 
 class procedure Assert.AreEqual(const expected, actual: string; const compformat: TDUnitXComparableFormatClass; const message: string);
 begin
-  AreEqual(expected, actual, compformat, true, message);
+  AreEqual(expected, actual, compformat, IgnoreCaseDefault, message);
 end;
 
 class procedure Assert.AreEqual(const expected, actual : string; const ignoreCase : boolean; const message: string);
@@ -87,7 +87,7 @@ end;
 
 class procedure Assert.AreEqual(const expected : string; const actual : string; const message : string);
 begin
-  Assert.AreEqual(expected, actual, true, message);
+  Assert.AreEqual(expected, actual, IgnoreCaseDefault, message);
 end;
 
 class procedure Assert.FailStrCompare(const expected, actual: string; const compformat : TDUnitXComparableFormatClass; const message: string; const errorAddrs: pointer);
