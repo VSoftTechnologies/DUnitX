@@ -83,7 +83,7 @@ type
 
     [RepeatTest(TIMES_RUN_TEST_CASE)]
     [Test]
-    [TestCase('Sum', '1,2,3')]
+    [TestCase('Sum Case', '1,2,3')]
     procedure Sum(const A, B, Expected: Integer);
 
     [Test]
