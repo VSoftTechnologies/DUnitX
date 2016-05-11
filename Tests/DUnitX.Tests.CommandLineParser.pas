@@ -332,7 +332,7 @@ begin
   sList.Add('c:\file2.txt');
   try
     parseResult := TOptionsRegistry.Parse(sList);
-    WriteLn(parseResult.ErrorText);
+    TDUnitX.CurrentRunner.Log(parseResult.ErrorText);
   finally
     sList.Free;
   end;
@@ -359,7 +359,7 @@ begin
   sList.Add('--test');
   try
     parseResult := TOptionsRegistry.Parse(sList);
-    WriteLn(parseResult.ErrorText);
+    TDUnitX.CurrentRunner.Log(parseResult.ErrorText);
   finally
     sList.Free;
   end;
@@ -375,7 +375,7 @@ begin
   sList.Add('--blah');
   try
     parseResult := TOptionsRegistry.Parse(sList);
-    WriteLn(parseResult.ErrorText);
+    TDUnitX.CurrentRunner.Log(parseResult.ErrorText);
   finally
     sList.Free;
   end;
@@ -395,7 +395,7 @@ begin
   sList.Add('--options:"x:\blah blah.txt"');
   try
     parseResult := TOptionsRegistry.Parse(sList);
-    WriteLn(parseResult.ErrorText);
+    TDUnitX.CurrentRunner.Log(parseResult.ErrorText);
   finally
     sList.Free;
   end;
@@ -476,7 +476,7 @@ begin
   sList.Add('--test:enbBlah');
   try
     parseResult := TOptionsRegistry.Parse(sList);
-    WriteLn(parseResult.ErrorText);
+    TDUnitX.CurrentRunner.Log(parseResult.ErrorText);
   finally
     sList.Free;
   end;
@@ -501,7 +501,7 @@ begin
   sList.Add('--test:[enOne,enFoo]');
   try
     parseResult := TOptionsRegistry.Parse(sList);
-    WriteLn(parseResult.ErrorText);
+    TDUnitX.CurrentRunner.Log(parseResult.ErrorText);
   finally
     sList.Free;
   end;
