@@ -822,18 +822,17 @@ var
 begin
   for Fixture in FixtureList do
   begin
-    if not Fixture.HasChildFixtures then
+    for Test in Fixture.Tests do
     begin
-      for Test in Fixture.Tests do
+      if (edtFilter.Text = '') or ContainsText(Test.FullName, edtFilter.Text) then
       begin
-        if (edtFilter.Text = '') or ContainsText(Test.FullName, edtFilter.Text) then
-        begin
-          TestNode := tvwTests.Items.AddChild(nil, Test.FullName);
-          TestNode.StateIndex := cTestNodeStateChecked;
-        end;
+        TestNode := tvwTests.Items.AddChild(nil, Test.FullName);
+        TestNode.StateIndex := cTestNodeStateChecked;
       end;
-    end
-    else BuildTestTreeNode(Fixture.Children);
+    end;
+
+    if Fixture.HasChildFixtures then
+      BuildTestTreeNode(Fixture.Children);
   end;
 end;
 

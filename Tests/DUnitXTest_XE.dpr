@@ -1,9 +1,14 @@
 program DUnitXTest_XE;
 
+{$IFNDEF GUI}
 {$APPTYPE CONSOLE}
+{$ENDIF}
+
 {$STRONGLINKTYPES ON}
+
 uses
   SysUtils,
+  DUnitX.Loggers.GUI.VCL in '..\DUnitX.Loggers.GUI.VCL.pas',
   DUnitX.Loggers.Console in '..\DUnitX.Loggers.Console.pas',
   DUnitX.Loggers.Text in '..\DUnitX.Loggers.Text.pas',
   DUnitX.MacOS.Console in '..\DUnitX.MacOS.Console.pas',
@@ -69,6 +74,11 @@ var
   logger : ITestLogger;
   nunitLogger : ITestLogger;
 begin
+{$IFDEF GUI}
+  DUnitX.Loggers.GUI.VCL.Run;
+  exit;
+{$ENDIF}
+
   try
     TDUnitX.CheckCommandLine;
     //Create the runner

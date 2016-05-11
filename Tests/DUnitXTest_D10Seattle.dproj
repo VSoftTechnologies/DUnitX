@@ -198,6 +198,7 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
+        <DCCReference Include="..\DUnitX.Loggers.GUI.VCL.pas"/>
         <DCCReference Include="..\DUnitX.Loggers.Console.pas"/>
         <DCCReference Include="..\DUnitX.Loggers.Text.pas"/>
         <DCCReference Include="..\DUnitX.MacOS.Console.pas"/>
