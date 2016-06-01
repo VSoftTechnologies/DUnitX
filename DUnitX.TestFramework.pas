@@ -51,10 +51,13 @@ uses
   Generics.Collections,
   {$ENDIF}
   DUnitX.Assert,
+  DUnitX.Assert.Ex,
   DUnitX.Attributes,
   DUnitX.Generics,
   DUnitX.Extensibility,
-  DUnitX.Filters;
+  DUnitX.Filters,
+  DUnitX.ComparableFormat,
+  DUnitX.Exceptions;
 
 {$HPPEMIT '#if defined(USEPACKAGES)'}
 {$HPPEMIT '# pragma comment(lib, "DUnitXRuntime.bpi")'}
@@ -91,10 +94,16 @@ type
   TLogLevel = (Information, Warning, Error);
   {$SCOPEDENUMS OFF}
 
+  TLogMessage = record
+    Level: TLogLevel;
+    Msg: string;
+  end;
+
+  TLogMessageArray = array of TLogMessage;
+
   {$IFDEF DELPHI_2010}
   TThreadID = Cardinal;
   {$ENDIF}
-
 
 const
   TLogLevelDesc : array[TLogLevel] of string = ('Info', 'Warn', 'Err');
@@ -117,8 +126,8 @@ type
   end;
 {$ENDIF}
 
-  Assert = class(DUnitX.Assert.Assert); // inherit because redeclaration raises ICE
-
+  // inherit because redeclaration raises ICE
+  Assert = class(DUnitX.Assert.Ex.Assert);
 
   {$M+}
   ITestFixtureInfo = interface;
@@ -228,6 +237,7 @@ type
     function GetResult : boolean;
     function GetResultType : TTestResultType;
     function GetMessage : string;
+    function GetLogMessages: TLogMessageArray;
     function GetStackTrace : string;
 
     //Test
@@ -237,6 +247,7 @@ type
     property Result : boolean read GetResult;
     property ResultType : TTestResultType read GetResultType;
     property Message : string read GetMessage;
+    property LogMessages: TLogMessageArray read GetLogMessages;
     property StackTrace : string read GetStackTrace;
 
   end;
@@ -249,12 +260,20 @@ type
     function GetExceptionLocationInfo : string;
     function GetExceptionAddressInfo : string;
     function GetExceptionAddress : Pointer;
+    function GetIsComparable: boolean;
+    function GetExpected: string;
+    function GetActual: string;
+    function GetFormat: TDUnitXComparableFormatClass;
 
     property ExceptionClass : ExceptClass read GetExceptionClass;
     property ExceptionMessage : string read GetExceptionMessage;
     property ExceptionLocationInfo : string read GetExceptionLocationInfo;
     property ExceptionAddressInfo : string read GetExceptionAddressInfo;
     property ExceptionAddress : Pointer read GetExceptionAddress;
+    property IsComparable: boolean read GetIsComparable;
+    property Expected: string read GetExpected;
+    property Actual: string read GetActual;
+    property Format: TDUnitXComparableFormatClass read GetFormat;
   end;
 
   IFixtureResult = interface(IResult)
@@ -584,22 +603,6 @@ type
     function GetReport: string;
   end;
 
-
-  ETestFrameworkException = class(Exception);
-
-  ENotImplemented = class(ETestFrameworkException);
-
-  //base exception for any internal exceptions which cause the test to stop
-  EAbort = class(ETestFrameworkException);
-
-  ETestFailure = class(EAbort);
-  ETestPass = class(EAbort);
-  ETimedOut = class(EAbort);
-  ENoAssertionsMade = class(ETestFailure);
-
-  ENoTestsRegistered = class(ETestFrameworkException);
-  ECommandLineError = class(ETestFrameworkException);
-
 const
   EXIT_OK     = 0;
   EXIT_ERRORS = 1;
@@ -841,7 +844,6 @@ begin
       RegisteredFixtures.Add(AClass,sName );
 end;
 
-
 {$IFDEF DELPHI_XE2_UP}
 
 { TTestFixtureHelper }
@@ -891,11 +893,13 @@ begin
 end;
 
 {$IFNDEF DELPHI_XE3}
+
 initialization
   TDUnitX.RegisterPlugin(TDUnitXFixtureProviderPlugin.Create);
   InitAssert;
 
 finalization
+
 {$ENDIF}
 
 end.

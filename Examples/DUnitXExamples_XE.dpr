@@ -1,9 +1,14 @@
 program DUnitXExamples_XE;
 
+{$DEFINE GUI}
+
+{$IFNDEF GUI}
 {$APPTYPE CONSOLE}
+{$ENDIF}
 
 uses
   SysUtils,
+  DUnitX.Loggers.GUI.VCL,
   DUnitX.Examples.General in 'DUnitX.Examples.General.pas',
   DUnitX.Loggers.Text in '..\DUnitX.Loggers.Text.pas',
   DUnitX.Loggers.XML.NUnit in '..\DUnitX.Loggers.XML.NUnit.pas',
@@ -51,6 +56,11 @@ var
   logger : ITestLogger;
   nunitLogger : ITestLogger;
 begin
+  {$IFDEF GUI}
+    DUnitX.Loggers.GUI.VCL.Run;
+    exit;
+  {$ENDIF}
+
   try
     TDUnitX.CheckCommandLine;
 

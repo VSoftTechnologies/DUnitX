@@ -1,9 +1,14 @@
 program DUnitXTest_D10Seattle;
 
+{$IFNDEF GUI}
 {$APPTYPE CONSOLE}
+{$ENDIF}
+
 {$STRONGLINKTYPES ON}
+
 uses
   System.SysUtils,
+  DUnitX.Loggers.GUI.VCL in '..\DUnitX.Loggers.GUI.VCL.pas',
   DUnitX.Loggers.Console in '..\DUnitX.Loggers.Console.pas',
   DUnitX.Loggers.Text in '..\DUnitX.Loggers.Text.pas',
   DUnitX.MacOS.Console in '..\DUnitX.MacOS.Console.pas',
@@ -26,7 +31,6 @@ uses
   DUnitX.StackTrace.JCL in '..\DUnitX.StackTrace.JCL.pas',
   DUnitX.StackTrace.MadExcept3 in '..\DUnitX.StackTrace.MadExcept3.pas',
   DUnitX.StackTrace.MadExcept4 in '..\DUnitX.StackTrace.MadExcept4.pas',
-  DUnitX.Loggers.GUI in '..\DUnitX.Loggers.GUI.pas' {Form1},
   DUnitX.StackTrace.EurekaLog7 in '..\DUnitX.StackTrace.EurekaLog7.pas',
   DUnitX.Loggers.Null in '..\DUnitX.Loggers.Null.pas',
   DUnitX.FixtureResult in '..\DUnitX.FixtureResult.pas',
@@ -71,6 +75,11 @@ var
   logger : ITestLogger;
   nunitLogger : ITestLogger;
 begin
+{$IFDEF GUI}
+  DUnitX.Loggers.GUI.VCL.Run;
+  exit;
+{$ENDIF}
+
   try
     TDUnitX.CheckCommandLine;
     //Create the runner
@@ -97,7 +106,7 @@ begin
     //We don;t want this happening when running under CI.
     if TDUnitX.Options.ExitBehavior = TDUnitXExitBehavior.Pause then
     begin
-      System.Write('Done.. press <Enter> key to quit.');
+      System.Write('Done...  Press <Enter> key to quit.');
       System.Readln;
     end;
     {$ENDIF}

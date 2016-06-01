@@ -547,7 +547,7 @@ end;
 
 function TDUnitXTestFixture.AddTestCase(const AMethodName : string; const ACaseName, AName: string; const ACategory  : string;const AMethod: TRttiMethod; const AEnabled: boolean; const AArgs: TValueArray): ITest;
 begin
-  result := TDUnitXTestCase.Create(FFixtureInstance, Self, AMethodName, ACaseName, AMethod.Name, ACategory, AMethod, AEnabled, AArgs);
+  result := TDUnitXTestCase.Create(FFixtureInstance, Self, AMethodName, ACaseName, AName, ACategory, AMethod, AEnabled, AArgs);
   FTests.Add(result);
 end;
 

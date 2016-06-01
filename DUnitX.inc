@@ -241,14 +241,18 @@
   
 {$ENDIF VER310}
 
-
-
 {$I DUnitX.Stacktrace.inc}
 {$I DUnitX.MemoryLeaks.inc}
 
 //turn off debug info so you do not step into DUNITX when debugging your tests
+
+//Note from Ryan McGinty 04/25/2016 - I had legacy code in conditional IFDEF DEBUG
+//using XE.  When I put in a directive of DUNITX-DEBUG in my project, it started
+//making the tests for IFDEF DEBUG true as well.  I tested with an _ and had same
+//result, so added one without a spacer and it seems to work.  Kept both values
+//as to not break any backward compatbilities.
 {$IFNDEF DUNITX-DEBUG}
-  {$D-}
+  {$IFNDEF DUNITXDEBUG}
+    {$D-}
+  {$ENDIF}
 {$ENDIF}
-
-

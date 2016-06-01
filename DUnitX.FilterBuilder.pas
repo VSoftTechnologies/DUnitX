@@ -52,7 +52,8 @@ uses
   SysUtils,
   {$ENDIF}
   DUnitX.CategoryExpression,
-  DUnitX.TestNameParser;
+  DUnitX.TestNameParser,
+  DUnitX.Exceptions;
 
 { TDUnitXFilterBuilder }
 

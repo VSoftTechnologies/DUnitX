@@ -39,8 +39,8 @@ uses
   DUnitX.Generics,
   DUnitX.Extensibility,
   DUnitX.TestFrameWork;
-type
 
+type
   //These interfaces mirror the Info classes in the framework but expose stuff we need for runtime.
 
   ISetTestResult = interface
@@ -71,7 +71,6 @@ type
     function GetCaseName : string;
   end;
 
-
   IFixtureResultBuilder = interface
     ['{2604E655-349D-4379-9796-1C708CAD7307}']
     procedure AddTestResult(const AResult : ITestResult);
@@ -81,8 +80,6 @@ type
    // function AreEqual(const AFixtureResult : IFixtureResult) : boolean;
   end;
 
-
 implementation
-
 
 end.

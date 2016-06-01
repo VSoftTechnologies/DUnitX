@@ -37,6 +37,7 @@ resourcestring
   SUnexpectedErrorInt = 'Expected %d but got %d %s';
   SUnexpectedErrorStr = 'Expected %s but got %s %s';
   SUnexpectedErrorDbl = 'Expected %g but got %g %s';
+  SUnexpectedErrorGUID = 'Expected %s but got %s %s';
   SNotEqualErrorStr = 'Expected %s is not equal to actual %s %s';
   SMemoryValuesNotEqual = 'Memory values are not equal. ';
   SEqualsErrorExt = '%g equals actual %g %s';
@@ -45,6 +46,7 @@ resourcestring
   SEqualsErrorInt = 'Expected %d equals actual %d %s';
   SEqualsErrorDbl = '%g equals actual %g %s';
   SEqualsErrorObj = 'Object [%s] Equals Object [%s] %s';
+  SEqualsErrorGUID = 'Expected %s equals actual %s %s';
   SEqualsErrorIntf = 'references are the same. %s';
   SMemoryValuesEqual = 'Memory values are equal. ';
   SNotEqualErrorIntf = 'references are Not the same. %s';
@@ -121,11 +123,13 @@ resourcestring
   STestsLeaked = 'Tests Leaked  : %d';
   STestsFailed = 'Tests Failed  : %d';
   STestsErrored = 'Tests Errored : %d';
+  STestsWarning = 'Tests with Warnings : %d';
   SFailingTests = 'Failing Tests';
   SMessage = '  Message: ';
   STestsWithErrors = 'Tests With Errors';
   STestsWithLeak = 'Tests With Memory Leak';
   SStartingTests = 'DUnitX - [%s] - Starting Tests.';
+  SApplicationName = 'DUnitX - [%s]';
 
   SRunning = 'Running ';
 
@@ -155,6 +159,9 @@ resourcestring
   SNotImplemented = 'Not Implemented!';
 
   SOperationTimedOut = 'Operation Timed Out';
+
+  SCouldNotFindResultsForTest = 'Could not find results for test.';
+
 implementation
 
 end.

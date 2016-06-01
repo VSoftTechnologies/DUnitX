@@ -27,6 +27,8 @@ unit DUnitX.Tests.CommandLineParser;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
   DUnitX.TestFramework,
   DUnitX.CommandLine.Options,
@@ -124,7 +126,9 @@ begin
     sList.Free;
   end;
   Assert.IsFalse(parseResult.HasErrors);
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreEqual<TExampleEnum>(enTwo,test);
+{$ENDIF}
 end;
 
 procedure TCommandLineParserTests.Can_Parse_Multiple_Unnamed_Parameters;
@@ -222,7 +226,9 @@ begin
     sList.Free;
   end;
   Assert.IsFalse(parseResult.HasErrors);
+{$IFNDEF DELPHI_XE_DOWN}
   Assert.AreEqual<TExampleSet>(test,[enOne,enThree]);
+{$ENDIF}
 end;
 
 procedure TCommandLineParserTests.Can_Parse_Unnamed_Parameter;
@@ -326,7 +332,7 @@ begin
   sList.Add('c:\file2.txt');
   try
     parseResult := TOptionsRegistry.Parse(sList);
-    WriteLn(parseResult.ErrorText);
+    TDUnitX.CurrentRunner.Log(parseResult.ErrorText);
   finally
     sList.Free;
   end;
@@ -353,7 +359,7 @@ begin
   sList.Add('--test');
   try
     parseResult := TOptionsRegistry.Parse(sList);
-    WriteLn(parseResult.ErrorText);
+    TDUnitX.CurrentRunner.Log(parseResult.ErrorText);
   finally
     sList.Free;
   end;
@@ -369,7 +375,7 @@ begin
   sList.Add('--blah');
   try
     parseResult := TOptionsRegistry.Parse(sList);
-    WriteLn(parseResult.ErrorText);
+    TDUnitX.CurrentRunner.Log(parseResult.ErrorText);
   finally
     sList.Free;
   end;
@@ -389,7 +395,7 @@ begin
   sList.Add('--options:"x:\blah blah.txt"');
   try
     parseResult := TOptionsRegistry.Parse(sList);
-    WriteLn(parseResult.ErrorText);
+    TDUnitX.CurrentRunner.Log(parseResult.ErrorText);
   finally
     sList.Free;
   end;
@@ -470,7 +476,7 @@ begin
   sList.Add('--test:enbBlah');
   try
     parseResult := TOptionsRegistry.Parse(sList);
-    WriteLn(parseResult.ErrorText);
+    TDUnitX.CurrentRunner.Log(parseResult.ErrorText);
   finally
     sList.Free;
   end;
@@ -495,7 +501,7 @@ begin
   sList.Add('--test:[enOne,enFoo]');
   try
     parseResult := TOptionsRegistry.Parse(sList);
-    WriteLn(parseResult.ErrorText);
+    TDUnitX.CurrentRunner.Log(parseResult.ErrorText);
   finally
     sList.Free;
   end;
