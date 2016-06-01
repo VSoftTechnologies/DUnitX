@@ -229,7 +229,7 @@ type
 
 
   {$SCOPEDENUMS ON}
-  TTestResultType = (Pass,Failure,Error,Ignored,MemoryLeak);
+  TTestResultType = (Pass,Failure,Error,Ignored,MemoryLeak,Warning);
   {$M+}
   ITestResult = interface(IResult)
   ['{EFD44ABA-4F3E-435C-B8FC-1F8EB4B35A3B}']

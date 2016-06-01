@@ -143,7 +143,7 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
         object lblTestsHeader: TLabel
           Left = 36
           Top = 3
-          Width = 36
+          Width = 38
           Height = 23
           Caption = 'Tests'
           Font.Charset = DEFAULT_CHARSET
@@ -335,6 +335,7 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
               ScrollBars = ssBoth
               TabOrder = 0
               WordWrap = False
+              Zoom = 100
             end
           end
         end
@@ -352,7 +353,7 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
         object lblResultsHeader: TLabel
           Left = 36
           Top = 4
-          Width = 53
+          Width = 55
           Height = 23
           Caption = 'Results'
           Font.Charset = DEFAULT_CHARSET
@@ -427,6 +428,14 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
             FFFF}
           Transparent = True
         end
+      end
+      object pgResults: TProgressBar
+        Left = 112
+        Top = 10
+        Width = 289
+        Height = 17
+        Anchors = [akLeft, akTop, akRight]
+        TabOrder = 2
       end
     end
   end
