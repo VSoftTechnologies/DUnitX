@@ -765,6 +765,7 @@ const
 implementation
 
 uses
+  DUnitX.Helpers,
   {$IFDEF USE_NS}
   System.Classes,
   System.Generics.Defaults,
@@ -875,6 +876,7 @@ begin
   Result := False;
 end;
 
+{$IFDEF XE3_UP}
 function ConvStr2DynArray(const ASource: TValue; ATarget: PTypeInfo; out AResult: TValue): Boolean;
 var
   s: string;
@@ -902,6 +904,7 @@ begin
   end;
   Result := True;
 end;
+{$ENDIF}
 
 function ConvAny2Nullable(const ASource: TValue; ATarget: PTypeInfo; out AResult: TValue): Boolean;
 var
@@ -1332,7 +1335,7 @@ const
       // tkSet, tkClass, tkMethod, tkWChar, tkLString, tkWString
       ConvFail, ConvFail, ConvFail, ConvFail, ConvFail, ConvFail,
       // tkVariant, tkArray, tkRecord, tkInterface, tkInt64, tkDynArray
-      ConvFail, ConvFail, ConvFail, ConvFail, ConvStr2Ord, ConvStr2DynArray,
+      ConvFail, ConvFail, ConvFail, ConvFail, ConvStr2Ord, {$IFDEF XE3_UP}ConvStr2DynArray{$ELSE}ConvFail{$ENDIF},
       // tkUString, tkClassRef, tkPointer, tkProcedure
       ConvFail, ConvFail, ConvFail, ConvFail
     ),
@@ -3314,3 +3317,4 @@ finalization
 
 
 end.
+
