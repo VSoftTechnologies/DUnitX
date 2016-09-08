@@ -224,7 +224,7 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
         <DCC_DebugInformation>1</DCC_DebugInformation>
-        <DCC_Define>DUNITX-DEBUG;madExcept;LeakChecking;$(DCC_Define)</DCC_Define>
+        <DCC_Define>DUNITXDEBUG;madExcept;LeakChecking;$(DCC_Define)</DCC_Define>
         <DCC_MapFile>3</DCC_MapFile>
         <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
