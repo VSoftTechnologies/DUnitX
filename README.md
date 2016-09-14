@@ -53,7 +53,7 @@ A [recent list of contributors](https://github.com/VSoftTechnologies/DUnitX/grap
 License
 ========
 Apache Version 2.0 
-Copyright (C) 2012-2014 Vincent Parrett
+Copyright (C) 2012-2016 Vincent Parrett
 vincent@finalbuilder.com                                         
 http://www.finalbuilder.com
 
