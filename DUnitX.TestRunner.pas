@@ -580,6 +580,7 @@ begin
   Self.Loggers_TestingStarts(threadId, testCount, testActiveCount);
   try
     ExecuteFixtures(nil,context, threadId, fixtureList);
+    context.RollupResults;
   finally
     Self.Loggers_TestingEnds(result);
   end;
@@ -649,8 +650,6 @@ begin
     finally
       Self.Loggers_EndTestFixture(threadId, fixtureResult);
     end;
-
-    context.RollupResults;
   end;
 end;
 
