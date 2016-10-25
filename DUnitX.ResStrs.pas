@@ -107,7 +107,7 @@ resourcestring
   SNoImplementationRegistered = 'No implementation registered for type %s';
   SNoInstance = 'The activator delegate failed to return an instance %s';
 
-  SNoConsoleWriterClassRegistered = 'No ConsoleWriter Class is registered. You will need to include DUnitX.Windows.Console or DUnitX.MACOS.Console in you application';
+  SNoConsoleWriterClassRegistered = 'No ConsoleWriter Class is registered. You will need to include DUnitX.Windows.Console or DUnitX.MACOS.Console in your application';
   SExecutingTest = 'Executing Test : ';
   SRunningFixtureSetup = 'Running Fixture Setup Method : ';
   SRunningSetup = 'Running Setup for : ';

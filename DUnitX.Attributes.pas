@@ -175,7 +175,7 @@ type
   ///   Marks a test method to be repeated count times.
   /// </summary>
   /// <remarks>
-  ///   If [RepeatTest(0]] used then the test will be skipped and behaves like
+  ///   If [RepeatTest(0)] used then the test will be skipped and behaves like
   ///   IgnoreAttribute
   /// </remarks>
   RepeatTestAttribute = class(TCustomAttribute)
