@@ -15,6 +15,7 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
+  OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnShow = FormShow

@@ -62,6 +62,7 @@ uses
   Vcl.ActnPopup,
   System.Generics.Defaults,
   System.Generics.Collections,
+  System.IniFiles,
   System.Actions, //IDE keeps adding this at the end even if it's in the infdef'd section. make sure it's not there when committing!
 {$ELSE}
   Windows,
@@ -88,6 +89,7 @@ uses
   ActnPopup,
   Generics.Defaults,
   Generics.Collections,
+  IniFiles,
 {$ENDIF}
   DUnitX.TestFrameWork,
   DUnitX.Extensibility,
@@ -191,6 +193,7 @@ type
     procedure tvwTestsMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure tvwResultsChange(Sender: TObject; Node: TTreeNode);
     procedure tvwResultsCreateNodeClass(Sender: TCustomTreeView; var NodeClass: TTreeNodeClass);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
   type
     TTestNodeStateOp = (tnsSelect, tnsUnselect, tnsInvert);
@@ -283,6 +286,8 @@ const
   cLogLevelImageMap: array[TLogLevel] of integer = (6, 7, 8);
 
   cRootNodeStrings : array[TTestResultType] of string = (STestsPassed,STestsFailed,STestsErrored,STestsIgnored,STestsWithLeak,STestsWarning);
+
+  cTestSetup = 'TestSetup';
 
 type
   //can't return "array of string" on function (at least in XE)
@@ -537,6 +542,23 @@ end;
 procedure TGUIVCLTestRunner.actTestsSelectAllExecute(Sender: TObject);
 begin
   SelectAll;
+end;
+
+procedure TGUIVCLTestRunner.FormClose(Sender: TObject; var Action: TCloseAction);
+var
+  IniFile: TIniFile;
+begin
+  IniFile := TIniFile.Create(ChangeFileExt(ParamStr(0), '.ini'));
+  try
+    tvwTests.IterateAll(
+      procedure(const Node: TTreeNode; var Stop: boolean)
+      begin
+        IniFile.WriteBool(cTestSetup, Node.Text, Node.StateIndex = cTestNodeStateChecked);
+      end
+    );
+  finally
+    IniFile.Free;
+  end;
 end;
 
 procedure TGUIVCLTestRunner.FormCreate(Sender: TObject);
@@ -832,21 +854,26 @@ var
   Fixture: ITestFixture;
   Test: ITest;
   TestNode: TTreeNode;
-
+  IniFile: TIniFile;
 begin
-  for Fixture in FixtureList do
-  begin
-    for Test in Fixture.Tests do
+  IniFile := TIniFile.Create(ChangeFileExt(ParamStr(0), '.ini'));
+  try
+    for Fixture in FixtureList do
     begin
-      if (edtFilter.Text = '') or ContainsText(Test.FullName, edtFilter.Text) then
+      for Test in Fixture.Tests do
       begin
-        TestNode := tvwTests.Items.AddChild(nil, Test.FullName);
-        TestNode.StateIndex := cTestNodeStateChecked;
+        if (edtFilter.Text = '') or ContainsText(Test.FullName, edtFilter.Text) then
+        begin
+          TestNode := tvwTests.Items.AddChild(nil, Test.FullName);
+          TestNode.StateIndex := IfThen(IniFile.ReadBool(cTestSetup, Test.FullName, True), cTestNodeStateChecked, cTestNodeStateUnchecked);
+        end;
       end;
-    end;
 
-    if Fixture.HasChildFixtures then
-      BuildTestTreeNode(Fixture.Children);
+      if Fixture.HasChildFixtures then
+        BuildTestTreeNode(Fixture.Children);
+    end;
+  finally
+    IniFile.Free;
   end;
 end;
 
