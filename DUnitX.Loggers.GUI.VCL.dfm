@@ -336,7 +336,6 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
               ScrollBars = ssBoth
               TabOrder = 0
               WordWrap = False
-              Zoom = 100
             end
           end
         end
