@@ -38,6 +38,7 @@ uses
   {$IFDEF USE_NS}
   System.Classes,
   System.SysUtils,
+  System.SyncObjs,
   System.TypInfo,
   System.Rtti,
   System.TimeSpan,
@@ -45,6 +46,7 @@ uses
   {$ELSE}
   Classes,
   SysUtils,
+  SyncObjs,
   TypInfo,
   Rtti,
   TimeSpan,
@@ -553,6 +555,7 @@ type
       FOptions : TDUnitXOptions;
       FFilter : ITestFilter;
       FAssertCounters : TDictionary<TThreadID,Cardinal>;
+      FLock : TCriticalSection;
   protected
     class constructor Create;
     class destructor Destroy;
@@ -753,7 +756,8 @@ end;
 class constructor TDUnitX.Create;
 begin
   FOptions := TDUnitXOptions.Create;
-  FAssertCounters := TDictionary<TThreadID,Cardinal>.Create;
+  FAssertCounters := TDictionary<TThreadID,Cardinal>.Create(8);
+  FLock := TCriticalSection.Create;
   RegisteredFixtures := TDictionary<TClass,string>.Create;
   RegisteredPlugins  := TList<IPlugin>.Create;
   //Make sure we have at least a dummy memory leak monitor registered.
@@ -766,7 +770,7 @@ begin
                       value : cardinal;
                     begin
                       threadId := TThread.CurrentThread.ThreadID;
-                      MonitorEnter(FAssertCounters);
+                      FLock.Enter;
                       try
                         if FAssertCounters.TryGetValue(threadId,value) then
                         begin
@@ -776,7 +780,7 @@ begin
                         else
                           FAssertCounters.Add(threadId,1)
                       finally
-                        MonitorExit(FAssertCounters);
+                        FLock.Leave;
                       end;
                     end;
 end;
@@ -797,12 +801,18 @@ begin
   RegisteredPlugins.Free;
   FOptions.Free;
   FAssertCounters.Free;
+  FLock.Free;
 end;
 
 class function TDUnitX.GetAssertCount(const AThreadId: TThreadID): Cardinal;
 begin
   result := 0;
-  FAssertCounters.TryGetValue(AThreadId,result);
+  FLock.Enter;
+  try
+    FAssertCounters.TryGetValue(AThreadId,result);
+  finally
+    FLock.Leave;
+  end;
 end;
 
 

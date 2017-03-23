@@ -106,7 +106,7 @@ type
     function Execute: IRunResults;
 
     procedure ExecuteFixtures(const parentFixtureResult: IFixtureResult; const context: ITestExecuteContext; const threadId: TThreadID; const fixtures: ITestFixtureList);
-    procedure ExecuteSetupFixtureMethod(const threadId: TThreadID; const fixture: ITestFixture);
+    procedure ExecuteSetupFixtureMethod(const context: ITestExecuteContext; const threadId: TThreadID; const fixture: ITestFixture; const fixtureResult: IFixtureResult);
     function  ExecuteTestSetupMethod(const context: ITestExecuteContext; const threadId: TThreadID; const fixture: ITestFixture; const test: ITest; out errorResult: ITestResult; const memoryAllocationProvider: IMemoryLeakMonitor): boolean;
 
     procedure ExecuteTests(const context: ITestExecuteContext; const threadId: TThreadID; const fixture: ITestFixture; const fixtureResult: IFixtureResult);
@@ -147,6 +147,8 @@ type
     procedure AddStatus(const threadId; const msg: string);
 
     function CreateFixture(const AInstance: TObject; const AFixtureClass: TClass; const AName: string; const ACategory: string): ITestFixture;
+
+    function ShouldRunThisTest(const test: ITest): boolean;
 
     class constructor Create;
     class destructor Destroy;
@@ -635,11 +637,10 @@ begin
         fixture.InitFixtureInstance;
       //only run the setup method if there are actually tests
       if fixture.HasTests and Assigned(fixture.SetupFixtureMethod) then
-        //TODO: Errors from here need to be logged into each test below us
-        ExecuteSetupFixtureMethod(threadId, fixture);
+        ExecuteSetupFixtureMethod(context, threadId, fixture, fixtureResult);
 
       if fixture.HasTests then
-        ExecuteTests(context, threadId, fixture,fixtureResult);
+        ExecuteTests(context, threadId, fixture, fixtureResult);
 
       if fixture.HasChildFixtures then
         ExecuteFixtures(fixtureResult, context, threadId, fixture.Children);
@@ -658,7 +659,11 @@ begin
   result := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Ignored, ignoreReason);
 end;
 
-procedure TDUnitXTestRunner.ExecuteSetupFixtureMethod(const threadId: TThreadID; const fixture : ITestFixture);
+procedure TDUnitXTestRunner.ExecuteSetupFixtureMethod(const context: ITestExecuteContext; const threadId: TThreadID; const fixture: ITestFixture; const fixtureResult: IFixtureResult);
+var
+  testResult : ITestResult;
+  tests : IEnumerable<ITest>;
+  test : ITest;
 begin
   try
     Self.Loggers_SetupFixture(threadid, fixture as ITestFixtureInfo);
@@ -667,9 +672,20 @@ begin
   except
     on e: Exception do
     begin
+      tests := fixture.Tests;
+      // Log error into each test
+      for test in tests do
+      begin
+        if not ShouldRunThisTest(test) then
+          System.Continue;
+
+        Self.Loggers_BeginTest(threadId, test as ITestInfo);
+        testResult := ExecuteErrorResult(context, threadId, test, e, FLogMessagesEx);
+        RecordResult(context, threadId, fixtureResult, testResult);
+        Self.Loggers_EndTest(threadId, testResult);
+      end;
       Log(TLogLevel.Error, Format(SFixtureSetupError, [fixture.Name, e.Message]));
       Log(TLogLevel.Error, SSkippingFixture);
-      raise;
     end;
   end;
 end;
@@ -746,10 +762,8 @@ begin
   tests := fixture.Tests;
   for test in tests do
   begin
-    if not test.Enabled then
-      System.Continue;
 
-    if test.Ignored and TDUnitX.Options.DontShowIgnored then
+    if not ShouldRunThisTest(test) then
       System.Continue;
 
     memoryAllocationProvider := TDUnitXIoC.DefaultContainer.Resolve<IMemoryLeakMonitor>();
@@ -879,7 +893,6 @@ begin
   FUseRTTI := value;
 end;
 
-
 procedure TDUnitXTestRunner.Status(const msg: string);
 begin
   Self.Log(TLogLevel.Information,msg);
@@ -975,6 +988,18 @@ begin
     for logger in FLoggers do
       logger.OnLog(logType, msg);
   end;
+end;
+
+function TDUnitXTestRunner.ShouldRunThisTest(const test: ITest): boolean;
+begin
+  Result := True;
+
+  if not test.Enabled then
+    Result := False;
+
+  if test.Ignored and TDUnitX.Options.DontShowIgnored then
+    Result := False;
+
 end;
 
 end.
