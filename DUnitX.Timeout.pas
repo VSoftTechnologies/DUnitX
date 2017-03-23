@@ -152,7 +152,6 @@ begin
   stopwatch := TStopWatch.Create;
   stopwatch.Reset;
   stopwatch.Start;
-  elapsedTime := 0;
 
   if Terminated then
      exit;
