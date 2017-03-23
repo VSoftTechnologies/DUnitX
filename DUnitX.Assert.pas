@@ -78,6 +78,7 @@ type
     //Delphi 2010 and XE compiler bug breaks this
     class procedure AreEqual<T>(const expected, actual : T; const message : string = '');overload;
 {$ENDIF}
+    class procedure AreEqual(const expected, actual : word; const message : string = '');overload;
     class procedure AreEqual(const expected, actual : Integer; const message : string = '');overload;
     class procedure AreEqual(const expected, actual : cardinal; const message : string = '');overload;
     class procedure AreEqual(const expected, actual : boolean; const message : string = '');overload;
@@ -1162,6 +1163,13 @@ begin
   DoAssert;
   if not IsEqualGUID(expected, actual) then
     FailFmt(SUnexpectedErrorGUID, [GUIDToString(expected), GUIDToString(actual), message], ReturnAddress);
+end;
+
+class procedure Assert.AreEqual(const expected, actual: word; const message: string);
+begin
+  DoAssert;
+  if expected <> actual then
+    FailFmt(SUnexpectedErrorInt ,[expected, actual, message], ReturnAddress);
 end;
 
 class procedure Assert.AreNotEqual(const expected, actual: TGUID; const message: string);
