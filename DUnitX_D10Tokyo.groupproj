@@ -1,0 +1,72 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{578B7A11-D6C6-468D-8C4F-BC822BA313A8}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="Tests\DUnitXTest_D10Tokyo.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Examples\DUnitXExamples_D10Tokyo.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Expert\DUnitX_IDE_Expert_D10Tokyo.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Examples\DUnitXFiremonkeyGUI_D10Tokyo.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="DUnitXTest_D10Tokyo">
+        <MSBuild Projects="Tests\DUnitXTest_D10Tokyo.dproj"/>
+    </Target>
+    <Target Name="DUnitXTest_D10Tokyo:Clean">
+        <MSBuild Projects="Tests\DUnitXTest_D10Tokyo.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="DUnitXTest_D10Tokyo:Make">
+        <MSBuild Projects="Tests\DUnitXTest_D10Tokyo.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="DUnitXExamples_D10Tokyo">
+        <MSBuild Projects="Examples\DUnitXExamples_D10Tokyo.dproj"/>
+    </Target>
+    <Target Name="DUnitXExamples_D10Tokyo:Clean">
+        <MSBuild Projects="Examples\DUnitXExamples_D10Tokyo.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="DUnitXExamples_D10Tokyo:Make">
+        <MSBuild Projects="Examples\DUnitXExamples_D10Tokyo.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="DUnitX_IDE_Expert_D10Tokyo">
+        <MSBuild Projects="Expert\DUnitX_IDE_Expert_D10Tokyo.dproj"/>
+    </Target>
+    <Target Name="DUnitX_IDE_Expert_D10Tokyo:Clean">
+        <MSBuild Projects="Expert\DUnitX_IDE_Expert_D10Tokyo.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="DUnitX_IDE_Expert_D10Tokyo:Make">
+        <MSBuild Projects="Expert\DUnitX_IDE_Expert_D10Tokyo.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="DUnitXFiremonkeyGUI_D10Tokyo">
+        <MSBuild Projects="Examples\DUnitXFiremonkeyGUI_D10Tokyo.dproj"/>
+    </Target>
+    <Target Name="DUnitXFiremonkeyGUI_D10Tokyo:Clean">
+        <MSBuild Projects="Examples\DUnitXFiremonkeyGUI_D10Tokyo.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="DUnitXFiremonkeyGUI_D10Tokyo:Make">
+        <MSBuild Projects="Examples\DUnitXFiremonkeyGUI_D10Tokyo.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="DUnitXTest_D10Tokyo;DUnitXExamples_D10Tokyo;DUnitX_IDE_Expert_D10Tokyo;DUnitXFiremonkeyGUI_D10Tokyo"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="DUnitXTest_D10Tokyo:Clean;DUnitXExamples_D10Tokyo:Clean;DUnitX_IDE_Expert_D10Tokyo:Clean;DUnitXFiremonkeyGUI_D10Tokyo:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="DUnitXTest_D10Tokyo:Make;DUnitXExamples_D10Tokyo:Make;DUnitX_IDE_Expert_D10Tokyo:Make;DUnitXFiremonkeyGUI_D10Tokyo:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

@@ -33,10 +33,11 @@ interface
 uses
   {$IFDEF USE_NS}
   System.Rtti,
+  System.Generics.Collections,
   {$ELSE}
   Rtti,
-  {$ENDIF}
   Generics.Collections,
+  {$ENDIF}
   DUnitX.Extensibility;
 
 type

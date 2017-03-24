@@ -54,13 +54,13 @@ uses
 
 
 type
-   /// <summary>
-   ///   Internal Class and should not be created directly. Adding this unit to
-   ///   the uses will automatically register this class as a
-   ///   <see_ cref="DUnitX.ConsoleWriter.Base|IDUnitXConsoleWriter">IDUnitXConsoleWriter</see>
-   ///    in the <see_ cref="TDUnitXIoC|TDUnitXIoC">DUnitX IOC Container</see>.
-   /// </summary>
-   TDUnitXLinuxConsoleWriter = class(TDUnitXConsoleWriterBase)
+  /// <summary>
+  ///   Internal Class and should not be created directly. Adding this unit to
+  ///   the uses will automatically register this class as a
+  ///   <see_ cref="DUnitX.ConsoleWriter.Base|IDUnitXConsoleWriter">IDUnitXConsoleWriter</see>
+  ///    in the <see_ cref="TDUnitXIoC|TDUnitXIoC">DUnitX IOC Container</see>.
+  /// </summary>
+  TDUnitXLinuxConsoleWriter = class(TDUnitXConsoleWriterBase)
   private
   protected
     procedure InternalWriteLn(const s : String); override;
@@ -107,7 +107,7 @@ const
  AT_BG_WHITE   = #27 + '[47m';
 
 
-{ TDUnitXMacOSConsoleWriter }
+{ TDUnitXLinuxConsoleWriter }
 
 procedure TDUnitXLinuxConsoleWriter.InternalWrite(const s: string);
 begin
@@ -159,9 +159,9 @@ begin
 
 end;
 
-{$IFDEF LINUX}
-initialization
-  TDUnitXIoC.DefaultContainer.RegisterType<IDUnitXConsoleWriter,TDUnitXLinuxConsoleWriter>();
-{$ENDIF LINUX}
+{$IF Defined(LINUX)}
+ initialization
+   TDUnitXIoC.DefaultContainer.RegisterType<IDUnitXConsoleWriter, TDUnitXLinuxConsoleWriter>();
+{$ENDIF}
 
 end.

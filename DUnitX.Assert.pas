@@ -251,17 +251,18 @@ implementation
 
 uses
   DUnitX.ResStrs,
-  Generics.Defaults,
   {$IFDEF SUPPORTS_REGEX}
   System.RegularExpressions,
   {$ENDIF}
   {$IFDEF USE_NS}
+  System.Generics.Defaults,
   System.Math,
   System.Rtti,
   System.StrUtils,
   System.TypInfo,
   System.Variants;
   {$ELSE}
+  Generics.Defaults,
   Math,
   Rtti,
   StrUtils,

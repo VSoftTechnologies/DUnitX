@@ -50,7 +50,7 @@ uses
   {$IFDEF USE_NS}
   System.Classes,
   System.SysUtils,
-  Generics.Collections,
+  System.Generics.Collections,
   {$ELSE}
   Classes,
   SysUtils,

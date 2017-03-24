@@ -28,7 +28,7 @@ unit DUnitX.Tests.Assert;
 
 interface
 
-{$I DUnitX.inc}
+{$I ..\DUnitX.inc}
 
 uses
   DUnitX.TestFramework;
@@ -177,10 +177,10 @@ type
     [Test]
     [TestCase( 'substring', 'ing,a string,false' )]
     [TestCase( 'substring - case sensitive', 'ing,a string,true' )]
-    procedure EndsWith_SubString_Is_At_The_End__Of_String( const subString, theString: string; caseSensitive: boolean );
-    [Test]
     [TestCase( 'empty substring', ',a string,false' )]
     [TestCase( 'empty substring - case sensitive', ',a string,true' )]
+    procedure EndsWith_SubString_Is_At_The_End__Of_String( const subString, theString: string; caseSensitive: boolean );
+    [Test]
     [TestCase( 'empty string', 'substring,,false' )]
     [TestCase( 'empty string - case sensitive', 'substring,,true' )]
     [TestCase( 'at start of string', 'at the,at the end if the substring,false' )]

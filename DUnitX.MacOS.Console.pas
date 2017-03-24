@@ -159,8 +159,8 @@ begin
 
 end;
 
-{$IFDEF MACOS}
-initialization
+{$IF Defined(MACOS) or Defined(OSX32)}
+ initialization
   TDUnitXIoC.DefaultContainer.RegisterType<IDUnitXConsoleWriter,TDUnitXMacOSConsoleWriter>();
 {$ENDIF}
 

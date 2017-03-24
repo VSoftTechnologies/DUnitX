@@ -35,10 +35,11 @@ interface
 uses
   {$IFDEF USE_NS}
   System.Classes,
+  System.Generics.Collections,
   {$ELSE}
   Classes,
-  {$ENDIF}
   Generics.Collections,
+  {$ENDIF}
   DUnitX.Extensibility;
 
 type

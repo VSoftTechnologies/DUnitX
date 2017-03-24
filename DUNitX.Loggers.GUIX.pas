@@ -34,7 +34,16 @@ uses
   FMX.Types, FMX.Graphics, FMX.Controls, FMX.Forms, FMX.Dialogs, FMX.StdCtrls,
   System.Actions, FMX.ActnList, FMX.Layouts, FMX.TreeView, FMX.Edit,
   DUnitX.TestFramework, DUnitX.Extensibility, DUnitX.InternalInterfaces, FMX.ListView.Types, FMX.ListView.Appearances,
-  FMX.ListView, FMX.ListBox, Generics.Collections, FMX.Memo, FMX.ScrollBox, FMX.Controls.Presentation, System.IniFiles;
+  FMX.ListView, FMX.ListBox, System.Generics.Collections, FMX.Memo, FMX.ScrollBox, FMX.Controls.Presentation, System.IniFiles,
+  FMX.ListView.Adapters.Base;
+
+{$HPPEMIT '#if defined(USEPACKAGES)'}
+{$HPPEMIT '# pragma comment(lib, "Fmx.bpi")'}
+{$HPPEMIT '# pragma comment(lib, "DUnitXFMXRuntime.bpi")'}
+{$HPPEMIT '#else'}
+{$HPPEMIT '# pragma comment(lib, "Fmx")'}
+{$HPPEMIT '# pragma comment(lib, "DUnitXFMXRuntime")'}
+{$HPPEMIT '#endif'}
 
 type
   TGUIXTestRunner = class(TForm, ITestLogger)

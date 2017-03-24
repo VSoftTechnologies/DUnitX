@@ -84,7 +84,7 @@ begin
 
   for sb in st.SmallBlockTypeStates do
   begin
-    Result := Result + sb.UseableBlockSize * sb.AllocatedBlockCount;
+    Result := Result + Int64(sb.UseableBlockSize * sb.AllocatedBlockCount);
   end;
 end;
 
