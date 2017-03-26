@@ -65,7 +65,7 @@ uses
      DUnitX.Linux.Console;
  {$ELSE}
      {$MESSAGE Error 'Unknown Platform for Console Writer'}
- {$ENDIF}
+ {$IFEND}
 
 implementation
 
