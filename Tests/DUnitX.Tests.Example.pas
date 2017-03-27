@@ -77,6 +77,9 @@ type
     [Ignore('I was told to ignore me')]
     procedure IgnoreMe;
 
+    [Test('EOutOfMemory')]
+    procedure FailMe;
+
     [Setup]
     procedure Setup;
 
@@ -141,6 +144,11 @@ procedure TMyExampleTests.DontCallMe;
 begin
   TDUnitX.CurrentRunner.Status('DontCallMe called');
   raise Exception.Create('DontCallMe was called!!!!');
+end;
+
+procedure TMyExampleTests.FailMe;
+begin
+  OutOfMemoryError;
 end;
 
 procedure TMyExampleTests.IgnoreMe;

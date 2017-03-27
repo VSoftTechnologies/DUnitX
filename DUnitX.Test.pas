@@ -102,6 +102,16 @@ type
     destructor Destroy;override;
   end;
 
+  TDUnitXExceptionTest = class(TDUnitXTest, ITestExecute)
+  private
+    FExpectedException: string;
+  public
+    constructor Create(const AFixture : ITestFixture; const AMethodName : string; const AName : string; const ACategory  : string;
+                       const AMethod : TTestMethod; const AEnabled : boolean; const AIgnored : boolean = false;
+                       const AIgnoreReason : string = ''; const AMaxTime : Cardinal = 0; const AExpected : string = '');
+    procedure Execute(const context : ITestExecuteContext); override;
+  end;
+
   TDUnitXTestCase = class(TDUnitXTest, ITestExecute)
   private
     FCaseName : string;
@@ -376,6 +386,30 @@ procedure TDUnitXTestCase.UpdateInstance(const fixtureInstance: TObject);
 begin
   inherited;
   FInstance := fixtureInstance;
+end;
+
+{ TDUnitXExceptionTest }
+
+constructor TDUnitXExceptionTest.Create(const AFixture: ITestFixture;
+  const AMethodName, AName, ACategory: string; const AMethod: TTestMethod;
+  const AEnabled, AIgnored: boolean; const AIgnoreReason: string;
+  const AMaxTime: Cardinal; const AExpected: string);
+begin
+  inherited Create(AFixture, AMethodName, AName, ACategory, AMethod, AEnabled, AIgnored, AIgnoreReason, AMaxTime);
+  FExpectedException := AExpected;
+end;
+
+procedure TDUnitXExceptionTest.Execute(const context: ITestExecuteContext);
+begin
+  try
+    inherited Execute(context);
+    Assert.FailFmt('Exception %s expected.', [FExpectedException]);
+  except
+    on E: Exception do
+    begin
+      Assert.AreEqual(FExpectedException, E.ClassName);
+    end;
+  end;
 end;
 
 end.

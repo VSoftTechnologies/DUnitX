@@ -138,10 +138,13 @@ type
   TestAttribute = class(TCustomAttribute)
   private
     FEnabled : boolean;
+    FExpected: string;
   public
     constructor Create;overload;
     constructor Create(const AEnabled : boolean);overload;
+    constructor Create(const AExpected: string; const AEnabled : boolean = true);overload;
     property Enabled : boolean read FEnabled;
+    property Expected : string read FExpected;
   end;
 
   /// <summary>
@@ -310,6 +313,14 @@ end;
 constructor TestAttribute.Create(const AEnabled: boolean);
 begin
   inherited Create;
+  FEnabled := AEnabled;
+  FExpected := '';
+end;
+
+constructor TestAttribute.Create(const AExpected: string; const AEnabled: boolean);
+begin
+  inherited Create;
+  FExpected := AExpected;
   FEnabled := AEnabled;
 end;
 
