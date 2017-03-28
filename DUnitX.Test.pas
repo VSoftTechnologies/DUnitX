@@ -35,10 +35,12 @@ uses
   System.Generics.Collections,
   System.TimeSpan,
   System.Rtti,
+  System.SysUtils,
   {$ELSE}
   Generics.Collections,
   TimeSpan,
   Rtti,
+  SysUtils,
   {$ENDIF}
   DUnitX.Types,
   DUnitX.Extensibility,
@@ -104,12 +106,15 @@ type
 
   TDUnitXExceptionTest = class(TDUnitXTest, ITestExecute)
   private
-    FExpectedException: string;
+    FExpectedException : ExceptClass;
+    FRaiseContext : ITestExecuteContext;
+  protected
+    procedure RaiseMethod;
+    procedure Execute(const context : ITestExecuteContext); override;
   public
     constructor Create(const AFixture : ITestFixture; const AMethodName : string; const AName : string; const ACategory  : string;
                        const AMethod : TTestMethod; const AEnabled : boolean; const AIgnored : boolean = false;
-                       const AIgnoreReason : string = ''; const AMaxTime : Cardinal = 0; const AExpected : string = '');
-    procedure Execute(const context : ITestExecuteContext); override;
+                       const AIgnoreReason : string = ''; const AMaxTime : Cardinal = 0; AExpected : ExceptClass = nil);
   end;
 
   TDUnitXTestCase = class(TDUnitXTest, ITestExecute)
@@ -133,10 +138,8 @@ implementation
 
 uses
   {$IFDEF USE_NS}
-  System.SysUtils,
   System.Generics.Defaults,
   {$ELSE}
-  SysUtils,
   Generics.Defaults,
   {$ENDIF}
   {$IFDEF MSWINDOWS}
@@ -393,7 +396,7 @@ end;
 constructor TDUnitXExceptionTest.Create(const AFixture: ITestFixture;
   const AMethodName, AName, ACategory: string; const AMethod: TTestMethod;
   const AEnabled, AIgnored: boolean; const AIgnoreReason: string;
-  const AMaxTime: Cardinal; const AExpected: string);
+  const AMaxTime: Cardinal; AExpected: ExceptClass);
 begin
   inherited Create(AFixture, AMethodName, AName, ACategory, AMethod, AEnabled, AIgnored, AIgnoreReason, AMaxTime);
   FExpectedException := AExpected;
@@ -401,15 +404,13 @@ end;
 
 procedure TDUnitXExceptionTest.Execute(const context: ITestExecuteContext);
 begin
-  try
-    inherited Execute(context);
-    Assert.FailFmt('Exception %s expected.', [FExpectedException]);
-  except
-    on E: Exception do
-    begin
-      Assert.AreEqual(FExpectedException, E.ClassName);
-    end;
-  end;
+  FRaiseContext := context;
+  Assert.WillRaise(RaiseMethod, FExpectedException);
+end;
+
+procedure TDUnitXExceptionTest.RaiseMethod;
+begin
+  inherited Execute(FRaiseContext);
 end;
 
 end.

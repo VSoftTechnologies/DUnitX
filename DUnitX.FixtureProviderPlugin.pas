@@ -265,7 +265,7 @@ var
   ignoredTest     : boolean;
   ignoredReason   : string;
   maxTime         : cardinal;
-  expectedException : string;
+  expectedException : ExceptClass;
 
   repeatCount: Cardinal;
   i: Integer;
@@ -313,7 +313,7 @@ begin
     repeatCount := 1;
     maxTimeAttrib := nil;
     maxTime := 0;
-    expectedException := '';
+    expectedException := nil;
     currentFixture := fixture;
 
     meth.Code := method.CodeAddress;

@@ -35,10 +35,12 @@ uses
   System.TimeSpan,
   System.Rtti,
   System.Generics.Collections,
+  System.SysUtils,
   {$ELSE}
   TimeSpan,
   Rtti,
   Generics.Collections,
+  SysUtils,
   {$ENDIF}
   DUnitX.Types,
   DUnitX.Generics;
@@ -127,7 +129,7 @@ type
     procedure OnMethodExecuted(const AMethod : TTestMethod);
     function GetFixtureInstance : TObject;
 
-    function AddTest(const AMethodName : string; const AMethod : TTestMethod; const AName : string; const ACategory : string; const AEnabled : boolean = true;const AIgnored : boolean = false; const AIgnoreReason : string = ''; const AMaxTime :cardinal = 0; const AExptected: String = '') : ITest;
+    function AddTest(const AMethodName : string; const AMethod : TTestMethod; const AName : string; const ACategory : string; const AEnabled : boolean = true;const AIgnored : boolean = false; const AIgnoreReason : string = ''; const AMaxTime :cardinal = 0; AExptected: ExceptClass = nil) : ITest;
     function AddTestCase(const AMethodName : string; const ACaseName : string; const AName : string; const ACategory : string; const AMethod : TRttiMethod; const AEnabled : boolean; const AArgs : TValueArray) : ITest;
 
     function AddChildFixture(const ATestClass : TClass; const AName : string; const ACategory : string) : ITestFixture;overload;

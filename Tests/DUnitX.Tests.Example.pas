@@ -31,8 +31,12 @@ interface
 {$I DUnitX.inc}
 
 uses
-  DUnitX.TestFramework;
-
+  DUnitX.TestFramework,
+  {$IFDEF USE_NS}
+  System.SysUtils;
+  {$ELSE}
+  SysUtils;
+  {$ENDIF}
 
 type
   {$M+}
@@ -77,7 +81,7 @@ type
     [Ignore('I was told to ignore me')]
     procedure IgnoreMe;
 
-    [Test('EOutOfMemory')]
+    [Test(EOutOfMemory)]
     procedure FailMe;
 
     [Setup]
@@ -130,11 +134,6 @@ type
 implementation
 
 uses
-  {$IFDEF USE_NS}
-  System.SysUtils,
-  {$ELSE}
-  SysUtils,
-  {$ENDIF}
   DUnitX.DUnitCompatibility;
 
 { TMyExampleTests }

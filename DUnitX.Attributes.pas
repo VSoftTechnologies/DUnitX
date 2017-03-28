@@ -33,8 +33,10 @@ interface
 uses
   {$IFDEF USE_NS}
   System.Rtti,
+  System.SysUtils,
   {$ELSE}
   Rtti,
+  SysUtils,
   {$ENDIF}
   DUnitX.Types;
 
@@ -138,13 +140,13 @@ type
   TestAttribute = class(TCustomAttribute)
   private
     FEnabled : boolean;
-    FExpected: string;
+    FExpected: ExceptClass;
   public
     constructor Create;overload;
     constructor Create(const AEnabled : boolean);overload;
-    constructor Create(const AExpected: string; const AEnabled : boolean = true);overload;
+    constructor Create(AExpected: ExceptClass; const AEnabled : boolean = true);overload;
     property Enabled : boolean read FEnabled;
-    property Expected : string read FExpected;
+    property Expected : ExceptClass read FExpected;
   end;
 
   /// <summary>
@@ -314,10 +316,10 @@ constructor TestAttribute.Create(const AEnabled: boolean);
 begin
   inherited Create;
   FEnabled := AEnabled;
-  FExpected := '';
+  FExpected := nil;
 end;
 
-constructor TestAttribute.Create(const AExpected: string; const AEnabled: boolean);
+constructor TestAttribute.Create(AExpected: ExceptClass; const AEnabled: boolean);
 begin
   inherited Create;
   FExpected := AExpected;
