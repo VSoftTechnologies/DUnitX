@@ -84,6 +84,12 @@ type
     [Test(EOutOfMemory)]
     procedure FailMe;
 
+    [Test(EHeapException, true)]
+    procedure FailMeToo;
+
+    [Test(Exception, true)]
+    procedure FailAny;
+
     [Setup]
     procedure Setup;
 
@@ -145,7 +151,17 @@ begin
   raise Exception.Create('DontCallMe was called!!!!');
 end;
 
+procedure TMyExampleTests.FailAny;
+begin
+  Abort;
+end;
+
 procedure TMyExampleTests.FailMe;
+begin
+  OutOfMemoryError;
+end;
+
+procedure TMyExampleTests.FailMeToo;
 begin
   OutOfMemoryError;
 end;

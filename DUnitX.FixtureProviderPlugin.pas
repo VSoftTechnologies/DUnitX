@@ -265,7 +265,8 @@ var
   ignoredTest     : boolean;
   ignoredReason   : string;
   maxTime         : cardinal;
-  expectedException : ExceptClass;
+  willRaise       : ExceptClass;
+  willRaiseDesc   : boolean;
 
   repeatCount: Cardinal;
   i: Integer;
@@ -313,7 +314,8 @@ begin
     repeatCount := 1;
     maxTimeAttrib := nil;
     maxTime := 0;
-    expectedException := nil;
+    willRaise := nil;
+    willRaiseDesc := false;
     currentFixture := fixture;
 
     meth.Code := method.CodeAddress;
@@ -393,7 +395,8 @@ begin
     if method.TryGetAttributeOfType<TestAttribute>(testAttrib) then
     begin
       testEnabled := testAttrib.Enabled;
-      expectedException := testAttrib.Expected;
+      willRaise := testAttrib.WillRaise;
+      willRaiseDesc := testAttrib.WillRaiseDescendant;
       isTestMethod := true;
     end;
     {$IFDEF MSWINDOWS}
@@ -454,7 +457,7 @@ begin
     begin
       for i := 1 to repeatCount do
       begin
-        currentFixture.AddTest(method.Name, TTestMethod(meth), FormatTestName(method.Name, i, repeatCount), category, true, ignoredTest, ignoredReason, maxTime, expectedException);
+        currentFixture.AddTest(method.Name, TTestMethod(meth), FormatTestName(method.Name, i, repeatCount), category, true, ignoredTest, ignoredReason, maxTime, willRaise, willRaiseDesc);
       end;
       continue;
     end;

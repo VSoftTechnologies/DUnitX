@@ -140,13 +140,15 @@ type
   TestAttribute = class(TCustomAttribute)
   private
     FEnabled : boolean;
-    FExpected: ExceptClass;
+    FWillRaise : ExceptClass;
+    FWillRaiseDescendant: boolean;
   public
     constructor Create;overload;
     constructor Create(const AEnabled : boolean);overload;
-    constructor Create(AExpected: ExceptClass; const AEnabled : boolean = true);overload;
+    constructor Create(AWillRaise : ExceptClass; const AWillRaiseDescendant: boolean = false; const AEnabled : boolean = true);overload;
     property Enabled : boolean read FEnabled;
-    property Expected : ExceptClass read FExpected;
+    property WillRaise : ExceptClass read FWillRaise;
+    property WillRaiseDescendant: boolean read FWillRaiseDescendant;
   end;
 
   /// <summary>
@@ -316,13 +318,14 @@ constructor TestAttribute.Create(const AEnabled: boolean);
 begin
   inherited Create;
   FEnabled := AEnabled;
-  FExpected := nil;
+  FWillRaise := nil;
 end;
 
-constructor TestAttribute.Create(AExpected: ExceptClass; const AEnabled: boolean);
+constructor TestAttribute.Create(AWillRaise: ExceptClass; const AWillRaiseDescendant: boolean; const AEnabled: boolean);
 begin
   inherited Create;
-  FExpected := AExpected;
+  FWillRaise := AWillRaise;
+  FWillRaiseDescendant := AWillRaiseDescendant;
   FEnabled := AEnabled;
 end;
 

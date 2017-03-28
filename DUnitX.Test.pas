@@ -106,7 +106,8 @@ type
 
   TDUnitXExceptionTest = class(TDUnitXTest, ITestExecute)
   private
-    FExpectedException : ExceptClass;
+    FExceptionClass : ExceptClass;
+    FWillRaiseDescendant : boolean;
     FRaiseContext : ITestExecuteContext;
   protected
     procedure RaiseMethod;
@@ -114,7 +115,8 @@ type
   public
     constructor Create(const AFixture : ITestFixture; const AMethodName : string; const AName : string; const ACategory  : string;
                        const AMethod : TTestMethod; const AEnabled : boolean; const AIgnored : boolean = false;
-                       const AIgnoreReason : string = ''; const AMaxTime : Cardinal = 0; AExpected : ExceptClass = nil);
+                       const AIgnoreReason : string = ''; const AMaxTime : Cardinal = 0;
+                       AExceptionClass : ExceptClass = nil; const AWillRaiseDescendant : boolean = false);
   end;
 
   TDUnitXTestCase = class(TDUnitXTest, ITestExecute)
@@ -396,16 +398,20 @@ end;
 constructor TDUnitXExceptionTest.Create(const AFixture: ITestFixture;
   const AMethodName, AName, ACategory: string; const AMethod: TTestMethod;
   const AEnabled, AIgnored: boolean; const AIgnoreReason: string;
-  const AMaxTime: Cardinal; AExpected: ExceptClass);
+  const AMaxTime: Cardinal; AExceptionClass: ExceptClass; const AWillRaiseDescendant: boolean);
 begin
   inherited Create(AFixture, AMethodName, AName, ACategory, AMethod, AEnabled, AIgnored, AIgnoreReason, AMaxTime);
-  FExpectedException := AExpected;
+  FExceptionClass := AExceptionClass;
+  FWillRaiseDescendant := AWillRaiseDescendant;
 end;
 
 procedure TDUnitXExceptionTest.Execute(const context: ITestExecuteContext);
 begin
   FRaiseContext := context;
-  Assert.WillRaise(RaiseMethod, FExpectedException);
+  if FWillRaiseDescendant then
+    Assert.WillRaiseDescendant(RaiseMethod, FExceptionClass)
+  else
+    Assert.WillRaise(RaiseMethod, FExceptionClass);
 end;
 
 procedure TDUnitXExceptionTest.RaiseMethod;

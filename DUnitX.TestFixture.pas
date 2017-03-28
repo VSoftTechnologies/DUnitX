@@ -125,7 +125,7 @@ type
     procedure InitFixtureInstance;
     procedure InternalInitFixtureInstance(const isConstructing : boolean);
 
-    function AddTest(const AMethodName : string; const AMethod : TTestMethod; const AName : string; const ACategory  : string; const AEnabled : boolean = true;const AIgnored : boolean = false; const AIgnoreReason : string = ''; const AMaxTime :cardinal = 0; AExpected : ExceptClass = nil) : ITest;
+    function AddTest(const AMethodName : string; const AMethod : TTestMethod; const AName : string; const ACategory  : string; const AEnabled : boolean = true;const AIgnored : boolean = false; const AIgnoreReason : string = ''; const AMaxTime :cardinal = 0; AWillRaise : ExceptClass = nil; const AWillRaiseDescendant : boolean = false) : ITest;
     function AddTestCase(const AMethodName : string; const ACaseName : string; const AName : string; const ACategory  : string; const AMethod : TRttiMethod; const AEnabled : boolean; const AArgs : TValueArray) : ITest;
 
     function AddChildFixture(const ATestClass : TClass; const AName : string; const ACategory : string) : ITestFixture;overload;
@@ -539,12 +539,12 @@ begin
   FChildren.Add(result);
 end;
 
-function TDUnitXTestFixture.AddTest(const AMethodName : string; const AMethod : TTestMethod; const AName : string; const ACategory  : string; const AEnabled : boolean;const AIgnored : boolean; const AIgnoreReason : string; const AMaxTime :cardinal; AExpected : ExceptClass): ITest;
+function TDUnitXTestFixture.AddTest(const AMethodName : string; const AMethod : TTestMethod; const AName : string; const ACategory  : string; const AEnabled : boolean;const AIgnored : boolean; const AIgnoreReason : string; const AMaxTime :cardinal; AWillRaise : ExceptClass; const AWillRaiseDescendant : boolean): ITest;
 begin
-  if AExpected = nil then
+  if AWillRaise = nil then
     result  := TDUnitXTest.Create(Self, AMethodName, AName, ACategory, AMethod, AEnabled, AIgnored, AIgnoreReason, AMaxTime)
   else
-    result  := TDUnitXExceptionTest.Create(Self, AMethodName, AName, ACategory, AMethod, AEnabled, AIgnored, AIgnoreReason, AMaxTime, AExpected);
+    result  := TDUnitXExceptionTest.Create(Self, AMethodName, AName, ACategory, AMethod, AEnabled, AIgnored, AIgnoreReason, AMaxTime, AWillRaise, AWillRaiseDescendant);
   FTests.Add(Result);
 end;
 
