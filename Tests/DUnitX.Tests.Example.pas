@@ -81,14 +81,18 @@ type
     [Ignore('I was told to ignore me')]
     procedure IgnoreMe;
 
-    [Test(EOutOfMemory)]
+    [WillRaise(EOutOfMemory)]
     procedure FailMe;
 
-    [Test(EHeapException, true)]
+    [WillRaise(EHeapException, exDescendant)]
     procedure FailMeToo;
 
-    [Test(Exception, true)]
+    [WillRaise(Exception, exDescendant)]
     procedure FailAny;
+
+    [WillRaise(EOutOfMemory)]
+    [Ignore('I am not behaving as I should')]
+    procedure IgnoreMeCauseImWrong;
 
     [Setup]
     procedure Setup;
@@ -174,6 +178,11 @@ end;
 procedure TMyExampleTests.IgnoreMeAnyway;
 begin
   Assert.IsTrue(false,'I should not have been called!');
+end;
+
+procedure TMyExampleTests.IgnoreMeCauseImWrong;
+begin
+  Abort;
 end;
 
 procedure TMyExampleTests.Setup;

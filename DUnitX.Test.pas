@@ -106,8 +106,8 @@ type
 
   TDUnitXExceptionTest = class(TDUnitXTest, ITestExecute)
   private
-    FExceptionClass : ExceptClass;
-    FWillRaiseDescendant : boolean;
+    FExpectedException : ExceptClass;
+    FExceptionInheritance : TExceptionInheritance;
     FRaiseContext : ITestExecuteContext;
   protected
     procedure RaiseMethod;
@@ -116,7 +116,7 @@ type
     constructor Create(const AFixture : ITestFixture; const AMethodName : string; const AName : string; const ACategory  : string;
                        const AMethod : TTestMethod; const AEnabled : boolean; const AIgnored : boolean = false;
                        const AIgnoreReason : string = ''; const AMaxTime : Cardinal = 0;
-                       AExceptionClass : ExceptClass = nil; const AWillRaiseDescendant : boolean = false);
+                       AExpectedException : ExceptClass = nil; const AExceptionInheritance : TExceptionInheritance = exSame);
   end;
 
   TDUnitXTestCase = class(TDUnitXTest, ITestExecute)
@@ -398,20 +398,20 @@ end;
 constructor TDUnitXExceptionTest.Create(const AFixture: ITestFixture;
   const AMethodName, AName, ACategory: string; const AMethod: TTestMethod;
   const AEnabled, AIgnored: boolean; const AIgnoreReason: string;
-  const AMaxTime: Cardinal; AExceptionClass: ExceptClass; const AWillRaiseDescendant: boolean);
+  const AMaxTime: Cardinal; AExpectedException: ExceptClass; const AExceptionInheritance: TExceptionInheritance);
 begin
   inherited Create(AFixture, AMethodName, AName, ACategory, AMethod, AEnabled, AIgnored, AIgnoreReason, AMaxTime);
-  FExceptionClass := AExceptionClass;
-  FWillRaiseDescendant := AWillRaiseDescendant;
+  FExpectedException := AExpectedException;
+  FExceptionInheritance := AExceptionInheritance;
 end;
 
 procedure TDUnitXExceptionTest.Execute(const context: ITestExecuteContext);
 begin
   FRaiseContext := context;
-  if FWillRaiseDescendant then
-    Assert.WillRaiseDescendant(RaiseMethod, FExceptionClass)
+  if FExceptionInheritance = exDescendant then
+    Assert.WillRaiseDescendant(RaiseMethod, FExpectedException)
   else
-    Assert.WillRaise(RaiseMethod, FExceptionClass);
+    Assert.WillRaise(RaiseMethod, FExpectedException);
 end;
 
 procedure TDUnitXExceptionTest.RaiseMethod;

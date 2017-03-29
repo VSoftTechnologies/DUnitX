@@ -59,7 +59,8 @@ uses
   DUnitX.Extensibility,
   DUnitX.Filters,
   DUnitX.ComparableFormat,
-  DUnitX.Exceptions;
+  DUnitX.Exceptions,
+  DUnitX.Types;
 
 {$HPPEMIT '#if defined(USEPACKAGES)'}
 {$HPPEMIT '# pragma comment(lib, "DUnitXRuntime.bpi")'}
@@ -81,12 +82,15 @@ type
   IgnoreAttribute = DUnitX.Attributes.IgnoreAttribute;
   RepeatTestAttribute = DUnitX.Attributes.RepeatTestAttribute;
   MaxTimeAttribute =  DUnitX.Attributes.MaxTimeAttribute;
+  WillRaiseAttribute = DUnitX.Attributes.WillRaiseAttribute;
   TestCaseInfo = DUnitX.Attributes.TestCaseInfo;
   TestCaseInfoArray = DUnitX.Attributes.TestCaseInfoArray;
 
   CustomTestCaseAttribute = DUnitX.Attributes.CustomTestCaseAttribute;
   CustomTestCaseSourceAttribute = DUnitX.Attributes.CustomTestCaseSourceAttribute;
   TestCaseAttribute = DUnitX.Attributes.TestCaseAttribute;
+
+  TExceptionInheritance = DUnitX.Types.TExceptionInheritance;
 
   TTestMethod = DUnitX.Extensibility.TTestMethod;
 
@@ -109,6 +113,9 @@ type
 
 const
   TLogLevelDesc : array[TLogLevel] of string = ('Info', 'Warn', 'Err');
+
+  exSame = DUnitX.Types.exSame;
+  exDescendant = DUnitX.Types.exDescendant;
 
 type
 {$IFDEF DELPHI_XE2_UP}

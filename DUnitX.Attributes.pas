@@ -140,15 +140,10 @@ type
   TestAttribute = class(TCustomAttribute)
   private
     FEnabled : boolean;
-    FWillRaise : ExceptClass;
-    FWillRaiseDescendant: boolean;
   public
     constructor Create;overload;
     constructor Create(const AEnabled : boolean);overload;
-    constructor Create(AWillRaise : ExceptClass; const AWillRaiseDescendant: boolean = false; const AEnabled : boolean = true);overload;
     property Enabled : boolean read FEnabled;
-    property WillRaise : ExceptClass read FWillRaise;
-    property WillRaiseDescendant: boolean read FWillRaiseDescendant;
   end;
 
   /// <summary>
@@ -193,6 +188,22 @@ type
     property Count : Cardinal read FCount;
   end;
 
+  /// <summary>
+  ///   This attribute marks a method as a test method which will raise an exception.
+  /// </summary>
+  /// <remarks>
+  ///   If [WillRaise(ERangeError)] is used then the test will fail if it
+  ///   does not raise an ERangeError.
+  /// </remarks>
+  WillRaiseAttribute = class(TCustomAttribute)
+  private
+    FExpectedException : ExceptClass;
+    FExceptionInheritance: TExceptionInheritance;
+  public
+    constructor Create(AExpectedException : ExceptClass; const AInheritance : TExceptionInheritance = exSame);
+    property ExpectedException : ExceptClass read FExpectedException;
+    property ExceptionInheritance : TExceptionInheritance read FExceptionInheritance;
+  end;
 
   /// <summary>
   ///   Internal Structure used for those implementing CustomTestCase or
@@ -318,15 +329,6 @@ constructor TestAttribute.Create(const AEnabled: boolean);
 begin
   inherited Create;
   FEnabled := AEnabled;
-  FWillRaise := nil;
-end;
-
-constructor TestAttribute.Create(AWillRaise: ExceptClass; const AWillRaiseDescendant: boolean; const AEnabled: boolean);
-begin
-  inherited Create;
-  FWillRaise := AWillRaise;
-  FWillRaiseDescendant := AWillRaiseDescendant;
-  FEnabled := AEnabled;
 end;
 
 { CategoryAttribute }
@@ -390,6 +392,14 @@ end;
 constructor MaxTimeAttribute.Create(const AMaxTime : Cardinal);
 begin
   FMaxTime := AMaxTime;
+end;
+
+{ WillRaiseAttribute }
+
+constructor WillRaiseAttribute.Create(AExpectedException: ExceptClass; const AInheritance: TExceptionInheritance);
+begin
+  FExpectedException := AExpectedException;
+  FExceptionInheritance := AInheritance;
 end;
 
 end.
