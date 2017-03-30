@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<codetemplate xmlns="http://schemas.borland.com/Delphi/2005/codetemplates" version="1.0.0">
+	<template name="dxtp" invoke="auto">
+		<description>Create test procedure</description>
+		<author>DUnitX Group</author>
+        <point name="procedurename">
+            <text>
+                ProcedureName
+            </text>
+            <hint>
+                Name of the procedure
+            </hint>
+        </point>
+		<code language="Delphi" context="memberdecl" delimiter="|" >
+			<![CDATA[[Test]
+procedure |procedurename|;|end|]]>
+		</code>
+	</template>
+</codetemplate>

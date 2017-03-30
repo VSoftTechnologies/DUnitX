@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<codetemplate xmlns="http://schemas.borland.com/Delphi/2005/codetemplates" version="1.0.0">
+	<template name="dxtf" invoke="auto">
+		<description>Create test fixture class</description>
+		<author>DUnitX Group</author>
+        <point name="testfixturename">
+            <text>
+                TestFixtureName
+            </text>
+            <hint>
+                Name of the test fixture
+            </hint>
+        </point>
+		<code language="Delphi" delimiter="|" context="typedecl">
+			<![CDATA[[TestFixture]
+T|testfixturename| = class(TObject)
+public
+  |end|
+end;]]>
+		</code>
+	</template>
+</codetemplate>
