@@ -1,0 +1,21 @@
+Live Templates for Delphi/RAD Studio
+------------------------------------
+
+PREINSTALL NOTES:
+It is recommended that you close all instances of any version of the IDE.  
+
+AUTOMATIC INSTALLATION:
+Run the Install.bat file.  There are two installation types: Copy and Symbolic Link.
+
+COPY will simply copy the files to the user's RAD Studio\code_templates\ folder under a DUnitX subfolder.
+
+SYMBOLIC LINK will create a link from the source folder to the RAD Studio\code_templates\ folder.  The advantage to this is that it is essentially a mirror of the original folder, which is likely a local copy of the GitHub repository.  This means that any changes made to these templates, either by the user or by the DUnitX team, will automatically be propagated to the GitHub or template folder, respectively, without requiring any manual intervention.  NOTE: This options requires running Install.bat with administrative privileges.
+
+MANUAL INSTALLATON:
+Copy all xml files to %userprofile%\Documents\RAD Studio\code_templates\DUnitX\ or manually create a symbolic link using the mklink command (see Install.bat for exact command).
+
+POST INSTALLATION:
+After installation, reopen the IDE.  The new templates should be detected and available in the IDE automatically.
+
+ADDITIONAL NOTES:
+Currently, there are only Delphi templates.  There are no C++ templates at this time.
