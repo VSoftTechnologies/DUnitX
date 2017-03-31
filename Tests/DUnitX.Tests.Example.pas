@@ -31,8 +31,12 @@ interface
 {$I DUnitX.inc}
 
 uses
-  DUnitX.TestFramework;
-
+  DUnitX.TestFramework,
+  {$IFDEF USE_NS}
+  System.SysUtils;
+  {$ELSE}
+  SysUtils;
+  {$ENDIF}
 
 type
   {$M+}
@@ -76,6 +80,19 @@ type
     [Test]
     [Ignore('I was told to ignore me')]
     procedure IgnoreMe;
+
+    [WillRaise(EOutOfMemory)]
+    procedure FailMe;
+
+    [WillRaise(EHeapException, exDescendant)]
+    procedure FailMeToo;
+
+    [WillRaise(Exception, exDescendant)]
+    procedure FailAny;
+
+    [WillRaise(EOutOfMemory)]
+    [Ignore('I am not behaving as I should')]
+    procedure IgnoreMeCauseImWrong;
 
     [Setup]
     procedure Setup;
@@ -127,11 +144,6 @@ type
 implementation
 
 uses
-  {$IFDEF USE_NS}
-  System.SysUtils,
-  {$ELSE}
-  SysUtils,
-  {$ENDIF}
   DUnitX.DUnitCompatibility;
 
 { TMyExampleTests }
@@ -143,6 +155,21 @@ begin
   raise Exception.Create('DontCallMe was called!!!!');
 end;
 
+procedure TMyExampleTests.FailAny;
+begin
+  Abort;
+end;
+
+procedure TMyExampleTests.FailMe;
+begin
+  OutOfMemoryError;
+end;
+
+procedure TMyExampleTests.FailMeToo;
+begin
+  OutOfMemoryError;
+end;
+
 procedure TMyExampleTests.IgnoreMe;
 begin
   Assert.IsTrue(false,'I should not have been called!');
@@ -151,6 +178,11 @@ end;
 procedure TMyExampleTests.IgnoreMeAnyway;
 begin
   Assert.IsTrue(false,'I should not have been called!');
+end;
+
+procedure TMyExampleTests.IgnoreMeCauseImWrong;
+begin
+  Abort;
 end;
 
 procedure TMyExampleTests.Setup;

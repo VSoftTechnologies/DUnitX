@@ -33,8 +33,10 @@ interface
 uses
   {$IFDEF USE_NS}
   System.Rtti,
+  System.SysUtils,
   {$ELSE}
   Rtti,
+  SysUtils,
   {$ENDIF}
   DUnitX.Types;
 
@@ -186,6 +188,22 @@ type
     property Count : Cardinal read FCount;
   end;
 
+  /// <summary>
+  ///   This attribute marks a method as a test method which will raise an exception.
+  /// </summary>
+  /// <remarks>
+  ///   If [WillRaise(ERangeError)] is used then the test will fail if it
+  ///   does not raise an ERangeError.
+  /// </remarks>
+  WillRaiseAttribute = class(TCustomAttribute)
+  private
+    FExpectedException : ExceptClass;
+    FExceptionInheritance: TExceptionInheritance;
+  public
+    constructor Create(AExpectedException : ExceptClass; const AInheritance : TExceptionInheritance = exExact);
+    property ExpectedException : ExceptClass read FExpectedException;
+    property ExceptionInheritance : TExceptionInheritance read FExceptionInheritance;
+  end;
 
   /// <summary>
   ///   Internal Structure used for those implementing CustomTestCase or
@@ -374,6 +392,14 @@ end;
 constructor MaxTimeAttribute.Create(const AMaxTime : Cardinal);
 begin
   FMaxTime := AMaxTime;
+end;
+
+{ WillRaiseAttribute }
+
+constructor WillRaiseAttribute.Create(AExpectedException: ExceptClass; const AInheritance: TExceptionInheritance);
+begin
+  FExpectedException := AExpectedException;
+  FExceptionInheritance := AInheritance;
 end;
 
 end.

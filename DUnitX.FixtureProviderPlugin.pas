@@ -85,7 +85,8 @@ uses
   DUnitX.Attributes,
   DUnitX.Utils,
   DUnitX.TestFramework,
-  DUnitX.ResStrs;
+  DUnitX.ResStrs,
+  DUnitX.Types;
 
 { TDUnitXFixtureProvider }
 
@@ -251,6 +252,7 @@ var
   testAttrib : TestAttribute;
   categoryAttrib : CategoryAttribute;
   ignoredAttrib   : IgnoreAttribute;
+  willRaiseAttrib : WillRaiseAttribute;
   testCases       : TArray<CustomTestCaseAttribute>;
   testCaseAttrib  : CustomTestCaseAttribute;
   testCaseSources : TArray<CustomTestCaseSourceAttribute>;
@@ -265,6 +267,8 @@ var
   ignoredTest     : boolean;
   ignoredReason   : string;
   maxTime         : cardinal;
+  willRaise       : ExceptClass;
+  willRaiseInherit: TExceptionInheritance;
 
   repeatCount: Cardinal;
   i: Integer;
@@ -308,10 +312,13 @@ begin
     ignoredAttrib := nil;
     testAttrib := nil;
     categoryAttrib := nil;
+    willRaiseAttrib := nil;
     isTestMethod := false;
     repeatCount := 1;
     maxTimeAttrib := nil;
     maxTime := 0;
+    willRaise := nil;
+    willRaiseInherit := exExact;
     currentFixture := fixture;
 
     meth.Code := method.CodeAddress;
@@ -388,11 +395,18 @@ begin
       ignoredReason := ignoredAttrib.Reason;
     end;
 
+    if method.TryGetAttributeOfType<WillRaiseAttribute>(willRaiseAttrib) then
+    begin
+      willRaise := willRaiseAttrib.ExpectedException;
+      willRaiseInherit := willRaiseAttrib.ExceptionInheritance;
+    end;
+
     if method.TryGetAttributeOfType<TestAttribute>(testAttrib) then
     begin
       testEnabled := testAttrib.Enabled;
       isTestMethod := true;
     end;
+
     {$IFDEF MSWINDOWS}
     if method.TryGetAttributeOfType<MaxTimeAttribute>(maxTimeAttrib) then
       maxTime := maxTimeAttrib.MaxTime;
@@ -451,7 +465,7 @@ begin
     begin
       for i := 1 to repeatCount do
       begin
-        currentFixture.AddTest(method.Name, TTestMethod(meth), FormatTestName(method.Name, i, repeatCount), category, true, ignoredTest, ignoredReason, maxTime);
+        currentFixture.AddTest(method.Name, TTestMethod(meth), FormatTestName(method.Name, i, repeatCount), category, true, ignoredTest, ignoredReason, maxTime, willRaise, willRaiseInherit);
       end;
       continue;
     end;

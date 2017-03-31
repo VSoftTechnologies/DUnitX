@@ -35,10 +35,12 @@ uses
   System.Generics.Collections,
   System.TimeSpan,
   System.Rtti,
+  System.SysUtils,
   {$ELSE}
   Generics.Collections,
   TimeSpan,
   Rtti,
+  SysUtils,
   {$ENDIF}
   DUnitX.Types,
   DUnitX.Extensibility,
@@ -102,6 +104,21 @@ type
     destructor Destroy;override;
   end;
 
+  TDUnitXExceptionTest = class(TDUnitXTest, ITestExecute)
+  private
+    FExpectedException : ExceptClass;
+    FExceptionInheritance : TExceptionInheritance;
+    FRaiseContext : ITestExecuteContext;
+  protected
+    procedure RaiseMethod;
+    procedure Execute(const context : ITestExecuteContext); override;
+  public
+    constructor Create(const AFixture : ITestFixture; const AMethodName : string; const AName : string; const ACategory  : string;
+                       const AMethod : TTestMethod; const AEnabled : boolean; const AIgnored : boolean = false;
+                       const AIgnoreReason : string = ''; const AMaxTime : Cardinal = 0;
+                       AExpectedException : ExceptClass = nil; const AExceptionInheritance : TExceptionInheritance = exExact);
+  end;
+
   TDUnitXTestCase = class(TDUnitXTest, ITestExecute)
   private
     FCaseName : string;
@@ -123,10 +140,8 @@ implementation
 
 uses
   {$IFDEF USE_NS}
-  System.SysUtils,
   System.Generics.Defaults,
   {$ELSE}
-  SysUtils,
   Generics.Defaults,
   {$ENDIF}
   {$IFDEF MSWINDOWS}
@@ -376,6 +391,32 @@ procedure TDUnitXTestCase.UpdateInstance(const fixtureInstance: TObject);
 begin
   inherited;
   FInstance := fixtureInstance;
+end;
+
+{ TDUnitXExceptionTest }
+
+constructor TDUnitXExceptionTest.Create(const AFixture: ITestFixture;
+  const AMethodName, AName, ACategory: string; const AMethod: TTestMethod;
+  const AEnabled, AIgnored: boolean; const AIgnoreReason: string;
+  const AMaxTime: Cardinal; AExpectedException: ExceptClass; const AExceptionInheritance: TExceptionInheritance);
+begin
+  inherited Create(AFixture, AMethodName, AName, ACategory, AMethod, AEnabled, AIgnored, AIgnoreReason, AMaxTime);
+  FExpectedException := AExpectedException;
+  FExceptionInheritance := AExceptionInheritance;
+end;
+
+procedure TDUnitXExceptionTest.Execute(const context: ITestExecuteContext);
+begin
+  FRaiseContext := context;
+  if FExceptionInheritance = exDescendant then
+    Assert.WillRaiseDescendant(RaiseMethod, FExpectedException)
+  else
+    Assert.WillRaise(RaiseMethod, FExpectedException);
+end;
+
+procedure TDUnitXExceptionTest.RaiseMethod;
+begin
+  inherited Execute(FRaiseContext);
 end;
 
 end.
