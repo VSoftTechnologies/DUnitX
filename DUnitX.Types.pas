@@ -48,7 +48,7 @@ type
   TValueArray = array of TValue;
   {$ENDIF}
 
-
+  TExceptionInheritance = (exExact, exDescendant);
 
 implementation
 
