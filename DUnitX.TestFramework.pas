@@ -114,7 +114,7 @@ type
 const
   TLogLevelDesc : array[TLogLevel] of string = ('Info', 'Warn', 'Err');
 
-  exSame = DUnitX.Types.exSame;
+  exExact = DUnitX.Types.exExact;
   exDescendant = DUnitX.Types.exDescendant;
 
 type

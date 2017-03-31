@@ -200,7 +200,7 @@ type
     FExpectedException : ExceptClass;
     FExceptionInheritance: TExceptionInheritance;
   public
-    constructor Create(AExpectedException : ExceptClass; const AInheritance : TExceptionInheritance = exSame);
+    constructor Create(AExpectedException : ExceptClass; const AInheritance : TExceptionInheritance = exExact);
     property ExpectedException : ExceptClass read FExpectedException;
     property ExceptionInheritance : TExceptionInheritance read FExceptionInheritance;
   end;

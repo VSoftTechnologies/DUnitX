@@ -116,7 +116,7 @@ type
     constructor Create(const AFixture : ITestFixture; const AMethodName : string; const AName : string; const ACategory  : string;
                        const AMethod : TTestMethod; const AEnabled : boolean; const AIgnored : boolean = false;
                        const AIgnoreReason : string = ''; const AMaxTime : Cardinal = 0;
-                       AExpectedException : ExceptClass = nil; const AExceptionInheritance : TExceptionInheritance = exSame);
+                       AExpectedException : ExceptClass = nil; const AExceptionInheritance : TExceptionInheritance = exExact);
   end;
 
   TDUnitXTestCase = class(TDUnitXTest, ITestExecute)

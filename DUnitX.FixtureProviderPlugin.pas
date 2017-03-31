@@ -318,7 +318,7 @@ begin
     maxTimeAttrib := nil;
     maxTime := 0;
     willRaise := nil;
-    willRaiseInherit := exSame;
+    willRaiseInherit := exExact;
     currentFixture := fixture;
 
     meth.Code := method.CodeAddress;
