@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2012 Vincent Parrett                              }
+{           Copyright (C) 2017 Vincent Parrett                              }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -28,7 +28,7 @@ unit DUnitX.Tests.Example;
 
 interface
 
-{$I DUnitX.inc}
+{$I ..\DUnitX.inc}
 
 uses
   DUnitX.TestFramework,
@@ -128,26 +128,20 @@ type
   private
     FSetupCalled : boolean;
   public
-
-    [SetupFixture]
-    procedure SetupFixture;
-
     //testing constructor/destructor as fixture setup/teardown
     constructor Create;
     destructor Destroy;override;
+
+    [SetupFixture]
+    procedure SetupFixture;
   published
     procedure ATest;
-
   end;
-
 
 implementation
 
 uses
   DUnitX.DUnitCompatibility;
-
-{ TMyExampleTests }
-
 
 procedure TMyExampleTests.DontCallMe;
 begin
@@ -213,7 +207,6 @@ begin
   Assert.Pass;
 end;
 
-
 procedure TMyExampleTests.TestTwo;
 var
   x : TMyExampleTests;
@@ -238,11 +231,9 @@ begin
   x.Free;
 end;
 
-{ TExampleFixture2 }
-
 destructor TExampleFixture2.Destroy;
 begin
-
+  //Empty
   inherited;
 end;
 
@@ -264,8 +255,6 @@ begin
   Assert.IsTrue(FPublished_Procedures_Are_Included_As_Tests_Called);
 end;
 
-{ TExampleFixture3 }
-
 procedure TExampleFixture3.ATest;
 begin
   Assert.IsTrue(FSetupCalled);
@@ -278,7 +267,7 @@ end;
 
 destructor TExampleFixture3.Destroy;
 begin
-
+  //Empty
   inherited;
 end;
 
@@ -306,4 +295,5 @@ initialization
   TDUnitX.RegisterTestFixture(TMyExampleTests);
   TDUnitX.RegisterTestFixture(TExampleFixture2);
   TDUnitX.RegisterTestFixture(TExampleFixture3);
+
 end.

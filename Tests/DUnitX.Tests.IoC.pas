@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2012 Vincent Parrett                              }
+{           Copyright (C) 2017 Vincent Parrett                              }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -25,6 +25,8 @@
 {***************************************************************************}
 
 unit DUnitX.Tests.IoC;
+
+{$I ..\DUnitX.inc}
 
 interface
 
@@ -77,8 +79,6 @@ type
   protected
     procedure Bar;
   end;
-
-{ TDUnitX_IoCTests }
 
 procedure TDUnitX_IoCTests.Setup;
 begin
@@ -164,8 +164,6 @@ begin
 end;
 {$ENDIF}
 
-{ TFoo }
-
 procedure TFoo.Bar;
 begin
   Write('Bar');
@@ -173,4 +171,5 @@ end;
 
 initialization
   TDUnitX.RegisterTestFixture(TDUnitX_IoCTests);
+
 end.
