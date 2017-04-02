@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2012 Vincent Parrett                              }
+{           Copyright (C) 2017 Vincent Parrett                              }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -40,96 +40,141 @@ type
   published
     [Test]
     procedure Pass_Throws_ETestPass_Exception;
+
     [Test]
     procedure Pass_Throws_ETestPass_Exception_With_Message;
+
     [Test]
     procedure Fail_Throws_ETestFailure_Exception;
+
     [Test]
     procedure Fail_Throws_ETestFailure_Exception_With_Message;
+
     [Test]
     procedure Fail_Throws_ETestFailure_Exception_With_Return_Address_Reference;
+
     [Test]
     procedure Fail_Throws_ETestFailure_Exception_With_Caller_Address_Reference;
+
     [Test]
     procedure AreEqual_String_Throws_No_Exception_When_Values_Are_Equal;
+
     [Test]
     procedure AreEqual_Integer_Throws_No_Exception_When_Values_Are_Equal;
+
     [Test]
     procedure AreEqual_Integer_Throws_ETestFailure_When_Values_Are_NotEqual;
+
     [Test]
     procedure AreEqual_Extended_Throws_No_Exception_When_Values_Are_Equal;
+
     [Test]
     procedure AreEqual_Extended_Throws_ETestFailure_When_Values_Are_NotEqual;
+
     [Test]
     procedure AreEqual_Double_Throws_No_Exception_When_Values_Are_Equal;
+
     [Test]
     procedure AreEqual_Double_Throws_ETestFailure_When_Values_Are_NotEqual;
+
     [Test]
     procedure AreEqual_GUID_Throws_No_Exception_When_Values_Are_Equal;
+
     [Test]
     procedure AreEqual_GUID_Throws_ETestFailure_When_Values_Are_NotEqual;
+
     [Test]
     procedure AreEqual_TClass_Throws_No_Exception_When_Classes_Are_Equal;
+
     [Test]
     procedure AreEqual_TClass_Throws_ETestFailure_When_Classes_Are_NotEqual;
+
 {$IFNDEF DELPHI_XE_DOWN}
     [Test]
     procedure AreEqual_T_Throws_No_Exception_When_Interfaces_Are_Equal;
+
     [Test]
     procedure AreEqual_T_Throws_ETestFailure_When_Interfaces_Are_NotEqual;
+
     [Test]
     procedure AreEqual_T_Throws_ETestFailure_When_Interfaces_Are_Nil;
+
     [Test]
     procedure AreEqual_T_Throws_No_Exception_When_Objects_Are_Equal;
+
     [Test]
     procedure AreEqual_T_Throws_ETestFailure_When_Objects_Are_NotEqual;
+
     [Test]
     procedure AreEqual_T_Throws_ETestFailure_When_Objects_Are_Nil;
 {$ENDIF}
+
     [Test]
     procedure AreEqualMemory_Throws_No_Exception_When_Pointers_Are_Equal;
+
     [Test]
     procedure AreEqualMemory_Throws_ETestFailure_When_Pointers_Are_NotEqual;
+
     [Test]
     procedure AreEqual_String_Throws_ETestFailureStrCompare_When_Values_Are_NotEqual_Ex;
+
     [Test]
     procedure AreEqual_Throws_No_Exception_When_Values_Are_Exactly_Equal;
+
     [Test]
     procedure AreNotEqual_Integer_Throws_No_Exception_When_Values_Are_NotEqual;
+
     [Test]
     procedure AreNotEqual_Integer_Throws_Exception_When_Values_Are_Equal;
+
     [Test]
     procedure AreNotEqual_GUID_Throws_No_Exception_When_Values_Are_NotEqual;
+
     [Test]
     procedure AreNotEqual_GUID_Throws_Exception_When_Values_Are_Equal;
+
     [Test]
     procedure WillRaise_Without_Exception_Class_Will_Capture_Any_Exception;
+
     [Test]
     procedure WillRaiseWithMessage_Exception_And_Message_Will_Check_ExceptionClass_And_Exception_Message;
+
     [Test]
     procedure WillRaiseWithMessage_Without_Exception_Class_And_Message_Will_Capture_Any_Exception;
+
     [Test]
     procedure WillRaiseWithMessage_Without_Exception_Class_With_Message_Will_Capture_Any_Exception_With_Message;
+
     [Test]
     procedure WillRaiseWithMessage_Exception_Not_Thrown_Throws_ETestFailure_Exception;
+
     [Test]
     procedure WillRaiseDescenadant_With_NonDescendingClass;
+
     [Test]
     procedure WillRaiseDescenadant_With_DescendingClass;
+
     [Test]
     procedure WillRaiseDescenadant_With_ExactClass;
+
     [Test]
     procedure WillRaiseAny;
+
     [Test]
     procedure WillRaiseAny_NoExecption;
+
     [Test]
     procedure WillNotRaise_With_ExactClass_Positive;
+
     [Test]
     procedure WillNotRaise_With_ExactClass_Negative;
+
     [Test]
     procedure WillNotRaise_With_DescendingClass_Positive;
+
     [Test]
     procedure WillNotRaise_With_DescendingClass_Negative;
+
     [Test]
     procedure WillNotRaise_With_NoClass;
 
@@ -160,7 +205,8 @@ type
     [Test]
     [TestCase( 'substring', 'a str,a string,false' )]
     [TestCase( 'substring - case sensitive', 'a str,a string,true' )]
-    procedure StartsWith_SubString_Is_At_The_Start__Of_String( const subString, theString: string; caseSensitive: boolean );
+    procedure StartsWith_SubString_Is_At_The_Start_Of_String(const subString, theString: string; caseSensitive: boolean);
+
     [Test]
     [TestCase( 'empty substring', ',a string,false' )]
     [TestCase( 'empty substring - case sensitive', ',a string,true' )]
@@ -177,10 +223,11 @@ type
     [Test]
     [TestCase( 'substring', 'ing,a string,false' )]
     [TestCase( 'substring - case sensitive', 'ing,a string,true' )]
+    procedure EndsWith_SubString_Is_At_The_End_Of_String( const subString, theString: string; caseSensitive: boolean );
+
+    [Test]
     [TestCase( 'empty substring', ',a string,false' )]
     [TestCase( 'empty substring - case sensitive', ',a string,true' )]
-    procedure EndsWith_SubString_Is_At_The_End__Of_String( const subString, theString: string; caseSensitive: boolean );
-    [Test]
     [TestCase( 'empty string', 'substring,,false' )]
     [TestCase( 'empty string - case sensitive', 'substring,,true' )]
     [TestCase( 'at start of string', 'at the,at the end if the substring,false' )]
@@ -190,6 +237,7 @@ type
     [TestCase( 'not in the string', 'something else,the substring is not here,false' )]
     [TestCase( 'not in the string - case sensitive', 'something else,the substring is not here,true' )]
     procedure EndsWith_SubString_Is_Not_At_End( const subString, theString: string; caseSensitive: boolean );
+
     [Test]
     procedure IgnoreCaseDefault;
   end;
@@ -931,7 +979,7 @@ begin
     end, ETestFailure);
 end;
 
-procedure TTestsAssert.StartsWith_SubString_Is_At_The_Start__Of_String( const subString, theString: string; caseSensitive: boolean );
+procedure TTestsAssert.StartsWith_SubString_Is_At_The_Start_Of_String(const subString, theString: string; caseSensitive: boolean);
 begin
   Assert.WillNotRaise(
     procedure
@@ -949,7 +997,7 @@ begin
     end, ETestFailure);
 end;
 
-procedure TTestsAssert.EndsWith_SubString_Is_At_The_End__Of_String( const subString, theString: string; caseSensitive: boolean );
+procedure TTestsAssert.EndsWith_SubString_Is_At_The_End_Of_String(const subString, theString: string; caseSensitive: boolean);
 begin
   Assert.WillNotRaise(
     procedure
