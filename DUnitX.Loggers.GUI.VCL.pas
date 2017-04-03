@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2016 Vincent Parrett                              }
+{           Copyright (C) 2017 Vincent Parrett                              }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -60,6 +60,7 @@ uses
   Vcl.StdCtrls,
   Vcl.Menus,
   Vcl.ActnPopup,
+  Vcl.XPMan,
   System.Generics.Defaults,
   System.Generics.Collections,
   System.IniFiles,
@@ -87,6 +88,7 @@ uses
   StdCtrls,
   Menus,
   ActnPopup,
+  XPMan,
   Generics.Defaults,
   Generics.Collections,
   IniFiles,
@@ -171,6 +173,18 @@ type
     itmCopyExpected: TMenuItem;
     itmCopyActual: TMenuItem;
     pgResults: TProgressBar;
+    txtStatus: TLabel;
+    pnlSummary: TPanel;
+    lblIgnored: TLabel;
+    lblPassed: TLabel;
+    txtPassed: TLabel;
+    txtIgnored: TLabel;
+    lblFailed: TLabel;
+    txtFailed: TLabel;
+    lblErrored: TLabel;
+    txtErrored: TLabel;
+    lblMemLeak: TLabel;
+    txtMemLeak: TLabel;
     procedure actTestsUnselectAllExecute(Sender: TObject);
     procedure actCompareExecute(Sender: TObject);
     procedure actCopyActualExecute(Sender: TObject);
@@ -187,12 +201,14 @@ type
     procedure edtFilterRightButtonClick(Sender: TObject);
     procedure edtFilterKeyPress(Sender: TObject; var Key: Char);
     procedure FormCreate(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormShow(Sender: TObject);
     procedure tvwTestsCreateNodeClass(Sender: TCustomTreeView; var NodeClass: TTreeNodeClass);
     procedure tvwTestsKeyPress(Sender: TObject; var Key: Char);
     procedure tvwTestsMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure tvwResultsChange(Sender: TObject; Node: TTreeNode);
     procedure tvwResultsCreateNodeClass(Sender: TCustomTreeView; var NodeClass: TTreeNodeClass);
+    procedure tvwResultsMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
   type
@@ -220,11 +236,11 @@ type
     procedure UpdateFormActions;
     function GetSelectedResultsNode: TResultNode;
     function GetComparableResultsNode: TResultNode;
-
-    function GetRootNode(const nodeType : TTestResultType) : TTreeNode;
-
+    function GetRootNode(const nodeType : TTestResultType): TTreeNode;
+    procedure UpdateGUIForComplete(const RunResults: IRunResults);
     procedure UpdateRootNodeCaption(const nodeType : TTestResultType);
-
+    procedure UpdateGUIForRun(const TestCount: integer);
+    procedure UpdateGUIForProgress(const CurrTestCount: integer; const CurrTestName: string);
   protected
     procedure OnBeginTest(const threadId: TThreadID; const Test: ITestInfo);
     procedure OnEndSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
@@ -318,6 +334,8 @@ type
 
 procedure Run;
 begin
+  TDUnitX.CheckCommandLine;
+
   Application.Initialize;
   Application.CreateForm(TGUIVCLTestRunner, GUIVCLTestRunner);
   Application.Run;
@@ -435,11 +453,14 @@ function TGUIVCLTestRunner.GetRootNode(const nodeType: TTestResultType): TTreeNo
 begin
   if FRootNodes[nodeType] = nil then
   begin
-    FRootNodes[nodeType] := tvwResults.Items.Add(nil, '');
-    FRootNodes[nodeType].ImageIndex := cTestResultImageMap[nodeType];
-    FRootNodes[nodeType].SelectedIndex :=   FRootNodes[nodeType].ImageIndex;
+    if nodeType = TTestResultType.Pass then
+      Result := tvwResults.Items.Add(nil, '')
+    else Result := tvwResults.Items.AddFirst(nil, '');
+    Result.ImageIndex := cTestResultImageMap[nodeType];
+    Result.SelectedIndex := Result.ImageIndex;
+    FRootNodes[nodeType] := Result;
   end;
-  result := FRootNodes[nodeType];
+  Result := FRootNodes[nodeType];
 end;
 
 function TGUIVCLTestRunner.GetSelectedResultsNode: TResultNode;
@@ -466,9 +487,11 @@ begin
     );
 
     TDUnitX.Filter := TNameFilter.Create(StrList);
+    UpdateGUIForRun(StrList.Count);
   finally
     StrList.Free;
   end;
+
   RunExecute;
 end;
 
@@ -477,6 +500,8 @@ begin
   if tvwTests.Selected <> nil then
   begin
     TDUnitX.Filter := TNameFilter.Create(tvwTests.Selected.Text);
+    UpdateGUIForRun(1);
+
     RunExecute;
   end;
 end;
@@ -569,6 +594,11 @@ begin
   FTestBookmarkList := TTestBookmarkList.Create;
 
   Self.Caption := Format(SApplicationName, [ExtractFileName(ParamStr(0))]);
+  Application.Title := Self.Caption;
+
+  txtStatus.Caption := SGUIStatusIdle;
+  txtStatus.Visible := True;
+  pnlSummary.Visible := False;
 
   pgeResults.ActivePageIndex := 0;
 end;
@@ -587,7 +617,8 @@ end;
 
 procedure TGUIVCLTestRunner.OnBeginTest(const threadId: TThreadID; const Test: ITestInfo);
 begin
-  //Empty
+  UpdateGUIForProgress(pgResults.Position + 1, Test.FullName);
+  Application.ProcessMessages;
 end;
 
 procedure TGUIVCLTestRunner.OnEndSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
@@ -671,10 +702,8 @@ begin
 end;
 
 procedure TGUIVCLTestRunner.OnTestingEnds(const RunResults: IRunResults);
-
-  
 begin
-//Empty
+  UpdateGUIForComplete(RunResults);
 end;
 
 procedure TGUIVCLTestRunner.OnTestingStarts(const threadId: TThreadID; testCount, testActiveCount: Cardinal);
@@ -702,7 +731,7 @@ begin
     ParentNode := ResultNode
   else
   begin
-    ParentNode := ResultNode.Owner.AddChild(ResultNode, Test.Message);
+    ParentNode := ResultNode.Owner.AddChild(ResultNode, ReplaceStr(Test.Message, #13#10, ' '));
     ParentNode.ImageIndex := ResultNode.ImageIndex;
     ParentNode.SelectedIndex := ParentNode.ImageIndex;
   end;
@@ -728,67 +757,75 @@ var
 begin
   testResult := Test.ResultType;
 
-  if Test.QueryInterface(ITestError, Error) = 0 then
-  begin
-    case testResult of
-      TTestResultType.Failure:
-      begin
-      	//Not sure if this is correct behavior - the no assertions is generated by an option to fail test. 
-        if Test.Message = SNoAssertions then
-	begin
-          ParentNode := GetRootNode(TTestResultType.Warning);
-	  testResult := TTestResultType.Warning;
-	end
-        else ParentNode := GetRootNode(TTestResultType.Failure);
+  tvwResults.Items.BeginUpdate;
+  try
+    if Test.QueryInterface(ITestError, Error) = 0 then
+    begin
+      case testResult of
+        TTestResultType.Failure:
+        begin
+          //Not sure if this is correct behavior - the no assertions is generated by an option to fail test.
+          if Test.Message = SNoAssertions then
+          begin
+            ParentNode := GetRootNode(TTestResultType.Warning);
+            testResult := TTestResultType.Warning;
+          end
+          else ParentNode := GetRootNode(TTestResultType.Failure);
+        end;
+        TTestResultType.Error     : ParentNode := GetRootNode(TTestResultType.Error);
+        TTestResultType.MemoryLeak: ParentNode := GetRootNode(TTestResultType.MemoryLeak);
+      else
+        raise Exception.Create('Passing/ignored test implements ITestError!');
       end;
-      TTestResultType.Error     : ParentNode := GetRootNode(TTestResultType.Error);
-      TTestResultType.MemoryLeak: ParentNode := GetRootNode(TTestResultType.MemoryLeak);
+
+      Node := tvwResults.Items.AddChild(ParentNode, Error.Test.FullName);
+      ResultNode := Node as TResultNode;
+      ResultNode.ImageIndex := -1;
+
+      if Error.IsComparable then
+      begin
+        ResultNode.IsComparable := True;
+        ResultNode.Expected := Error.Expected;
+        ResultNode.Actual := Error.Actual;
+        ResultNode.Format := Error.Format;
+        ResultNode.ImageIndex := 9;
+        ResultNode.SelectedIndex := ResultNode.ImageIndex;
+      end;
+    end
     else
-      raise Exception.Create('Passing/ignored test implements ITestError!');
+    begin
+      case testResult of
+        TTestResultType.Pass       : ParentNode := GetRootNode(TTestResultType.Pass);
+        TTestResultType.Ignored    : ParentNode := GetRootNode(TTestResultType.Ignored);
+        TTestResultType.MemoryLeak : ParentNode := GetRootNode(TTestResultType.MemoryLeak);
+      else
+        raise Exception.Create('Failing test does not implement ITestError!');
+      end;
+
+      Node := tvwResults.Items.AddChild(ParentNode, Test.Test.FullName);
+      ResultNode := Node as TResultNode;
+      ResultNode.ImageIndex := -1;
     end;
 
-    Node := tvwResults.Items.AddChild(ParentNode, Error.Test.FullName);
-    ResultNode := Node as TResultNode;
-    ResultNode.ImageIndex := -1;
-
-    if Error.IsComparable then
+    ResultNode.TestNode := GetNodeByTestFullName(Test.Test.FullName);
+    if ResultNode.ImageIndex < 0 then
     begin
-      ResultNode.IsComparable := True;
-      ResultNode.Expected := Error.Expected;
-      ResultNode.Actual := Error.Actual;
-      ResultNode.Format := Error.Format;
-      ResultNode.ImageIndex := 9;
+      ResultNode.ImageIndex := ResultNode.Parent.ImageIndex;
       ResultNode.SelectedIndex := ResultNode.ImageIndex;
     end;
-  end
-  else
-  begin
-    case testResult of
-      TTestResultType.Pass   : ParentNode := GetRootNode(TTestResultType.Pass);
-      TTestResultType.Ignored: ParentNode := GetRootNode(TTestResultType.Ignored);
-    else
-      raise Exception.Create('Failing test does not implement ITestError!');
-    end;
 
-    Node := tvwResults.Items.AddChild(ParentNode, Test.Test.FullName);
-    ResultNode := Node as TResultNode;
-    ResultNode.ImageIndex := -1;
+    ProcessMessagesForNode(ResultNode, Test);
+    SetNodeTestResult(ResultNode.TestNode, ResultNode.ImageIndex);
+    UpdateRootNodeCaption(testResult);
+    ParentNode.Expand(False);
+    ResultNode.Expand(True);
+
+    if tvwResults.Items.Count > 0 then
+      tvwResults.TopItem := tvwResults.Items[0];
+  finally
+    tvwResults.Items.EndUpdate;
   end;
-
-  ResultNode.TestNode := GetNodeByTestFullName(Test.Test.FullName);
-  if ResultNode.ImageIndex < 0 then
-  begin
-    ResultNode.ImageIndex := ResultNode.Parent.ImageIndex;
-    ResultNode.SelectedIndex := ResultNode.ImageIndex;
-  end;
-
-  ProcessMessagesForNode(ResultNode, Test);
-  SetNodeTestResult(ResultNode.TestNode, ResultNode.ImageIndex);
-  UpdateRootNodeCaption(testResult);
-  ParentNode.Expand(False);
-  pgResults.Position := pgResults.Position + 1;
-  tvwResults.Refresh;
-
+  Application.ProcessMessages;
 end;
 
 procedure TGUIVCLTestRunner.LoadTests;
@@ -817,8 +854,6 @@ begin
   end;
 
   stsMain.Panels[0].Text := Format(STestsFound, [tvwTests.Items.Count]);
-  pgResults.Max := tvwTests.Items.Count;
-  pgResults.Position := 0;
 
   UpdateFormActions;
 end;
@@ -832,14 +867,22 @@ begin
   Screen.Cursor := crHourGlass;
   try
     ClearResults;
+    //Make sure UI is up-to-date before entering test run
+    Application.ProcessMessages;
+
     Runner := NeedRunner;
     FLastResult := Runner.Execute;
+
+    if tvwResults.Items.Count > 0 then
+      tvwResults.TopItem := tvwResults.Items[0];
 
     tvwTests.Invalidate;
   finally
     Screen.Cursor := crDefault;
   end;
+
   FRunning := False;
+
   UpdateFormActions;
 end;
 
@@ -888,12 +931,9 @@ var
   i : TTestResultType;
 begin
   for i := Low(TTestResultType) to High(TTestResultType) do
-  begin
     FRootNodes[i] := nil;
-  end;
 
   tvwResults.Items.Clear;
-  pgResults.Position := 0;
   pgeResults.ActivePageIndex := 0;
 end;
 
@@ -906,9 +946,31 @@ begin
   end;
 end;
 
+procedure TGUIVCLTestRunner.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if (Key = VK_F9) and (Shift = []) then
+    actRun.Execute;
+end;
+
 procedure TGUIVCLTestRunner.FormShow(Sender: TObject);
 begin
   pnlResults.Width := (ClientWidth - splMain.Width) div 2;
+end;
+
+procedure TGUIVCLTestRunner.UpdateGUIForProgress(const CurrTestCount: integer; const CurrTestName: string);
+begin
+  pgResults.Position := CurrTestCount;
+  txtStatus.Caption := Format(SGUIStatusRunning, [pgResults.Position, pgResults.Max]);
+  if CurrTestName <> '' then
+    txtStatus.Caption := txtStatus.Caption + ' - ' + CurrTestName;
+end;
+
+procedure TGUIVCLTestRunner.UpdateGUIForRun(const TestCount: integer);
+begin
+  txtStatus.Visible := True;
+  pnlSummary.Visible := False;
+  pgResults.Max := TestCount;
+  UpdateGUIForProgress(0, '');
 end;
 
 procedure TGUIVCLTestRunner.Invert;
@@ -969,6 +1031,22 @@ begin
   NodeClass := TResultNode;
 end;
 
+procedure TGUIVCLTestRunner.tvwResultsMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+var
+  Node: TTreeNode;
+begin
+  if Button = mbRight then
+  begin
+    Node := tvwResults.GetNodeAt(X, Y);
+    if Node <> nil then
+    begin
+      Node.Selected := True;
+      popResults.CloseMenu;
+      popResults.Popup(Mouse.CursorPos.X, Mouse.CursorPos.Y);
+    end;
+  end;
+end;
+
 procedure TGUIVCLTestRunner.UnselectAll;
 begin
   tvwTests.IterateAll(procedure(const Node: TTreeNode; var Stop: boolean) begin SetTestNodeState(Node, tnsUnselect); end);
@@ -984,6 +1062,7 @@ begin
 
   actResultsExpandAll.Enabled := tvwResults.Items.Count > 0;
   actResultsCollapseAll.Enabled := actResultsExpandAll.Enabled;
+
   actFindInStructured.Enabled := (not FRunning) and actResultsExpandAll.Enabled;
   actFindInText.Enabled := (not FRunning) and actResultsExpandAll.Enabled;
 
@@ -991,6 +1070,19 @@ begin
 
   actCopyActual.Enabled := actCompare.Enabled;
   actCopyExpected.Enabled := actCompare.Enabled;
+
+end;
+
+procedure TGUIVCLTestRunner.UpdateGUIForComplete(const RunResults: IRunResults);
+begin
+  txtPassed.Caption := IntToStr(RunResults.PassCount);
+  txtIgnored.Caption := IntToStr(RunResults.IgnoredCount);
+  txtFailed.Caption := IntToStr(RunResults.FailureCount);
+  txtErrored.Caption := IntToStr(RunResults.ErrorCount);
+  txtMemLeak.Caption := IntToStr(RunResults.MemoryLeakCount);
+
+  txtStatus.Visible := False;
+  pnlSummary.Visible := True;
 end;
 
 procedure TGUIVCLTestRunner.UpdateRootNodeCaption(const nodeType: TTestResultType);
@@ -1000,9 +1092,8 @@ begin
   node := FRootNodes[nodeType];
 
   if node = nil then
-      exit;
+    exit;
   node.Text := Format(cRootNodeStrings[nodeType], [Node.Count]);
-
 end;
 
 procedure TGUIVCLTestRunner.WMLoadTests(var message: TMessage);
@@ -1020,7 +1111,8 @@ begin
   begin
     CmdLine := Format('"%s" "%s" "%s" /lefttitle="%s" /righttitle="%s"', [BCPath, ExpFile, ActFile, 'Expected', 'Actual']);
     CreateProcessAndWait(CmdLine);
-  end;
+  end
+  else MessageDlg('Could not find BeyondCompare in any known paths.', mtError, [mbOK], 0);
 end;
 
 class function PathUtils.CreateProcessAndWait(const CmdLine: string): boolean;
@@ -1113,9 +1205,10 @@ end;
 
 class function PathUtils.GetProgramFilesX64: string;
 begin
-  if not IsWow64 then
+  if IsWow64 then
     Result := IncludeTrailingPathDelimiter(GetEnvironmentVariable('ProgramW6432'))
-  else Result := '';
+  else
+    Result := '';
 end;
 
 class function PathUtils.GetProgramFilesX86: string;

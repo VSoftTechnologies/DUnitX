@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2015 Vincent Parrett & Contributors               }
+{           Copyright (C) 2017 Vincent Parrett & Contributors               }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -38,8 +38,12 @@ resourcestring
   SUnexpectedErrorStr = 'Expected %s but got %s %s';
   SUnexpectedErrorDbl = 'Expected %g but got %g %s';
   SUnexpectedErrorGUID = 'Expected %s but got %s %s';
+  SUnexpectedErrorStream = 'Streams are not equal %s';
   SNotEqualErrorStr = 'Expected %s is not equal to actual %s %s';
   SMemoryValuesNotEqual = 'Memory values are not equal. ';
+  SFileDoesNotExist = 'File [%s] does not exist';
+  SFileDoesExist = 'File [%s] does exist';
+  SFileUnexpectedErrorCreation = 'Expected creation datetime [%s] but got [%s] %s';
   SEqualsErrorExt = '%g equals actual %g %s';
   SEqualsErrorStr = '[%s] is equal to [%s] %s';
   SEqualsErrorStr2 = 'Expected %s equals actual %s %s';
@@ -47,6 +51,7 @@ resourcestring
   SEqualsErrorDbl = '%g equals actual %g %s';
   SEqualsErrorObj = 'Object [%s] Equals Object [%s] %s';
   SEqualsErrorGUID = 'Expected %s equals actual %s %s';
+  SEqualsErrorStream = 'Streams are equal %s';
   SEqualsErrorIntf = 'references are the same. %s';
   SMemoryValuesEqual = 'Memory values are equal. ';
   SNotEqualErrorIntf = 'references are Not the same. %s';
@@ -59,6 +64,7 @@ resourcestring
   SVarNotEmpty = 'Variant is Not empty. %s';
   SIsFalseError = 'Condition is True when False expected. %s';
   SListEmpty = 'List is Empty when Not empty expected. %s';
+  SStrEmpty = 'String is Empty. %s';
   SVarEmpty = 'Variant is Empty. %s';
   SIntfNil = 'Interface is Nil when not nil expected. %s';
   SPointerNil = 'Pointer is Nil when not Nil expected. %s';
@@ -161,6 +167,9 @@ resourcestring
   SOperationTimedOut = 'Operation Timed Out';
 
   SCouldNotFindResultsForTest = 'Could not find results for test.';
+
+  SGUIStatusIdle = 'Idle';
+  SGUIStatusRunning = 'Running (%d of %d)';
 
 implementation
 
