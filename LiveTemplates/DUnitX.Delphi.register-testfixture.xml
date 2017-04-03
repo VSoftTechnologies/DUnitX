@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<codetemplate xmlns="http://schemas.borland.com/Delphi/2005/codetemplates" version="1.0.0">
+	<template name="dxrtf" invoke="auto">
+		<description>Expand to TDUnitX.RegisterTestFixture</description>
+		<author>DUnitX Group</author>
+        <point name="testfixture">
+            <text>
+                TestFixtureClassName
+            </text>
+            <hint>
+                Class name of the test fixture to register
+            </hint>
+        </point>
+		<code language="Delphi" delimiter="|">
+			<![CDATA[TDUnitX.RegisterTestFixture(|testfixture|);|end|]]>
+		</code>
+	</template>
+</codetemplate>

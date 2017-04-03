@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2015 Vincent Parrett & Contributors               }
+{           Copyright (C) 2017 Vincent Parrett & Contributors               }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -152,6 +152,10 @@ begin
   stopwatch := TStopWatch.Create;
   stopwatch.Reset;
   stopwatch.Start;
+
+  //Not sure why this was removed in previous revision, but it causes W1036 as
+  //not being initialized if not present.
+  elapsedTime := 0;
 
   if Terminated then
      exit;
