@@ -1,9 +1,10 @@
 object GUIVCLTestRunner: TGUIVCLTestRunner
   Left = 0
   Top = 0
+  ActiveControl = edtFilter
   Caption = 'DUnitX'
-  ClientHeight = 466
-  ClientWidth = 964
+  ClientHeight = 554
+  ClientWidth = 1021
   Color = clWhite
   Constraints.MinHeight = 480
   Constraints.MinWidth = 640
@@ -13,26 +14,28 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
+  KeyPreview = True
   OldCreateOrder = False
   Position = poScreenCenter
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnKeyDown = FormKeyDown
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object pnlClient: TPanel
     Left = 0
     Top = 0
-    Width = 964
-    Height = 447
+    Width = 1021
+    Height = 535
     Align = alClient
     TabOrder = 0
     object splMain: TSplitter
-      Left = 545
+      Left = 507
       Top = 1
       Width = 5
-      Height = 445
+      Height = 533
       Align = alRight
       Color = clBtnFace
       ParentColor = False
@@ -41,16 +44,16 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
     object pnlTests: TPanel
       Left = 1
       Top = 1
-      Width = 544
-      Height = 445
+      Width = 506
+      Height = 533
       Align = alClient
       Constraints.MinWidth = 300
       TabOrder = 0
       object tvwTests: TTreeView
         Left = 1
         Top = 118
-        Width = 542
-        Height = 326
+        Width = 504
+        Height = 414
         Hint = 'Hierarchy of test cases. Checked test cases will be run.'
         Align = alClient
         BorderStyle = bsNone
@@ -81,7 +84,7 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
       object tbrTests: TActionToolBar
         Left = 1
         Top = 37
-        Width = 542
+        Width = 504
         Height = 54
         ActionManager = ActionManager
         Caption = 'tbrTests'
@@ -99,7 +102,7 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
       object pnlFilter: TPanel
         Left = 1
         Top = 91
-        Width = 542
+        Width = 504
         Height = 27
         Align = alTop
         BevelOuter = bvNone
@@ -107,7 +110,7 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
         ParentColor = True
         TabOrder = 2
         DesignSize = (
-          542
+          504
           27)
         object lblFilter: TLabel
           Left = 8
@@ -120,7 +123,7 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
         object edtFilter: TButtonedEdit
           Left = 38
           Top = 3
-          Width = 504
+          Width = 466
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           Images = ActionImages
@@ -134,7 +137,7 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
       object pnlTestsTop: TPanel
         Left = 1
         Top = 1
-        Width = 542
+        Width = 504
         Height = 36
         Align = alTop
         BevelOuter = bvNone
@@ -240,19 +243,22 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
       end
     end
     object pnlResults: TPanel
-      Left = 550
+      Left = 512
       Top = 1
-      Width = 413
-      Height = 445
+      Width = 508
+      Height = 533
       Align = alRight
       BevelOuter = bvNone
       Constraints.MinWidth = 200
       TabOrder = 1
+      DesignSize = (
+        508
+        533)
       object pgeResults: TPageControl
         Left = 0
         Top = 36
-        Width = 413
-        Height = 409
+        Width = 508
+        Height = 497
         ActivePage = tabStructured
         Align = alClient
         TabOrder = 0
@@ -262,27 +268,28 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
           object tvwResults: TTreeView
             Left = 0
             Top = 26
-            Width = 405
-            Height = 357
-            Hint = 'Hierarchy of test cases. Checked test cases will be run.'
+            Width = 500
+            Height = 445
+            Hint = 'Results of test cases'
             Align = alClient
             BorderStyle = bsNone
             BorderWidth = 4
             HideSelection = False
             Images = ResultImages
             Indent = 19
-            PopupMenu = popResults
             ReadOnly = True
+            RightClickSelect = True
             RowSelect = True
             StateImages = ResultImages
             TabOrder = 0
             OnChange = tvwResultsChange
             OnCreateNodeClass = tvwResultsCreateNodeClass
+            OnMouseDown = tvwResultsMouseDown
           end
           object tbrResults: TActionToolBar
             Left = 0
             Top = 0
-            Width = 405
+            Width = 500
             Height = 26
             ActionManager = ActionManager
             Caption = 'tbrResults'
@@ -304,8 +311,8 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
           object pnlText: TPanel
             Left = 0
             Top = 0
-            Width = 405
-            Height = 383
+            Width = 500
+            Height = 471
             Align = alClient
             BevelOuter = bvNone
             Color = clWhite
@@ -318,8 +325,8 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
             object rchText: TRichEdit
               Left = 4
               Top = 4
-              Width = 397
-              Height = 375
+              Width = 492
+              Height = 463
               Align = alClient
               BevelInner = bvNone
               BevelOuter = bvNone
@@ -343,13 +350,16 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
       object pnlResultsTop: TPanel
         Left = 0
         Top = 0
-        Width = 413
+        Width = 508
         Height = 36
         Align = alTop
         BevelOuter = bvNone
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
+        DesignSize = (
+          508
+          36)
         object lblResultsHeader: TLabel
           Left = 36
           Top = 4
@@ -428,21 +438,151 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
             FFFF}
           Transparent = True
         end
+        object txtStatus: TLabel
+          Left = 112
+          Top = 7
+          Width = 384
+          Height = 13
+          Anchors = [akLeft, akTop, akRight]
+          AutoSize = False
+          Caption = 'Status'
+        end
+        object pnlSummary: TPanel
+          Left = 112
+          Top = 7
+          Width = 384
+          Height = 13
+          Anchors = [akLeft, akTop, akRight]
+          BevelOuter = bvNone
+          ParentColor = True
+          TabOrder = 0
+          object lblIgnored: TLabel
+            Left = 68
+            Top = 0
+            Width = 53
+            Height = 13
+            Align = alLeft
+            Caption = '   Ignored  '
+          end
+          object lblPassed: TLabel
+            Left = 0
+            Top = 0
+            Width = 40
+            Height = 13
+            Align = alLeft
+            Caption = 'Passed  '
+          end
+          object txtPassed: TLabel
+            Left = 40
+            Top = 0
+            Width = 28
+            Height = 13
+            Align = alLeft
+            Caption = '1000'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'Tahoma'
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
+          object txtIgnored: TLabel
+            Left = 121
+            Top = 0
+            Width = 28
+            Height = 13
+            Align = alLeft
+            Caption = '1000'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'Tahoma'
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
+          object lblFailed: TLabel
+            Left = 149
+            Top = 0
+            Width = 43
+            Height = 13
+            Align = alLeft
+            Caption = '   Failed  '
+          end
+          object txtFailed: TLabel
+            Left = 192
+            Top = 0
+            Width = 28
+            Height = 13
+            Align = alLeft
+            Caption = '1000'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'Tahoma'
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
+          object lblErrored: TLabel
+            Left = 220
+            Top = 0
+            Width = 51
+            Height = 13
+            Align = alLeft
+            Caption = '   Errored  '
+          end
+          object txtErrored: TLabel
+            Left = 271
+            Top = 0
+            Width = 28
+            Height = 13
+            Align = alLeft
+            Caption = '1000'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'Tahoma'
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
+          object lblMemLeak: TLabel
+            Left = 299
+            Top = 0
+            Width = 62
+            Height = 13
+            Align = alLeft
+            Caption = '   Mem Leak  '
+          end
+          object txtMemLeak: TLabel
+            Left = 361
+            Top = 0
+            Width = 28
+            Height = 13
+            Align = alLeft
+            Caption = '1000'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'Tahoma'
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
+        end
       end
       object pgResults: TProgressBar
         Left = 112
-        Top = 10
-        Width = 289
-        Height = 17
+        Top = 23
+        Width = 384
+        Height = 10
         Anchors = [akLeft, akTop, akRight]
+        Smooth = True
         TabOrder = 2
       end
     end
   end
   object stsMain: TStatusBar
     Left = 0
-    Top = 447
-    Width = 964
+    Top = 535
+    Width = 1021
     Height = 19
     Panels = <
       item

@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2015 Vincent Parrett & Contributors               }
+{           Copyright (C) 2017 Vincent Parrett & Contributors               }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -271,6 +271,12 @@
   {$UNDEF DELPHI_XE10_DOWN}
   {$UNDEF DELPHI_XE101_DOWN}
 {$ENDIF VER320}
+
+{$IFNDEF SUPPORTS_REGEX}
+  {$IFDEF USE_TREGEXPR}
+    {$DEFINE SUPPORTS_REGEX}
+  {$ENDIF}
+{$ENDIF}
 
 {$I DUnitX.Stacktrace.inc}
 {$I DUnitX.MemoryLeaks.inc}
