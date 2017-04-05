@@ -110,6 +110,7 @@ type
     class function PadString(const s: string; const totalLength: integer; const padLeft: boolean = True; padChr: Char = ' '): string;
     class function SplitString(const S, Delimiters: string): TArray<string>;
     class function Join(const values : TArray<string>; const delim : string) : string;overload;
+    class function EncodeWhitespace(const S: string): string;
   end;
 
   TListStringUtils = class
@@ -840,6 +841,29 @@ begin
   end;
 end;
 
+class function TStrUtils.EncodeWhitespace(const S: string): string;
+const
+  DELIMITER: array[boolean] of string = (#39, '');
+var
+  index: integer;
+  lastWhitespace: boolean;
+begin
+  Result := '';
+  lastWhitespace := true;
+  for index := 1 to Length(S) do
+  begin
+    if S[index] < #32 then
+    begin
+      Result := Result + DELIMITER[lastWhitespace] + '#' + IntToStr(Ord(S[index]));
+      lastWhitespace := true;
+    end
+    else begin
+      Result := Result + DELIMITER[not lastWhitespace] + S[index];
+      lastWhitespace := false;
+    end;
+  end;
+  Result := Result + DELIMITER[lastWhitespace];
+end;
 
 class function TStrUtils.Join(const values : TArray<string>; const delim: string): string;
 var

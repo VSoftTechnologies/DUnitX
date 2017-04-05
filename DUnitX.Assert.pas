@@ -85,6 +85,9 @@ type
 
     class procedure AreEqual(const expected, actual: TGUID; const message : string = '');overload;
 
+    class procedure AreEqual(const expected, actual: TStrings; const ignoreLines: array of integer; const message : string = '');overload;
+    class procedure AreEqual(const expected, actual: TStrings; const message : string = '');overload;
+
     class procedure AreEqualMemory(const expected : Pointer; const actual : Pointer; const size : Cardinal; const message : string = '');
 
     class procedure AreNotEqual(const expected : string; const actual : string; const ignoreCase : boolean; const message : string = '');overload;
@@ -231,6 +234,17 @@ type
     class procedure IsType<T>(const value : T; const message : string = '');overload;deprecated 'use inheritsfrom - istype is useless';
 {$ENDIF}
 
+    /// <summary>
+    ///   Checks that there is no difference between the given strings. If there is a difference, then
+    ///   the test will fail with extended informations about the starting position of the difference.
+    /// </summary>
+    class procedure NoDiff(const expected, actual: string; const ignoreCase : boolean; const message : string = ''); overload;
+    /// <summary>
+    ///   Checks that there is no difference between the given strings. If there is a difference, then
+    ///   the test will fail with extended informations about the starting position of the difference.
+    /// </summary>
+    class procedure NoDiff(const expected, actual: string; const message : string = ''); overload;
+
     {$IFDEF SUPPORTS_REGEX}
     class procedure IsMatch(const regexPattern : string; const theString : string; const message : string = '');
     {$ENDIF}
@@ -251,10 +265,12 @@ implementation
 
 uses
   DUnitX.ResStrs,
+  DUnitX.Utils,
   {$IFDEF SUPPORTS_REGEX}
   System.RegularExpressions,
   {$ENDIF}
   {$IFDEF USE_NS}
+  System.Generics.Collections,
   System.Generics.Defaults,
   System.Math,
   System.Rtti,
@@ -262,6 +278,7 @@ uses
   System.TypInfo,
   System.Variants;
   {$ELSE}
+  Generics.Collections,
   Generics.Defaults,
   Math,
   Rtti,
@@ -843,6 +860,45 @@ begin
     FailFmt(SIsTrueError,[message], ReturnAddress);
 end;
 
+class procedure Assert.NoDiff(const expected, actual: string; const ignoreCase : boolean; const message: string);
+const
+  DIFF_LENGTH = 10;
+var
+  lenExp, lenAct: integer;
+  strExp, strAct: string;
+  position: Integer;
+begin
+  DoAssert;
+  lenExp := Length(expected);
+  lenAct := Length(actual);
+
+  if lenExp <> lenAct then
+    FailFmt(SLengthOfStringsNotEqual + ': ' + SUnexpectedErrorInt, [lenExp, lenAct, message])
+  else begin
+    if ignoreCase then
+    begin
+      strExp := UpperCase(expected);
+      strAct := UpperCase(actual);
+    end
+    else begin
+      strExp := expected;
+      strAct := actual;
+    end;
+    for position := 1 to lenExp do
+    begin
+      if (position <= lenAct) and (strExp[position] <> strAct[position]) then
+        FailFmt(SDiffAtPosition + ': ' + SStrDoesNotMatch, [position,
+          TStrUtils.EncodeWhitespace(Copy(expected, position, DIFF_LENGTH)),
+          TStrUtils.EncodeWhitespace(Copy(actual, position, DIFF_LENGTH)), message]);
+    end;
+  end;
+end;
+
+class procedure Assert.NoDiff(const expected, actual, message: string);
+begin
+  NoDiff(expected, actual, false, message);
+end;
+
 class procedure Assert.NotImplemented;
 begin
   Assert.Fail(SNotImplemented);
@@ -1188,6 +1244,48 @@ end;
 class procedure Assert.EndsWith(const subString, theString, message: string);
 begin
   Assert.EndsWith(subString, theString, fIgnoreCaseDefault, message);
+end;
+
+class procedure Assert.AreEqual(const expected, actual: TStrings; const ignoreLines: array of integer; const message: string);
+var
+  index: Integer;
+  lineNumber: integer;
+  ignoreLinesDict: TDictionary<Integer, Boolean>;
+begin
+  DoAssert;
+  IsTrue(expected <> actual, message);
+  ignoreLinesDict := TDictionary<Integer,Boolean>.Create;
+  try
+    if (Length(ignoreLines) > 0) then
+    begin
+      for index := 0 to Length(ignoreLines)-1 do
+      begin
+        ignoreLinesDict.Add(ignoreLines[index], true);
+      end;
+    end;
+
+    if (expected.Count <> actual.Count) then
+      FailFmt(SNumberOfStringsNotEqual + ': ' + SUnexpectedErrorInt, [expected.Count, actual.Count, message], ReturnAddress);
+
+    for index := 0 to expected.Count - 1 do
+    begin
+      lineNumber := index + 1;
+      if not ignoreLinesDict.ContainsKey(lineNumber) then
+      begin
+        if (expected[index] <> actual[index]) then
+        begin
+          NoDiff(expected[index], actual[index], Format('at line %d', [lineNumber]) + ' ' + message);
+        end;
+      end;
+    end;
+  finally
+    ignoreLinesDict.Free;
+  end;
+end;
+
+class procedure Assert.AreEqual(const expected, actual: TStrings; const message: string);
+begin
+  AreEqual(expected, actual, [], message);
 end;
 
 end.
