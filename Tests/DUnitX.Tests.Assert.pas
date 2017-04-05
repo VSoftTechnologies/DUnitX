@@ -84,6 +84,12 @@ type
     procedure AreEqual_GUID_Throws_ETestFailure_When_Values_Are_NotEqual;
 
     [Test]
+    procedure AreEqual_Stream_Throws_No_Exception_When_Values_Are_Equal;
+
+    [Test]
+    procedure AreEqual_Stream_Throws_ETestFailure_When_Values_Are_NotEqual;
+
+    [Test]
     procedure AreEqual_TClass_Throws_No_Exception_When_Classes_Are_Equal;
 
     [Test]
@@ -126,9 +132,6 @@ type
 
     [Test]
     procedure AreEqualMemory_Throws_ETestFailure_When_Pointers_Are_NotEqual;
-
-    [Test]
-    procedure AreEqual_String_Throws_ETestFailureStrCompare_When_Values_Are_NotEqual_Ex;
 
     [Test]
     procedure AreEqual_Throws_No_Exception_When_Values_Are_Exactly_Equal;
@@ -252,6 +255,18 @@ type
 
     [Test]
     procedure IgnoreCaseDefault;
+
+{$IFDEF SUPPORTS_REGEX}
+    [Test]
+    [TestCase('GUID with dash', '[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12},C687683F-F25B-4F9A-A231-31C52253B6A1')]
+    [TestCase('GUID without dash', '[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12},C687683FF25B4F9AA23131C52253B6A1')]
+    procedure IsMatch_True_Will_Not_Raise(const regexPattern, theString: string);
+
+    [Test]
+    [TestCase('GUID with dash', '[0-9A-F]{8}[-]([0-9A-F]{4}[-]){3}[0-9A-F]{12},C687683F-F25B-4F9A-A231-31C52253B6A#')]
+    [TestCase('GUID without dash', '[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12},C687683FF25B4F9AA23131C52253B6A#')]
+    procedure IsMatch_False_Will_Raise_ETestFailure(const regexPattern, theString: string);
+{$ENDIF}
   end;
 
 implementation
@@ -264,7 +279,8 @@ uses
   SysUtils,
   Classes,
   {$ENDIF}
-  DUnitX.Exceptions;
+  DUnitX.Exceptions,
+  DUnitX.Assert;
 
 type
   {$M+}
@@ -286,7 +302,8 @@ type
   TImplemented = class(TInterfacedObject,IAmImplemented)
   end;
 
-{ TTestAssert }
+  //Mask to override the default AssertEx in DUnitX.TestFramework
+  Assert = class(DUnitX.Assert.Assert);
 
 procedure TTestsAssert.Fail_Throws_ETestFailure_Exception;
 begin
@@ -364,7 +381,7 @@ begin
     Assert.WillRaise(procedure begin Assert.AreNotEqual(cStr1, cStr2) end, ETestFailure);
 
     Assert.IgnoreCaseDefault := False;
-    Assert.WillRaise(procedure begin Assert.AreEqual(cStr1, cStr2) end, ETestFailureStrCompare);
+    Assert.WillRaise(procedure begin Assert.AreEqual(cStr1, cStr2) end, ETestFailure);
     Assert.WillRaise(procedure begin Assert.StartsWith(cStr1, cStr2) end, ETestFailure);
     Assert.WillRaise(procedure begin Assert.EndsWith(cStr1, cStr2) end, ETestFailure);
     Assert.WillNotRaiseAny(procedure begin Assert.AreNotEqual(cStr1, cStr2) end);
@@ -779,16 +796,46 @@ begin
     end, Exception);
 end;
 
-procedure TTestsAssert.AreEqual_String_Throws_ETestFailureStrCompare_When_Values_Are_NotEqual_Ex;
+procedure TTestsAssert.AreEqual_Stream_Throws_ETestFailure_When_Values_Are_NotEqual;
 const
-  ACTUAL_STRING = 'the brown dog jumped something';
-  EXPECTED_STRING = 'SOMETHING JUMPED THE BROWN DOG';
+  TESTSTR_STRING = 'This is a test';
+var
+  Expected: TStringStream;
+  Actual: TStringStream;
 begin
-  Assert.WillRaise(
-    procedure
-    begin
-      Assert.AreEqual(ACTUAL_STRING, EXPECTED_STRING);
-    end, ETestFailureStrCompare, Format('[%s] is Not Equal to [%s] %s', [ACTUAL_STRING, EXPECTED_STRING, '']));
+  Expected := TStringStream.Create(TESTSTR_STRING);
+  Actual := TStringStream.Create('A different value');
+  try
+    Assert.WillRaise(
+      procedure
+      begin
+        Assert.AreEqual(Expected, Actual);
+      end, ETestFailure);
+  finally
+    Expected.Free();
+    Actual.Free();
+  end;
+end;
+
+procedure TTestsAssert.AreEqual_Stream_Throws_No_Exception_When_Values_Are_Equal;
+const
+  TESTSTR_STRING = 'This is a test';
+var
+  Expected: TStringStream;
+  Actual: TStringStream;
+begin
+  Expected := TStringStream.Create(TESTSTR_STRING);
+  Actual := TStringStream.Create(TESTSTR_STRING);
+  try
+    Assert.WillNotRaise(
+      procedure
+      begin
+        Assert.AreEqual(Expected, Actual);
+      end, Exception);
+  finally
+    Expected.Free();
+    Actual.Free();
+  end;
 end;
 
 procedure TTestsAssert.AreEqual_String_Throws_No_Exception_When_Values_Are_Equal;
@@ -1137,6 +1184,25 @@ begin
     procedure
     begin
       Assert.EndsWith( subString, theString, caseSensitive );
+    end, ETestFailure);
+end;
+
+procedure TTestsAssert.IsMatch_True_Will_Not_Raise(const regexPattern, theString: string);
+begin
+  Assert.WillNotRaiseAny(
+    procedure
+    begin
+      Assert.IsMatch(regexPattern, theString);
+    end
+  );
+end;
+
+procedure TTestsAssert.IsMatch_False_Will_Raise_ETestFailure(const regexPattern, theString: string);
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.IsMatch(regexPattern, theString);
     end, ETestFailure);
 end;
 
