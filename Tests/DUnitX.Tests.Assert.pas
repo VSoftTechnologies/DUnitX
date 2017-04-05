@@ -95,6 +95,18 @@ type
     [Test]
     procedure AreEqual_TClass_Throws_ETestFailure_When_Classes_Are_NotEqual;
 
+    [Test]
+    procedure NoDiff_Throws_No_Exception_When_Strings_Are_Equal;
+
+    [Test]
+    procedure NoDiff_Throws_ETestFailure_When_Strings_Are_NotEqual;
+
+    [Test]
+    procedure AreEqual_TStrings_Throws_No_Exception_When_Strings_Are_Equal;
+
+    [Test]
+    procedure AreEqual_TStrings_Throws_ETestFailure_When_Strings_Are_NotEqual;
+
 {$IFNDEF DELPHI_XE_DOWN}
     [Test]
     procedure AreEqual_T_Throws_No_Exception_When_Interfaces_Are_Equal;
@@ -376,6 +388,62 @@ begin
   finally
     Assert.IgnoreCaseDefault := OldVal;
   end;
+end;
+
+procedure TTestsAssert.NoDiff_Throws_ETestFailure_When_Strings_Are_NotEqual;
+begin
+  Assert.WillRaiseWithMessage(procedure
+    begin
+      Assert.NoDiff('  '#8, ' ');
+    end, ETestFailure, 'Length of strings is not equal: Expected 3 but got 1 ');
+
+  Assert.WillRaiseWithMessage(procedure
+    begin
+      Assert.NoDiff('lorem ipsum', 'lorem ipsum ', 'characters');
+    end,
+    ETestFailure, 'Length of strings is not equal: Expected 11 but got 12 characters');
+
+  Assert.WillRaiseWithMessage(procedure
+    begin
+      Assert.NoDiff('lorem ipsum', 'lorem Ipsum');
+    end,
+    ETestFailure, 'Difference at position 7: [''ipsum''] does not match [''Ipsum''] ');
+
+  Assert.WillRaiseWithMessage(procedure
+    begin
+      Assert.NoDiff(#13, #10);
+    end,
+    ETestFailure, 'Difference at position 1: [#13] does not match [#10] ');
+
+  Assert.WillRaiseWithMessage(procedure
+    begin
+      Assert.NoDiff('lorem ipsum'#9' ', 'lorem'#13'ipsum'#13#10);
+    end,
+    ETestFailure, 'Difference at position 6: ['' ipsum''#9'' ''] does not match [#13''ipsum''#13#10] ');
+end;
+
+procedure TTestsAssert.NoDiff_Throws_No_Exception_When_Strings_Are_Equal;
+begin
+  Assert.WillNotRaise(procedure
+    begin
+      Assert.NoDiff('', '');
+    end);
+  Assert.WillNotRaise(procedure
+    begin
+      Assert.NoDiff(#13, #13);
+    end);
+  Assert.WillNotRaise(procedure
+    begin
+      Assert.NoDiff('abc', 'abc');
+    end);
+  Assert.WillNotRaise(procedure
+    begin
+      Assert.NoDiff('abc', 'ABC', true);
+    end);
+  Assert.WillNotRaise(procedure
+    begin
+      Assert.NoDiff('LoReM iPsUm DoLoR sIt AmEt', 'lOrEm IpSuM dOlOr SiT aMeT', true);
+    end);
 end;
 
 procedure TTestsAssert.Pass_Throws_ETestPass_Exception;
@@ -812,6 +880,64 @@ begin
     begin
       Assert.AreEqual(actualAndExpected, actualAndExpected, tolerance);
     end, Exception);
+end;
+
+procedure TTestsAssert.AreEqual_TStrings_Throws_ETestFailure_When_Strings_Are_NotEqual;
+var
+  expected, actual: TStrings;
+begin
+  expected := TStringList.Create;
+  actual := TStringList.Create;
+  try
+    expected.CommaText := '1,2,3';
+    actual.CommaText := '1,2,3,4';
+    Assert.WillRaiseWithMessage(procedure
+      begin
+        Assert.AreEqual(expected, actual);
+      end, ETestFailure, 'Number of strings is not equal: Expected 3 but got 4 ');
+
+    expected.CommaText := '"Lorem ipsum dolor sit amet","consectetur adipisici elit","sed eiusmod tempor incidunt"';
+    actual.CommaText := '"Lorem ipsum dolor sit amet","consectetur adisipici elit","sed eiusmod tempor incidunt"';
+    Assert.WillRaiseWithMessage(procedure
+      begin
+        Assert.AreEqual(expected, actual);
+      end, ETestFailure,
+      'Difference at position 16: [''pisici eli''] does not match [''sipici eli''] at line 2 ');
+  finally
+    expected.Free;
+    actual.Free;
+  end;
+end;
+
+procedure TTestsAssert.AreEqual_TStrings_Throws_No_Exception_When_Strings_Are_Equal;
+var
+  expected, actual: TStrings;
+begin
+  expected := TStringList.Create;
+  actual := TStringList.Create;
+  try
+    Assert.WillNotRaise(procedure
+      begin
+        Assert.AreEqual(expected, actual);
+      end, Exception);
+
+    expected.CommaText := '1,2,3';
+    actual.CommaText := '1,2,3';
+    Assert.WillNotRaise(procedure
+      begin
+        Assert.AreEqual(expected, actual);
+      end, Exception);
+
+    expected.CommaText := '1,2,3';
+    actual.CommaText := '1,-,3';
+    Assert.WillNotRaise(procedure
+      begin
+        Assert.AreEqual(expected, actual, [2]);
+      end, Exception);
+  finally
+    expected.Free;
+    actual.Free;
+  end;
 end;
 
 {$IFNDEF DELPHI_XE_DOWN}
