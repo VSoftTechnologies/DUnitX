@@ -1,14 +1,20 @@
 program DUnitXTest_XE;
 
-{$IFNDEF GUI}
-{$APPTYPE CONSOLE}
+{$IFDEF CI}
+  {$APPTYPE CONSOLE}
+{$ELSE}
+  {$IFNDEF GUI}
+    {$IFNDEF TESTINSIGHT}
+      {$APPTYPE CONSOLE}
+    {$ENDIF}
+  {$ENDIF}
 {$ENDIF}
 
 {$STRONGLINKTYPES ON}
 
 uses
   SysUtils,
-  DUnitX.Loggers.GUI.VCL in '..\DUnitX.Loggers.GUI.VCL.pas',
+  DUnitX.Loggers.GUI.VCL in '..\DUnitX.Loggers.GUI.VCL.pas' {GUIVCLTestRunner},
   DUnitX.Loggers.Console in '..\DUnitX.Loggers.Console.pas',
   DUnitX.Loggers.Text in '..\DUnitX.Loggers.Text.pas',
   DUnitX.MacOS.Console in '..\DUnitX.MacOS.Console.pas',
@@ -66,58 +72,70 @@ uses
   DUnitX.Tests.Inheritance in 'DUnitX.Tests.Inheritance.pas',
   DUnitX.Tests.ConsoleWriter.Base in 'DUnitX.Tests.ConsoleWriter.Base.pas',
   DUnitX.Assert in '..\DUnitX.Assert.pas',
-  DUnitX.Types in '..\DUnitX.Types.pas';
+  DUnitX.Types in '..\DUnitX.Types.pas',
+  DUnitX.FileUtils in '..\DUnitX.FileUtils.pas',
+  DUnitX.Tests.Utils in 'DUnitX.Tests.Utils.pas',
+  DUnitX.Tests.Files in 'DUnitX.Tests.Files.pas',
+  DUnitX.Exceptions in '..\DUnitX.Exceptions.pas',
+  DUnitX.Timeout in '..\DUnitX.Timeout.pas',
+  DUnitX.ResStrs in '..\DUnitX.ResStrs.pas',
+  DUnitX.Constants in '..\DUnitX.Constants.pas',
+  DUnitX.Attributes in '..\DUnitX.Attributes.pas';
 
 var
   runner : ITestRunner;
   results : IRunResults;
   logger : ITestLogger;
   nunitLogger : ITestLogger;
+
 begin
-{$IFDEF GUI}
-  DUnitX.Loggers.GUI.VCL.Run;
-  exit;
+  Assert.IgnoreCaseDefault := False;
+
+{$IFDEF CI}
+  CodeSiteManager.Enabled := False;
+{$ELSE}
+  {$IFDEF GUI}
+    DUnitX.Loggers.GUI.VCL.Run;
+    exit;
+  {$ENDIF}
+
+  {$IFDEF TESTINSIGHT}
+    TestInsight.DUnitX.RunRegisteredTests;
+    exit;
+  {$ENDIF}
 {$ENDIF}
 
   try
+    //Check command line options, will exit if invalid
     TDUnitX.CheckCommandLine;
-    //Create the runner
+    //Create the test runner
     runner := TDUnitX.CreateRunner;
+    //Tell the runner to use RTTI to find Fixtures
     runner.UseRTTI := True;
-    runner.FailsOnNoAsserts := True; //Assertions must be made during tests;
     //tell the runner how we will log things
-    logger := TDUnitXConsoleLogger.Create(false);
-    nunitLogger := TDUnitXXMLNUnitFileLogger.Create(TDUnitX.Options.XMLOutputFile);
+    //Log to the console window
+    logger := TDUnitXConsoleLogger.Create(False);
     runner.AddLogger(logger);
+    //Generate an NUnit compatible XML File
+    nunitLogger := TDUnitXXMLNUnitFileLogger.Create(TDUnitX.Options.XMLOutputFile);
     runner.AddLogger(nunitLogger);
+    runner.FailsOnNoAsserts := True; //When true, Assertions must be made during tests;
 
-    logger := nil;
-    nunitLogger := nil;
     //Run tests
     results := runner.Execute;
-    runner := nil;
-    //Let the CI Server know that something failed.
-
-    {$IFDEF CI}
     if not results.AllPassed then
       System.ExitCode := EXIT_ERRORS;
-    {$ELSE}
-    //We don;t want this happening when running under CI.
-    if TDUnitX.Options.ExitBehavior = TDUnitXExitBehavior.Pause then
-    begin
-      System.Write('Done...  Press <Enter> key to quit.');
-      System.Readln;
-    end;
-    {$ENDIF}
-    results := nil;
-
   except
     on E: Exception do
-    begin
       System.Writeln(E.ClassName, ': ', E.Message);
-      {$IFNDEF CI}
-      System.Readln;
-      {$ENDIF}
-    end;
   end;
+
+  {$IFNDEF CI}
+  //We don't want this happening when running under CI.
+  if TDUnitX.Options.ExitBehavior = TDUnitXExitBehavior.Pause then
+  begin
+    System.Write('Done...  Press <Enter> key to quit.');
+    System.Readln;
+  end;
+  {$ENDIF}
 end.

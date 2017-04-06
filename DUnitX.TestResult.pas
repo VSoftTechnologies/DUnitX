@@ -34,9 +34,11 @@ uses
   {$IFDEF USE_NS}
   System.SysUtils,
   System.Timespan,
+  System.Classes,
   {$ELSE}
   SysUtils,
   Timespan,
+  Classes,
   {$ENDIF}
   DUnitX.TestFramework,
   DUnitX.WeakReference,
