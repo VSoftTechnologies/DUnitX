@@ -89,6 +89,9 @@ resourcestring
   SStrDoesNotMatch = '[%s] does not match [%s] %s';
   SStrCannotBeEmpty = 'subString cannot be empty';
   SStrDoesNotStartWith = '[%s] does Not Start with [%s] %s';
+  SNumberOfStringsNotEqual = 'Number of strings is not equal';
+  SLengthOfStringsNotEqual = 'Length of strings is not equal';
+  SDiffAtPosition = 'Difference at position %d';
 
   SInvalidValueBool = 'Invalid value, not boolean';
   SInvalidOptionType = 'Invalid Option type - only string, integer, float, boolean, enum and sets are supported';
