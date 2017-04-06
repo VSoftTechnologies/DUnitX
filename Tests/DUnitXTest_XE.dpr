@@ -91,9 +91,7 @@ var
 begin
   Assert.IgnoreCaseDefault := False;
 
-{$IFDEF CI}
-  CodeSiteManager.Enabled := False;
-{$ELSE}
+{$IFNDEF CI}
   {$IFDEF GUI}
     DUnitX.Loggers.GUI.VCL.Run;
     exit;
