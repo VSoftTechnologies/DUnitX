@@ -52,7 +52,7 @@ type
 implementation
 
 uses
-  DUnitX.FileUtils,
+  DUnitX.Utils.Files,
   {$IFDEF USE_NS}
   System.SysUtils;
   {$ELSE}
