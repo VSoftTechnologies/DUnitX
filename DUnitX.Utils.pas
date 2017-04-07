@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2015 Vincent Parrett & Contributors               }
+{           Copyright (C) 2017 Vincent Parrett & Contributors               }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -81,8 +81,6 @@ uses
   TypInfo;
   {$ENDIF}
 
-
-
 type
   TCustomAttributeClass = class of TCustomAttribute;
 
@@ -110,11 +108,33 @@ type
     class function PadString(const s: string; const totalLength: integer; const padLeft: boolean = True; padChr: Char = ' '): string;
     class function SplitString(const S, Delimiters: string): TArray<string>;
     class function Join(const values : TArray<string>; const delim : string) : string;overload;
+  public
     class function EncodeWhitespace(const S: string): string;
+    /// <summary>Removes characters from a string</summary>
+    class function RemoveChars(const SomeStr: string; const Chars: string): string; overload;
+    /// <summary>Removes only chars from SomeStr that are in Chars.  A char array is
+    /// passed
+    ///   like this: ['A', 'B', 'C']
+    ///
+    ///   There is an overloaded version that takes a string for the second
+    ///   arg (usually easier).
+    /// </summary>
+    class function RemoveChars(const SomeStr: string; const Chars: array of char): string; overload;
   end;
 
   TListStringUtils = class
     class function ToArray(const values : TList<string>) : TArray<string>;
+  end;
+
+  TGUIDUtils = class
+    class function CleanGUIDString(const StrGUID: string; const RemoveDashes: boolean = True): string;
+    class function CreateGUID: TGUID;
+    ///<summary>Creates a GUID in a string format and optionally removes the
+    ///  dashes since there is no need for them.</summary>
+    class function CreateGUIDAsString(const RemoveDashes: boolean = True): string;
+    class function EmptyGUID: TGUID;
+    class function GUIDAsString(const GUID: TGUID; const RemoveDashes: boolean = True): string;
+    class function IsEmptyGUID(const GUID: TGUID): boolean;
   end;
 
 //  function GetElapsedTime(const ALastTick : Cardinal) : Cardinal;
@@ -556,8 +576,9 @@ type
     {$ENDREGION}
     function TryGetMethod(const AName: string; out AMethod: TRttiMethod): Boolean; overload;
 
-    //will get the first declated constructor it finds
-    function TryGetConstructor(out AMethod : TRttiMethod) : boolean;
+    // will get the first declared constructor it finds
+    function TryGetConstructor(out AMethod: TRttiMethod; const CheckAncestor:
+        boolean = false): boolean;
 
     function TryGetDestructor(out AMethod : TRttiMethod) : boolean;
 
@@ -785,9 +806,6 @@ var
   Context: TRttiContext;
   Enumerations: TDictionary<PTypeInfo, TStrings>;
 
-
-{ TAttributeUtils }
-
 class function TAttributeUtils.ContainsAttribute(const attributes: TArray<TCustomAttribute>; const AttributeClass: TCustomAttributeClass): boolean;
 begin
   result := FindAttribute(attributes,AttributeClass) <> nil;
@@ -804,7 +822,6 @@ begin
       Exit(attribute);
   end;
 end;
-
 
 class function TAttributeUtils.FindAttribute(const attributes: TArray<TCustomAttribute>; const AttributeClass: TCustomAttributeClass;
                                        var attribute: TCustomAttribute; const startIndex: integer): integer;
@@ -889,7 +906,6 @@ begin
       Result := Result + padChr;
   end;
 end;
-
 
 {$REGION 'Conversion functions'}
 type
@@ -1700,10 +1716,7 @@ begin
   end;
 end;
 
-{ TArrayHelper }
-
-class function TArrayHelper.Concat<T>(
-  const Arrays: array of TArray<T>): TArray<T>;
+class function TArrayHelper.Concat<T>(const Arrays: array of TArray<T>): TArray<T>;
 var
   i, k, LIndex, LLength: Integer;
 begin
@@ -1743,8 +1756,6 @@ begin
   result[0] := a;
   result[1] := b;
 end;
-
-{ TObjectHelper }
 
 function TObjectHelper.GetField(const AName: string): TRttiField;
 var
@@ -1866,36 +1877,31 @@ begin
 end;
 {$IFEND}
 
-function TObjectHelper.TryGetField(const AName: string;
-  out AField: TRttiField): Boolean;
+function TObjectHelper.TryGetField(const AName: string; out AField: TRttiField): Boolean;
 begin
   AField := GetField(AName);
   Result := Assigned(AField);
 end;
 
-function TObjectHelper.TryGetMember(const AName: string;
-  out AMember: TRttiMember): Boolean;
+function TObjectHelper.TryGetMember(const AName: string; out AMember: TRttiMember): Boolean;
 begin
   AMember := GetMember(AName);
   Result := Assigned(AMember);
 end;
 
-function TObjectHelper.TryGetMethod(ACodeAddress: Pointer;
-  out AMethod: TRttiMethod): Boolean;
+function TObjectHelper.TryGetMethod(ACodeAddress: Pointer; out AMethod: TRttiMethod): Boolean;
 begin
   AMethod := GetMethod(ACodeAddress);
   Result := Assigned(AMethod);
 end;
 
-function TObjectHelper.TryGetMethod(const AName: string;
-  out AMethod: TRttiMethod): Boolean;
+function TObjectHelper.TryGetMethod(const AName: string; out AMethod: TRttiMethod): Boolean;
 begin
   AMethod := GetMethod(AName);
   Result := Assigned(AMethod);
 end;
 
-function TObjectHelper.TryGetProperty(const AName: string;
-  out AProperty: TRttiProperty): Boolean;
+function TObjectHelper.TryGetProperty(const AName: string; out AProperty: TRttiProperty): Boolean;
 begin
   AProperty := GetProperty(AName);
   Result := Assigned(AProperty);
@@ -1911,10 +1917,7 @@ begin
   end;
 end;
 
-{ TRttiFieldHelper }
-
-function TRttiFieldHelper.TryGetValue(Instance: Pointer;
-  out Value: TValue): Boolean;
+function TRttiFieldHelper.TryGetValue(Instance: Pointer; out Value: TValue): Boolean;
 begin
   try
     Value := GetValue(Instance);
@@ -1924,8 +1927,6 @@ begin
     Result := False;
   end;
 end;
-
-{ TRttiInstanceTypeHelper }
 
 {$IF CompilerVersion < 23}
 function TRttiInstanceTypeHelper.GetDeclaredImplementedInterfaces: TArray<TRttiInterfaceType>;
@@ -1977,16 +1978,12 @@ begin
 end;
 {$IFEND}
 
-{ TRttiInvokableTypeHelper }
-
 {$IF DELPHI_XE2_UP}
 function TRttiInvokableTypeHelper.GetParameterCount: Integer;
 begin
   Result := Length(GetParameters());
 end;
 {$IFEND}
-
-{ TRttiMemberHelper }
 
 function TRttiMemberHelper.GetMemberIsReadable: Boolean;
 begin
@@ -2035,10 +2032,7 @@ begin
   end;
 end;
 
-{ TRttiMethodHelper }
-
-function TRttiMethodHelper.Format(const Args: array of TValue;
-  SkipSelf: Boolean): string;
+function TRttiMethodHelper.Format(const Args: array of TValue; SkipSelf: Boolean): string;
 begin
   Result := StripUnitName(Parent.Name) + '.' + Name + '(';
   if SkipSelf then
@@ -2055,8 +2049,6 @@ function TRttiMethodHelper.GetParameterCount: Integer;
 begin
   Result := Length(GetParameters());
 end;
-
-{ TRttiObjectHelper }
 
 function TRttiObjectHelper.GetAttributeOfType<T>: T;
 var
@@ -2099,10 +2091,7 @@ begin
   Result := Assigned(AAttribute);
 end;
 
-{ TRttiParameterHelper }
-
-class function TRttiParameterHelper.Equals(const Left,
-  Right: TArray<TRttiParameter>): Boolean;
+class function TRttiParameterHelper.Equals(const Left, Right: TArray<TRttiParameter>): Boolean;
 var
   i: Integer;
 begin
@@ -2120,10 +2109,7 @@ begin
   end;
 end;
 
-{ TRttiPropertyHelper }
-
-function TRttiPropertyHelper.TryGetValue(Instance: Pointer;
-  out Value: TValue): Boolean;
+function TRttiPropertyHelper.TryGetValue(Instance: Pointer; out Value: TValue): Boolean;
 begin
   try
     if IsReadable then
@@ -2141,8 +2127,7 @@ begin
   end;
 end;
 
-function TRttiPropertyHelper.TrySetValue(Instance: Pointer;
-  Value: TValue): Boolean;
+function TRttiPropertyHelper.TrySetValue(Instance: Pointer; Value: TValue): Boolean;
 var
   LValue: TValue;
 begin
@@ -2152,8 +2137,6 @@ begin
     SetValue(Instance, LValue);
   end;
 end;
-
-{ TRttiTypeHelper }
 
 function TRttiTypeHelper.GetAsInterface: TRttiInterfaceType;
 begin
@@ -2200,8 +2183,7 @@ begin
     FindType(args[i], Result[i]);
 end;
 
-function TRttiTypeHelper.GetGenericTypeDefinition(
-  const AIncludeUnitName: Boolean = True): string;
+function TRttiTypeHelper.GetGenericTypeDefinition(const AIncludeUnitName: Boolean = True): string;
 var
   i: Integer;
   args: TStringDynArray;
@@ -2449,21 +2431,31 @@ begin
     Result := nil;
 end;
 
-function TRttiTypeHelper.TryGetConstructor(out AMethod: TRttiMethod): boolean;
-var
-  methods : TArray<TRttiMethod>;
-  method : TRttiMethod;
-begin
-  result := False;
-  methods := GetDeclaredMethods;
-  for method in methods do
+function TRttiTypeHelper.TryGetConstructor(out AMethod: TRttiMethod; const CheckAncestor: boolean = false): boolean;
+
+  function CheckMethods(const methods: TArray<TRttiMethod>): boolean;
+  var
+    method : TRttiMethod;
   begin
-    if method.IsConstructor and (Length(method.GetParameters) = 0) then
+    result := false;
+
+    for method in methods do
     begin
-      AMethod := method;
-      Exit(true);
+      if method.IsConstructor and (Length(method.GetParameters) = 0) then
+      begin
+        AMethod := method;
+        Exit(true);
+      end;
     end;
   end;
+
+begin
+  //Look at current class first
+  result := CheckMethods(GetDeclaredMethods);
+
+  //Look at ancestors
+  if (not result) and (CheckAncestor) then
+    result := CheckMethods(GetMethods);
 end;
 
 function TRttiTypeHelper.TryGetDestructor(out AMethod: TRttiMethod): boolean;
@@ -2483,49 +2475,41 @@ begin
   end;
 end;
 
-function TRttiTypeHelper.TryGetField(const AName: string;
-  out AField: TRttiField): Boolean;
+function TRttiTypeHelper.TryGetField(const AName: string; out AField: TRttiField): Boolean;
 begin
   AField := GetField(AName);
   Result := Assigned(AField);
 end;
 
-function TRttiTypeHelper.TryGetMethod(ACodeAddress: Pointer;
-  out AMethod: TRttiMethod): Boolean;
+function TRttiTypeHelper.TryGetMethod(ACodeAddress: Pointer; out AMethod: TRttiMethod): Boolean;
 begin
   AMethod := GetMethod(ACodeAddress);
   Result := Assigned(AMethod);
 end;
 
-function TRttiTypeHelper.TryGetMember(const AName: string;
-  out AMember: TRttiMember): Boolean;
+function TRttiTypeHelper.TryGetMember(const AName: string; out AMember: TRttiMember): Boolean;
 begin
   AMember := GetMember(AName);
   Result := Assigned(AMember);
 end;
 
-function TRttiTypeHelper.TryGetMethod(const AName: string;
-  out AMethod: TRttiMethod): Boolean;
+function TRttiTypeHelper.TryGetMethod(const AName: string; out AMethod: TRttiMethod): Boolean;
 begin
   AMethod := GetMethod(AName);
   Result := Assigned(AMethod);
 end;
 
-function TRttiTypeHelper.TryGetProperty(const AName: string;
-  out AProperty: TRttiProperty): Boolean;
+function TRttiTypeHelper.TryGetProperty(const AName: string; out AProperty: TRttiProperty): Boolean;
 begin
   AProperty := GetProperty(AName);
   Result := Assigned(AProperty);
 end;
 
-function TRttiTypeHelper.TryGetStandardConstructor(
-  out AMethod: TRttiMethod): Boolean;
+function TRttiTypeHelper.TryGetStandardConstructor(out AMethod: TRttiMethod): Boolean;
 begin
   AMethod := GetStandardConstructor();
   Result := Assigned(AMethod);
 end;
-
-{ TValueHelper }
 
 function TValueHelper.AsByte: Byte;
 begin
@@ -2623,14 +2607,12 @@ begin
   Result := TEqualityComparer<T>.Default.Equals(Left, Right);
 end;
 
-class function TValueHelper.From(ABuffer: Pointer;
-  ATypeInfo: PTypeInfo): TValue;
+class function TValueHelper.From(ABuffer: Pointer; ATypeInfo: PTypeInfo): TValue;
 begin
   TValue.Make(ABuffer, ATypeInfo, Result);
 end;
 
-class function TValueHelper.From(AValue: NativeInt;
-  ATypeInfo: PTypeInfo): TValue;
+class function TValueHelper.From(AValue: NativeInt; ATypeInfo: PTypeInfo): TValue;
 begin
   TValue.Make(AValue, ATypeInfo, Result);
 end;
@@ -2645,8 +2627,7 @@ begin
   Result := TValue.From<Boolean>(Value);
 end;
 
-class function TValueHelper.FromFloat(ATypeInfo: PTypeInfo;
-  AValue: Extended): TValue;
+class function TValueHelper.FromFloat(ATypeInfo: PTypeInfo; AValue: Extended): TValue;
 begin
   case GetTypeData(ATypeInfo).FloatType of
     ftSingle: Result := TValue.From<Single>(AValue);
@@ -2905,8 +2886,7 @@ begin
   end;
 end;
 
-class function TValueHelper.ToVarRecs(
-  const Values: array of TValue): TArray<TVarRec>;
+class function TValueHelper.ToVarRecs(const Values: array of TValue): TArray<TVarRec>;
 var
   i: Integer;
 begin
@@ -2957,8 +2937,7 @@ begin
   end;
 end;
 
-function TValueHelper.TryConvert(ATypeInfo: PTypeInfo;
-  out AResult: TValue): Boolean;
+function TValueHelper.TryConvert(ATypeInfo: PTypeInfo; out AResult: TValue): Boolean;
 begin
   Result := False;
 
@@ -3032,7 +3011,6 @@ type
     procedure Init(Parent: TRttiType; PropInfo: {$IFDEF DELPHI_XE3_UP}PPropInfoExt{$ELSE}PPropInfo {$ENDIF});
   end;
 
-
 procedure TRttiObjectAccess.Init(Parent: TRttiType; PropInfo: {$IFDEF DELPHI_XE3_UP}PPropInfoExt{$ELSE}PPropInfo {$ENDIF});
 const
 {$IFDEF AUTOREFCOUNT}
@@ -3050,7 +3028,6 @@ begin
 end;
 
 {$IFDEF DELPHI_XE3_UP}
-{ TPropInfoExt }
 
 function TPropInfoExt.NameFld: TTypeInfoFieldAccessor;
 begin
@@ -3061,8 +3038,8 @@ function TPropInfoExt.Tail: PPropInfoExt;
 begin
   Result := PPropInfoExt(NameFld.Tail);
 end;
+
 {$ENDIF}
-{ TRttiPropertyExtension }
 
 class constructor TRttiPropertyExtension.Create;
 begin
@@ -3121,20 +3098,17 @@ begin
   Result := DoGetValue(Instance);
 end;
 
-procedure TRttiPropertyExtension.DoSetValue(Instance: Pointer;
-  const AValue: TValue);
+procedure TRttiPropertyExtension.DoSetValue(Instance: Pointer; const AValue: TValue);
 begin
   FSetter(Instance, AValue);
 end;
 
-procedure TRttiPropertyExtension.DoSetValueStub(Instance: Pointer;
-  const AValue: TValue);
+procedure TRttiPropertyExtension.DoSetValueStub(Instance: Pointer; const AValue: TValue);
 begin
   DoSetValue(Instance, AValue);
 end;
 
-class function TRttiPropertyExtension.FindByName(Parent: TRttiType;
-  const PropertyName: string): TRttiPropertyExtension;
+class function TRttiPropertyExtension.FindByName(Parent: TRttiType; const PropertyName: string): TRttiPropertyExtension;
 var
   LPropertyExtension: TRttiPropertyExtension;
 begin
@@ -3153,8 +3127,7 @@ begin
     Result := nil
 end;
 
-class function TRttiPropertyExtension.FindByName(
-  const FullPropertyName: string): TRttiPropertyExtension;
+class function TRttiPropertyExtension.FindByName(const FullPropertyName: string): TRttiPropertyExtension;
 var
   LScope: string;
   LName: string;
@@ -3243,8 +3216,6 @@ begin
   PVtable(LPatchedClass)[12] := @TRttiPropertyExtension.GetPropInfoStub;
 end;
 
-
-{TTimeSpanHelper}
 {$IFDEF DELPHI_2010}
 class function TTimeSpanHelper.Subtract(const D1, D2: TDateTime): TTimeSpan;
 begin
@@ -3252,6 +3223,30 @@ begin
 end;
 {$ENDIF}
 
+class function TStrUtils.RemoveChars(const SomeStr: string; const Chars: string): string;
+var
+  i: integer;
+  StrLen: integer;
+begin
+  Result := '';
+
+  StrLen := Length(SomeStr);
+  for i := 1 to StrLen do
+    if Pos(SomeStr[i], Chars) = 0 then
+      Result := Result + SomeStr[i];
+end;
+
+class function TStrUtils.RemoveChars(const SomeStr: string; const Chars: array of char): string;
+var
+  TmpStr: string;
+  i: integer;
+begin
+  TmpStr := '';
+  for i := Low(Chars) to High(Chars) do
+    TmpStr := TmpStr + Chars[i];
+
+  Result := RemoveChars(SomeStr, TmpStr);
+end;
 
 class function TStrUtils.SplitString(const S, Delimiters: string): TArray<string>;
 var
@@ -3318,10 +3313,7 @@ begin
     Result[SplitPoints] := S.SubString(StartIdx, S.Length - StartIdx + 1);
   end;
   {$ENDIF}
-
 end;
-
-{ TListStringUtils }
 
 class function TListStringUtils.ToArray(const values: TList<string>): TArray<string>;
 var
@@ -3332,6 +3324,35 @@ begin
     result[i] := values[i];
 end;
 
+class function TGUIDUtils.CleanGUIDString(const StrGUID: string; const RemoveDashes: boolean): string;
+begin
+  Result := TStrUtils.RemoveChars(StrGUID, '{}' + IfThen(RemoveDashes, '-'));
+end;
+
+class function TGUIDUtils.CreateGUID: TGUID;
+begin
+  SysUtils.CreateGUID(Result);
+end;
+
+class function TGUIDUtils.CreateGUIDAsString(const RemoveDashes: boolean = True): string;
+begin
+  Result := GUIDAsString(CreateGUID(), RemoveDashes);
+end;
+
+class function TGUIDUtils.EmptyGUID: TGUID;
+begin
+  Result := TGUID.Empty;
+end;
+
+class function TGUIDUtils.GUIDAsString(const GUID: TGUID; const RemoveDashes: boolean): string;
+begin
+  Result := CleanGUIDString(GUIDToString(GUID), RemoveDashes);
+end;
+
+class function TGUIDUtils.IsEmptyGUID(const GUID: TGUID): boolean;
+begin
+  Result := IsEqualGUID(GUID, EmptyGUID());
+end;
 
 initialization
   Enumerations := TObjectDictionary<PTypeInfo, TStrings>.Create([doOwnsValues]);
@@ -3339,6 +3360,4 @@ initialization
 finalization
   Enumerations.Free;
 
-
 end.
-

@@ -256,7 +256,7 @@ type
     [Test]
     procedure IgnoreCaseDefault;
 
-{$IFDEF SUPPORTS_REGEX}
+    {$IFDEF SUPPORTS_REGEX}
     [Test]
     [TestCase('GUID with dash', '[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12},C687683F-F25B-4F9A-A231-31C52253B6A1')]
     [TestCase('GUID without dash', '[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12},C687683FF25B4F9AA23131C52253B6A1')]
@@ -266,7 +266,7 @@ type
     [TestCase('GUID with dash', '[0-9A-F]{8}[-]([0-9A-F]{4}[-]){3}[0-9A-F]{12},C687683F-F25B-4F9A-A231-31C52253B6A#')]
     [TestCase('GUID without dash', '[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12},C687683FF25B4F9AA23131C52253B6A#')]
     procedure IsMatch_False_Will_Raise_ETestFailure(const regexPattern, theString: string);
-{$ENDIF}
+    {$ENDIF}
   end;
 
 implementation
@@ -1187,6 +1187,7 @@ begin
     end, ETestFailure);
 end;
 
+{$IFDEF SUPPORTS_REGEX}
 procedure TTestsAssert.IsMatch_True_Will_Not_Raise(const regexPattern, theString: string);
 begin
   Assert.WillNotRaiseAny(
@@ -1205,6 +1206,7 @@ begin
       Assert.IsMatch(regexPattern, theString);
     end, ETestFailure);
 end;
+{$ENDIF}
 
 initialization
   TDUnitX.RegisterTestFixture(TTestsAssert);

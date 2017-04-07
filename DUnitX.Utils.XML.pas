@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2015 Vincent Parrett & Contributors               }
+{           Copyright (C) 2017 Vincent Parrett & Contributors               }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -57,7 +57,6 @@ begin
   end;
 end;
 
-
 function StripInvalidXML(const xmlString: string): string;
 var
   index: integer;
@@ -91,7 +90,6 @@ begin
   end;
   {$ENDIF}
 end;
-
 
 function EscapeForXML(const value: string; const isAttribute: boolean = True; const isCDATASection : Boolean = False): string;
 begin

@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2015 Vincent Parrett & Contributors               }
+{           Copyright (C) 2017 Vincent Parrett & Contributors               }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -35,10 +35,12 @@ uses
   System.Generics.Collections,
   System.Rtti,
   System.SysUtils,
+  System.Classes,
   {$ELSE}
   Generics.Collections,
   Rtti,
   SysUtils,
+  Classes,
   {$ENDIF}
   DUnitX.Types,
   DUnitX.Attributes,
@@ -440,7 +442,7 @@ begin
     //NOTE: Causes Delphi 2010 to be inconsistent with produced exe. Will sometimes crash with AV when generating fixtures.
     //If there is a parameterless constructor declared then we will use that as the
     //fixture Setup method.
-    if FFixtureType.TryGetConstructor(method) then
+    if FFixtureType.TryGetConstructor(method, FTestClass.InheritsFrom(TDataModule)) then
     begin
       FIgnoreFixtureSetup := true;
       FFixtureInstance := method.Invoke(TRttiInstanceType(FFixtureType).MetaclassType, []).AsObject;
@@ -564,7 +566,6 @@ begin
   FRttiContext.Free;
 end;
 
-
 constructor TDUnitXTestFixture.Create(const AName: string; const ACategory : string; const AInstance: TObject; const AUnitName : string);
 begin
   FFixtureInstance := AInstance;
@@ -587,6 +588,4 @@ begin
   result.IgnoreMemoryLeaks := getIgnoreMemoryLeaksForMethod(AMethod);
 end;
 
-
 end.
-
