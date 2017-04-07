@@ -3331,7 +3331,7 @@ end;
 
 class function TGUIDUtils.CreateGUID: TGUID;
 begin
-  SysUtils.CreateGUID(Result);
+  {$IFDEF USE_NS}System.{$ENDIF}SysUtils.CreateGUID(Result);
 end;
 
 class function TGUIDUtils.CreateGUIDAsString(const RemoveDashes: boolean = True): string;

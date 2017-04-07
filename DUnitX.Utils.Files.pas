@@ -24,7 +24,7 @@
 {                                                                           }
 {***************************************************************************}
 
-unit DUnitX.FileUtils;
+unit DUnitX.Utils.Files;
 
 interface
 
