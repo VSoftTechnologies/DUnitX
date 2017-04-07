@@ -83,7 +83,7 @@ end;
 procedure TTestFileUtils.TempDirectory_Test;
 begin
   Assert.IsNotEmpty(FileUtils.TempDirectory);
-  FileAssert.DirectoryDoesExist(FileUtils.TempDirectory);
+  Assert.IsTrue(FileUtils.DirectoryExists(FileUtils.TempDirectory));
   Assert.EndsWith('\', FileUtils.TempDirectory);
 end;
 
