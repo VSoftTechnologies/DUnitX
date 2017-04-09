@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2015 Vincent Parrett & Contributors               }
+{           Copyright (C) 2017 Vincent Parrett & Contributors               }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -909,14 +909,14 @@ begin
   Assert.TestPass := ETestPass;
 end;
 
-{$IFNDEF DELPHI_XE3}
+// In order to workaround the Delphi XE3 Bug noted at
+// https://github.com/VSoftTechnologies/DUnitX/issues/117),
+// you need to add the unit DUnitX.Init.pas to your test projects.
 
+{$IFNDEF DELPHI_XE3}
 initialization
   TDUnitX.RegisterPlugin(TDUnitXFixtureProviderPlugin.Create);
   InitAssert;
-
-finalization
-
 {$ENDIF}
 
 end.
