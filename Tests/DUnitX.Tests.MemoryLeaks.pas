@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2012 Vincent Parrett                              }
+{           Copyright (C) 2017 Vincent Parrett                              }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -60,8 +60,6 @@ type
 
 implementation
 
-{ TTestsNoMemoryLeaksReported }
-
 procedure TTestsNoMemoryLeaksReported.No_Reporting_Of_Memory_Leaks;
 begin
   AllocMem(1024);
@@ -73,8 +71,6 @@ begin
   AllocMem(512);
   Assert.Pass;
 end;
-
-{ TTestsMemoryLeaksReported }
 
 procedure TTestsMemoryLeaksReported.Override_No_Reporting_Of_Memory_Leaks;
 begin
