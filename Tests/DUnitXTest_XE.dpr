@@ -77,7 +77,9 @@ uses
   DUnitX.Tests.Utils in 'DUnitX.Tests.Utils.pas',
   DUnitX.Tests.Utils.Files in 'DUnitX.Tests.Utils.Files.pas',
   DUnitX.Exceptions in '..\DUnitX.Exceptions.pas',
+  DUnitX.Init in '..\DUnitX.Init.pas',
   DUnitX.Timeout in '..\DUnitX.Timeout.pas',
+  DUnitX.Helpers in '..\DUnitX.Helpers.pas',
   DUnitX.ResStrs in '..\DUnitX.ResStrs.pas',
   DUnitX.Constants in '..\DUnitX.Constants.pas',
   DUnitX.Attributes in '..\DUnitX.Attributes.pas';
