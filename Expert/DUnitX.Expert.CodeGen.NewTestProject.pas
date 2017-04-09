@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2015 Vincent Parrett & Contributors               }
+{           Copyright (C) 2017 Vincent Parrett & Contributors               }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -28,14 +28,14 @@ unit DUnitX.Expert.CodeGen.NewTestProject;
 
 interface
 
-{$I DUnitX.inc}
+{$I ..\DUnitX.inc}
 
 uses
   ToolsAPI,
   DUnitX.Expert.CodeGen.NewProject;
 
 type
-  TTestProjectFile = class({$IFNDEF DELPHIX_SEATTLE_UP}TNewProject{$ELSE}TNewProjectEx{$ENDIF})
+  TTestProjectFile = class({$IFNDEF DELPHI_XE10_SEATTLE_UP}TNewProject{$ELSE}TNewProjectEx{$ENDIF})
   protected
     function NewProjectSource(const ProjectName: string): IOTAFile; override;
   public
@@ -67,18 +67,18 @@ end;
 constructor TTestProjectFile.Create(const APersonality: string);
 begin
   Create;
-  {$IFDEF DELPHIX_SEATTLE_UP}
+  {$IFDEF DELPHI_XE10_SEATTLE_UP}
   Personality := APersonality;
   {$ENDIF}
 end;
 
 function TTestProjectFile.NewProjectSource(const ProjectName: string): IOTAFile;
-{$IFDEF DELPHIX_SEATTLE_UP}
+{$IFDEF DELPHI_XE10_SEATTLE_UP}
 var
   TestProjectCode: string;
 {$ENDIF}
 begin
-  {$IFNDEF DELPHIX_SEATTLE_UP}
+  {$IFNDEF DELPHI_XE10_SEATTLE_UP}
   result := TSourceFile.Create(STestDPR,[ProjectName]);
   {$ELSE}
   if Personality.isEmpty or SameText(Personality, sDelphiPersonality) then

@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2015 Vincent Parrett & Contributors               }
+{           Copyright (C) 2017 Vincent Parrett & Contributors               }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -28,13 +28,13 @@ unit DUnitX.Expert.Registration;
 
 interface
 
-{$I DUnitX.inc}
-
+{$I ..\DUnitX.inc}
 
 //Note: "Register" method name is case senstive.
 procedure Register;
 
 implementation
+
 uses
   ToolsApi,
   {$IFDEF USE_NS}
@@ -42,7 +42,7 @@ uses
   {$ELSE}
   Dialogs,
   {$ENDIF}
-  {$IFDEF DELPHIX_SEATTLE_UP}
+  {$IFDEF DELPHI_XE10_SEATTLE_UP}
   DUnitX.Expert.ProjectWizardEx,
   DUnitX.Expert.NewUnitWizardEx;
   {$ELSE}
@@ -52,7 +52,7 @@ uses
 
 procedure Register;
 begin
-  {$IFDEF DELPHIX_SEATTLE_UP}
+  {$IFDEF DELPHI_XE10_SEATTLE_UP}
   TDUnitXNewProjectWizard.RegisterDUnitXProjectWizard(sDelphiPersonality);
   TDUnitXNewProjectWizard.RegisterDUnitXProjectWizard(sCBuilderPersonality);
 

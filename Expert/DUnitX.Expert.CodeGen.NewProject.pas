@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2013 Vincent Parrett                              }
+{           Copyright (C) 2017 Vincent Parrett                              }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -25,13 +25,15 @@
 {***************************************************************************}
 
 unit DUnitX.Expert.CodeGen.NewProject;
+
 // This is done to Warnings that I can't control, as Embarcadero has
 // deprecated the functions, but due to design you are still required to
 // to implement.
 {$WARN SYMBOL_DEPRECATED OFF}
+
 interface
 
-{$I DUnitX.inc}
+{$I ..\DUnitX.inc}
 
 uses
   {$IFDEF DELPHI_XE2_UP}
@@ -67,7 +69,7 @@ type
      property FileName : String read GetFileName write SetFileName;
   end;
 
-  {$IFDEF DELPHIX_SEATTLE_UP}
+  {$IFDEF DELPHI_XE10_SEATTLE_UP}
   TNewProjectEx = class(TNewProject, IOTAProjectCreator160)
   private
    FPersonality: string;
@@ -92,8 +94,6 @@ uses
   {$ELSE}
   SysUtils;
   {$ENDIF}
-
-{ TNewProject }
 
 function TNewProject.GetCreatorType: string;
 begin
@@ -142,10 +142,12 @@ end;
 
 procedure TNewProject.NewDefaultModule;
 begin
+  //Empty
 end;
 
 procedure TNewProject.NewDefaultProjectModule(const Project: IOTAProject);
 begin
+  //Empty
 end;
 
 function TNewProject.NewOptionSource(const ProjectName: string): IOTAFile;
@@ -155,15 +157,15 @@ end;
 
 procedure TNewProject.NewProjectResource(const Project: IOTAProject);
 begin
+  //Empty
 end;
-
 
 procedure TNewProject.SetFileName(const Value: String);
 begin
   FFileName := Value;
 end;
 
-{$IFDEF DELPHIX_SEATTLE_UP}
+{$IFDEF DELPHI_XE10_SEATTLE_UP}
 function TNewProjectEx.GetFrameworkType: string;
 begin
   Result := '';
@@ -204,7 +206,6 @@ begin
       LBuildConf.BaseConfiguration.PlatformConfiguration[ciOSDevice64Platform].AsBoolean['ILINK_LinkwithDUnitXRuntime'] := True;
     end;
   end;
-
 end;
 {$ENDIF}
 

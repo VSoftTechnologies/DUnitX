@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2015 Vincent Parrett & Contributors               }
+{           Copyright (C) 2017 Vincent Parrett & Contributors               }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -26,9 +26,9 @@
 
 unit DUnitX.Expert.CodeGen.NewTestUnit;
 
-interface
+{$I ..\DUnitX.inc}
 
-{$I DUnitX.inc}
+interface
 
 uses
   ToolsApi,
@@ -45,12 +45,11 @@ type
     constructor Create(const ACreateSetupTearDown : boolean; const ACreateSampleMethods : boolean;const ATestFixureClassName : String; const APersonality : String = '' );
   end;
 
-  {$IFDEF DELPHIX_SEATTLE_UP}
+  {$IFDEF DELPHI_XE10_SEATTLE_UP}
   TNewTestUnitEx = class(TNewTestUnit)
     function NewImplSource(const ModuleIdent, FormIdent, AncestorIdent: string): IOTAFile; override;
   end;
   {$ENDIF}
-
 
 implementation
 
@@ -65,8 +64,6 @@ uses
   DUnitX.Expert.CodeGen.Templates,
   DUnitX.Expert.CodeGen.SourceFile;
 
-{ TNewTestUnit }
-
 constructor TNewTestUnit.Create(const ACreateSetupTearDown : boolean; const ACreateSampleMethods : boolean;const ATestFixureClassName : String; const APersonality : String = '' );
 begin
   Assert(Length(ATestFixureClassName) > 0);
@@ -77,12 +74,12 @@ begin
   FTestFixureClassName := ATestFixureClassName;
   FCreateSetupTearDown := ACreateSetupTearDown;
   FCreateSampleMethods := ACreateSampleMethods;
-  {$IFDEF DELPHIX_SEATTLE_UP}
+  {$IFDEF DELPHI_XE10_SEATTLE_UP}
   Personality := APersonality;
   {$ENDIF}
 end;
 
-function TNewTestUnit.NewImplSource(const ModuleIdent, FormIdent,  AncestorIdent: string): IOTAFile;
+function TNewTestUnit.NewImplSource(const ModuleIdent, FormIdent, AncestorIdent: string): IOTAFile;
 var
   lSetupTearDownIntf : string;
   lSetupTearDownImpl : string;
@@ -121,8 +118,8 @@ begin
 
 end;
 
-{$IFDEF DELPHIX_SEATTLE_UP}
-function TNewTestUnitEx.NewImplSource(const ModuleIdent, FormIdent,  AncestorIdent: string): IOTAFile;
+{$IFDEF DELPHI_XE10_SEATTLE_UP}
+function TNewTestUnitEx.NewImplSource(const ModuleIdent, FormIdent, AncestorIdent: string): IOTAFile;
 var
   lSetupTearDownIntf : string;
   lSetupTearDownImpl : string;
@@ -170,6 +167,5 @@ var
 
 end;
 {$ENDIF}
-
 
 end.
