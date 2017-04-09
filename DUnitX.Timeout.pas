@@ -116,8 +116,6 @@ begin
   ResumeThread(ThreadHandle);
 end;
 
-{ TTimeout }
-
 procedure TTimeout.Stop;
 begin
   FTimeoutThread.Terminate;
@@ -141,8 +139,6 @@ begin
   inherited;
 end;
 
-{ TTimeoutThread }
-
 procedure TTimeoutThread.Execute;
 var
   elapsedTime : Int64;
@@ -153,9 +149,13 @@ begin
   stopwatch.Reset;
   stopwatch.Start;
 
-  //Not sure why this was removed in previous revision, but it causes W1036 as
-  //not being initialized if not present.
+  //Apparently older versions of Delphi warn W1036 if this is missing
+  //(not being initialized) but newer compilers fixed this,
+  //and they hint H2077 (value never used).  Not sure when it changed,
+  //so just assuming XE or less for now.
+  {$IFDEF DELPHI_XE_DOWN}
   elapsedTime := 0;
+  {$ENDIF}
 
   if Terminated then
      exit;
@@ -173,6 +173,5 @@ begin
   if not Terminated then
     TimeoutThread;
 end;
-
 
 end.

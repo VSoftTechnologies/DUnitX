@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2015 Vincent Parrett & Contributors               }
+{           Copyright (C) 2017 Vincent Parrett & Contributors               }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -28,7 +28,6 @@ unit DUnitX.Helpers;
 
 interface
 
-
 {$I DUnitX.inc}
 
 uses
@@ -38,19 +37,12 @@ uses
   TypInfo;
   {$ENDIF}
 
-{.$IFDEF XE2_DOWN}
 type
   TTypeInfoHelper = record helper for TTypeInfo
     function TypeData : PTypeData;
   end;
-{.$ENDIF}
-
 
 implementation
-
-
-
-{ TTypeInfoHelper }
 
 function TTypeInfoHelper.TypeData: PTypeData;
 begin

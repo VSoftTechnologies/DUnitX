@@ -88,8 +88,6 @@ uses
   DUnitX.ResStrs,
   DUnitX.Types;
 
-{ TDUnitXFixtureProvider }
-
 constructor TDUnitXFixtureProvider.Create;
 begin
   FFixtureClasses := TDictionary<TClass,string>.Create;
@@ -132,11 +130,9 @@ begin
 
   for pair in TDUnitX.RegisteredFixtures do
   begin
-     if not FFixtureClasses.ContainsValue(pair.Value) then
+    if not FFixtureClasses.ContainsValue(pair.Value) then
       FFixtureClasses.AddOrSetValue(pair.Key, pair.Value);
   end;
-
-
 
   //Build up a fixture hierarchy based on unit names.
   tmpFixtures := TDictionary<string,ITestFixture>.Create;
@@ -349,9 +345,9 @@ begin
 
     if (not Assigned(setupFixtureMethod)) and method.TryGetAttributeOfType<SetupFixtureAttribute>(setupFixtureAttrib) then
     begin
-       setupFixtureMethod := TTestMethod(meth);
-       currentFixture.SetSetupFixtureMethod(method.Name,setupFixtureMethod);
-       continue;
+      setupFixtureMethod := TTestMethod(meth);
+      currentFixture.SetSetupFixtureMethod(method.Name,setupFixtureMethod);
+      continue;
     end;
 
     {$IFDEF DELPHI_XE_UP}
@@ -369,10 +365,10 @@ begin
     //if we had previously assigned a destructor as the teardownfixturemethod, then we can still override that with an attributed one.
     if ((not Assigned(tearDownFixtureMethod)) or tearDownFixtureIsDestructor) and method.TryGetAttributeOfType<TearDownFixtureAttribute>(tearDownFixtureAttrib) then
     begin
-       tearDownFixtureMethod := TTestMethod(meth);
-       currentFixture.SetTearDownFixtureMethod(method.Name,tearDownFixtureMethod,false);
-       tearDownFixtureIsDestructor := false;
-       continue;
+      tearDownFixtureMethod := TTestMethod(meth);
+      currentFixture.SetTearDownFixtureMethod(method.Name,tearDownFixtureMethod,false);
+      tearDownFixtureIsDestructor := false;
+      continue;
     end;
 
     if (not Assigned(setupMethod)) and method.TryGetAttributeOfType<SetupAttribute>(setupAttrib) then
@@ -538,8 +534,6 @@ begin
     end;
   end;
 end;
-
-{ TDUnitXFixtureProviderPlugin }
 
 procedure TDUnitXFixtureProviderPlugin.GetPluginFeatures(const context: IPluginLoadContext);
 begin

@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2015 Vincent Parrett & Contributors               }
+{           Copyright (C) 2017 Vincent Parrett & Contributors               }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -24,7 +24,6 @@
 {                                                                           }
 {***************************************************************************}
 
-
 // Uncomment to use JCL for stacktrace support.
 {.$DEFINE USE_JCL}
 
@@ -36,5 +35,3 @@
 
 // Uncomment to use EurekaLog 7 for stacktrace support.
 {.$DEFINE USE_EUREKALOG7}
-
-

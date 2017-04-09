@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2015 Vincent Parrett & Contributors               }
+{           Copyright (C) 2017 Vincent Parrett & Contributors               }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -24,11 +24,7 @@
 {                                                                           }
 {***************************************************************************}
 
-
-
 // Uncomment to use FastMM4 Memory Leak Tracking.
 //NOTE : Memory leak tracking does not work very well at the moment, as it's
 //reporting leaks when logging information during tests (calls to .Status etc).
 {.$DEFINE USE_FASTMM4_LEAK_MONITOR}
-
-
