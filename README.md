@@ -33,6 +33,7 @@ This is far from a complete list, but a few planned features are listed here to 
 Tips and Tricks
 ===========
 * In order to workaround the [Delphi XE3 Bug](https://github.com/VSoftTechnologies/DUnitX/issues/117), you need to add the unit DUnitX.Init to your test projects.
+* If you have Delphi XE or newer, you can install [Delphinus package manager](https://github.com/Memnarch/Delphinus/wiki/Installing-Delphinus) and install DUnitX there. (Delphinus-Support)
 
 Support
 =======

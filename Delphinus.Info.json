@@ -1,0 +1,11 @@
+{
+  "id": "{578B7A11-D6C6-468D-8C4F-BC822BA313A8}",
+  "name": "DUnitX",
+  "license_type": "Apache 2.0",
+  "license_file": "LICENSE.txt",
+  "platforms": "Win32;Win64",
+  "package_compiler_min": 21,
+  "package_compiler_max": 32,
+  "compiler_min": 21,
+  "compiler_max": 32
+}
