@@ -715,7 +715,7 @@ begin
     if parent = nil then
       msg := msg + 'nil'
     else
-      msg := parent.ClassName + msg;
+      msg := msg + parent.ClassName;
     msg := msg + '.';
     if True then
     if message <> '' then
