@@ -40,6 +40,9 @@ uses
 {$ENDIF}
 {$IFDEF USE_MADEXCEPT4}
   madStackTrace,
+{$IFDEF CPUx64}
+  madExcept,
+{$ENDIF}
 {$ENDIF}
   DUnitX.TestFramework;
 
@@ -61,14 +64,23 @@ uses
 { TMadExcept4StackTraceProvider }
 
 function TMadExcept4StackTraceProvider.GetStackTrace(const ex: Exception; const exAddressAddress: Pointer): string;
+{$IFDEF USE_MADEXCEPT4}
+{$IFDEF CPUx64}
+var
+  stackTrace: TStackTrace;
+{$ENDIF}
+{$ENDIF}
 begin
   result := '';
   {$IFDEF USE_MADEXCEPT4}
-  Result := madStackTrace.StackTrace( false, false, false, nil, nil,
-                                           exAddressAddress, false,
-                                           false, 0, 0, nil,
-                                           @exAddressAddress);
-
+  {$IFDEF CPUx64}
+    Result := madExcept.GetCrashStackTrace(false, true, true, @stackTrace); 
+  {$ELSE}
+    Result := madStackTrace.StackTrace( false, false, false, nil, nil,
+                                             exAddressAddress, false,
+                                             false, 0, 0, nil,
+                                             @exAddressAddress);
+  {$ENDIF}
   {$ENDIF}
 end;
 
