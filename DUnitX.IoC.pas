@@ -164,7 +164,7 @@ begin
           begin
             obj := ctor(AClass);
             if not Supports(obj, guid, Result) and raiseOnError then
-              EIoCResolutionException.CreateFmt(SRegisteredImplementationError, [AClass.ClassName, typeInfo.Name]);
+              raise EIoCResolutionException.CreateFmt(SRegisteredImplementationError, [AClass.ClassName, typeInfo.Name]);
           end;
         Exit;
       end;
