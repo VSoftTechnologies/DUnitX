@@ -900,7 +900,7 @@ begin
   Result := False;
 end;
 
-{$IFDEF XE3_UP}
+{$IFDEF DELPHI_XE3_UP}
 function ConvStr2DynArray(const ASource: TValue; ATarget: PTypeInfo; out AResult: TValue): Boolean;
 var
   s: string;
