@@ -140,7 +140,7 @@ var
 begin
   for i := 0 to values.Count -1 do
   begin
-    j := 0;
+    j := {$IFDEF NEXTGEN}-1{$ELSE}0{$ENDIF};
     option := nil;
     bTryValue := true;
     bUseKey := false;

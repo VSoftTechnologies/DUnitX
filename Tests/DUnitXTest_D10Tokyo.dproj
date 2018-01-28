@@ -4,14 +4,19 @@
         <MainSource>DUnitXTest_D10Tokyo.dpr</MainSource>
         <Config Condition="'$(Config)'==''">Debug</Config>
         <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
-        <ProjectVersion>18.2</ProjectVersion>
-        <FrameworkType>VCL</FrameworkType>
+        <ProjectVersion>18.3</ProjectVersion>
+        <FrameworkType>None</FrameworkType>
         <Base>True</Base>
         <Platform Condition="'$(Platform)'==''">Win64</Platform>
-        <TargetedPlatforms>3</TargetedPlatforms>
+        <TargetedPlatforms>131</TargetedPlatforms>
         <AppType>Console</AppType>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Linux64' and '$(Base)'=='true') or '$(Base_Linux64)'!=''">
+        <Base_Linux64>true</Base_Linux64>
+        <CfgParent>Base</CfgParent>
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Base)'=='true') or '$(Base_Win64)'!=''">
@@ -27,6 +32,12 @@
     <PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_2)'!=''">
         <Cfg_2>true</Cfg_2>
         <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Linux64' and '$(Cfg_2)'=='true') or '$(Cfg_2_Linux64)'!=''">
+        <Cfg_2_Linux64>true</Cfg_2_Linux64>
+        <CfgParent>Cfg_2</CfgParent>
+        <Cfg_2>true</Cfg_2>
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win32)'!=''">
@@ -51,6 +62,10 @@
         <DCC_ImageBase>00400000</DCC_ImageBase>
         <DCC_Platform>x86</DCC_Platform>
     </PropertyGroup>
+    <PropertyGroup Condition="'$(Base_Linux64)'!=''">
+        <DCC_Define>TESTINSIGHT;$(DCC_Define)</DCC_Define>
+        <Debugger_Launcher>/usr/bin/xterm -e &quot;%debuggee%&quot;</Debugger_Launcher>
+    </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
         <VerInfo_Locale>1033</VerInfo_Locale>
         <DCC_Namespace>System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
@@ -65,6 +80,9 @@
         <DCC_MapFile>3</DCC_MapFile>
         <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
     </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2_Linux64)'!=''">
+        <Debugger_Launcher>/usr/bin/xterm -e &quot;%debuggee%&quot;</Debugger_Launcher>
+    </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
         <DCC_Define>DUNITXDEBUG;$(DCC_Define)</DCC_Define>
     </PropertyGroup>
@@ -75,10 +93,11 @@
         <DCCReference Include="..\DUnitX.Loggers.GUI.VCL.pas">
             <Form>GUIVCLTestRunner</Form>
         </DCCReference>
+        <DCCReference Include="..\DUnitX.Windows.Console.pas"/>
+        <DCCReference Include="..\DUnitX.MemoryLeakMonitor.FastMM4.pas"/>
         <DCCReference Include="..\DUnitX.Loggers.Console.pas"/>
         <DCCReference Include="..\DUnitX.Loggers.Text.pas"/>
         <DCCReference Include="..\DUnitX.MacOS.Console.pas"/>
-        <DCCReference Include="..\DUnitX.Windows.Console.pas"/>
         <DCCReference Include="..\DUnitX.ConsoleWriter.Base.pas"/>
         <DCCReference Include="..\DUnitX.Loggers.XML.xUnit.pas"/>
         <DCCReference Include="..\DUnitX.Generics.pas"/>
@@ -112,7 +131,6 @@
         <DCCReference Include="..\DUnitX.Loggers.XML.NUnit.pas"/>
         <DCCReference Include="DUnitX.SingleNameSpace.pas"/>
         <DCCReference Include="..\DUnitX.MemoryLeakMonitor.Default.pas"/>
-        <DCCReference Include="..\DUnitX.MemoryLeakMonitor.FastMM4.pas"/>
         <DCCReference Include="DUnitX.Tests.MemoryLeaks.pas"/>
         <DCCReference Include="..\DUnitX.Extensibility.pas"/>
         <DCCReference Include="..\DUnitX.Extensibility.PluginManager.pas"/>
@@ -199,17 +217,12 @@
                 </Excluded_Packages>
             </Delphi.Personality>
             <Platforms>
+                <Platform value="Linux64">True</Platform>
                 <Platform value="OSX32">False</Platform>
                 <Platform value="Win32">True</Platform>
                 <Platform value="Win64">True</Platform>
             </Platforms>
             <Deployment Version="3">
-                <DeployFile LocalName="Win64\Debug\DUnitXTest_D10Tokyo.exe" Configuration="Debug" Class="ProjectOutput">
-                    <Platform Name="Win64">
-                        <RemoteName>DUnitXTest_D10Tokyo.exe</RemoteName>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
                 <DeployFile LocalName="..\DUnitX.MemoryLeaks.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
@@ -222,15 +235,71 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile LocalName="Linux64\Debug\DUnitXTest_D10Tokyo" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Linux64">
+                        <RemoteName>DUnitXTest_D10Tokyo</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\DUnitX.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile LocalName="Win64\Debug\DUnitXTest_D10Tokyo.exe" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win64">
+                        <RemoteName>DUnitXTest_D10Tokyo.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="$(BDS)\Redist\iossimulator\libcgunwind.1.0.dylib" Class="DependencyModule">
+                    <Platform Name="iOSSimulator">
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="$(BDS)\Redist\osx32\libcgsqlite3.dylib" Class="DependencyModule">
+                    <Platform Name="OSX32">
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="Win32\Debug\DUnitXTest_D10Tokyo.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>DUnitXTest_D10Tokyo.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="$(BDS)\Redist\osx32\libcgunwind.1.0.dylib" Class="DependencyModule">
+                    <Platform Name="OSX32">
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="..\DUnitX.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Linux64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="..\DUnitX.MemoryLeaks.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Linux64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="$(BDS)\Redist\iossimulator\libPCRE.dylib" Class="DependencyModule">
+                    <Platform Name="iOSSimulator">
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="..\DUnitX.Stacktrace.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Linux64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Linux64\Debug\TestInsightSettings.ini" Configuration="Debug" Class="File">
+                    <Platform Name="Linux64">
+                        <RemoteName>TestInsightSettings.ini</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>

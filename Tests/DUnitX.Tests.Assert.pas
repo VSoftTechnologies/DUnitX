@@ -1187,6 +1187,7 @@ begin
     end, ETestFailure);
 end;
 
+{$IFDEF SUPPORTS_REGEX}
 procedure TTestsAssert.IsMatch_True_Will_Not_Raise(const regexPattern, theString: string);
 begin
   Assert.WillNotRaiseAny(
@@ -1205,6 +1206,7 @@ begin
       Assert.IsMatch(regexPattern, theString);
     end, ETestFailure);
 end;
+{$ENDIF}
 
 initialization
   TDUnitX.RegisterTestFixture(TTestsAssert);
