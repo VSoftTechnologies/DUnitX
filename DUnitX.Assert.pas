@@ -338,7 +338,8 @@ end;
 class procedure Assert.AreEqual(const expected, actual, tolerance: Extended; const message: string);
 begin
   DoAssert;
-  if not {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(expected,actual,tolerance) then
+  if (IsNan(expected) xor IsNan(actual)) or
+      not {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(expected,actual,tolerance) then
     FailFmt(SUnexpectedErrorExt ,[expected,actual,message], ReturnAddress);
 end;
 
@@ -417,7 +418,8 @@ end;
 class procedure Assert.AreEqual(const expected, actual, tolerance: Double; const message: string);
 begin
   DoAssert;
-  if not {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(expected,actual,tolerance) then
+  if (IsNan(expected) xor IsNan(actual)) or
+      not {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(expected,actual,tolerance) then
     FailFmt(SUnexpectedErrorDbl ,[expected,actual,message], ReturnAddress);
 end;
 
