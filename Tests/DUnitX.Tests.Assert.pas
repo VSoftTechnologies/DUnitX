@@ -721,6 +721,7 @@ const
   ACTUAL_DOUBLE : double = 1.19E20;
   EXPECTED_DOUBLE : double = 1.18E20;
   TOLERANCE_DOUBLE : double = 0.001E20;
+  NOT_A_NUMBER_DOUBLE : double = 0/0;
 begin
   Assert.WillRaise(
     procedure
@@ -731,7 +732,7 @@ begin
   Assert.WillRaise(
     procedure
     begin
-      Assert.AreEqual(Double(0/0), EXPECTED_DOUBLE, TOLERANCE_DOUBLE);
+      Assert.AreEqual(NOT_A_NUMBER_DOUBLE, EXPECTED_DOUBLE, TOLERANCE_DOUBLE);
     end, ETestFailure, Format('[%e] with in [%e] from [%e]', [ACTUAL_DOUBLE, TOLERANCE_DOUBLE, EXPECTED_DOUBLE]));
 end;
 
@@ -753,6 +754,7 @@ const
   ACTUAL_EXTENDED : extended  = 1.19E20;
   EXPECTED_EXTENDED : extended = 1.18E20;
   TOLERANCE_EXTENDED : extended = 0.001E20;
+  NOT_A_NUMBER_EXTENDED : extended = 0/0;
 begin
   Assert.WillRaise(
     procedure
@@ -763,7 +765,7 @@ begin
   Assert.WillRaise(
     procedure
     begin
-      Assert.AreEqual(Extended(0/0), EXPECTED_EXTENDED, TOLERANCE_EXTENDED);
+      Assert.AreEqual(NOT_A_NUMBER_EXTENDED, EXPECTED_EXTENDED, TOLERANCE_EXTENDED);
     end, ETestFailure, Format('[%e] with in [%e] from [%e]', [ACTUAL_EXTENDED, TOLERANCE_EXTENDED, EXPECTED_EXTENDED]));
 end;
 
@@ -1080,6 +1082,8 @@ end;
 procedure TTestsAssert.AreNotEqual_Extended_One_Value_Is_Nan_FPExcept_Disabled;
 const
   TOLERANCE_EXTENDED : extended = 0.011E20;
+  EXPECTED_EXTENDED : extended = 100;
+  NOT_A_NUMBER_EXTENDED : extended = 0/0;
 begin
   // Let's assume we're in a OpenGL application... from System.Set8087CW online help:
   // [...] When using OpenGL to render 3D graphics, we recommend that you
@@ -1091,13 +1095,13 @@ begin
   Set8087CW($133F);
 
   // operations here will not raise any exceptions
-  Assert.AreNotEqual(Extended(100), Extended(0/0), Extended(TOLERANCE_EXTENDED));
+  Assert.AreNotEqual(EXPECTED_EXTENDED, NOT_A_NUMBER_EXTENDED, TOLERANCE_EXTENDED);
 
   Assert.WillRaise(
       procedure
       begin
         // intentionally failing this test to check whether a fail is detected
-        Assert.AreNotEqual(Extended(0/0), Extended(0/0), Extended(TOLERANCE_EXTENDED));
+        Assert.AreNotEqual(NOT_A_NUMBER_EXTENDED, NOT_A_NUMBER_EXTENDED, TOLERANCE_EXTENDED);
       end,
       ETestFailure);
 
@@ -1108,6 +1112,8 @@ end;
 procedure TTestsAssert.AreNotEqual_Double_One_Value_Is_Nan_FPExcept_Disabled;
 const
   TOLERANCE_DOUBLE : double  = 0.011E20;
+  NOT_A_NUMBER_DOUBLE : double = 0/0;
+  EXPECTED_DOUBLE : double = 100;
 begin
   // Let's assume we're in a OpenGL application... from System.Set8087CW online help:
   // [...] When using OpenGL to render 3D graphics, we recommend that you
@@ -1119,13 +1125,13 @@ begin
   Set8087CW($133F);
 
   // operations here will not raise any exceptions
-  Assert.AreNotEqual(Double(100), Double(0/0), Double(TOLERANCE_DOUBLE));
+  Assert.AreNotEqual(EXPECTED_DOUBLE, NOT_A_NUMBER_DOUBLE, TOLERANCE_DOUBLE);
 
   Assert.WillRaise(
       procedure
       begin
         // intentionally failing this test to check whether a fail is detected
-        Assert.AreNotEqual(Double(0/0), Double(0/0), Double(TOLERANCE_DOUBLE));
+        Assert.AreNotEqual(NOT_A_NUMBER_DOUBLE, NOT_A_NUMBER_DOUBLE, TOLERANCE_DOUBLE);
       end,
       ETestFailure);
 
