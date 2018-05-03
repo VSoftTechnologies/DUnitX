@@ -449,8 +449,13 @@ end;
 class procedure Assert.AreNotEqual(const expected, actual, tolerance: Extended; const message: string);
 begin
   DoAssert;
-  if {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(expected, actual, tolerance) then
-    FailFmt(SEqualsErrorExt ,[expected,actual,message], ReturnAddress);
+  if (IsNan(expected) and IsNan(actual)) then
+    FailFmt(SEqualsErrorExt ,[expected,actual,message], ReturnAddress)
+  else if not (IsNan(expected) xor IsNan(actual)) then
+  begin
+    if {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(expected, actual, tolerance) then
+      FailFmt(SEqualsErrorExt ,[expected,actual,message], ReturnAddress);
+  end;
 end;
 
 class procedure Assert.AreNotEqual(const expected, actual: string;const ignoreCase: boolean; const message: string);
@@ -538,8 +543,13 @@ end;
 class procedure Assert.AreNotEqual(const expected, actual, tolerance: double; const message: string);
 begin
   DoAssert;
-  if {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(expected, actual, tolerance) then
-    FailFmt(SEqualsErrorDbl ,[expected,actual,message], ReturnAddress);
+  if (IsNan(expected) and IsNan(actual)) then
+    FailFmt(SEqualsErrorExt ,[expected,actual,message], ReturnAddress)
+  else if not (IsNan(expected) xor IsNan(actual)) then
+  begin
+    if {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(expected, actual, tolerance) then
+      FailFmt(SEqualsErrorDbl ,[expected,actual,message], ReturnAddress);
+  end;
 end;
 
 class procedure Assert.AreNotEqualMemory(const expected, actual: Pointer; const size: Cardinal; const message: string);

@@ -142,6 +142,20 @@ type
     [Test]
     procedure AreNotEqual_Integer_Throws_Exception_When_Values_Are_Equal;
 
+    {$ifdef WIN32}
+    [Test]
+    procedure AreNotEqual_Extended_One_Value_Is_Nan_FPExcept_Disabled;
+
+    [Test]
+    procedure AreNotEqual_Double_One_Value_Is_Nan_FPExcept_Disabled;
+    {$endif}
+
+    [Test]
+    procedure AreNotEqual_Extended_Throws_No_Exception_When_One_Value_Is_Nan;
+
+    [Test]
+    procedure AreNotEqual_Double_Throws_No_Exception_When_One_Value_Is_Nan;
+
     [Test]
     procedure AreNotEqual_GUID_Throws_No_Exception_When_Values_Are_NotEqual;
 
@@ -713,6 +727,12 @@ begin
     begin
       Assert.AreEqual(ACTUAL_DOUBLE, EXPECTED_DOUBLE, TOLERANCE_DOUBLE);
     end, ETestFailure, Format('[%e] with in [%e] from [%e]', [ACTUAL_DOUBLE, TOLERANCE_DOUBLE, EXPECTED_DOUBLE]));
+
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.AreEqual(Double(0/0), EXPECTED_DOUBLE, TOLERANCE_DOUBLE);
+    end, ETestFailure, Format('[%e] with in [%e] from [%e]', [ACTUAL_DOUBLE, TOLERANCE_DOUBLE, EXPECTED_DOUBLE]));
 end;
 
 procedure TTestsAssert.AreEqual_Double_Throws_No_Exception_When_Values_Are_Equal;
@@ -738,6 +758,12 @@ begin
     procedure
     begin
       Assert.AreEqual(ACTUAL_EXTENDED, EXPECTED_EXTENDED, TOLERANCE_EXTENDED);
+    end, ETestFailure, Format('[%e] with in [%e] from [%e]', [ACTUAL_EXTENDED, TOLERANCE_EXTENDED, EXPECTED_EXTENDED]));
+
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.AreEqual(Extended(0/0), EXPECTED_EXTENDED, TOLERANCE_EXTENDED);
     end, ETestFailure, Format('[%e] with in [%e] from [%e]', [ACTUAL_EXTENDED, TOLERANCE_EXTENDED, EXPECTED_EXTENDED]));
 end;
 
@@ -1047,7 +1073,88 @@ begin
     FreeAndNil(mock);
   end;
 end;
+
 {$ENDIF}
+
+{$ifdef WIN32}
+procedure TTestsAssert.AreNotEqual_Extended_One_Value_Is_Nan_FPExcept_Disabled;
+const
+  TOLERANCE_EXTENDED : extended = 0.011E20;
+begin
+  // Let's assume we're in a OpenGL application... from System.Set8087CW online help:
+  // [...] When using OpenGL to render 3D graphics, we recommend that you
+  // disable all floating-point exceptions for performance reasons. To do this,
+  // call Set8087CW(0x133f) in your main form's OnCreate event before calling
+  // any OpenGL functions. [...]
+
+  // Note that this operation will affects windows 32bit applications only
+  Set8087CW($133F);
+
+  // operations here will not raise any exceptions
+  Assert.AreNotEqual(Extended(100), Extended(0/0), Extended(TOLERANCE_EXTENDED));
+
+  Assert.WillRaise(
+      procedure
+      begin
+        // intentionally failing this test to check whether a fail is detected
+        Assert.AreNotEqual(Extended(0/0), Extended(0/0), Extended(TOLERANCE_EXTENDED));
+      end,
+      ETestFailure);
+
+  // resetting the FPU control word
+  Reset8087CW;
+end;
+
+procedure TTestsAssert.AreNotEqual_Double_One_Value_Is_Nan_FPExcept_Disabled;
+const
+  TOLERANCE_DOUBLE : double  = 0.011E20;
+begin
+  // Let's assume we're in a OpenGL application... from System.Set8087CW online help:
+  // [...] When using OpenGL to render 3D graphics, we recommend that you
+  // disable all floating-point exceptions for performance reasons. To do this,
+  // call Set8087CW(0x133f) in your main form's OnCreate event before calling
+  // any OpenGL functions. [...]
+
+  // Note that this operation will affects windows 32bit applications only
+  Set8087CW($133F);
+
+  // operations here will not raise any exceptions
+  Assert.AreNotEqual(Double(100), Double(0/0), Double(TOLERANCE_DOUBLE));
+
+  Assert.WillRaise(
+      procedure
+      begin
+        // intentionally failing this test to check whether a fail is detected
+        Assert.AreNotEqual(Double(0/0), Double(0/0), Double(TOLERANCE_DOUBLE));
+      end,
+      ETestFailure);
+
+  // resetting the FPU control word
+  Reset8087CW;
+end;
+{$endif}
+
+procedure TTestsAssert.AreNotEqual_Extended_Throws_No_Exception_When_One_Value_Is_Nan;
+const
+  TOLERANCE_EXTENDED : extended = 0.011E20;
+begin
+  Assert.WillNotRaiseAny(
+      procedure
+      begin
+        Assert.AreNotEqual(Extended(1), Extended(0/0), Extended(TOLERANCE_EXTENDED));
+      end);
+end;
+
+procedure TTestsAssert.AreNotEqual_Double_Throws_No_Exception_When_One_Value_Is_Nan;
+const
+  TOLERANCE_DOUBLE : double = 0.011E20;
+begin
+  Assert.WillNotRaiseAny(
+      procedure
+      begin
+        Assert.AreNotEqual(double(1), double(0/0), double(TOLERANCE_DOUBLE));
+      end);
+end;
 
 procedure TTestsAssert.Test_AreSameOnSameObjectWithDifferentInterfaces_No_Exception;
 var
