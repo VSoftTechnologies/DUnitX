@@ -320,7 +320,7 @@ type
     property TestResults  : IList<ITestResult> read GetTestResults;
     property Failures     : IList<ITestResult> read GetFailures;
     property Errors       : IList<ITestError> read GetErrors;
-    property Pesses       : IList<ITestResult> read GetPasses;
+    property Passes       : IList<ITestResult> read GetPasses;
   end;
 
 
