@@ -32,6 +32,7 @@ TYPE
       function GetCaseAmount(Methodname:string):integer;Virtual;Abstract;
       function GetCaseName(Methodname:string):String;Virtual;Abstract;
       function GetCaseParams(Methodname:string;casenr:integer):TValuearray;Virtual;Abstract;
+      Destructor Destroy;virtual;Abstract;
   End;
   TTestDataProviderBaseClass = class of TTestDataProviderbase;
 
