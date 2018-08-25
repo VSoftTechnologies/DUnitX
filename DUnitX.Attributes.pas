@@ -277,6 +277,19 @@ type
     property Values : TValueArray read GetValues;
   end;
 
+  /// <summary>
+  /// TestCaseProvider Attribute allows you, to pass a registered
+  /// Class to the Test, that provides the test function width the
+  /// needed data.
+  /// </summary>
+  TestCaseProviderAttribute = Class(TCustomAttribute)
+  protected
+     fname : string;
+  Public
+     Constructor Create(Const ProviderName:string);overload;
+     Property ProviderName : string read fname;
+  End;
+
 implementation
 
 uses
@@ -400,6 +413,13 @@ constructor WillRaiseAttribute.Create(AExpectedException: ExceptClass; const AIn
 begin
   FExpectedException := AExpectedException;
   FExceptionInheritance := AInheritance;
+end;
+
+{ TestCaseProviderAttribute }
+
+constructor TestCaseProviderAttribute.Create(const ProviderName: string);
+begin
+  fname := ProviderName;
 end;
 
 end.

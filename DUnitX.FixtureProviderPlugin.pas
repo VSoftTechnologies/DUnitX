@@ -38,7 +38,9 @@ uses
   Rtti,
   Generics.Collections,
   {$ENDIF}
-  DUnitX.Extensibility;
+  DUnitX.Extensibility,
+  DUnitX.Types,
+  DUnitX.TestDataProvider;
 
 type
   TDUnitXFixtureProviderPlugin = class(TInterfacedObject,IPlugin)
@@ -55,6 +57,7 @@ type
 
   protected
     function FormatTestName(const AName: string; const ATimes, ACount: Integer): string;
+    function FormatCaseName(const AName:string; Nr:integer):string;
     function TryGetAttributeOfType<T : class>(const attributes: TArray<TCustomAttribute>; var attribute: T): boolean;
     procedure RTTIDiscoverFixtureClasses(const context: IFixtureProviderContext);
     procedure GenerateTests(const context: IFixtureProviderContext; const fixture : ITestFixture);
@@ -86,7 +89,7 @@ uses
   DUnitX.Utils,
   DUnitX.TestFramework,
   DUnitX.ResStrs,
-  DUnitX.Types;
+  DUnitX.InternalInterfaces;
 
 { TDUnitXFixtureProvider }
 
@@ -219,6 +222,12 @@ begin
   end;
 end;
 
+function TDUnitXFixtureProvider.FormatCaseName(const AName: string;
+  Nr: integer): string;
+begin
+  result := Format('%s (%.2d)',[AName,nr]);
+end;
+
 function TDUnitXFixtureProvider.FormatTestName(const AName: string; const ATimes, ACount: Integer): string;
 begin
   Result := AName;
@@ -262,6 +271,14 @@ var
   isTestMethod    : boolean;
   repeatAttrib    : RepeatTestAttribute;
   maxTimeAttrib   : MaxTimeAttribute;
+
+  tstProviderAttribs : TArray<TestCaseProviderAttribute>;
+  tstProviderAttrib: TestCaseProviderAttribute;
+  iProvider: ITestDataProvider;
+  count,x     : integer;
+  Params      : TValueArray;
+  CaseName    : string;
+
 
   category        : string;
   ignoredTest     : boolean;
@@ -421,11 +438,29 @@ begin
       testCases := method.GetAttributesOfType<CustomTestCaseAttribute>;
       //find out if the test has test sources
       testCaseSources := method.GetAttributesOfType<CustomTestCaseSourceAttribute>;
+      //Find out if we got a TestProviderAttribute
+      tstProviderAttribs := Method.GetAttributesOfType<TestCaseProviderAttribute>;
 
-      if (Length(testCases) > 0) or (Length(testCaseSources) > 0) then
+      if (Length(testCases) > 0) or (Length(testCaseSources) > 0) or (Length(tstProviderAttribs)>0)then
       begin
         if not ignoredTest then
         begin
+          //Add the Providertests first
+          for tstProviderAttrib in tstProviderAttribs do
+          begin
+            iProvider := TestDataProviderManager.GetProvider(tstProviderAttrib.ProviderName);
+            if (iProvider <> NIL) then
+            begin
+              count := iProvider.GetCaseAmount(Method.name);
+              CaseName := iProvider.GetCaseName(Method.name);
+              for x := 0 to count -1 do
+              begin
+                params := iProvider.GetCaseParams(Method.name,x);
+                currentFixture.AddTestCase(method.Name, FormatCaseName(CaseName,x), FormatTestName(method.Name, x, repeatCount), category, method, testEnabled, params);
+              end;
+              iProvider := NIL;
+            end;
+          end;
           // Add individual test cases first
           for testCaseAttrib in testCases do
           begin

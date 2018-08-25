@@ -274,6 +274,7 @@ implementation
 uses
   DUnitX.ResStrs,
   DUnitX.Utils,
+  DUnitX.Exceptions,
   {$IFDEF SUPPORTS_REGEX}
     {$IFDEF USE_TREGEXPR}
     RegExpr,
@@ -1228,6 +1229,8 @@ end;
 class procedure Assert.EndsWith(const subString : string; const theString : string; const ignoreCase : boolean; const message : string);
 begin
   DoAssert;
+  if (subString = '') or (theString = '') then
+    raise ETestFailure.create('Strings empty !');
   if ignoreCase then
   begin
     if not {$IFDEF USE_NS}System.StrUtils.{$ENDIF}EndsText(subString,theString) then
