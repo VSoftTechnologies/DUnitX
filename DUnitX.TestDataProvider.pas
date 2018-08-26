@@ -21,20 +21,9 @@ uses
   System.Classes,
   System.Generics.Collections,
   DUnitX.Types,
-  DUnitX.InternalInterfaces;
+  DUnitX.InternalDataProvider;
 
 TYPE
-  TTestDataProviderBase = Class abstract (TInterfacedObject,ITestDataProvider)
-    private
-    protected
-    public
-      Constructor Create;virtual;Abstract;
-      function GetCaseAmount(Methodname:string):integer;Virtual;Abstract;
-      function GetCaseName(Methodname:string):String;Virtual;Abstract;
-      function GetCaseParams(Methodname:string;casenr:integer):TValuearray;Virtual;Abstract;
-      Destructor Destroy;virtual;Abstract;
-  End;
-  TTestDataProviderBaseClass = class of TTestDataProviderbase;
 
   TestDataProviderManager = Class
     private
@@ -47,7 +36,8 @@ TYPE
        Class Procedure RegisterProvider(Name:string;AClass : TTestDataProviderBaseClass);
        Class Procedure UnregisterProvider(name:string);
 
-       Class function GetProvider(Name:string):ITestDataProvider;
+       Class function GetProvider(Name:string):ITestDataProvider;overload;
+       Class function GetProvider(AClass:TTestDataProviderBaseClass):ITestDataProvider;overload;
     published
   End;
 implementation
@@ -64,6 +54,24 @@ begin
   flist.Free;
 end;
 
+class function TestDataProviderManager.GetProvider(AClass: TTestDataProviderBaseClass): ITestDataProvider;
+var
+  key : string;
+begin
+  result := NIL;
+  if (flist.ContainsValue(AClass)) then
+  begin
+    for key in flist.keys do
+    begin
+      if (flist[key] = AClass) then
+      begin
+        result := TTestDataProviderBaseClass(flist[key]).Create;
+        break;
+      end;
+    end;
+  end;
+end;
+
 Class function TestDataProviderManager.GetProvider(Name: string): ITestDataProvider;
 begin
   result := NIL;
@@ -75,7 +83,7 @@ Class procedure TestDataProviderManager.RegisterProvider(Name: string;
   AClass: TTestDataProviderBaseClass);
 begin
   if (not flist.ContainsKey(Name)) then
-     flist.Add(Name,AClass);
+    flist.add(Name,AClass);
 end;
 
 Class procedure TestDataProviderManager.UnregisterProvider(name: string);

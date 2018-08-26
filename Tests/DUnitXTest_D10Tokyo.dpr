@@ -74,7 +74,8 @@ uses
   DUnitX.Types in '..\DUnitX.Types.pas',
   DUnitX.Attributes in '..\DUnitX.Attributes.pas',
   DUnitX.TestDataProvider in '..\DUnitX.TestDataProvider.pas',
-  DUnitX.Tests.TestDataProvider in 'DUnitX.Tests.TestDataProvider.pas';
+  DUnitX.Tests.TestDataProvider in 'DUnitX.Tests.TestDataProvider.pas',
+  DUnitX.InternalDataProvider in '..\DUnitX.InternalDataProvider.pas';
 
 var
   runner : ITestRunner;

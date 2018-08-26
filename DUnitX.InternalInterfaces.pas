@@ -81,12 +81,6 @@ type
    // function AreEqual(const AFixtureResult : IFixtureResult) : boolean;
   end;
 
-  ITestDataProvider = interface
-    ['{1BFC9318-AF52-41BB-82D4-58166429885A}']
-    function GetCaseAmount(Methodname:string):integer;
-    function GetCaseName(Methodname:string):String;
-    function GetCaseParams(Methodname:string;casenr:integer):TValuearray;
-  end;
 
 implementation
 

@@ -4,6 +4,7 @@ interface
 uses
   System.Generics.Collections,
   DUnitX.Types,
+  DUnitX.InternalDataProvider,
   DUnitX.TestDataProvider,
   DUnitX.TestFramework;
 
@@ -22,7 +23,7 @@ type
        Procedure InitTestData;
     public
       Constructor Create;Override;
-      function GetCaseAmount(Methodname:string):integer;Override;
+      function GetCaseCount(Methodname:string):integer;Override;
       function GetCaseName(Methodname:string):String;Override;
       function GetCaseParams(Methodname:string;casenr:integer):TValuearray;Override;
       Destructor Destroy;override;
@@ -59,7 +60,7 @@ begin
   inherited;
 end;
 
-function TSampleProvider.GetCaseAmount(Methodname: string): integer;
+function TSampleProvider.GetCaseCount(Methodname: string): integer;
 begin
   result := flist.count;
 end;

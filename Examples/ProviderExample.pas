@@ -4,6 +4,7 @@ interface
 uses
   System.Generics.Collections,
   DUnitX.Types,
+  DUnitX.InternalDataProvider,
   DUnitX.TestDataProvider,
   DUnitX.TestFramework;
 
@@ -22,7 +23,7 @@ type
       //The constructor, for initializing the data
       Constructor Create;override;
       //Get the amount of cases, we want to create;
-      function GetCaseAmount(Methodname:string):integer;override;
+      function GetCaseCount(Methodname:string):integer;override;
       //Get the name of the cases, depending on the Test-Function
       function GetCaseName(Methodname:string):String;override;
       //Get the Params for calling the Test-Function;Be aware of the order !
@@ -38,8 +39,7 @@ type
     [TestCaseProvider('Demoprovider')]
     Procedure Addtest(const v1,v2:integer;expected:integer);
     [Test]
-    [TestCaseProvider('Demoprovider')]
-    [TestCase('Add normal','1,1,2,true')]
+    [TestCaseProvider(TSampleProvider)]
     Procedure Comparetest(const v1,v2:integer;expected:boolean);
   end;
 
@@ -74,7 +74,7 @@ begin
   inherited;
 end;
 
-function TSampleProvider.GetCaseAmount(Methodname: string): integer;
+function TSampleProvider.GetCaseCount(Methodname: string): integer;
 begin
   result := flist.Count;
 end;

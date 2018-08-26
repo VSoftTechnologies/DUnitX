@@ -89,7 +89,8 @@ uses
   DUnitX.Utils,
   DUnitX.TestFramework,
   DUnitX.ResStrs,
-  DUnitX.InternalInterfaces;
+  DUnitX.InternalInterfaces,
+  DUnitX.InternalDataProvider;
 
 { TDUnitXFixtureProvider }
 
@@ -288,7 +289,7 @@ var
   willRaiseInherit: TExceptionInheritance;
 
   repeatCount: Cardinal;
-  i: Integer;
+  i,c: Integer;
   currentFixture: ITestFixture;
 begin
 //  WriteLn('Generating Tests for : ' + fixture.FullName);
@@ -448,15 +449,21 @@ begin
           //Add the Providertests first
           for tstProviderAttrib in tstProviderAttribs do
           begin
-            iProvider := TestDataProviderManager.GetProvider(tstProviderAttrib.ProviderName);
+            if (tstProviderAttrib.ProviderClass <> NIL) then
+                iProvider := TestDataProviderManager.GetProvider(tstProviderAttrib.ProviderClass)
+            else
+               iProvider := TestDataProviderManager.GetProvider(tstProviderAttrib.ProviderName);
             if (iProvider <> NIL) then
             begin
-              count := iProvider.GetCaseAmount(Method.name);
+              count := iProvider.GetCaseCount(Method.name);
               CaseName := iProvider.GetCaseName(Method.name);
               for x := 0 to count -1 do
               begin
                 params := iProvider.GetCaseParams(Method.name,x);
-                currentFixture.AddTestCase(method.Name, FormatCaseName(CaseName,x), FormatTestName(method.Name, x, repeatCount), category, method, testEnabled, params);
+                for i := 1 to repeatCount do
+                begin
+                  currentFixture.AddTestCase(method.Name, FormatCaseName(CaseName,x), FormatTestName(method.Name, x, repeatCount), category, method, testEnabled, params);
+                end;
               end;
               iProvider := NIL;
             end;

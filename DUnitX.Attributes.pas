@@ -38,7 +38,8 @@ uses
   Rtti,
   SysUtils,
   {$ENDIF}
-  DUnitX.Types;
+  DUnitX.Types,
+  DUnitX.InternalDataProvider;
 
 type
   /// <summary>
@@ -285,9 +286,12 @@ type
   TestCaseProviderAttribute = Class(TCustomAttribute)
   protected
      fname : string;
+     fclass : TTestDataProviderBaseClass;
   Public
      Constructor Create(Const ProviderName:string);overload;
+     Constructor Create(const AClass : TTestDataProviderBaseClass);overload;
      Property ProviderName : string read fname;
+     Property ProviderClass: TTestDataProviderBaseClass read fclass;
   End;
 
 implementation
@@ -420,6 +424,15 @@ end;
 constructor TestCaseProviderAttribute.Create(const ProviderName: string);
 begin
   fname := ProviderName;
+  fclass := NIL;
+end;
+
+
+constructor TestCaseProviderAttribute.Create(
+  const AClass: TTestDataProviderBaseClass);
+begin
+  fname := '';
+  fclass := AClass;
 end;
 
 end.

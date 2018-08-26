@@ -1229,8 +1229,8 @@ end;
 class procedure Assert.EndsWith(const subString : string; const theString : string; const ignoreCase : boolean; const message : string);
 begin
   DoAssert;
-  if (subString = '') or (theString = '') then
-    raise ETestFailure.create('Strings empty !');
+  if (subString = '') then
+    FailFmt(SStrCannotBeEmpty, [], ReturnAddress);
   if ignoreCase then
   begin
     if not {$IFDEF USE_NS}System.StrUtils.{$ENDIF}EndsText(subString,theString) then
