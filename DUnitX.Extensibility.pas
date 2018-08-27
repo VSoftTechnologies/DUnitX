@@ -129,7 +129,7 @@ type
     procedure OnMethodExecuted(const AMethod : TTestMethod);
     function GetFixtureInstance : TObject;
 
-    function AddTest(const AMethodName : string; const AMethod : TTestMethod; const AName : string; const ACategory : string; const AEnabled : boolean = true;const AIgnored : boolean = false; const AIgnoreReason : string = ''; const AMaxTime :cardinal = 0; AExpectedException: ExceptClass = nil; const AExceptionInheritance: TExceptionInheritance = exExact) : ITest;
+    function AddTest(const AMethodName : string; const AMethod : TTestMethod; const AName : string; const ACategory : string; const AEnabled : boolean = true;const AIgnored : boolean = false; const AIgnoreReason : string = ''; const AMaxTime :cardinal = 0; const AExpectedException: ExceptClass = nil; const AExceptionInheritance: TExceptionInheritance = exExact) : ITest;
     function AddTestCase(const AMethodName : string; const ACaseName : string; const AName : string; const ACategory : string; const AMethod : TRttiMethod; const AEnabled : boolean; const AArgs : TValueArray) : ITest;
 
     function AddChildFixture(const ATestClass : TClass; const AName : string; const ACategory : string) : ITestFixture;overload;

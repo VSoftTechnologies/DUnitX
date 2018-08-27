@@ -116,7 +116,8 @@ type
     constructor Create(const AFixture : ITestFixture; const AMethodName : string; const AName : string; const ACategory  : string;
                        const AMethod : TTestMethod; const AEnabled : boolean; const AIgnored : boolean = false;
                        const AIgnoreReason : string = ''; const AMaxTime : Cardinal = 0;
-                       AExpectedException : ExceptClass = nil; const AExceptionInheritance : TExceptionInheritance = exExact);
+                       const AExpectedException : ExceptClass = nil; const AExceptionInheritance : TExceptionInheritance = exExact);
+    destructor Destroy;override;
   end;
 
   TDUnitXTestCase = class(TDUnitXTest, ITestExecute)
@@ -398,11 +399,17 @@ end;
 constructor TDUnitXExceptionTest.Create(const AFixture: ITestFixture;
   const AMethodName, AName, ACategory: string; const AMethod: TTestMethod;
   const AEnabled, AIgnored: boolean; const AIgnoreReason: string;
-  const AMaxTime: Cardinal; AExpectedException: ExceptClass; const AExceptionInheritance: TExceptionInheritance);
+  const AMaxTime: Cardinal; const AExpectedException: ExceptClass; const AExceptionInheritance: TExceptionInheritance);
 begin
   inherited Create(AFixture, AMethodName, AName, ACategory, AMethod, AEnabled, AIgnored, AIgnoreReason, AMaxTime);
   FExpectedException := AExpectedException;
   FExceptionInheritance := AExceptionInheritance;
+end;
+
+destructor TDUnitXExceptionTest.Destroy;
+begin
+  FRaiseContext := nil;
+  inherited;
 end;
 
 procedure TDUnitXExceptionTest.Execute(const context: ITestExecuteContext);
