@@ -269,11 +269,11 @@ type
   TestCaseAttribute = class(CustomTestCaseAttribute)
   protected
     FCaseInfo : TestCaseInfo;
-    function GetCaseInfo : TestCaseInfo; Override;
-    function GetName: String;
+    function GetCaseInfo : TestCaseInfo; override;
+    function GetName: string;
     function GetValues: TValueArray;
   public
-    constructor Create(const ACaseName : string; const AValues : string;const ASeparator : string = ',');overload;
+    constructor Create(const ACaseName : string; const AValues : string; const ASeparator : string = ',');overload;
     property Name : String read GetName;
     property Values : TValueArray read GetValues;
   end;
@@ -285,14 +285,14 @@ type
   /// </summary>
   TestCaseProviderAttribute = Class(TCustomAttribute)
   protected
-     fname : string;
-     fclass : TTestDataProviderClass;
-  Public
-     Constructor Create(Const ProviderName:string);overload;
-     Constructor Create(const AClass : TTestDataProviderClass);overload;
-     Property ProviderName : string read fname;
-     Property ProviderClass: TTestDataProviderClass read fclass;
-  End;
+     FName : string;
+     FClass : TTestDataProviderClass;
+  public
+     constructor Create(const providerName : string);overload;
+     constructor Create(const AClass : TTestDataProviderClass);overload;
+     property ProviderName : string read Fname;
+     property ProviderClass: TTestDataProviderClass read FClass;
+  end;
 
 implementation
 
@@ -421,18 +421,17 @@ end;
 
 { TestCaseProviderAttribute }
 
-constructor TestCaseProviderAttribute.Create(const ProviderName: string);
+constructor TestCaseProviderAttribute.Create(const providerName : string);
 begin
-  fname := ProviderName;
-  fclass := NIL;
+  FName := ProviderName;
+  FClass := NIL;
 end;
 
 
-constructor TestCaseProviderAttribute.Create(
-  const AClass: TTestDataProviderClass);
+constructor TestCaseProviderAttribute.Create(const AClass: TTestDataProviderClass);
 begin
-  fname := '';
-  fclass := AClass;
+  FName := '';
+  FClass := AClass;
 end;
 
 end.

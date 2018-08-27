@@ -278,7 +278,7 @@ var
   iProvider: ITestDataProvider;
   count,x     : integer;
   Params      : TValueArray;
-  CaseName    : string;
+  caseName    : string;
 
 
   category        : string;
@@ -449,26 +449,26 @@ begin
           //Add the Providertests first
           for tstProviderAttrib in tstProviderAttribs do
           begin
-            if (tstProviderAttrib.ProviderClass <> NIL) then
+            if (tstProviderAttrib.ProviderClass <> nil) then
                 iProvider := TestDataProviderManager.GetProvider(tstProviderAttrib.ProviderClass)
             else
                iProvider := TestDataProviderManager.GetProvider(tstProviderAttrib.ProviderName);
-            if (iProvider <> NIL) then
+            if (iProvider <> nil) then
             begin
-              count := iProvider.GetCaseCount(Method.name);
-              CaseName := iProvider.GetCaseName(Method.name);
+              count := iProvider.GetCaseCount(method.name);
+              caseName := iProvider.GetCaseName(method.name);
               for x := 0 to count -1 do
               begin
-                params := iProvider.GetCaseParams(Method.name,x);
+                params := iProvider.GetCaseParams(method.name,x);
                 for i := 1 to repeatCount do
                 begin
-                  currentFixture.AddTestCase(method.Name, FormatCaseName(CaseName,x), FormatTestName(method.Name, x, repeatCount), category, method, testEnabled, params);
+                  currentFixture.AddTestCase(method.Name, FormatCaseName(caseName,x), FormatTestName(method.Name, x, repeatCount), category, method, testEnabled, params);
                 end;
               end;
-              iProvider := NIL;
+              iProvider := nil;
             end;
           end;
-          // Add individual test cases first
+          // Add individual test cases
           for testCaseAttrib in testCases do
           begin
             for i := 1 to repeatCount do

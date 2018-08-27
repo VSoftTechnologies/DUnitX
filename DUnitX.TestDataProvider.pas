@@ -17,49 +17,48 @@
 unit DUnitX.TestDataProvider;
 
 interface
+
 uses
   System.Classes,
   System.Generics.Collections,
   DUnitX.Types,
   DUnitX.InternalDataProvider;
 
-TYPE
+type
+  TestDataProviderManager = class
+  private
+    class var FList : TDictionary<string, TClass>;
+  public
+    class constructor Create;
+    class destructor Destroy;
 
-  TestDataProviderManager = Class
-    private
-      class var flist : TDictionary<STRING,TClass>;
-    protected
-    public
-       Class Constructor Create;
-       Class Destructor Destroy;
+    class procedure RegisterProvider(const name : string; const AClass : TTestDataProviderClass);
+    class procedure UnregisterProvider(const name : string);
 
-       Class Procedure RegisterProvider(Name:string;AClass : TTestDataProviderClass);
-       Class Procedure UnregisterProvider(name:string);
+    class function GetProvider(const name : string) : ITestDataProvider;overload;
+    class function GetProvider(const AClass:TTestDataProviderClass) : ITestDataProvider;overload;
+  end;
 
-       Class function GetProvider(Name:string):ITestDataProvider;overload;
-       Class function GetProvider(AClass:TTestDataProviderClass):ITestDataProvider;overload;
-    published
-  End;
 implementation
 
 { TestDataProviderManager }
 
 class constructor TestDataProviderManager.Create;
 begin
-  flist := TDictionary<STRING,TClass>.Create;
+  FList := TDictionary<string, TClass>.Create;
 end;
 
 class Destructor TestDataProviderManager.Destroy;
 begin
-  flist.Free;
+  FList.Free;
 end;
 
-class function TestDataProviderManager.GetProvider(AClass: TTestDataProviderClass): ITestDataProvider;
+class function TestDataProviderManager.GetProvider(const AClass: TTestDataProviderClass) : ITestDataProvider;
 var
   key : string;
 begin
-  result := NIL;
-  if (flist.ContainsValue(AClass)) then
+  result := nil;
+  if (FList.ContainsValue(AClass)) then
   begin
     for key in flist.keys do
     begin
@@ -72,24 +71,23 @@ begin
   end;
 end;
 
-Class function TestDataProviderManager.GetProvider(Name: string): ITestDataProvider;
+class function TestDataProviderManager.GetProvider(const name : string) : ITestDataProvider;
 begin
-  result := NIL;
-  if (flist.ContainsKey(Name)) then
-    result := TTestDataProviderClass(flist[Name]).Create;
+  result := nil;
+  if (FList.ContainsKey(name)) then
+    result := TTestDataProviderClass(FList[name]).Create;
 end;
 
-Class procedure TestDataProviderManager.RegisterProvider(Name: string;
-  AClass: TTestDataProviderClass);
+class procedure TestDataProviderManager.RegisterProvider(const name: string; const AClass: TTestDataProviderClass);
 begin
-  if (not flist.ContainsKey(Name)) then
-    flist.add(Name,AClass);
+  if (not FList.ContainsKey(name)) then
+    FList.add(name,AClass);
 end;
 
-Class procedure TestDataProviderManager.UnregisterProvider(name: string);
+class procedure TestDataProviderManager.UnregisterProvider(const name: string);
 begin
- if (flist.ContainsKey(name)) then
-    flist.Remove(Name);
+ if (FList.ContainsKey(name)) then
+    FList.Remove(Name);
 end;
 
 end.
