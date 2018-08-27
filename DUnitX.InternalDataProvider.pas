@@ -12,7 +12,7 @@ Type
     function GetCaseParams(Methodname:string;casenr:integer):TValuearray;
   end;
 
-  TTestDataProviderBase = Class abstract (TInterfacedObject,ITestDataProvider)
+  TTestDataProvider = Class abstract (TInterfacedObject,ITestDataProvider)
     private
     protected
     public
@@ -22,7 +22,7 @@ Type
       function GetCaseParams(Methodname:string;casenr:integer):TValuearray;Virtual;Abstract;
       Destructor Destroy;virtual;Abstract;
   End;
-  TTestDataProviderBaseClass = class of TTestDataProviderbase;
+  TTestDataProviderClass = class of TTestDataProvider;
 
 
 implementation

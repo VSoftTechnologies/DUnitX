@@ -286,12 +286,12 @@ type
   TestCaseProviderAttribute = Class(TCustomAttribute)
   protected
      fname : string;
-     fclass : TTestDataProviderBaseClass;
+     fclass : TTestDataProviderClass;
   Public
      Constructor Create(Const ProviderName:string);overload;
-     Constructor Create(const AClass : TTestDataProviderBaseClass);overload;
+     Constructor Create(const AClass : TTestDataProviderClass);overload;
      Property ProviderName : string read fname;
-     Property ProviderClass: TTestDataProviderBaseClass read fclass;
+     Property ProviderClass: TTestDataProviderClass read fclass;
   End;
 
 implementation
@@ -429,7 +429,7 @@ end;
 
 
 constructor TestCaseProviderAttribute.Create(
-  const AClass: TTestDataProviderBaseClass);
+  const AClass: TTestDataProviderClass);
 begin
   fname := '';
   fclass := AClass;

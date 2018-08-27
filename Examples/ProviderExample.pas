@@ -16,7 +16,7 @@ type
                 isEqual   : boolean;
   End;
 
-  TSampleProvider = Class(TTestDataProviderBase)
+  TSampleProvider = Class(TTestDataProvider)
     private
       flist : TList<TTestData>;  //Our list of Values we need;
     public

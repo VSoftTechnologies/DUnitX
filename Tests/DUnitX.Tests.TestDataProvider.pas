@@ -16,7 +16,7 @@ type
                   Equal : boolean; //Expected value for Equal-Compare
   End;
 
-  TSampleProvider = Class(TTestDataProviderBase)
+  TSampleProvider = Class(TTestDataProvider)
     private
        flist : TList<TSampleData>;
 

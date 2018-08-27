@@ -33,11 +33,11 @@ TYPE
        Class Constructor Create;
        Class Destructor Destroy;
 
-       Class Procedure RegisterProvider(Name:string;AClass : TTestDataProviderBaseClass);
+       Class Procedure RegisterProvider(Name:string;AClass : TTestDataProviderClass);
        Class Procedure UnregisterProvider(name:string);
 
        Class function GetProvider(Name:string):ITestDataProvider;overload;
-       Class function GetProvider(AClass:TTestDataProviderBaseClass):ITestDataProvider;overload;
+       Class function GetProvider(AClass:TTestDataProviderClass):ITestDataProvider;overload;
     published
   End;
 implementation
@@ -54,7 +54,7 @@ begin
   flist.Free;
 end;
 
-class function TestDataProviderManager.GetProvider(AClass: TTestDataProviderBaseClass): ITestDataProvider;
+class function TestDataProviderManager.GetProvider(AClass: TTestDataProviderClass): ITestDataProvider;
 var
   key : string;
 begin
@@ -65,7 +65,7 @@ begin
     begin
       if (flist[key] = AClass) then
       begin
-        result := TTestDataProviderBaseClass(flist[key]).Create;
+        result := TTestDataProviderClass(flist[key]).Create;
         break;
       end;
     end;
@@ -76,11 +76,11 @@ Class function TestDataProviderManager.GetProvider(Name: string): ITestDataProvi
 begin
   result := NIL;
   if (flist.ContainsKey(Name)) then
-    result := TTestDataProviderBaseClass(flist[Name]).Create;
+    result := TTestDataProviderClass(flist[Name]).Create;
 end;
 
 Class procedure TestDataProviderManager.RegisterProvider(Name: string;
-  AClass: TTestDataProviderBaseClass);
+  AClass: TTestDataProviderClass);
 begin
   if (not flist.ContainsKey(Name)) then
     flist.add(Name,AClass);
