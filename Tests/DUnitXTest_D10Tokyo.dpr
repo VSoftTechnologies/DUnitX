@@ -8,14 +8,14 @@ program DUnitXTest_D10Tokyo;
 
 uses
   System.SysUtils,
-{$IFDEF TESTINSIGHT}
+  {$IFDEF TESTINSIGHT}
   TestInsight.DUnitX,
-{$ENDIF}
-{$IFDEF MSWINDOWS}
-  DUnitX.Loggers.GUI.VCL in '..\DUnitX.Loggers.GUI.VCL.pas',
+  {$ENDIF }
+  {$IFDEF MSWINDOWS}
+  DUnitX.Loggers.GUI.VCL in '..\DUnitX.Loggers.GUI.VCL.pas' {GUIVCLTestRunner},
   DUnitX.Windows.Console in '..\DUnitX.Windows.Console.pas',
   DUnitX.MemoryLeakMonitor.FastMM4 in '..\DUnitX.MemoryLeakMonitor.FastMM4.pas',
-{$ENDIF}
+  {$ENDIF }
   DUnitX.Loggers.Console in '..\DUnitX.Loggers.Console.pas',
   DUnitX.Loggers.Text in '..\DUnitX.Loggers.Text.pas',
   DUnitX.MacOS.Console in '..\DUnitX.MacOS.Console.pas',
@@ -72,7 +72,10 @@ uses
   DUnitX.Tests.ConsoleWriter.Base in 'DUnitX.Tests.ConsoleWriter.Base.pas',
   DUnitX.Assert in '..\DUnitX.Assert.pas',
   DUnitX.Types in '..\DUnitX.Types.pas',
-  DUnitX.Attributes in '..\DUnitX.Attributes.pas';
+  DUnitX.Attributes in '..\DUnitX.Attributes.pas',
+  DUnitX.TestDataProvider in '..\DUnitX.TestDataProvider.pas',
+  DUnitX.Tests.TestDataProvider in 'DUnitX.Tests.TestDataProvider.pas',
+  DUnitX.InternalDataProvider in '..\DUnitX.InternalDataProvider.pas';
 
 var
   runner : ITestRunner;

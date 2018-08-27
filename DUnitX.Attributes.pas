@@ -38,7 +38,8 @@ uses
   Rtti,
   SysUtils,
   {$ENDIF}
-  DUnitX.Types;
+  DUnitX.Types,
+  DUnitX.InternalDataProvider;
 
 type
   /// <summary>
@@ -277,6 +278,22 @@ type
     property Values : TValueArray read GetValues;
   end;
 
+  /// <summary>
+  /// TestCaseProvider Attribute allows you, to pass a registered
+  /// Class to the Test, that provides the test function width the
+  /// needed data.
+  /// </summary>
+  TestCaseProviderAttribute = Class(TCustomAttribute)
+  protected
+     fname : string;
+     fclass : TTestDataProviderClass;
+  Public
+     Constructor Create(Const ProviderName:string);overload;
+     Constructor Create(const AClass : TTestDataProviderClass);overload;
+     Property ProviderName : string read fname;
+     Property ProviderClass: TTestDataProviderClass read fclass;
+  End;
+
 implementation
 
 uses
@@ -400,6 +417,22 @@ constructor WillRaiseAttribute.Create(AExpectedException: ExceptClass; const AIn
 begin
   FExpectedException := AExpectedException;
   FExceptionInheritance := AInheritance;
+end;
+
+{ TestCaseProviderAttribute }
+
+constructor TestCaseProviderAttribute.Create(const ProviderName: string);
+begin
+  fname := ProviderName;
+  fclass := NIL;
+end;
+
+
+constructor TestCaseProviderAttribute.Create(
+  const AClass: TTestDataProviderClass);
+begin
+  fname := '';
+  fclass := AClass;
 end;
 
 end.

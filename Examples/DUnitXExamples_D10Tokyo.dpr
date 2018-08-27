@@ -38,7 +38,8 @@ uses
   DUnitX.FixtureProviderPlugin in '..\DUnitX.FixtureProviderPlugin.pas',
   DUnitX.Timeout in '..\DUnitX.Timeout.pas',
   DUnitX.Attributes in '..\DUnitX.Attributes.pas',
-  DUnitX.Linux.Console in '..\DUnitX.Linux.Console.pas';
+  DUnitX.Linux.Console in '..\DUnitX.Linux.Console.pas',
+  ProviderExample in 'ProviderExample.pas';
 
 var
   runner : ITestRunner;

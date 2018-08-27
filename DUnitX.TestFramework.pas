@@ -89,6 +89,7 @@ type
   CustomTestCaseAttribute = DUnitX.Attributes.CustomTestCaseAttribute;
   CustomTestCaseSourceAttribute = DUnitX.Attributes.CustomTestCaseSourceAttribute;
   TestCaseAttribute = DUnitX.Attributes.TestCaseAttribute;
+  TestCaseProviderAttribute = DUnitX.Attributes.TestCaseProviderAttribute;
 
   TExceptionInheritance = DUnitX.Types.TExceptionInheritance;
 
@@ -646,7 +647,8 @@ uses
   DUnitX.MemoryLeakMonitor.Default,
   DUnitX.FixtureProviderPlugin,
   DUnitX.FilterBuilder,
-  DUnitX.WeakReference;
+  DUnitX.WeakReference,
+  DUnitX.TestDataProvider;
 
 { TDUnitXOptions }
 

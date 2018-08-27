@@ -36,6 +36,7 @@ uses
   {$ELSE}
   TimeSpan,
   {$ENDIF}
+  DUnitX.Types,
   DUnitX.Generics,
   DUnitX.Extensibility,
   DUnitX.TestFrameWork;
@@ -79,6 +80,7 @@ type
    // function Combine(const AFixtureResult : IFixtureResult) : IFixtureResult;
    // function AreEqual(const AFixtureResult : IFixtureResult) : boolean;
   end;
+
 
 implementation
 
