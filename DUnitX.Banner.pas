@@ -57,17 +57,13 @@ begin
     consoleWriter.SetColour(ccBrightWhite, ccDefault);
 
   WriteLine('**********************************************************************');
-  WriteLine('*        DUnitX - (c) 2015 Vincent Parrett & Contributors            *');
-  WriteLine('*                    vincent@finalbuilder.com                        *');
+  WriteLine('*        DUnitX - (c) 2015-2018 Vincent Parrett & Contributors       *');
   WriteLine('*                                                                    *');
   WriteLine('*        License - http://www.apache.org/licenses/LICENSE-2.0        *');
   WriteLine('**********************************************************************');
   WriteLine('');
   if consoleWriter <> nil then
     consoleWriter.SetColour(ccDefault);
-
-
-
 end;
 
 end.
