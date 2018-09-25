@@ -286,6 +286,7 @@ var
   LTestMemoryAllocated: Int64;
   LMsg: string;
   LMemoryAllocationProvider2: IMemoryLeakMonitor2;
+  testInfo : ITestInfo;
 begin
   Result := True;
   errorResult := nil;
@@ -303,27 +304,28 @@ begin
   if memoryAllocationProvider.QueryInterface(IMemoryLeakMonitor2, LMemoryAllocationProvider2) = 0 then
     LMsg := LMemoryAllocationProvider2.GetReport;
 
+  testInfo := test as ITestInfo;
   if (LTestMemoryAllocated = 0) then
   begin
     // The leak occurred in the setup/teardown
     Result := False;
     LMsg := Format(SSetupTeardownBytesLeaked, [LSetUpMemoryAllocated + LTearDownMemoryAllocated]) + LMsg;
 
-    errorResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.MemoryLeak, LMsg);
+    errorResult := TDUnitXTestResult.Create(testInfo, TTestResultType.MemoryLeak, LMsg);
   end
   else if (LSetUpMemoryAllocated + LTearDownMemoryAllocated = 0) then
   begin
     // The leak occurred in the test only
     Result := False;
     LMsg := Format(STestBytesLeaked, [LTestMemoryAllocated]) + LMsg;
-    errorResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.MemoryLeak, LMsg);
+    errorResult := TDUnitXTestResult.Create(testInfo, TTestResultType.MemoryLeak, LMsg);
   end
   else
   begin
     // The leak occurred in the setup/teardown/test
     Result := False;
     LMsg := Format(SSetupTestTeardownBytesLeaked, [LSetUpMemoryAllocated + LTestMemoryAllocated + LTearDownMemoryAllocated]) + LMsg;
-    errorResult := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.MemoryLeak, LMsg);
+    errorResult := TDUnitXTestResult.Create(testInfo, TTestResultType.MemoryLeak, LMsg);
   end;
 end;
 
@@ -589,8 +591,11 @@ begin
 end;
 
 function TDUnitXTestRunner.ExecuteErrorResult(const context: ITestExecuteContext; const threadId: TThreadID; const test: ITest; const exception: Exception; const aLogMessages: TLogMessageArray) : ITestError;
+var
+  testInfo : ITestInfo;
 begin
-  Result := TDUnitXTestError.Create(test as ITestInfo, TTestResultType.Error, exception, ExceptAddr, exception.Message, aLogMessages);
+  testInfo := test as ITestInfo;
+  Result := TDUnitXTestError.Create(testInfo, TTestResultType.Error, exception, ExceptAddr, exception.Message, aLogMessages);
 end;
 
 class function TDUnitXTestRunner.GetActiveRunner: ITestRunner;
@@ -608,9 +613,12 @@ begin
 end;
 
 function TDUnitXTestRunner.ExecuteFailureResult(const context: ITestExecuteContext; const threadId: TThreadID; const test: ITest; const exception : Exception; const aLogMessages: TLogMessageArray) : ITestError;
+var
+  testInfo : ITestInfo;
 begin
+  testInfo := test as ITestInfo;
   //TODO: Does test failure require its own results interface and class?
-  Result := TDUnitXTestError.Create(test as ITestInfo, TTestResultType.Failure, exception, ExceptAddr, exception.Message, aLogMessages);
+  Result := TDUnitXTestError.Create(testInfo, TTestResultType.Failure, exception, ExceptAddr, exception.Message, aLogMessages);
 end;
 
 procedure TDUnitXTestRunner.ExecuteFixtures(const parentFixtureResult : IFixtureResult; const context: ITestExecuteContext; const threadId: TThreadID; const fixtures: ITestFixtureList);
@@ -691,8 +699,11 @@ begin
 end;
 
 function TDUnitXTestRunner.ExecuteSuccessfulResult(const context: ITestExecuteContext; const threadId: TThreadID; const test: ITest; const aMessage: string; const aLogMessages: TLogMessageArray): ITestResult;
+var
+  testInfo : ITestInfo;
 begin
-  Result := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Pass, aMessage, aLogMessages);
+  testInfo := test as ITestInfo;
+  Result := TDUnitXTestResult.Create(testInfo, TTestResultType.Pass, aMessage, aLogMessages);
 end;
 
 procedure TDUnitXTestRunner.ExecuteTearDownFixtureMethod(const context: ITestExecuteContext; const threadId: TThreadID; const fixture: ITestFixture);

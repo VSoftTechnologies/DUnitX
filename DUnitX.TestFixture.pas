@@ -467,13 +467,17 @@ end;
 function TDUnitXTestFixture.ITestFixtureInfo_GetTests: IList<ITestInfo>;
 var
   test : ITest;
+  testInfo : ITestInfo;
 begin
   //TODO: Need to test that this isn't accessed between updates to FTests.
   if FTestInfos = nil then
   begin
     FTestInfos := TDUnitXList<ITestInfo>.Create;
     for test in FTests do
-      FTestInfos.Add(test as ITestInfo);
+    begin
+      testInfo := test as ITestInfo;
+      FTestInfos.Add(testInfo);
+    end;
   end;
   result := FTestInfos;
 end;

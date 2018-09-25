@@ -66,6 +66,7 @@ type
   public
     constructor Create(const ATestInfo : ITestInfo; const AType : TTestResultType; const AMessage: string; const ALogMessages : TLogMessageArray); overload;
     constructor Create(const ATestInfo : ITestInfo; const AType : TTestResultType; const AMessage: string = ''); overload;
+    destructor Destroy;override;
   end;
 
   TDUnitXTestError = class(TDUnitXTestResult, ITestError)
@@ -138,6 +139,12 @@ var
 begin
   SetLength(LogMessages, 0);
   Create(ATestInfo, AType, AMessage, LogMessages);
+end;
+
+destructor TDUnitXTestResult.Destroy;
+begin
+  FTest := nil; //trying to track down memory leak.
+  inherited;
 end;
 
 function TDUnitXTestResult.GetDuration: TTimeSpan;
