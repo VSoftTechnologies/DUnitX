@@ -24,23 +24,6 @@
 {                                                                           }
 {***************************************************************************}
 
-
-(*
-****************************************************************
-* Unit:		      DUnitX.TestDataProvider
-* Area:	      	TestCases
-* Author:	      Uwe Rupprecht
-* Purpose:      Base Class and Factory for TestDataProvider
-* Version:	    1.0.0.0
-* Last Change:	16.08.2018 15:25
-* History:      -
-****************************************************************
-* This Source Code Form is subject to the terms of the
-* Mozilla Public License, v. 2.0. If a copy of the MPL was not
-* distributed with this file, You can obtain one at
-* https://mozilla.org/MPL/2.0/.
-****************************************************************
-*)
 unit DUnitX.TestDataProvider;
 
 interface
