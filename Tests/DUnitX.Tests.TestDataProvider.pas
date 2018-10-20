@@ -23,9 +23,9 @@ type
        Procedure InitTestData;
     public
       Constructor Create;Override;
-      function GetCaseCount(Methodname:string):integer;Override;
-      function GetCaseName(Methodname:string):String;Override;
-      function GetCaseParams(Methodname:string;casenr:integer):TValuearray;Override;
+      function GetCaseCount(const methodName : string) : Integer; override;
+      function GetCaseName(const methodName : string) : string; override;
+      function GetCaseParams(const methodName : string ; const caseNumber : integer) : TValuearray; override;
       Destructor Destroy;override;
   End;
 
@@ -60,12 +60,12 @@ begin
   inherited;
 end;
 
-function TSampleProvider.GetCaseCount(Methodname: string): integer;
+function TSampleProvider.GetCaseCount(const methodName : string) : Integer;
 begin
   result := flist.count;
 end;
 
-function TSampleProvider.GetCaseName(Methodname: string): String;
+function TSampleProvider.GetCaseName(const methodName : string) : string;
 begin
   result := '';
   if (Methodname = 'spTstAdd') then
@@ -75,19 +75,18 @@ begin
 
 end;
 
-function TSampleProvider.GetCaseParams(Methodname: string;
-  casenr: integer): TValuearray;
+function TSampleProvider.GetCaseParams(const methodName : string ; const caseNumber : integer) : TValuearray;
 begin
   SetLength(result,0);
-  if (Casenr >=0) and (Casenr < flist.count) then
+  if (caseNumber >=0) and (caseNumber < flist.count) then
   begin
     SetLength(result,3);
-    result[0] := flist[Casenr].v1;
-    result[1] := flist[Casenr].v2;
+    result[0] := flist[caseNumber].v1;
+    result[1] := flist[caseNumber].v2;
     if (Methodname = 'spTstAdd') then
-      result[2] := flist[Casenr].AddEx
+      result[2] := flist[caseNumber].AddEx
     else
-      result[2] := flist[Casenr].Equal;
+      result[2] := flist[caseNumber].Equal;
   end;
 end;
 
