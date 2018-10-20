@@ -23,11 +23,11 @@ type
       //The constructor, for initializing the data
       Constructor Create;override;
       //Get the amount of cases, we want to create;
-      function GetCaseCount(Methodname:string):integer;override;
+      function GetCaseCount(const methodName : string) : Integer; override;
       //Get the name of the cases, depending on the Test-Function
-      function GetCaseName(Methodname:string):String;override;
+      function GetCaseName(const methodName : string) : string; override;
       //Get the Params for calling the Test-Function;Be aware of the order !
-      function GetCaseParams(Methodname:string;casenr:integer):TValuearray;override;
+      function GetCaseParams(const methodName : string ; const caseNumber : integer) : TValuearray; override;
       //Cleanup the instance
       Destructor Destroy;override;
   End;
@@ -74,12 +74,12 @@ begin
   inherited;
 end;
 
-function TSampleProvider.GetCaseCount(Methodname: string): integer;
+function TSampleProvider.GetCaseCount(const methodName : string) : Integer;
 begin
   result := flist.Count;
 end;
 
-function TSampleProvider.GetCaseName(Methodname: string): String;
+function TSampleProvider.GetCaseName(const methodName : string) : string;
 begin
   result := Methodname;
   if (Methodname = 'Addtest') then
@@ -88,19 +88,18 @@ begin
     result := 'Compare Integer';
 end;
 
-function TSampleProvider.GetCaseParams(Methodname: string;
-  casenr: integer): TValuearray;
+function TSampleProvider.GetCaseParams(const methodName : string ; const caseNumber : integer) : TValuearray;
 begin
   SetLength(result,0);
-  if (casenr >= 0) and (casenr < flist.Count) then
+  if (caseNumber >= 0) and (caseNumber < flist.Count) then
   begin
     SetLength(result,3);
-    result[0] := flist[casenr].Val1;
-    result[1] := flist[casenr].Val2;
+    result[0] := flist[caseNumber].Val1;
+    result[1] := flist[caseNumber].Val2;
     if (Methodname = 'Addtest') then
-      result[2] := flist[casenr].AddExpect;
+      result[2] := flist[caseNumber].AddExpect;
     if (Methodname = 'Comparetest') then
-      result[2] := flist[casenr].isEqual;
+      result[2] := flist[caseNumber].isEqual;
   end;
 end;
 
