@@ -248,7 +248,7 @@ type
 
     {$REGION 'Documentation'}
     ///	<param name="AName">
-    ///	  Name of the member to find
+    ///	  Name of theï¿½member to find
     ///	</param>
     ///	<param name="AMember">
     ///	  Member that was found when Result is <b>True</b>
@@ -286,7 +286,7 @@ type
 
     {$REGION 'Documentation'}
     ///	<summary>
-    ///	  Retrieves the property with the given name and returns if this was
+    ///	  Retrieves theï¿½property with the given name and returns if this was
     ///	  successful.
     ///	</summary>
     ///	<param name="AName">
@@ -315,7 +315,7 @@ type
 
   {$REGION 'Documentation'}
   ///	<summary>
-  ///	  Extends <see cref="System.Rtti.TRttiField">TRttiField</see> for easier RTTI
+  ///	  Extendsï¿½<see cref="System.Rtti.TRttiField">TRttiField</see> for easier RTTI
   ///	  use.
   ///	</summary>
   {$ENDREGION}
@@ -323,7 +323,7 @@ type
   public
     {$REGION 'Documentation'}
     ///	<summary>
-    ///	  Retrieves the value of the field and returns if this was successful.
+    ///	  Retrieves theï¿½value of the field and returns if this was successful.
     ///	</summary>
     ///	<param name="Instance">
     ///	  Pointer to the instance of the field
@@ -339,7 +339,7 @@ type
 
   {$REGION 'Documentation'}
   ///	<summary>
-  ///	  Extends <see cref="Rtti.TRttiInstanceTypeHelper">TRttiInstanceTypeHelper</see>
+  ///	  Extendsï¿½<see cref="Rtti.TRttiInstanceTypeHelper">TRttiInstanceTypeHelper</see>
   ///	  for easier RTTI use.
   ///	</summary>
   {$ENDREGION}
@@ -354,7 +354,7 @@ type
 
   {$REGION 'Documentation'}
   ///	<summary>
-  ///	  Extends <see cref="System.Rtti.TRttiInvokableType">TRttiInvokableType</see>
+  ///	  Extendsï¿½<see cref="System.Rtti.TRttiInvokableType">TRttiInvokableType</see>
   ///	  for easier RTTI use.
   ///	</summary>
   {$ENDREGION}
@@ -434,7 +434,7 @@ type
   public
     {$REGION 'Documentation'}
     ///	<summary>
-    ///	  Retrieves the value of the property and returns if this was
+    ///	  Retrieves the value of theï¿½property and returns if this was
     ///	  successful.
     ///	</summary>
     ///	<param name="Instance">
@@ -448,7 +448,7 @@ type
 
     {$REGION 'Documentation'}
     ///	<summary>
-    ///	  Sets the value of the property and returns if this was successful.
+    ///	  Setsï¿½the value of the property and returns if this was successful.
     ///	</summary>
     ///	<param name="Instance">
     ///	  Pointer to the instance of the field
@@ -1163,7 +1163,7 @@ const
       // tkVariant, tkArray, tkRecord, tkInterface, tkInt64, tkDynArray
       ConvFail, ConvFail, ConvFail, ConvFail, ConvFail, ConvFail,
       // tkUString, tkClassRef, tkPointer, tkProcedure
-      ConvFail, ConvFail, ConvFail, ConvFail
+      ConvFail, ConvFail, ConvFail, ConvFail, ConvFail
     ),
     // tkInteger
     (
@@ -1174,7 +1174,7 @@ const
       // tkVariant, tkArray, tkRecord, tkInterface, tkInt64, tkDynArray
       ConvFail, ConvFail, ConvFail, ConvFail, ConvOrd2Ord, ConvFail,
       // tkUString, tkClassRef, tkPointer, tkProcedure
-      ConvOrd2Str, ConvFail, ConvFail, ConvFail
+      ConvOrd2Str, ConvFail, ConvFail, ConvFail, ConvFail
     ),
     // tkChar
     (
@@ -1185,7 +1185,7 @@ const
       // tkVariant, tkArray, tkRecord, tkInterface, tkInt64, tkDynArray
       ConvFail, ConvFail, ConvFail, ConvFail, ConvOrd2Ord, ConvFail,
       // tkUString, tkClassRef, tkPointer, tkProcedure
-      ConvFail, ConvFail, ConvFail, ConvFail
+      ConvFail, ConvFail, ConvFail, ConvFail, ConvFail
     ),
     // tkEnumeration
     (
@@ -1196,7 +1196,7 @@ const
       // tkVariant, tkArray, tkRecord, tkInterface, tkInt64, tkDynArray
       ConvFail, ConvFail, ConvFail, ConvFail, ConvOrd2Ord, ConvFail,
       // tkUString, tkClassRef, tkPointer, tkProcedure
-      ConvOrd2Str, ConvFail, ConvFail, ConvFail
+      ConvOrd2Str, ConvFail, ConvFail, ConvFail, ConvFail
     ),
     // tkFloat
     (
@@ -1207,7 +1207,7 @@ const
       // tkVariant, tkArray, tkRecord, tkInterface, tkInt64, tkDynArray
       ConvFail, ConvFail, ConvFail, ConvFail, ConvFloat2Ord, ConvFail,
       // tkUString, tkClassRef, tkPointer, tkProcedure
-      ConvFloat2Str, ConvFail, ConvFail, ConvFail
+      ConvFloat2Str, ConvFail, ConvFail, ConvFail, ConvFail
     ),
     // tkString
     (
@@ -1218,7 +1218,7 @@ const
       // tkVariant, tkArray, tkRecord, tkInterface, tkInt64, tkDynArray
       ConvFail, ConvFail, ConvFail, ConvFail, ConvFail, ConvFail,
       // tkUString, tkClassRef, tkPointer, tkProcedure
-      ConvFail, ConvFail, ConvFail, ConvFail
+      ConvFail, ConvFail, ConvFail, ConvFail, ConvFail
     ),
     // tkSet
     (
@@ -1229,7 +1229,7 @@ const
       // tkVariant, tkArray, tkRecord, tkInterface, tkInt64, tkDynArray
       ConvFail, ConvFail, ConvFail, ConvFail, ConvFail, ConvFail,
       // tkUString, tkClassRef, tkPointer, tkProcedure
-      ConvFail, ConvFail, ConvFail, ConvFail
+      ConvFail, ConvFail, ConvFail, ConvFail, ConvFail
     ),
     // tkClass
     (
@@ -1240,7 +1240,7 @@ const
       // tkVariant, tkArray, tkRecord, tkInterface, tkInt64, tkDynArray
       ConvFail, ConvFail, ConvFail, ConvFail, ConvFail, ConvFail,
       // tkUString, tkClassRef, tkPointer, tkProcedure
-      ConvFail, ConvFail, ConvFail, ConvFail
+      ConvFail, ConvFail, ConvFail, ConvFail, ConvFail
     ),
     // tkMethod
     (
@@ -1251,7 +1251,7 @@ const
       // tkVariant, tkArray, tkRecord, tkInterface, tkInt64, tkDynArray
       ConvFail, ConvFail, ConvFail, ConvFail, ConvFail, ConvFail,
       // tkUString, tkClassRef, tkPointer, tkProcedure
-      ConvFail, ConvFail, ConvFail, ConvFail
+      ConvFail, ConvFail, ConvFail, ConvFail, ConvFail
     ),
     // tkWChar
     (
@@ -1262,7 +1262,7 @@ const
       // tkVariant, tkArray, tkRecord, tkInterface, tkInt64, tkDynArray
       ConvFail, ConvFail, ConvFail, ConvFail, ConvOrd2Ord, ConvFail,
       // tkUString, tkClassRef, tkPointer, tkProcedure
-      ConvFail, ConvFail, ConvFail, ConvFail
+      ConvFail, ConvFail, ConvFail, ConvFail, ConvFail
     ),
     // tkLString
     (
@@ -1273,7 +1273,7 @@ const
       // tkVariant, tkArray, tkRecord, tkInterface, tkInt64, tkDynArray
       ConvFail, ConvFail, ConvFail, ConvFail, ConvFail, ConvFail,
       // tkUString, tkClassRef, tkPointer, tkProcedure
-      ConvFail, ConvFail, ConvFail, ConvFail
+      ConvFail, ConvFail, ConvFail, ConvFail, ConvFail
     ),
     // tkWString
     (
@@ -1284,7 +1284,7 @@ const
       // tkVariant, tkArray, tkRecord, tkInterface, tkInt64, tkDynArray
       ConvFail, ConvFail, ConvFail, ConvFail, ConvFail, ConvFail,
       // tkUString, tkClassRef, tkPointer, tkProcedure
-      ConvFail, ConvFail, ConvFail, ConvFail
+      ConvFail, ConvFail, ConvFail, ConvFail, ConvFail
     ),
     // tkVariant
     (
@@ -1295,7 +1295,7 @@ const
       // tkVariant, tkArray, tkRecord, tkInterface, tkInt64, tkDynArray
       ConvFail, ConvFail, ConvFail, ConvFail, ConvFail, ConvFail,
       // tkUString, tkClassRef, tkPointer, tkProcedure
-      ConvFail, ConvFail, ConvFail, ConvFail
+      ConvFail, ConvFail, ConvFail, ConvFail, ConvFail
     ),
     // tkArray
     (
@@ -1306,7 +1306,7 @@ const
       // tkVariant, tkArray, tkRecord, tkInterface, tkInt64, tkDynArray
       ConvFail, ConvFail, ConvFail, ConvFail, ConvFail, ConvFail,
       // tkUString, tkClassRef, tkPointer, tkProcedure
-      ConvFail, ConvFail, ConvFail, ConvFail
+      ConvFail, ConvFail, ConvFail, ConvFail, ConvFail
     ),
     // tkRecord
     (
@@ -1317,7 +1317,7 @@ const
       // tkVariant, tkArray, tkRecord, tkInterface, tkInt64, tkDynArray
       ConvFail, ConvFail, ConvFail, ConvFail, ConvFail, ConvFail,
       // tkUString, tkClassRef, tkPointer, tkProcedure
-      ConvFail, ConvFail, ConvFail, ConvFail
+      ConvFail, ConvFail, ConvFail, ConvFail, ConvFail
     ),
     // tkInterface
     (
@@ -1328,7 +1328,7 @@ const
       // tkVariant, tkArray, tkRecord, tkInterface, tkInt64, tkDynArray
       ConvFail, ConvFail, ConvFail, ConvIntf2Intf, ConvFail, ConvFail,
       // tkUString, tkClassRef, tkPointer, tkProcedure
-      ConvFail, ConvFail, ConvFail, ConvFail
+      ConvFail, ConvFail, ConvFail, ConvFail, ConvFail
     ),
     // tkInt64
     (
@@ -1339,7 +1339,7 @@ const
       // tkVariant, tkArray, tkRecord, tkInterface, tkInt64, tkDynArray
       ConvFail, ConvFail, ConvFail, ConvFail, ConvOrd2Ord, ConvFail,
       // tkUString, tkClassRef, tkPointer, tkProcedure
-      ConvOrd2Str, ConvFail, ConvFail, ConvFail
+      ConvOrd2Str, ConvFail, ConvFail, ConvFail, ConvFail
     ),
     // tkDynArray
     (
@@ -1350,7 +1350,7 @@ const
       // tkVariant, tkArray, tkRecord, tkInterface, tkInt64, tkDynArray
       ConvFail, ConvFail, ConvFail, ConvFail, ConvFail, ConvFail,
       // tkUString, tkClassRef, tkPointer, tkProcedure
-      ConvFail, ConvFail, ConvFail, ConvFail
+      ConvFail, ConvFail, ConvFail, ConvFail, ConvFail
     ),
     // tkUString
     (
@@ -1361,7 +1361,7 @@ const
       // tkVariant, tkArray, tkRecord, tkInterface, tkInt64, tkDynArray
       ConvFail, ConvFail, ConvFail, ConvFail, ConvStr2Ord, {$IFDEF DELPHI_XE3_UP}ConvStr2DynArray{$ELSE}ConvFail{$ENDIF},
       // tkUString, tkClassRef, tkPointer, tkProcedure
-      ConvFail, ConvFail, ConvFail, ConvFail
+      ConvFail, ConvFail, ConvFail, ConvFail, ConvFail
     ),
     // tkClassRef
     (
@@ -1372,7 +1372,7 @@ const
       // tkVariant, tkArray, tkRecord, tkInterface, tkInt64, tkDynArray
       ConvFail, ConvFail, ConvFail, ConvFail, ConvFail, ConvFail,
       // tkUString, tkClassRef, tkPointer, tkProcedure
-      ConvFail, ConvFail, ConvFail, ConvFail
+      ConvFail, ConvFail, ConvFail, ConvFail, ConvFail
     ),
     // tkPointer
     (
@@ -1383,7 +1383,7 @@ const
       // tkVariant, tkArray, tkRecord, tkInterface, tkInt64, tkDynArray
       ConvFail, ConvFail, ConvFail, ConvFail, ConvFail, ConvFail,
       // tkUString, tkClassRef, tkPointer, tkProcedure
-      ConvFail, ConvFail, ConvFail, ConvFail
+      ConvFail, ConvFail, ConvFail, ConvFail, ConvFail
     ),
     // tkProcedure
     (
@@ -1394,7 +1394,14 @@ const
       // tkVariant, tkArray, tkRecord, tkInterface, tkInt64, tkDynArray
       ConvFail, ConvFail, ConvFail, ConvFail, ConvFail, ConvFail,
       // tkUString, tkClassRef, tkPointer, tkProcedure
-      ConvFail, ConvFail, ConvFail, ConvFail
+      ConvFail, ConvFail, ConvFail, ConvFail, ConvFail
+    ),
+    // tkMRecord
+    (
+      ConvFail, ConvFail, ConvFail, ConvFail, ConvFail, ConvFail,
+      ConvFail, ConvFail, ConvFail, ConvFail, ConvFail, ConvFail,
+      ConvFail, ConvFail, ConvFail, ConvFail, ConvFail, ConvFail,
+      ConvFail, ConvFail, ConvFail, ConvFail, ConvFail
     )
   );
 {$ENDREGION}
