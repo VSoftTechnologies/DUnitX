@@ -674,7 +674,7 @@ type
     function Tail: PPropInfoExt; inline;
   end;
   {$ENDIF}
- 
+
   TRttiPropertyExtension = class(TRttiInstanceProperty)
   private
     {$IFDEF DELPHI_XE3_UP}
@@ -905,7 +905,7 @@ function ConvStr2DynArray(const ASource: TValue; ATarget: PTypeInfo; out AResult
 var
   s: string;
   values: TStringDynArray;
-  i: Integer;
+  i: NativeInt;
   p: Pointer;
   v1, v2: TValue;
   elType: PTypeInfo;
@@ -1434,7 +1434,7 @@ begin
   if i > -1 then
     Result := s.SubString(Succ(i), s.Length - (Succ(i) + 1))
   else
-    Result := string.Empty; 
+    Result := string.Empty;
   {$ENDIF}
 end;
 
@@ -3198,7 +3198,7 @@ begin
       Result := LProp;
       Break;
     end;
-  end;  
+  end;
   {$ENDIF}
 end;
 
