@@ -153,9 +153,10 @@ begin
   stopwatch.Reset;
   stopwatch.Start;
 
-  //Not sure why this was removed in previous revision, but it causes W1036 as
-  //not being initialized if not present.
+  // TODO: Not sure if 10.1 is absolutely correct, but 10.2 atleast this gives hint
+  {$IFDEF DELPHI_XE101_DOWN} // <- H2077 Value assigned to 'elapsedTime' never used 10.2 Tokyo and up
   elapsedTime := 0;
+  {$ENDIF}
 
   if Terminated then
      exit;
