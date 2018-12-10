@@ -149,11 +149,13 @@ uses
   {$IFDEF USE_NS}
   System.SysUtils,
   System.Classes,
-  WinApi.Windows,
   {$ELSE}
   SysUtils,
   Classes,
-  Windows,
+    {$IFDEF DELPHI_2010_DOWN}
+    //D2010 doesn't have TThread.Sleep
+    Windows,
+    {$ENDIF}
   {$ENDIF}
   DUnitX.DUnitCompatibility;
 
