@@ -2467,16 +2467,23 @@ function TRttiTypeHelper.TryGetConstructor(out AMethod: TRttiMethod): boolean;
 var
   methods : TArray<TRttiMethod>;
   method : TRttiMethod;
+  rttiType : TRttiType;
 begin
   result := False;
-  methods := GetDeclaredMethods;
-  for method in methods do
+  rttiType := Self;
+
+  while (rttiType <> nil) and (rttiType.Handle <> TypeInfo(TObject)) do
   begin
-    if method.IsConstructor and (Length(method.GetParameters) = 0) then
+    methods := rttiType.GetDeclaredMethods;
+    for method in methods do
     begin
-      AMethod := method;
-      Exit(true);
+      if method.IsConstructor and (Length(method.GetParameters) = 0) then
+      begin
+        AMethod := method;
+        Exit(true);
+      end;
     end;
+    rttiType := rttiType.BaseType;
   end;
 end;
 
