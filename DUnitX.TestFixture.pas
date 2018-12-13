@@ -447,7 +447,7 @@ begin
     end
     else
     {$ENDIF}
-      FFixtureInstance := FTestClass.Create;
+      FFixtureInstance := FFixtureType.GetMethod('Create').Invoke(TRttiInstanceType(FFixtureType).MetaclassType, []).AsObject;
 
     //Don't do this if we are called from the constructor as it's not needed.
     if not isConstructing then
