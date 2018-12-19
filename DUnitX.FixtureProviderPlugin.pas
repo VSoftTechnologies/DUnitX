@@ -462,7 +462,7 @@ begin
                 params := iProvider.GetCaseParams(method.name,x);
                 for i := 1 to repeatCount do
                 begin
-                  currentFixture.AddTestCase(method.Name, FormatCaseName(caseName,x), FormatTestName(method.Name, x, repeatCount), category, method, testEnabled, params);
+                  currentFixture.AddTestCase(method.Name, FormatCaseName(caseName,x), FormatTestName(method.Name, i, repeatCount), category, method, testEnabled, params);
                 end;
               end;
               iProvider := nil;
