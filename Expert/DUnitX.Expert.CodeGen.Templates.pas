@@ -109,23 +109,23 @@ resourcestring
  STestUnit = 'unit %0:s;'#13#10 +
  #13#10 +
  'interface'#13#10 +
+ #13#10 +
  'uses'#13#10 +
  '  DUnitX.TestFramework;'#13#10 +
  #13#10 +
  'type'#13#10 +
- #13#10 +
  '  [TestFixture]'#13#10 +
- '  %1:s = class(TObject) '#13#10 +
+ '  %1:s = class'#13#10 +
  '  public'#13#10 +
  '%2:s%3:s' +
  '  end;'#13#10 +
  #13#10 +
  'implementation'#13#10 +
- #13#10 +
  '%4:s%5:s' +
  #13#10 +
  'initialization'#13#10 +
  '  TDUnitX.RegisterTestFixture(%1:s);'#13#10 +
+ #13#10 +
  'end.'#13#10;
 
  SSetupTearDownIntf =
@@ -136,15 +136,14 @@ resourcestring
 
  // 0 - Class Name
  SSetupTearDownImpl =
+ #13#10 +
  'procedure %0:s.Setup;'#13#10  +
  'begin'#13#10 +
  'end;'#13#10 +
  #13#10 +
  'procedure %0:s.TearDown;'#13#10 +
  'begin'#13#10 +
- 'end;'#13#10 +
- #13#10;
-
+ 'end;'#13#10;
 
  SSampleMethodsIntf =
  '    // Sample Methods'#13#10 +
@@ -160,6 +159,7 @@ resourcestring
  // 0 - Class Name
  //TODO: Show Examples of calling Assert
  SSampleMethodsImpl =
+ #13#10 +
  'procedure %0:s.Test1;'#13#10 +
  'begin'#13#10 +
  'end;'#13#10 +
