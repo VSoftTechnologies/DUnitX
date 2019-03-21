@@ -28,6 +28,13 @@ SET "ROOTTEMPLATEPATH=%userprofile%\Documents\RAD Studio\code_templates\"
 
 IF NOT EXIST "%ROOTTEMPLATEPATH%" (
   ECHO ERROR: Could not find template path: %ROOTTEMPLATEPATH%
+  ECHO Trying another path...
+)
+
+SET "ROOTTEMPLATEPATH=%userprofile%\Documents\Embarcadero\Studio\code_templates\"
+
+IF NOT EXIST "%ROOTTEMPLATEPATH%" (
+  ECHO ERROR: Could not find template path: %ROOTTEMPLATEPATH%
   GOTO ERROR
 )
 
