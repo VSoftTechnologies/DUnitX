@@ -53,16 +53,17 @@ resourcestring
  '  DUnitX.Loggers.Xml.NUnit,'#13#10 +
  '  DUnitX.TestFramework;'#13#10 +
  #13#10 +
+ '{$IFNDEF TESTINSIGHT}'#13#10 +
  'var'#13#10 +
  '  runner : ITestRunner;'#13#10 +
  '  results : IRunResults;'#13#10 +
  '  logger : ITestLogger;'#13#10 +
  '  nunitLogger : ITestLogger;'#13#10 +
+ '{$ENDIF}'#13#10 +
  'begin'#13#10 +
  '{$IFDEF TESTINSIGHT}'#13#10 +
  '  TestInsight.DUnitX.RunRegisteredTests;'#13#10 +
- '  exit;'#13#10 +
- '{$ENDIF}'#13#10 +
+ '{$ELSE}'#13#10 +
  '  try'#13#10 +
  '    //Check command line options, will exit if invalid'#13#10 +
  '    TDUnitX.CheckCommandLine;'#13#10 +
@@ -96,6 +97,7 @@ resourcestring
  '    on E: Exception do'#13#10 +
  '      System.Writeln(E.ClassName, '': '', E.Message);'#13#10 +
  '  end;'#13#10 +
+ '{$ENDIF}'#13#10 +
  'end.'#13#10;
 
  // 0 - Unit Name
