@@ -38,7 +38,7 @@ resourcestring
  #13#10 +
  '{$IFNDEF TESTINSIGHT}'#13#10 +
  '{$APPTYPE CONSOLE}'#13#10 +
- '{$ENDIF}'+
+ '{$ENDIF}'#13#10 +
  '{$STRONGLINKTYPES ON}'#13#10 +
  'uses'#13#10 +
  {$IFDEF USE_NS}
@@ -48,16 +48,17 @@ resourcestring
  {$ENDIF}
  '{$IFDEF TESTINSIGHT}'#13#10 +
  '  TestInsight.DUnitX,'#13#10 +
- '{$ENDIF}'#13#10 +
+ '{$ELSE}'#13#10 +
  '  DUnitX.Loggers.Console,'#13#10 +
  '  DUnitX.Loggers.Xml.NUnit,'#13#10 +
+ '{$ENDIF}'#13#10 +
  '  DUnitX.TestFramework;'#13#10 +
  #13#10 +
  '{$IFNDEF TESTINSIGHT}'#13#10 +
  'var'#13#10 +
- '  runner : ITestRunner;'#13#10 +
- '  results : IRunResults;'#13#10 +
- '  logger : ITestLogger;'#13#10 +
+ '  runner: ITestRunner;'#13#10 +
+ '  results: IRunResults;'#13#10 +
+ '  logger: ITestLogger;'#13#10 +
  '  nunitLogger : ITestLogger;'#13#10 +
  '{$ENDIF}'#13#10 +
  'begin'#13#10 +
