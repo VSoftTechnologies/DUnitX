@@ -1,4 +1,4 @@
-program DUnitXExamples_D10TRio;
+program DUnitXExamples_D10Rio;
 
 {$APPTYPE CONSOLE}
 
