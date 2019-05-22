@@ -124,7 +124,7 @@ type
   ///  Currently only support on Win32 & Win64
   ///	</summary>
   ///	<remarks>
-  ///	  If [MaxTime(1000]] used then the test will fail if the
+  ///	  If [MaxTime(1000)] used then the test will fail if the
   ///   test takes longer than 1000ms
   ///	</remarks>
   MaxTimeAttribute = class(TCustomAttribute)
