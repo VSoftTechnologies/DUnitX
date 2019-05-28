@@ -72,14 +72,19 @@ resourcestring
  '    runner := TDUnitX.CreateRunner;'#13#10 +
  '    //Tell the runner to use RTTI to find Fixtures'#13#10 +
  '    runner.UseRTTI := True;'#13#10 +
+ '    //When true, Assertions must be made during tests;'#13#10 +
+ '    runner.FailsOnNoAsserts := False;'#13#10 +
+ #13#10 +
  '    //tell the runner how we will log things'#13#10 +
- '    //Log to the console window'#13#10 +
- '    logger := TDUnitXConsoleLogger.Create(true);'#13#10 +
- '    runner.AddLogger(logger);'#13#10 +
+ '    //Log to the console window if desired'#13#10 +
+ '    if TDUnitX.Options.ConsoleMode <> TDunitXConsoleMode.Off then'#13#10 +
+ '    begin'#13#10 +
+ '      logger := TDUnitXConsoleLogger.Create(TDUnitX.Options.ConsoleMode = TDunitXConsoleMode.Quiet);'#13#10 +
+ '      runner.AddLogger(logger);'#13#10 +
+ '    end;'#13#10 +
  '    //Generate an NUnit compatible XML File'#13#10 +
  '    nunitLogger := TDUnitXXMLNUnitFileLogger.Create(TDUnitX.Options.XMLOutputFile);'#13#10 +
  '    runner.AddLogger(nunitLogger);'#13#10 +
- '    runner.FailsOnNoAsserts := False; //When true, Assertions must be made during tests;'#13#10 +
  #13#10 +
  '    //Run tests'#13#10 +
  '    results := runner.Execute;'#13#10 +

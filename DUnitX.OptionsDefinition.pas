@@ -102,10 +102,16 @@ begin
                                              TDUnitX.Options.LogLevel := value
                                           end);
 
-  TOptionsRegistry.RegisterOption<TDUnitXExitBehavior>('exitbehavior','exit','Exit behavior - Continue, Pause',
+  TOptionsRegistry.RegisterOption<TDUnitXExitBehavior>('exitbehavior','exit','Exit behavior - Continue, Pause (default)',
                                           procedure(value : TDUnitXExitBehavior)
                                           begin
                                              TDUnitX.Options.ExitBehavior := value
+                                          end);
+
+  TOptionsRegistry.RegisterOption<TDunitXConsoleMode>('consolemode','cm','Console mode - Off, Quiet, Verbose (default)',
+                                          procedure(value : TDunitXConsoleMode)
+                                          begin
+                                             TDUnitX.Options.ConsoleMode := value
                                           end);
 
   def := TOptionsRegistry.RegisterOption<boolean>('h','?','Show Usage',
@@ -116,10 +122,10 @@ begin
   def.HasValue := False;
 
   def := TOptionsRegistry.RegisterUnNamedOption<string>('',
-                                                        procedure(value :string)
-                                                        begin
-                                                           TDUnitX.Options.XMLOutputFile := value;
-                                                        end);
+                                          procedure(value :string)
+                                          begin
+                                             TDUnitX.Options.XMLOutputFile := value;
+                                          end);
   def.Hidden := True;
 
 end;

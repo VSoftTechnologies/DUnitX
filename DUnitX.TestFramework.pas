@@ -475,6 +475,11 @@ type
                          Pause //The runner will pause after displaying it's results
                          );
 
+  TDunitXConsoleMode = (Off,    // Don't create a console runner
+                        Quiet,  // Create a console runner in quiet mode
+                        Verbose // Create a conseole runner in verbose mode
+                        );
+
   ITestRunner = interface
     ['{06C0D8D2-B2D7-42F9-8D23-8F2D8A75263F}']
     procedure AddLogger(const value : ITestLogger);
@@ -521,6 +526,7 @@ type
     FLogLevel : TLogLevel;
     FHideBanner : boolean;
     FExitBehavior : TDUnitXExitBehavior;
+    FConsoleMode : TDunitXConsoleMode;
     FShowUsage : boolean;
     FDontShowIgnored : boolean;
   public
@@ -548,6 +554,8 @@ type
 
     //Defaults to Pause
     property ExitBehavior : TDUnitXExitBehavior read FExitBehavior write FExitBehavior;
+
+    property ConsoleMode : TDunitXConsoleMode read FConsoleMode write FConsoleMode ;
 
     // Show command line usage
     property ShowUsage : boolean read FShowUsage write FShowUsage;
@@ -657,6 +665,7 @@ begin
   FRun := TStringList.Create;
   FLogLevel := TLogLevel.Information;
   FExitBehavior := TDUnitXExitBehavior.Pause;
+  FConsoleMode := TDUnitXConsoleMode.Verbose;
 end;
 
 destructor TDUnitXOptions.Destroy;
