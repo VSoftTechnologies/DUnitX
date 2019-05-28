@@ -85,10 +85,16 @@ begin
     runner := TDUnitX.CreateRunner;
     runner.UseRTTI := True;
     runner.FailsOnNoAsserts := True; //Assertions must be made during tests;
+
     //tell the runner how we will log things
-    logger := TDUnitXConsoleLogger.Create(false);
+
+    if TDUnitX.Options.ConsoleMode <> TDunitXConsoleMode.Off then
+    begin
+      logger := TDUnitXConsoleLogger.Create(TDUnitX.Options.ConsoleMode = TDunitXConsoleMode.Quiet);
+      runner.AddLogger(logger);
+    end;
+
     nunitLogger := TDUnitXXMLNUnitFileLogger.Create(TDUnitX.Options.XMLOutputFile);
-    runner.AddLogger(logger);
     runner.AddLogger(nunitLogger);
 
     logger := nil;

@@ -54,11 +54,16 @@ begin
     //Create the runner
     runner := TDUnitX.CreateRunner;
     runner.UseRTTI := True;
+
     //tell the runner how we will log things
-    logger := TDUnitXConsoleLogger.Create(false);
-    //generate an xml log file
+
+    if TDUnitX.Options.ConsoleMode <> TDunitXConsoleMode.Off then
+    begin
+      logger := TDUnitXConsoleLogger.Create(TDUnitX.Options.ConsoleMode = TDunitXConsoleMode.Quiet);
+      runner.AddLogger(logger);
+    end;
+
     nunitLogger := TDUnitXXMLNUnitFileLogger.Create(TDUnitX.Options.XMLOutputFile);
-    runner.AddLogger(logger);
     runner.AddLogger(nunitLogger);
 
     //Run tests
