@@ -1,8 +1,8 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{8B735605-DC55-491C-9C13-C871E326E254}</ProjectGuid>
-        <ProjectVersion>18.5</ProjectVersion>
-        <MainSource>DUnitXExamples_D10TRio.dpr</MainSource>
+        <ProjectVersion>18.6</ProjectVersion>
+        <MainSource>DUnitXExamples_D10Rio.dpr</MainSource>
         <Config Condition="'$(Config)'==''">Debug</Config>
         <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
         <FrameworkType>VCL</FrameworkType>
@@ -61,7 +61,7 @@
     <PropertyGroup Condition="'$(Base)'!=''">
         <Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
         <Icns_MainIcns>$(BDS)\bin\delphi_PROJECTICNS.icns</Icns_MainIcns>
-        <SanitizedProjectName>DUnitXExamples_D10TRio</SanitizedProjectName>
+        <SanitizedProjectName>DUnitXExamples_D10Rio</SanitizedProjectName>
         <DCC_UnitSearchPath>..\;$(DelphiMocks);..\..\Delphi-Mocks;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <DCC_DcuOutput>.\$(Platform)\$(Config)</DCC_DcuOutput>
         <DCC_ExeOutput>.\$(Platform)\$(Config)</DCC_ExeOutput>
@@ -175,7 +175,7 @@
         <BorlandProject>
             <Delphi.Personality>
                 <Source>
-                    <Source Name="MainSource">DUnitXExamples_D10TRio.dpr</Source>
+                    <Source Name="MainSource">DUnitXExamples_D10Rio.dpr</Source>
                 </Source>
                 <Parameters>
                     <Parameters Name="UseLauncher">False</Parameters>
@@ -220,15 +220,15 @@
                 <Platform value="Win64">True</Platform>
             </Platforms>
             <Deployment Version="3">
-                <DeployFile LocalName="Win64\Debug\DUnitXExamples_D10TRio.exe" Configuration="Debug" Class="ProjectOutput">
+                <DeployFile LocalName="Win64\Debug\DUnitXExamples_D10Rio.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win64">
-                        <RemoteName>DUnitXExamples_D10TRio.exe</RemoteName>
+                        <RemoteName>DUnitXExamples_D10Rio.exe</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="C:\Users\Public\Documents\Embarcadero\Studio\20.0\bin\Win32\Debug\DUnitXExamples_D10TRio.exe" Configuration="Debug" Class="ProjectOutput">
+                <DeployFile LocalName="C:\Users\Public\Documents\Embarcadero\Studio\20.0\bin\Win32\Debug\DUnitXExamples_D10Rio.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
-                        <RemoteName>DUnitXExamples_D10TRio.exe</RemoteName>
+                        <RemoteName>DUnitXExamples_D10Rio.exe</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
