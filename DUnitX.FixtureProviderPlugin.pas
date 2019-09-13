@@ -289,7 +289,7 @@ var
   willRaiseInherit: TExceptionInheritance;
 
   repeatCount: Cardinal;
-  i,c: Integer;
+  i: Integer;
   currentFixture: ITestFixture;
 begin
 //  WriteLn('Generating Tests for : ' + fixture.FullName);
