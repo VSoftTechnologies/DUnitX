@@ -136,7 +136,7 @@ begin
 
   for pair in TDUnitX.RegisteredFixtures do
   begin
-     if not FFixtureClasses.ContainsValue(pair.Value) then
+     if not FFixtureClasses.ContainsKey(pair.Key) then
       FFixtureClasses.AddOrSetValue(pair.Key, pair.Value);
   end;
 
