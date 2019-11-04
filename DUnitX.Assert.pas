@@ -976,11 +976,9 @@ begin
     on e : TObject do // For those who throw exceptions not descending from Exception.
     begin
       if e is Exception  then
-      begin
-        FailFmt(SUnexpectedException, [e.ClassName, exception(e).message], ReturnAddress);
-      end
+        FailFmt(SUnexpectedException + AddLineBreak(msg), [e.ClassName, exception(e).message], ReturnAddress)
       else
-        FailFmt(SUnexpectedExceptionAlt, [e.ClassName], ReturnAddress);
+        FailFmt(SUnexpectedExceptionAlt + AddLineBreak(msg), [e.ClassName], ReturnAddress);
     end;
   end;
 end;
