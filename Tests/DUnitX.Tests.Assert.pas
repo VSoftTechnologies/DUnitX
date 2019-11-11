@@ -266,6 +266,9 @@ type
     [TestCase('GUID with dash', '[0-9A-F]{8}[-]([0-9A-F]{4}[-]){3}[0-9A-F]{12},C687683F-F25B-4F9A-A231-31C52253B6A#')]
     [TestCase('GUID without dash', '[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12},C687683FF25B4F9AA23131C52253B6A#')]
     procedure IsMatch_False_Will_Raise_ETestFailure(const regexPattern, theString: string);
+
+    [Test]
+    procedure WillRaiseWithMessageRegex;
 {$ENDIF}
   end;
 
@@ -1206,6 +1209,42 @@ begin
       Assert.IsMatch(regexPattern, theString);
     end, ETestFailure);
 end;
+
+procedure TTestsAssert.WillRaiseWithMessageRegex;
+const
+  EXCEPTION_MSG_PATT = 'Exception on "%s" doing "%s"';
+  EXCEPTION_RE_MATCH = 'Exception on ".+?" doing ".+?"';
+  EXCEPTION_RE_NOT_MATCH = 'Exception on something doing anything';
+begin
+  Assert.WillNotRaiseAny(
+    procedure
+    begin
+      Assert.WillRaiseWithMessageRegex(
+        procedure
+        begin
+          raise Exception.CreateFmt(EXCEPTION_MSG_PATT, ['this', 'that']);
+        end,
+        nil,
+        EXCEPTION_RE_MATCH
+      );
+    end
+  );
+
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.WillRaiseWithMessageRegex(
+        procedure
+        begin
+          raise Exception.CreateFmt(EXCEPTION_MSG_PATT, ['this', 'that']);
+        end,
+        nil,
+        EXCEPTION_RE_NOT_MATCH
+      );
+    end,
+  ETestFailure);
+end;
+
 {$ENDIF}
 
 initialization
