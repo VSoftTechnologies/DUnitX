@@ -78,6 +78,8 @@ type
     FIgnoreMemoryLeaks : Boolean;
 
     FIgnoreFixtureSetup : boolean;
+    FIgnoredFixture : Boolean;
+    FIgnoredReason : string;
   protected
     //used by GenerateFixtureFromClass to be tests from TestCaseInfo
     function CreateTestFromTestCase(const ACaseInfo : TestCaseInfo; const ACategory : string; const AMethod : TRttiMethod; const ATestEnabled : Boolean) : ITest;
@@ -113,10 +115,13 @@ type
     function GetFixtureInstance : TObject;
     function GetTestCount : cardinal;
     function GetActiveTestCount : cardinal;
+    function GetIgnored : boolean;
+    function GetIgnoreReason : string;
 
     function GetChildren: ITestFixtureList;
     function GetHasChildren : boolean;
     function GetHasTests : boolean;
+    function GetHasActiveTests : boolean;
     function GetHasChildTests: Boolean;
     function IsNameSpaceOnly : boolean;
     procedure OnMethodExecuted(const AMethod : TTestMethod);
@@ -164,6 +169,7 @@ constructor TDUnitXTestFixture.Create(const AName : string; const ACategory : st
 var
   fixtureAttrib   : TestFixtureAttribute;
   IgnoreMemoryLeakAttrib: IgnoreMemoryLeaks;
+  IgnoredAttrib: IgnoreAttribute;
   i : integer;
   categories : TArray<string>;
   cat : string;
@@ -211,6 +217,13 @@ begin
   fixtureAttrib := nil;
   if FFixtureType.TryGetAttributeOfType<TestFixtureAttribute>(fixtureAttrib) then
     FDescription := fixtureAttrib.Description;
+
+  FIgnoredFixture := False;
+  if FFixtureType.TryGetAttributeOfType<IgnoreAttribute>(IgnoredAttrib) then
+  begin
+    FIgnoredFixture := True;
+    FIgnoredReason := IgnoredAttrib.Reason;
+  end;
 
   InternalInitFixtureInstance(true);
 end;
@@ -287,6 +300,22 @@ begin
     Result := FName;
 end;
 
+function TDUnitXTestFixture.GetHasActiveTests: boolean;
+var
+  lTest: ITest;
+begin
+  Result := False;
+
+  if FIgnoredFixture then
+    exit;
+
+  for lTest in FTests do
+  begin
+    if not lTest.Ignored then
+      exit(true);
+  end;
+end;
+
 function TDUnitXTestFixture.GetHasChildren: boolean;
 begin
   result := (FChildren <> nil) and (FChildren.Count > 0);
@@ -326,6 +355,11 @@ begin
     end;
 end;
 
+function TDUnitXTestFixture.GetIgnored: boolean;
+begin
+  Result := FIgnoredFixture;
+end;
+
 function TDUnitXTestFixture.GetIgnoreMemoryLeaksForMethod(
   AMethod: TRttiMethod): Boolean;
 var
@@ -335,6 +369,11 @@ begin
     result := IgnoreMemoryLeak.IgnoreLeaks
   else
     result := FIgnoreMemoryLeaks;
+end;
+
+function TDUnitXTestFixture.GetIgnoreReason: string;
+begin
+  Result := FIgnoredReason;
 end;
 
 function TDUnitXTestFixture.GetName: string;

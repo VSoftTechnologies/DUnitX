@@ -644,7 +644,7 @@ begin
       if fixture.HasTests then
         fixture.InitFixtureInstance;
       //only run the setup method if there are actually tests
-      if fixture.HasTests and Assigned(fixture.SetupFixtureMethod) then
+      if fixture.HasActiveTests and Assigned(fixture.SetupFixtureMethod) then
         ExecuteSetupFixtureMethod(context, threadId, fixture, fixtureResult);
 
       if fixture.HasTests then
@@ -653,7 +653,7 @@ begin
       if fixture.HasChildFixtures then
         ExecuteFixtures(fixtureResult, context, threadId, fixture.Children);
 
-      if fixture.HasTests and Assigned(fixture.TearDownFixtureMethod) then
+      if fixture.HasActiveTests and Assigned(fixture.TearDownFixtureMethod) then
         //TODO: Tricker yet each test above us requires errors that occur here
         ExecuteTearDownFixtureMethod(context, threadId, fixture);
     finally
