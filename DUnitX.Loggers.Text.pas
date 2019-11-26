@@ -86,119 +86,126 @@ type
 
 implementation
 
+uses
+  {$IFDEF USE_NS}
+  System.SysUtils;
+  {$ELSE}
+  SysUtils;
+  {$ENDIF}
+
 
 { TDUnitXTextFileLogger }
 
 constructor TDUnitXTextFileLogger.Create(const AFileName : string; const overwrite : boolean);
 begin
-
+  raise ENotImplemented.Create('Not Implemented');
 end;
 
 procedure TDUnitXTextFileLogger.OnEndSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 begin
-
+  raise ENotImplemented.Create('Not Implemented');
 end;
 
 procedure TDUnitXTextFileLogger.OnEndSetupTest(const threadId: TThreadID; const Test: ITestInfo);
 begin
-
+  raise ENotImplemented.Create('Not Implemented');
 end;
 
 procedure TDUnitXTextFileLogger.OnEndTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 begin
-
+  raise ENotImplemented.Create('Not Implemented');
 end;
 
 procedure TDUnitXTextFileLogger.OnEndTeardownTest(const threadId: TThreadID; const Test: ITestInfo);
 begin
-
+  raise ENotImplemented.Create('Not Implemented');
 end;
 
 procedure TDUnitXTextFileLogger.OnEndTest(const threadId: TThreadID; const Test: ITestResult);
 begin
-
+  raise ENotImplemented.Create('Not Implemented');
 end;
 
 procedure TDUnitXTextFileLogger.OnEndTestFixture(const threadId: TThreadID; const results: IFixtureResult);
 begin
-
+  raise ENotImplemented.Create('Not Implemented');
 end;
 
 procedure TDUnitXTextFileLogger.OnExecuteTest(const threadId: TThreadID; const Test: ITestInfo);
 begin
-
+  raise ENotImplemented.Create('Not Implemented');
 end;
 
 procedure TDUnitXTextFileLogger.OnTestError(const threadId: TThreadID; const Error: ITestError);
 begin
-
+  raise ENotImplemented.Create('Not Implemented');
 end;
 
 procedure TDUnitXTextFileLogger.OnTestFailure(const threadId: TThreadID; const Failure: ITestError);
 begin
-
+  raise ENotImplemented.Create('Not Implemented');
 end;
 
 procedure TDUnitXTextFileLogger.OnTestIgnored(const threadId: TThreadID; const AIgnored: ITestResult);
 begin
-
+  raise ENotImplemented.Create('Not Implemented');
 end;
 
 procedure TDUnitXTextFileLogger.OnLog(const logType : TLogLevel; const msg: string);
 begin
-
+  raise ENotImplemented.Create('Not Implemented');
 end;
 
 procedure TDUnitXTextFileLogger.OnSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 begin
-
+  raise ENotImplemented.Create('Not Implemented');
 end;
 
 procedure TDUnitXTextFileLogger.OnSetupTest(const threadId: TThreadID; const Test: ITestInfo);
 begin
-
+  raise ENotImplemented.Create('Not Implemented');
 end;
 
 procedure TDUnitXTextFileLogger.OnBeginTest(const threadId: TThreadID; const Test: ITestInfo);
 begin
-
+  raise ENotImplemented.Create('Not Implemented');
 end;
 
 procedure TDUnitXTextFileLogger.OnStartTestFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 begin
-
+  raise ENotImplemented.Create('Not Implemented');
 end;
 
 
 procedure TDUnitXTextFileLogger.OnTestSuccess(const threadId: TThreadID; const Test: ITestResult);
 begin
-
+  raise ENotImplemented.Create('Not Implemented');
 end;
 
 procedure TDUnitXTextFileLogger.OnTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 begin
-
+  raise ENotImplemented.Create('Not Implemented');
 end;
 
 procedure TDUnitXTextFileLogger.OnTeardownTest(const threadId: TThreadID; const Test: ITestInfo);
 begin
-
+  raise ENotImplemented.Create('Not Implemented');
 end;
 
 procedure TDUnitXTextFileLogger.OnTestingEnds(const RunResults: IRunResults);
 begin
-
+  raise ENotImplemented.Create('Not Implemented');
 end;
 
 procedure TDUnitXTextFileLogger.OnTestingStarts(const threadId: TThreadID; testCount, testActiveCount : Cardinal);
 begin
-
+  raise ENotImplemented.Create('Not Implemented');
 end;
 
 
 procedure TDUnitXTextFileLogger.OnTestMemoryLeak(const threadId: TThreadID; const Test: ITestResult);
 begin
-
+  raise ENotImplemented.Create('Not Implemented');
 end;
 
 end.

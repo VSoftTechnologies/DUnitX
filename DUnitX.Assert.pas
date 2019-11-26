@@ -336,6 +336,12 @@ end;
 
 { Assert }
 
+class procedure Assert.DoAssert;
+begin
+  if Assigned(fOnAssert) then
+    fOnAssert();
+end;
+
 class procedure Assert.AreEqual(const expected, actual, tolerance: Extended; const message: string);
 begin
   DoAssert;
@@ -1201,11 +1207,6 @@ begin
   fIgnoreCaseDefault := true;
 end;
 
-class procedure Assert.DoAssert;
-begin
-  if Assigned(fOnAssert) then
-    fOnAssert();
-end;
 
 class procedure Assert.DoesNotContain(const theString, subString, message: string);
 begin

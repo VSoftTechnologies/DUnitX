@@ -759,9 +759,6 @@ function SplitString(const S: string; const Delimiters: string): TStringDynArray
 
 function Supports(const Instance: TValue; const IID: TGUID; out Intf): Boolean; overload;
 
-const
-  ObjCastGUID: TGUID = '{CEDF24DE-80A4-447D-8C75-EB871DC121FD}';
-
 
 implementation
 

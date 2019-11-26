@@ -408,6 +408,7 @@ end;
 
 constructor MaxTimeAttribute.Create(const AMaxTime : Cardinal);
 begin
+  inherited Create;
   FMaxTime := AMaxTime;
 end;
 
@@ -415,6 +416,7 @@ end;
 
 constructor WillRaiseAttribute.Create(AExpectedException: ExceptClass; const AInheritance: TExceptionInheritance);
 begin
+  inherited Create;
   FExpectedException := AExpectedException;
   FExceptionInheritance := AInheritance;
 end;
@@ -423,6 +425,7 @@ end;
 
 constructor TestCaseProviderAttribute.Create(const providerName : string);
 begin
+  inherited Create;
   FName := ProviderName;
   FClass := NIL;
 end;
@@ -430,6 +433,7 @@ end;
 
 constructor TestCaseProviderAttribute.Create(const AClass: TTestDataProviderClass);
 begin
+  inherited Create;
   FName := '';
   FClass := AClass;
 end;

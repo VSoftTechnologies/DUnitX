@@ -59,7 +59,7 @@ type
     function FormatTestName(const AName: string; const ATimes, ACount: Integer): string;
     function FormatCaseName(const AName:string; Nr:integer):string;
     function TryGetAttributeOfType<T : class>(const attributes: TArray<TCustomAttribute>; var attribute: T): boolean;
-    procedure RTTIDiscoverFixtureClasses(const context: IFixtureProviderContext);
+    procedure RTTIDiscoverFixtureClasses;
     procedure GenerateTests(const context: IFixtureProviderContext; const fixture : ITestFixture);
     procedure Execute(const context: IFixtureProviderContext);
   public
@@ -132,7 +132,7 @@ var
   category : string;
 begin
   if context.UseRtti then
-    RTTIDiscoverFixtureClasses(context);
+    RTTIDiscoverFixtureClasses;
 
   for pair in TDUnitX.RegisteredFixtures do
   begin
@@ -541,7 +541,7 @@ begin
   end;
 end;
 
-procedure TDUnitXFixtureProvider.RTTIDiscoverFixtureClasses(const context: IFixtureProviderContext);
+procedure TDUnitXFixtureProvider.RTTIDiscoverFixtureClasses;
 var
   types : TArray<TRttiType>;
   rType : TRttiType;
