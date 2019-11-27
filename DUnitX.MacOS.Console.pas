@@ -35,8 +35,8 @@
 ///   It is recommended to add the <see cref="DUnitX.AutoDetect.Console" /> to
 ///   your project uses instead of this unit directly.
 /// </remarks>
-/// <seealso cref="DUnit.AutoDetect.Console" />
-/// <seealso cref="DUnit.Windows.Console" />
+/// <seealso cref="DUnitX.AutoDetect.Console" />
+/// <seealso cref="DUnitX.Windows.Console" />
 /// <seealso cref="DUnitX.Loggers.Console" />
 unit DUnitX.MacOS.Console;
 
