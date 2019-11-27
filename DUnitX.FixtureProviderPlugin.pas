@@ -407,6 +407,12 @@ begin
       continue;
     end;
 
+    if fixture.Ignored then
+    begin
+      ignoredTest := true;
+      ignoredReason := fixture.IgnoreReason;
+    end
+    else
     if method.TryGetAttributeOfType<IgnoreAttribute>(ignoredAttrib) then
     begin
       ignoredTest   := true;
