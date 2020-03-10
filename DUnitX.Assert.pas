@@ -217,14 +217,14 @@ type
 
     /// <summary>
     ///   Checks that an exception of Any type not will be raised. This method
-    ///   is to complement <see cref="DUnitX.TestFramework|Assert.WillRaiseAny(TTestLocalMethod,string)">
+    ///   is to complement <see cref="DUnitX.Assert|Assert.WillRaiseAny(TTestLocalMethod,string)">
     ///   WillRaiseAny</see> method, and is not required, as the default behavior of a test
     ///   is to fail when any exception is raised.
     /// </summary>
     class procedure WillNotRaiseAny(const AMethod : TTestLocalMethod; const msg : string = ''); overload;
     /// <summary>
     ///   Checks that an exception of Any type not will be raised. This method
-    ///   is to complement <see cref="DUnitX.TestFramework|Assert.WillRaiseAny(TTestMethod,string)">
+    ///   is to complement <see cref="DUnitX.Assert|Assert.WillRaiseAny(TTestMethod,string)">
     ///   WillRaiseAny</see> method, and is not required, as the default behavior of a test
     ///   is to fail when any exception is raised.
     /// </summary>

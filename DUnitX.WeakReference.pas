@@ -82,7 +82,7 @@ type
   public
     procedure AfterConstruction; override;
     procedure BeforeDestruction; override;
-    {$IFDEF NEXTGEN}[Result: Unsafe]{$ENDIF} class function NewInstance: TObject; override;
+    {$IFDEF AUTOREFCOUNT}[Result: Unsafe]{$ENDIF} class function NewInstance: TObject; override;
   {$IFNDEF AUTOREFCOUNT}
     property RefCount: Integer read GetRefCount;
   {$ENDIF}
