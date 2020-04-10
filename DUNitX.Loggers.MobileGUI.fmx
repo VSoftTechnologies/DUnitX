@@ -1,0 +1,188 @@
+object MobileGUITestRunner: TMobileGUITestRunner
+  Left = 0
+  Top = 0
+  Caption = 'Form1'
+  ClientHeight = 544
+  ClientWidth = 774
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  OnShow = FormShow
+  DesignerMasterStyle = 2
+  object Panel1: TPanel
+    Align = Client
+    Size.Width = 774.000000000000000000
+    Size.Height = 544.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 0
+    object ToolBar1: TToolBar
+      Size.Width = 774.000000000000000000
+      Size.Height = 44.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 0
+      object RunTestsButton: TButton
+        TabOrder = 0
+        Text = 'Run'
+        OnClick = RunTestsButtonClick
+      end
+      object TestProgress: TProgressBar
+        Orientation = Horizontal
+        Position.X = 456.000000000000000000
+        Position.Y = 32.000000000000000000
+        Size.Width = 289.000000000000000000
+        Size.Height = 4.000000000000000000
+        Size.PlatformDefault = False
+      end
+      object ProgressLabel: TLabel
+        Position.X = 456.000000000000000000
+        Size.Width = 289.000000000000000000
+        Size.Height = 21.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.WordWrap = False
+        Text = 'ProgressLabel'
+      end
+    end
+    object TabControl1: TTabControl
+      Align = Client
+      FullSize = True
+      Size.Width = 774.000000000000000000
+      Size.Height = 500.000000000000000000
+      Size.PlatformDefault = False
+      TabHeight = 49.000000000000000000
+      TabIndex = 0
+      TabOrder = 1
+      TabPosition = PlatformDefault
+      object TestsTab: TTabItem
+        CustomIcon = <
+          item
+          end>
+        IsSelected = True
+        Size.Width = 387.000000000000000000
+        Size.Height = 49.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        Text = 'Tests'
+        ExplicitSize.cx = 387.000000000000000000
+        ExplicitSize.cy = 49.000000000000000000
+        object TestsListView: TListView
+          ItemAppearanceClassName = 'TListItemAppearance'
+          ItemEditAppearanceClassName = 'TListItemDeleteAppearance'
+          HeaderAppearanceClassName = 'TListHeaderObjects'
+          FooterAppearanceClassName = 'TListHeaderObjects'
+          Align = Client
+          Size.Width = 774.000000000000000000
+          Size.Height = 451.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 0
+          ItemAppearanceObjects.ItemObjects.Accessory.AccessoryType = Checkmark
+          ItemAppearanceObjects.ItemObjects.Accessory.Visible = False
+          CanSwipeDelete = False
+          OnItemClick = TestsListViewItemClick
+          ShowSelection = False
+        end
+      end
+      object ResultsTab: TTabItem
+        CustomIcon = <
+          item
+          end>
+        IsSelected = False
+        Size.Width = 387.000000000000000000
+        Size.Height = 49.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        Text = 'Results'
+        ExplicitSize.cx = 387.000000000000000000
+        ExplicitSize.cy = 49.000000000000000000
+        object Panel2: TPanel
+          Align = Client
+          Size.Width = 50.000000000000000000
+          Size.Height = 50.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 0
+          object Panel3: TPanel
+            Align = Top
+            Size.Width = 50.000000000000000000
+            Size.Height = 120.000000000000000000
+            Size.PlatformDefault = False
+            TabOrder = 0
+            object Label1: TLabel
+              Position.X = 8.000000000000000000
+              Position.Y = 8.000000000000000000
+              Text = 'Runs'
+            end
+            object Label2: TLabel
+              Position.X = 8.000000000000000000
+              Position.Y = 32.000000000000000000
+              Text = 'Success'
+            end
+            object Label3: TLabel
+              Position.X = 8.000000000000000000
+              Position.Y = 56.000000000000000000
+              Text = 'Fail'
+            end
+            object Label4: TLabel
+              Position.X = 8.000000000000000000
+              Position.Y = 80.000000000000000000
+              Text = 'Leaked'
+            end
+            object RunsLabel: TLabel
+              Position.X = 120.000000000000000000
+              Position.Y = 8.000000000000000000
+              Text = 'TotalRuns'
+            end
+            object FailLabel: TLabel
+              Position.X = 120.000000000000000000
+              Position.Y = 56.000000000000000000
+              Text = 'TestsFailed'
+            end
+            object SuccessLabel: TLabel
+              Position.X = 120.000000000000000000
+              Position.Y = 32.000000000000000000
+              Text = 'TestsPassed'
+            end
+            object LeakedLabel: TLabel
+              Position.X = 120.000000000000000000
+              Position.Y = 80.000000000000000000
+              Text = 'Leaks'
+            end
+          end
+          object FailList: TListView
+            ItemAppearanceClassName = 'TListItemAppearance'
+            ItemEditAppearanceClassName = 'TListItemShowCheckAppearance'
+            HeaderAppearanceClassName = 'TListHeaderObjects'
+            FooterAppearanceClassName = 'TListHeaderObjects'
+            Align = Left
+            Position.Y = 120.000000000000000000
+            Size.Width = 321.000000000000000000
+            Size.PlatformDefault = False
+            TabOrder = 1
+            OnItemClick = FailListItemClick
+          end
+          object FailedTestMessage: TMemo
+            Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+            DataDetectorTypes = []
+            ReadOnly = True
+            Align = Client
+            Size.Width = -279.000000000000000000
+            Size.Height = -70.000000000000000000
+            Size.PlatformDefault = False
+            TabOrder = 2
+            Viewport.Width = 42.000000000000000000
+            Viewport.Height = 42.000000000000000000
+          end
+          object Splitter1: TSplitter
+            Align = Left
+            Cursor = crSizeNS
+            MinSize = 20.000000000000000000
+            Position.X = 321.000000000000000000
+            Position.Y = 120.000000000000000000
+            Size.Width = 8.000000000000000000
+            Size.PlatformDefault = False
+          end
+        end
+      end
+    end
+  end
+end

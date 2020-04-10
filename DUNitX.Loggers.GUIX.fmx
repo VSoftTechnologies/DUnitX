@@ -1,0 +1,285 @@
+object GUIXTestRunner: TGUIXTestRunner
+  Left = 0
+  Top = 0
+  Caption = 'DUNitX'
+  ClientHeight = 480
+  ClientWidth = 908
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [dkDesktop, dkiPhone, dkiPad]
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  OnShow = FormShow
+  DesignerMobile = False
+  DesignerWidth = 0
+  DesignerHeight = 0
+  DesignerDeviceName = ''
+  DesignerOrientation = 0
+  DesignerOSVersion = ''
+  object TopPanel: TPanel
+    Align = alMostTop
+    Height = 33.000000000000000000
+    Width = 908.000000000000000000
+    TabOrder = 0
+    object ToolBar1: TToolBar
+      Height = 33.000000000000000000
+      TabOrder = 0
+      Width = 908.000000000000000000
+      object Button1: TButton
+        Action = Run
+        Height = 33.000000000000000000
+        TabOrder = 0
+        Width = 57.000000000000000000
+      end
+    end
+  end
+  object Panel1: TPanel
+    Align = alClient
+    Height = 447.000000000000000000
+    Width = 908.000000000000000000
+    TabOrder = 1
+    object GridPanelLayout1: TGridPanelLayout
+      Align = alClient
+      Height = 447.000000000000000000
+      Width = 443.000000000000000000
+      ColumnCollection = <
+        item
+          Value = 50.000381472636970000
+        end
+        item
+          Value = 49.999618527363030000
+        end>
+      ControlCollection = <
+        item
+          Column = 0
+          Control = FailList
+          Row = 1
+        end
+        item
+          Column = 0
+          ColumnSpan = 2
+          Control = Panel2
+          Row = 0
+        end
+        item
+          Column = 1
+          Control = FailTestDetailPanel
+          Row = 1
+        end>
+      RowCollection = <
+        item
+          SizeStyle = ssAuto
+          Value = 30.000000000000000000
+        end
+        item
+          Value = 100.000000000000000000
+        end>
+      object FailList: TListView
+        ItemAppearanceClassName = 'TListItemAppearance'
+        ItemEditAppearanceClassName = 'TListItemShowCheckAppearance'
+        HeaderAppearanceClassName = 'TListHeaderObjects'
+        FooterAppearanceClassName = 'TListHeaderObjects'
+        Align = alClient
+        Height = 322.500000000000000000
+        TabOrder = 0
+        Width = 221.501693725585900000
+        OnItemClick = FailListItemClick
+      end
+      object Panel2: TPanel
+        Align = alClient
+        Height = 124.500000000000000000
+        Width = 443.000000000000000000
+        TabOrder = 1
+        object Label1: TLabel
+          Font.Style = [fsBold]
+          StyledSettings = [ssFamily, ssSize, ssFontColor]
+          Height = 17.000000000000000000
+          Position.X = 16.000000000000000000
+          Position.Y = 32.000000000000000000
+          Text = 'Runs'
+          Width = 49.000000000000000000
+        end
+        object Label2: TLabel
+          Font.Style = [fsBold]
+          StyledSettings = [ssFamily, ssSize, ssFontColor]
+          Height = 17.000000000000000000
+          Position.X = 16.000000000000000000
+          Position.Y = 48.000000000000000000
+          Text = 'Sucess'
+          Width = 49.000000000000000000
+        end
+        object SuccessTests: TLabel
+          Height = 17.000000000000000000
+          Position.X = 104.000000000000000000
+          Position.Y = 48.000000000000000000
+          Text = 'SuccessTests'
+          Width = 120.000000000000000000
+        end
+        object TotalRuns: TLabel
+          Height = 17.000000000000000000
+          Position.X = 104.000000000000000000
+          Position.Y = 32.000000000000000000
+          Text = 'TotalRuns'
+          Width = 120.000000000000000000
+        end
+        object Label5: TLabel
+          Font.Style = [fsBold]
+          StyledSettings = [ssFamily, ssSize, ssFontColor]
+          Height = 17.000000000000000000
+          Position.X = 16.000000000000000000
+          Position.Y = 64.000000000000000000
+          Text = 'Fail'
+          Width = 57.000000000000000000
+        end
+        object FailTests: TLabel
+          Height = 17.000000000000000000
+          Position.X = 104.000000000000000000
+          Position.Y = 64.000000000000000000
+          Text = 'FailTests'
+          Width = 120.000000000000000000
+        end
+        object MemoryLeakedLabel: TLabel
+          Font.Style = [fsBold]
+          StyledSettings = [ssFamily, ssSize, ssFontColor]
+          Height = 17.000000000000000000
+          Position.X = 16.000000000000000000
+          Position.Y = 80.000000000000000000
+          Text = 'Leaked'
+          Width = 89.000000000000000000
+        end
+        object MemoryLeaked: TLabel
+          Height = 17.000000000000000000
+          Position.X = 104.000000000000000000
+          Position.Y = 80.000000000000000000
+          Text = 'MemoryLeaked'
+          Width = 120.000000000000000000
+        end
+        object TestRunnerProgress: TProgressBar
+          Anchors = [akLeft, akTop, akRight]
+          Height = 20.000000000000000000
+          Orientation = orHorizontal
+          Position.X = 8.000000000000000000
+          Position.Y = 8.000000000000000000
+          Width = 429.000000000000000000
+        end
+      end
+      object FailTestDetailPanel: TPanel
+        Align = alClient
+        Height = 322.500000000000000000
+        Width = 221.498306274414100000
+        TabOrder = 2
+        object StackTrace: TMemo
+          Touch.InteractiveGestures = [igPan, igLongTap, igDoubleTap]
+          Align = alBottom
+          Locked = True
+          Height = 138.000000000000000000
+          Position.Y = 184.500000000000000000
+          TabOrder = 0
+          Width = 221.498306274414100000
+          ReadOnly = True
+        end
+        object Label3: TLabel
+          Font.Style = [fsBold]
+          StyledSettings = [ssFamily, ssSize, ssFontColor]
+          Height = 17.000000000000000000
+          Position.X = 8.000000000000000000
+          Position.Y = 8.000000000000000000
+          Text = 'Test'
+          Width = 49.000000000000000000
+        end
+        object Label4: TLabel
+          Font.Style = [fsBold]
+          StyledSettings = [ssFamily, ssSize, ssFontColor]
+          Height = 17.000000000000000000
+          Position.X = 8.000000000000000000
+          Position.Y = 24.000000000000000000
+          Text = 'Start'
+          Width = 57.000000000000000000
+        end
+        object FailTestName: TLabel
+          Anchors = [akLeft, akTop, akRight]
+          AutoSize = True
+          Height = 19.000000000000000000
+          Position.X = 64.000000000000000000
+          Position.Y = 8.000000000000000000
+          Text = 'FailTestName'
+          Width = 72.000000000000000000
+          WordWrap = False
+        end
+        object FailTestStartTime: TLabel
+          Height = 17.000000000000000000
+          Position.X = 64.000000000000000000
+          Position.Y = 24.000000000000000000
+          Text = 'FailTestStartTime'
+          Width = 121.000000000000000000
+        end
+        object Label7: TLabel
+          Font.Style = [fsBold]
+          StyledSettings = [ssFamily, ssSize, ssFontColor]
+          Height = 17.000000000000000000
+          Position.X = 8.000000000000000000
+          Position.Y = 40.000000000000000000
+          Text = 'Finish'
+          Width = 65.000000000000000000
+        end
+        object FailTestFinishTime: TLabel
+          Height = 17.000000000000000000
+          Position.X = 63.000000000000000000
+          Position.Y = 40.000000000000000000
+          Text = 'FailTestFinishTime'
+          Width = 120.000000000000000000
+        end
+        object Label6: TLabel
+          Anchors = [akLeft, akBottom]
+          Font.Style = [fsBold]
+          StyledSettings = [ssFamily, ssSize, ssFontColor]
+          Height = 21.000000000000000000
+          Position.X = 8.000000000000000000
+          Position.Y = 166.500000000000000000
+          Text = 'Stack Trace'
+          Width = 275.000000000000000000
+        end
+        object FailTestMessage: TMemo
+          Touch.InteractiveGestures = [igPan, igLongTap, igDoubleTap]
+          Anchors = [akLeft, akTop, akRight, akBottom]
+          Height = 73.000000000000000000
+          Position.Y = 80.000000000000000000
+          TabOrder = 8
+          Width = 221.499465942382800000
+          ReadOnly = True
+        end
+        object Label8: TLabel
+          Font.Style = [fsBold]
+          StyledSettings = [ssFamily, ssSize, ssFontColor]
+          Height = 17.000000000000000000
+          Position.X = 8.000000000000000000
+          Position.Y = 56.000000000000000000
+          Text = 'Message'
+          Width = 120.000000000000000000
+        end
+      end
+    end
+    object TestTree: TTreeView
+      Align = alLeft
+      Height = 447.000000000000000000
+      TabOrder = 0
+      Width = 450.000000000000000000
+    end
+    object Splitter1: TSplitter
+      Align = alLeft
+      Cursor = crHSplit
+      Height = 447.000000000000000000
+      MinSize = 20.000000000000000000
+      Position.X = 450.000000000000000000
+      Width = 15.000000000000000000
+    end
+  end
+  object TestActions: TActionList
+    Left = 360
+    Top = 296
+    object Run: TAction
+      Text = 'Run All'
+      OnExecute = RunExecute
+    end
+  end
+end
