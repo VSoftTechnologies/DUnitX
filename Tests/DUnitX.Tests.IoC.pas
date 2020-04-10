@@ -26,7 +26,7 @@
 
 unit DUnitX.Tests.IoC;
 
-{$I ..\DUnitX.inc}
+{$I ..\Source\DUnitX.inc}
 
 interface
 

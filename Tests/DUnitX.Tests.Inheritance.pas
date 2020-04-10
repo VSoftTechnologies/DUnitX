@@ -28,7 +28,7 @@ unit DUnitX.Tests.Inheritance;
 
 interface
 
-{$I ..\DUnitX.inc}
+{$I ..\Source\DUnitX.inc}
 
 uses
   DUnitX.TestFramework;

@@ -196,27 +196,27 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="..\DUNitX.Loggers.GUIX.pas">
+        <DCCReference Include="..\Source\DUNitX.Loggers.GUIX.pas">
             <Form>GUIXTestRunner</Form>
             <FormType>fmx</FormType>
         </DCCReference>
         <DCCReference Include="DUnitX.Examples.EqualityAsserts.pas"/>
         <DCCReference Include="DUnitX.Examples.General.pas"/>
         <DCCReference Include="NonNamespacedExample.pas"/>
-        <DCCReference Include="..\DUnitX.Generics.pas"/>
-        <DCCReference Include="..\DUnitX.InternalInterfaces.pas"/>
-        <DCCReference Include="..\DUnitX.WeakReference.pas"/>
-        <DCCReference Include="..\DUnitX.FixtureResult.pas"/>
-        <DCCReference Include="..\DUnitX.RunResults.pas"/>
-        <DCCReference Include="..\DUnitX.Test.pas"/>
-        <DCCReference Include="..\DUnitX.TestFixture.pas"/>
-        <DCCReference Include="..\DUnitX.TestFramework.pas"/>
-        <DCCReference Include="..\DUnitX.TestResult.pas"/>
-        <DCCReference Include="..\DUnitX.TestRunner.pas"/>
-        <DCCReference Include="..\DUnitX.Utils.pas"/>
-        <DCCReference Include="..\DUnitX.IoC.pas"/>
-        <DCCReference Include="..\DUnitX.MemoryLeakMonitor.Default.pas"/>
-        <DCCReference Include="..\DUnitX.DUnitCompatibility.pas"/>
+        <DCCReference Include="..\Source\DUnitX.Generics.pas"/>
+        <DCCReference Include="..\Source\DUnitX.InternalInterfaces.pas"/>
+        <DCCReference Include="..\Source\DUnitX.WeakReference.pas"/>
+        <DCCReference Include="..\Source\DUnitX.FixtureResult.pas"/>
+        <DCCReference Include="..\Source\DUnitX.RunResults.pas"/>
+        <DCCReference Include="..\Source\DUnitX.Test.pas"/>
+        <DCCReference Include="..\Source\DUnitX.TestFixture.pas"/>
+        <DCCReference Include="..\Source\DUnitX.TestFramework.pas"/>
+        <DCCReference Include="..\Source\DUnitX.TestResult.pas"/>
+        <DCCReference Include="..\Source\DUnitX.TestRunner.pas"/>
+        <DCCReference Include="..\Source\DUnitX.Utils.pas"/>
+        <DCCReference Include="..\Source\DUnitX.IoC.pas"/>
+        <DCCReference Include="..\Source\DUnitX.MemoryLeakMonitor.Default.pas"/>
+        <DCCReference Include="..\Source\DUnitX.DUnitCompatibility.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

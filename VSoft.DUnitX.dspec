@@ -1,0 +1,94 @@
+{
+  "metadata": {
+    "id": "VSoft.DUnitX",
+    "version": "0.1.0",
+    "description": "Delphi Unit Testing Framework.",
+    "authors": "Vincent Parrett",
+    "projectUrl": "https://github.com/VSoftTechnologies/DUnitX",
+    "license": "Apache-2.0",
+    "copyright": "Vincent Parrett and contributors",
+    "tags": "unit testing dunitx dunit"
+  },
+  "targetPlatforms": [
+    {
+      "compiler": "XE2",
+      "platforms": "Win32, Win64",
+      "template": "default"
+    },
+    {
+      "compiler": "XE3",
+      "platforms": "Win32, Win64",
+      "template": "default"
+    },
+    {
+      "compiler": "XE4",
+      "platforms": "Win32, Win64",
+      "template": "default"
+    },
+    {
+      "compiler": "XE5",
+      "platforms": "Win32, Win64",
+      "template": "default"
+    },
+    {
+      "compiler": "XE6",
+      "platforms": "Win32, Win64",
+      "template": "default"
+    },
+    {
+      "compiler": "XE7",
+      "platforms": "Win32, Win64",
+      "template": "default"
+    },
+    {
+      "compiler": "XE8",
+      "platforms": "Win32, Win64",
+      "template": "default"
+    },
+    {
+      "compiler": "10.0",
+      "platforms": "Win32, Win64",
+      "template": "default"
+    },
+    {
+      "compiler": "10.1",
+      "platforms": "Win32, Win64",
+      "template": "default"
+    },
+    {
+      "compiler": "10.2",
+      "platforms": "Win32, Win64",
+      "template": "default"
+    },
+    {
+      "compiler": "10.3",
+      "platforms": "Win32, Win64",
+      "template": "default"
+    },
+    {
+      "compiler": "10.4",
+      "platforms": "Win32, Win64",
+      "template": "default"
+    }
+  ],
+  "templates": [
+    {
+      "name": "default",
+      "source": [
+        {
+          "src": "Source\\*.pas",
+          "dest": "src"
+        },
+        {
+          "src": "Source\\*.inc",
+          "dest": "src"
+        }
+      ],
+      "searchPaths": [
+        {
+          "path": "src"
+        }
+      ]
+    }
+  ]
+}

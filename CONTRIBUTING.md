@@ -42,9 +42,4 @@ If you are new to GIT here are some links to help you with understanding how it 
 
 ## Feedback and Collaboration ##
 
-A [Google+ Community](https://plus.google.com/communities/110602661860791972403) has been setup to discuss DUnitX.   It's a great place to get feedback on your changes if desired before submitting them as a pull request.
-
-
- 
-
-
+A [Delphi Praxis forum](https://en.delphipraxis.net/forum/36-dunitx/) has been setup to discuss DUnitX.   It's a great place to get feedback on your changes if desired before submitting them as a pull request.
