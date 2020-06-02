@@ -66,6 +66,23 @@ type
     procedure AnotherTestMethod(const a : string; const b : integer);
 
     [Test]
+    [TestCase('Date, space, time', '1988-10-21 17:44:23.456')]
+    [TestCase('Date, T, time', '1988-10-21T17:44:23.456')]
+    [TestCase('Date, T, time, Z', '1988-10-21T17:44:23.456Z')]
+    [TestCase('Date, T, time, offset (1)', '1988-10-21T17:44:23.456+02:30')]
+    [TestCase('Date, T, time, offset (2)', '1988-10-21T17:44:23.456+0230')]
+    procedure TestDateTimeArgument(dateTime: TDateTime);
+
+    [Test]
+    [TestCase('Just date', '1988-10-21')]
+    procedure TestDateArgument(const date: TDate);
+
+    [Test]
+    [TestCase('time with ms', '17:44:23.456')]
+    [TestCase('time without ms', '17:44:23')]
+    procedure TestTimeArgument(time: TTime);
+
+    [Test]
     [Category('Bar,foo')]
     procedure TestTwo;
 
@@ -141,7 +158,7 @@ type
 implementation
 
 uses
-  DUnitX.DUnitCompatibility;
+  DUnitX.DUnitCompatibility, System.DateUtils;
 
 procedure TMyExampleTests.DontCallMe;
 begin
@@ -195,6 +212,23 @@ begin
   Assert.Pass;
 end;
 
+procedure TMyExampleTests.TestDateArgument(const date: TDate);
+var
+  expected: TDate;
+begin
+  expected := EncodeDate(1988, 10, 21);
+  Assert.IsTrue( SameDate(expected, date) );
+end;
+
+procedure TMyExampleTests.TestDateTimeArgument(dateTime: TDateTime);
+var
+  expected: TDateTime;
+begin
+  dateTime := RecodeMilliSecond(dateTime, 000);
+  expected := EncodeDateTime(1988, 10, 21, 17, 44, 23, 000);
+  Assert.IsTrue( SameDateTime(expected, dateTime) );
+end;
+
 procedure TMyExampleTests.TestMeAnyway;
 begin
   TDUnitX.CurrentRunner.Status('TestMeAnyway called');
@@ -205,6 +239,15 @@ procedure TMyExampleTests.TestOne(param1 : integer; param2 : integer);
 begin
   TDUnitX.CurrentRunner.Status(Format('TestOnce called with %d %d',[param1,param2]));
   Assert.Pass;
+end;
+
+procedure TMyExampleTests.TestTimeArgument(time: TTime);
+var
+  expected: TTime;
+begin
+  time := RecodeMilliSecond(time, 0);
+  expected := EncodeTime(17, 44, 23, 000);
+  Assert.IsTrue( SameTime(expected, time) );
 end;
 
 procedure TMyExampleTests.TestTwo;

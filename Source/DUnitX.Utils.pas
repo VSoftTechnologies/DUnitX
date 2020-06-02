@@ -1121,6 +1121,58 @@ begin
   Result := True;
 end;
 
+function Str2DateTime(const ASource: String): TValue;
+var
+  dateTime: TDateTime;
+  iso8601: TFormatSettings;
+begin
+  if(not TryStrToDateTime(ASource, dateTime)) then
+    begin
+      iso8601 := TFormatSettings.Invariant();
+      iso8601.ShortDateFormat := 'yyyy/mm/dd';
+      iso8601.DateSeparator   := '-';
+      iso8601.ShortTimeFormat := 'hh:nn:ss\.nnn';
+      iso8601.TimeSeparator   := ':';
+
+      dateTime := StrToDateTimeDef(ASource, 0, iso8601);
+    end;
+
+  Result := TValue.From<TDateTime>(dateTime);
+end;
+
+function Str2Time(const ASource: String): TValue;
+var
+  time: TDateTime;
+  iso8601: TFormatSettings;
+begin
+  if(not TryStrToTime(ASource, time)) then
+    begin
+      iso8601 := TFormatSettings.Invariant();
+      iso8601.ShortTimeFormat := 'hh:nn:ss\.nnn';
+      iso8601.TimeSeparator := ':';
+
+      time := StrToTimeDef(ASource, 0, iso8601);
+    end;
+
+  Result := TValue.From<TDateTime>(time);
+end;
+
+function Str2Date(const ASource: String): TValue;
+var
+  date: TDateTime;
+  iso8601: TFormatSettings;
+begin
+  if (not TryStrToDate(ASource, date)) then
+    begin
+      iso8601 := TFormatSettings.Invariant();
+      iso8601.ShortDateFormat := 'yyyy/mm/dd';
+      iso8601.DateSeparator := '-';
+
+      date := StrToDateDef(ASource, Default(TDate), iso8601);
+    end;
+  Result := TValue.From<TDate>(date);
+end;
+
 function ConvStr2Float(const ASource: TValue; ATarget: PTypeInfo; out AResult: TValue): Boolean;
 var
   lFormatSettings : TFormatSettings;
@@ -1130,11 +1182,11 @@ begin
   lValue := StringReplace(ASource.AsString, ',', '.', [rfReplaceAll]);
 
   if ATarget = TypeInfo(TDate) then
-    AResult := TValue.From<TDate>(StrToDateDef(lValue, 0))
+  AResult := Str2Date(lValue)
   else if ATarget = TypeInfo(TDateTime) then
-    AResult := TValue.From<TDateTime>(StrToDateTimeDef(lValue, 0))
+  AResult := Str2DateTime(lValue)
   else if ATarget = TypeInfo(TTime) then
-    AResult := TValue.From<TTime>(StrToTimeDef(lValue, 0))
+  AResult := Str2Time(lValue)
   else
     AResult := TValue.FromFloat(ATarget, StrToFloatDef(lValue, 0, lFormatSettings));
   Result := True;
