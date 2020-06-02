@@ -248,7 +248,7 @@ type
 
     {$REGION 'Documentation'}
     ///	<param name="AName">
-    ///	  Name of the member to find
+    ///	  Name of the member to find
     ///	</param>
     ///	<param name="AMember">
     ///	  Member that was found when Result is <b>True</b>
@@ -286,7 +286,7 @@ type
 
     {$REGION 'Documentation'}
     ///	<summary>
-    ///	  Retrieves the property with the given name and returns if this was
+    ///	  Retrieves the property with the given name and returns if this was
     ///	  successful.
     ///	</summary>
     ///	<param name="AName">
@@ -315,7 +315,7 @@ type
 
   {$REGION 'Documentation'}
   ///	<summary>
-  ///	  Extends <see cref="System.Rtti.TRttiField">TRttiField</see> for easier RTTI
+  ///	  Extends <see cref="System.Rtti.TRttiField">TRttiField</see> for easier RTTI
   ///	  use.
   ///	</summary>
   {$ENDREGION}
@@ -323,7 +323,7 @@ type
   public
     {$REGION 'Documentation'}
     ///	<summary>
-    ///	  Retrieves the value of the field and returns if this was successful.
+    ///	  Retrieves the value of the field and returns if this was successful.
     ///	</summary>
     ///	<param name="Instance">
     ///	  Pointer to the instance of the field
@@ -339,7 +339,7 @@ type
 
   {$REGION 'Documentation'}
   ///	<summary>
-  ///	  Extends <see cref="Rtti.TRttiInstanceTypeHelper">TRttiInstanceTypeHelper</see>
+  ///	  Extends <see cref="Rtti.TRttiInstanceTypeHelper">TRttiInstanceTypeHelper</see>
   ///	  for easier RTTI use.
   ///	</summary>
   {$ENDREGION}
@@ -354,7 +354,7 @@ type
 
   {$REGION 'Documentation'}
   ///	<summary>
-  ///	  Extends <see cref="System.Rtti.TRttiInvokableType">TRttiInvokableType</see>
+  ///	  Extends <see cref="System.Rtti.TRttiInvokableType">TRttiInvokableType</see>
   ///	  for easier RTTI use.
   ///	</summary>
   {$ENDREGION}
@@ -434,7 +434,7 @@ type
   public
     {$REGION 'Documentation'}
     ///	<summary>
-    ///	  Retrieves the value of the property and returns if this was
+    ///	  Retrieves the value of the property and returns if this was
     ///	  successful.
     ///	</summary>
     ///	<param name="Instance">
@@ -448,7 +448,7 @@ type
 
     {$REGION 'Documentation'}
     ///	<summary>
-    ///	  Sets the value of the property and returns if this was successful.
+    ///	  Sets the value of the property and returns if this was successful.
     ///	</summary>
     ///	<param name="Instance">
     ///	  Pointer to the instance of the field
