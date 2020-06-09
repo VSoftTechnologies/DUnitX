@@ -724,6 +724,12 @@ type
 {$IFEND}
   end;
 
+{$IFDEF DELPHI_XE7_DOWN }
+  TFormatSettingsHelper = record helper for TFormatSettings
+    class function Invariant: TFormatSettings; static;
+  end;
+{$ENDIF}
+
   PObject = ^TObject;
 
 function FindType(const AName: string; out AType: TRttiType): Boolean; overload;
@@ -3350,6 +3356,64 @@ begin
     result[i] := values[i];
 end;
 
+{$IFDEF DELPHI_XE7_DOWN}
+
+var
+  DefShortMonthNames: array[1..12] of Pointer = (@SShortMonthNameJan,
+    @SShortMonthNameFeb, @SShortMonthNameMar, @SShortMonthNameApr,
+    @SShortMonthNameMay, @SShortMonthNameJun, @SShortMonthNameJul,
+    @SShortMonthNameAug, @SShortMonthNameSep, @SShortMonthNameOct,
+    @SShortMonthNameNov, @SShortMonthNameDec);
+
+  DefLongMonthNames: array[1..12] of Pointer = (@SLongMonthNameJan,
+    @SLongMonthNameFeb, @SLongMonthNameMar, @SLongMonthNameApr,
+    @SLongMonthNameMay, @SLongMonthNameJun, @SLongMonthNameJul,
+    @SLongMonthNameAug, @SLongMonthNameSep, @SLongMonthNameOct,
+    @SLongMonthNameNov, @SLongMonthNameDec);
+
+  DefShortDayNames: array[1..7] of Pointer = (@SShortDayNameSun,
+    @SShortDayNameMon, @SShortDayNameTue, @SShortDayNameWed,
+    @SShortDayNameThu, @SShortDayNameFri, @SShortDayNameSat);
+
+  DefLongDayNames: array[1..7] of Pointer = (@SLongDayNameSun,
+    @SLongDayNameMon, @SLongDayNameTue, @SLongDayNameWed,
+    @SLongDayNameThu, @SLongDayNameFri, @SLongDayNameSat);
+
+{ TFormatSettingsHelper }
+
+class function TFormatSettingsHelper.Invariant: TFormatSettings;
+var
+  I: Integer;
+begin
+  Result.CurrencyString := #$00A4;
+  Result.CurrencyFormat := 0;
+  Result.CurrencyDecimals := 2;
+  Result.DateSeparator := '/';
+  Result.TimeSeparator := ':';
+  Result.ListSeparator := ',';
+  Result.ShortDateFormat := 'MM/dd/yyyy';
+  Result.LongDateFormat := 'dddd, dd MMMMM yyyy HH:mm:ss';
+  Result.TimeAMString := 'AM';
+  Result.TimePMString := 'PM';
+  Result.ShortTimeFormat := 'HH:mm';
+  Result.LongTimeFormat := 'HH:mm:ss';
+  for I := Low(DefShortMonthNames) to High(DefShortMonthNames) do
+  begin
+    Result.ShortMonthNames[I] := LoadResString(DefShortMonthNames[I]);
+    Result.LongMonthNames[I] := LoadResString(DefLongMonthNames[I]);
+  end;
+  for I := Low(DefShortDayNames) to High(DefShortDayNames) do
+  begin
+    Result.ShortDayNames[I] := LoadResString(DefShortDayNames[I]);
+    Result.LongDayNames[I] := LoadResString(DefLongDayNames[I]);
+  end;
+  Result.ThousandSeparator := ',';
+  Result.DecimalSeparator := '.';
+  Result.TwoDigitYearCenturyWindow := 50;
+  Result.NegCurrFormat := 0;
+end;
+
+{$ENDIF}
 
 initialization
   Enumerations := TObjectDictionary<PTypeInfo, TStrings>.Create([doOwnsValues]);
