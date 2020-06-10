@@ -174,7 +174,7 @@ begin
         //first time through the loop it will be empty.
         if parentNamespace = '' then
         begin
-          if not tmpFixtures.TryGetValue(fixtureNamespace,fixture) then
+          if not tmpFixtures.TryGetValue(fixtureNamespace, parentFixture) then
           begin
             parentFixture := context.CreateFixture(TObject,fixtureNamespace,'');
             tmpFixtures.Add(fixtureNamespace,parentFixture);
@@ -204,13 +204,15 @@ begin
 
       fixtureNamespace := fixtureNamespace + '.' + pair.Value;
 
-      if parentFixture = nil then
-      begin
-        fixture := context.CreateFixture(pair.Key,fixtureNamespace,category);
-        fixtureList.Add(fixture);
-      end
-      else
-        parentFixture.AddChildFixture(pair.Key,fixtureNamespace,category);
+      //per issue #253 - looking at the code above, parentFixture should always be assigned by the time we get here.
+      System.Assert(Assigned(parentFixture));
+//      if parentFixture = nil then
+//      begin
+//        fixture := context.CreateFixture(pair.Key,fixtureNamespace,category);
+//        fixtureList.Add(fixture);
+//      end
+//      else
+      parentFixture.AddChildFixture(pair.Key,fixtureNamespace,category);
     end;
     for fixture in fixtureList do
     begin
