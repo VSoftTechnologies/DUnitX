@@ -774,14 +774,12 @@ uses
   System.Classes,
   System.Generics.Defaults,
   System.Math,
-  System.StrUtils,
-  System.SysConst;
+  System.StrUtils;
   {$ELSE}
   Classes,
   Generics.Defaults,
   Math,
-  StrUtils,
-  SysConst;
+  StrUtils;
   {$ENDIF}
 
 var
@@ -3357,6 +3355,53 @@ begin
 end;
 
 {$IFDEF DELPHI_XE7_DOWN}
+
+//copied from System.Sysconst - can't use Sysconst as when compiling with runtime packages
+//it results in 'E2201 Need imported data reference ($G) to access...'
+resourcestring
+  SShortMonthNameJan = 'Jan';
+  SShortMonthNameFeb = 'Feb';
+  SShortMonthNameMar = 'Mar';
+  SShortMonthNameApr = 'Apr';
+  SShortMonthNameMay = 'May';
+  SShortMonthNameJun = 'Jun';
+  SShortMonthNameJul = 'Jul';
+  SShortMonthNameAug = 'Aug';
+  SShortMonthNameSep = 'Sep';
+  SShortMonthNameOct = 'Oct';
+  SShortMonthNameNov = 'Nov';
+  SShortMonthNameDec = 'Dec';
+
+  SLongMonthNameJan = 'January';
+  SLongMonthNameFeb = 'February';
+  SLongMonthNameMar = 'March';
+  SLongMonthNameApr = 'April';
+  SLongMonthNameMay = 'May';
+  SLongMonthNameJun = 'June';
+  SLongMonthNameJul = 'July';
+  SLongMonthNameAug = 'August';
+  SLongMonthNameSep = 'September';
+  SLongMonthNameOct = 'October';
+  SLongMonthNameNov = 'November';
+  SLongMonthNameDec = 'December';
+
+  SShortDayNameSun = 'Sun';
+  SShortDayNameMon = 'Mon';
+  SShortDayNameTue = 'Tue';
+  SShortDayNameWed = 'Wed';
+  SShortDayNameThu = 'Thu';
+  SShortDayNameFri = 'Fri';
+  SShortDayNameSat = 'Sat';
+
+  SLongDayNameSun = 'Sunday';
+  SLongDayNameMon = 'Monday';
+  SLongDayNameTue = 'Tuesday';
+  SLongDayNameWed = 'Wednesday';
+  SLongDayNameThu = 'Thursday';
+  SLongDayNameFri = 'Friday';
+  SLongDayNameSat = 'Saturday';
+
+
 
 var
   DefShortMonthNames: array[1..12] of Pointer = (@SShortMonthNameJan,
