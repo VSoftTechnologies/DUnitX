@@ -36,6 +36,7 @@ uses
   System.TimeSpan,
   System.Rtti,
   System.SysUtils,
+  System.TypInfo,
   {$ELSE}
   Generics.Collections,
   TimeSpan,
