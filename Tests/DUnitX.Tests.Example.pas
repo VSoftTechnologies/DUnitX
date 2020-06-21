@@ -158,7 +158,13 @@ type
 implementation
 
 uses
-  DUnitX.DUnitCompatibility, System.DateUtils;
+  DUnitX.DUnitCompatibility,
+  {$IFDEF USE_NS}
+  System.DateUtils;
+  {$ELSE}
+  DateUtils;
+  {$ENDIF}
+
 
 procedure TMyExampleTests.DontCallMe;
 begin
