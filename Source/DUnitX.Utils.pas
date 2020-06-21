@@ -1125,7 +1125,7 @@ begin
   Result := True;
 end;
 
-function Str2DateTime(const ASource: String): TValue;
+function Str2DateTimeValue(const ASource: String): TValue;
 var
   dateTime: TDateTime;
   iso8601: TFormatSettings;
@@ -1144,7 +1144,7 @@ begin
   Result := TValue.From<TDateTime>(dateTime);
 end;
 
-function Str2Time(const ASource: String): TValue;
+function Str2TimeValue(const ASource: String): TValue;
 var
   time: TDateTime;
   iso8601: TFormatSettings;
@@ -1161,7 +1161,7 @@ begin
   Result := TValue.From<TDateTime>(time);
 end;
 
-function Str2Date(const ASource: String): TValue;
+function Str2DateValue(const ASource: String): TValue;
 var
   date: TDateTime;
   iso8601: TFormatSettings;
@@ -1186,11 +1186,11 @@ begin
   lValue := StringReplace(ASource.AsString, ',', '.', [rfReplaceAll]);
 
   if ATarget = TypeInfo(TDate) then
-  AResult := Str2Date(lValue)
+  AResult := Str2DateValue(lValue)
   else if ATarget = TypeInfo(TDateTime) then
-  AResult := Str2DateTime(lValue)
+  AResult := Str2DateTimeValue(lValue)
   else if ATarget = TypeInfo(TTime) then
-  AResult := Str2Time(lValue)
+  AResult := Str2TimeValue(lValue)
   else
     AResult := TValue.FromFloat(ATarget, StrToFloatDef(lValue, 0, lFormatSettings));
   Result := True;
