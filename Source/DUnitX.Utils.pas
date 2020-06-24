@@ -248,7 +248,7 @@ type
 
     {$REGION 'Documentation'}
     ///	<param name="AName">
-    ///	  Name of the member to find
+    ///	  Name of the member to find
     ///	</param>
     ///	<param name="AMember">
     ///	  Member that was found when Result is <b>True</b>
@@ -286,7 +286,7 @@ type
 
     {$REGION 'Documentation'}
     ///	<summary>
-    ///	  Retrieves the property with the given name and returns if this was
+    ///	  Retrieves the property with the given name and returns if this was
     ///	  successful.
     ///	</summary>
     ///	<param name="AName">
@@ -315,7 +315,7 @@ type
 
   {$REGION 'Documentation'}
   ///	<summary>
-  ///	  Extends <see cref="System.Rtti.TRttiField">TRttiField</see> for easier RTTI
+  ///	  Extends <see cref="System.Rtti.TRttiField">TRttiField</see> for easier RTTI
   ///	  use.
   ///	</summary>
   {$ENDREGION}
@@ -323,7 +323,7 @@ type
   public
     {$REGION 'Documentation'}
     ///	<summary>
-    ///	  Retrieves the value of the field and returns if this was successful.
+    ///	  Retrieves the value of the field and returns if this was successful.
     ///	</summary>
     ///	<param name="Instance">
     ///	  Pointer to the instance of the field
@@ -339,7 +339,7 @@ type
 
   {$REGION 'Documentation'}
   ///	<summary>
-  ///	  Extends <see cref="Rtti.TRttiInstanceTypeHelper">TRttiInstanceTypeHelper</see>
+  ///	  Extends <see cref="Rtti.TRttiInstanceTypeHelper">TRttiInstanceTypeHelper</see>
   ///	  for easier RTTI use.
   ///	</summary>
   {$ENDREGION}
@@ -354,7 +354,7 @@ type
 
   {$REGION 'Documentation'}
   ///	<summary>
-  ///	  Extends <see cref="System.Rtti.TRttiInvokableType">TRttiInvokableType</see>
+  ///	  Extends <see cref="System.Rtti.TRttiInvokableType">TRttiInvokableType</see>
   ///	  for easier RTTI use.
   ///	</summary>
   {$ENDREGION}
@@ -434,7 +434,7 @@ type
   public
     {$REGION 'Documentation'}
     ///	<summary>
-    ///	  Retrieves the value of the property and returns if this was
+    ///	  Retrieves the value of the property and returns if this was
     ///	  successful.
     ///	</summary>
     ///	<param name="Instance">
@@ -448,7 +448,7 @@ type
 
     {$REGION 'Documentation'}
     ///	<summary>
-    ///	  Sets the value of the property and returns if this was successful.
+    ///	  Sets the value of the property and returns if this was successful.
     ///	</summary>
     ///	<param name="Instance">
     ///	  Pointer to the instance of the field
@@ -1125,6 +1125,58 @@ begin
   Result := True;
 end;
 
+function Str2DateTimeValue(const ASource: String): TValue;
+var
+  dateTime: TDateTime;
+  iso8601: TFormatSettings;
+begin
+  if(not TryStrToDateTime(ASource, dateTime)) then
+    begin
+      iso8601 := TFormatSettings.Invariant();
+      iso8601.ShortDateFormat := 'yyyy/mm/dd';
+      iso8601.DateSeparator   := '-';
+      iso8601.ShortTimeFormat := 'hh:nn:ss\.nnn';
+      iso8601.TimeSeparator   := ':';
+
+      dateTime := StrToDateTimeDef(ASource, 0, iso8601);
+    end;
+
+  Result := TValue.From<TDateTime>(dateTime);
+end;
+
+function Str2TimeValue(const ASource: String): TValue;
+var
+  time: TDateTime;
+  iso8601: TFormatSettings;
+begin
+  if(not TryStrToTime(ASource, time)) then
+    begin
+      iso8601 := TFormatSettings.Invariant();
+      iso8601.ShortTimeFormat := 'hh:nn:ss\.nnn';
+      iso8601.TimeSeparator := ':';
+
+      time := StrToTimeDef(ASource, 0, iso8601);
+    end;
+
+  Result := TValue.From<TDateTime>(time);
+end;
+
+function Str2DateValue(const ASource: String): TValue;
+var
+  date: TDateTime;
+  iso8601: TFormatSettings;
+begin
+  if (not TryStrToDate(ASource, date)) then
+    begin
+      iso8601 := TFormatSettings.Invariant();
+      iso8601.ShortDateFormat := 'yyyy/mm/dd';
+      iso8601.DateSeparator := '-';
+
+      date := StrToDateDef(ASource, Default(TDate), iso8601);
+    end;
+  Result := TValue.From<TDate>(date);
+end;
+
 function ConvStr2Float(const ASource: TValue; ATarget: PTypeInfo; out AResult: TValue): Boolean;
 var
   lFormatSettings : TFormatSettings;
@@ -1134,11 +1186,11 @@ begin
   lValue := StringReplace(ASource.AsString, ',', '.', [rfReplaceAll]);
 
   if ATarget = TypeInfo(TDate) then
-    AResult := TValue.From<TDate>(StrToDateDef(lValue, 0))
+  AResult := Str2DateValue(lValue)
   else if ATarget = TypeInfo(TDateTime) then
-    AResult := TValue.From<TDateTime>(StrToDateTimeDef(lValue, 0))
+  AResult := Str2DateTimeValue(lValue)
   else if ATarget = TypeInfo(TTime) then
-    AResult := TValue.From<TTime>(StrToTimeDef(lValue, 0))
+  AResult := Str2TimeValue(lValue)
   else
     AResult := TValue.FromFloat(ATarget, StrToFloatDef(lValue, 0, lFormatSettings));
   Result := True;
