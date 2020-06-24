@@ -110,6 +110,7 @@
         <DCCReference Include="DUnitX.Tests.ConsoleWriter.Base.pas"/>
         <DCCReference Include="..\Source\DUnitX.Assert.pas"/>
         <DCCReference Include="..\Source\DUnitX.Types.pas"/>
+        <DCCReference Include="DUnitX.Tests.Utils.pas"/>
         <None Include="..\Source\DUnitX.inc"/>
         <None Include="..\Source\DUnitX.Stacktrace.inc"/>
         <None Include="..\Source\DUnitX.MemoryLeaks.inc"/>

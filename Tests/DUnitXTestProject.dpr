@@ -39,7 +39,8 @@ uses
   DUnitX.Tests.Inheritance in 'DUnitX.Tests.Inheritance.pas',
   DUnitX.Tests.ConsoleWriter.Base in 'DUnitX.Tests.ConsoleWriter.Base.pas',
   DUnitX.Tests.TestDataProvider in 'DUnitX.Tests.TestDataProvider.pas',
-  DUnitX.Tests.IgnoreFixture in 'DUnitX.Tests.IgnoreFixture.pas';
+  DUnitX.Tests.IgnoreFixture in 'DUnitX.Tests.IgnoreFixture.pas',
+  DUnitX.Tests.Utils in 'DUnitX.Tests.Utils.pas';
 
 var
   runner : ITestRunner;

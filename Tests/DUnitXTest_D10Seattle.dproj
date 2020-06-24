@@ -110,6 +110,7 @@
         <DCCReference Include="DUnitX.Tests.ConsoleWriter.Base.pas"/>
         <DCCReference Include="DUnitX.Tests.TestDataProvider.pas"/>
         <DCCReference Include="DUnitX.Tests.IgnoreFixture.pas"/>
+        <DCCReference Include="DUnitX.Tests.Utils.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

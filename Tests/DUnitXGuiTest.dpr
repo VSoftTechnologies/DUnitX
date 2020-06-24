@@ -36,7 +36,8 @@ uses
   DUnitX.Tests.Utils.XML in 'DUnitX.Tests.Utils.XML.pas',
   DUnitX.Tests.WeakReference in 'DUnitX.Tests.WeakReference.pas',
   DUnitX.RunResults in '..\DUnitX.RunResults.pas',
-  DUnitX.Tests.ConsoleWriter.Base in 'DUnitX.Tests.ConsoleWriter.Base.pas';
+  DUnitX.Tests.ConsoleWriter.Base in 'DUnitX.Tests.ConsoleWriter.Base.pas',
+  DUnitX.Tests.Utils in 'DUnitX.Tests.Utils.pas';
 
 begin
   Application.Initialize;
