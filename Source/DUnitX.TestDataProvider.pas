@@ -28,6 +28,8 @@ unit DUnitX.TestDataProvider;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
   {$IFDEF USE_NS}
   System.Classes,
