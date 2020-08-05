@@ -464,10 +464,10 @@ begin
             if (iProvider <> nil) then
             begin
               count := iProvider.GetCaseCount(method.name);
-              caseName := iProvider.GetCaseName(method.name);
               for x := 0 to count -1 do
               begin
-                params := iProvider.GetCaseParams(method.name,x);
+                caseName := iProvider.GetCaseName(method.name, x);
+                params := iProvider.GetCaseParams(method.name, x);
                 for i := 1 to repeatCount do
                 begin
                   currentFixture.AddTestCase(method.Name, FormatCaseName(caseName,x), FormatTestName(method.Name, i, repeatCount), category, method, testEnabled, params);

@@ -8,7 +8,7 @@ type
   ITestDataProvider = interface
     ['{1BFC9318-AF52-41BB-82D4-58166429885A}']
     function GetCaseCount(const methodName : string): integer;
-    function GetCaseName(const methodName : string) : string;
+    function GetCaseName(const methodName : string; const caseNumber : integer) : string;
     function GetCaseParams(const methodName : string; const caseNumber : integer) : TValuearray;
   end;
 
@@ -16,7 +16,7 @@ type
   public
     constructor Create;virtual;abstract;
     function GetCaseCount(const methodName : string) : integer;virtual;abstract;
-    function GetCaseName(const methodName : string) : string;virtual;abstract;
+    function GetCaseName(const methodName : string; const caseNumber : integer) : string;virtual;abstract;
     function GetCaseParams(const methodName : string ; const caseNumber : integer) : TValuearray;virtual;abstract;
   End;
 

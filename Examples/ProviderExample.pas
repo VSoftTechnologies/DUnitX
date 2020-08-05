@@ -25,7 +25,7 @@ type
       //Get the amount of cases, we want to create;
       function GetCaseCount(const methodName : string) : Integer; override;
       //Get the name of the cases, depending on the Test-Function
-      function GetCaseName(const methodName : string) : string; override;
+      function GetCaseName(const methodName : string; const caseNumber : integer) : string; override;
       //Get the Params for calling the Test-Function;Be aware of the order !
       function GetCaseParams(const methodName : string ; const caseNumber : integer) : TValuearray; override;
       //Cleanup the instance
@@ -35,8 +35,8 @@ type
   [TestFixture('ProviderExample1','Example using TestCaseProviders')]
   TProviderExample = class(TObject)
   public
-    [Test]
-    [TestCaseProvider('Demoprovider')]
+   // [Test]
+   // [TestCaseProvider('Demoprovider')]
     Procedure Addtest(const v1,v2:integer;expected:integer);
     [Test]
     [TestCaseProvider(TSampleProvider)]
@@ -79,7 +79,7 @@ begin
   result := flist.Count;
 end;
 
-function TSampleProvider.GetCaseName(const methodName : string) : string;
+function TSampleProvider.GetCaseName(const methodName : string; const caseNumber : integer) : string;
 begin
   result := Methodname;
   if (Methodname = 'Addtest') then
