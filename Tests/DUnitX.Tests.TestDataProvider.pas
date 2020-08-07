@@ -24,7 +24,7 @@ type
     public
       Constructor Create;Override;
       function GetCaseCount(const methodName : string) : Integer; override;
-      function GetCaseName(const methodName : string) : string; override;
+      function GetCaseName(const methodName : string; const caseNumber : integer) : string; override;
       function GetCaseParams(const methodName : string ; const caseNumber : integer) : TValuearray; override;
       Destructor Destroy;override;
   End;
@@ -65,7 +65,7 @@ begin
   result := flist.count;
 end;
 
-function TSampleProvider.GetCaseName(const methodName : string) : string;
+function TSampleProvider.GetCaseName(const methodName : string; const caseNumber : integer) : string;
 begin
   result := '';
   if (Methodname = 'spTstAdd') then
