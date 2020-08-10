@@ -505,7 +505,7 @@ begin
         else
         begin
           //if a testcase is ignored, just add it as a regular test.
-          currentFixture.AddTest(method.Name, TTestMethod(meth), method.Name, category, true, true, ignoredReason, maxTime);
+          currentFixture.AddTest(method.Name, TTestMethod(meth), method.Name, category, method, true, true, ignoredReason, maxTime);
         end;
         continue;
       end;
@@ -515,7 +515,7 @@ begin
     begin
       for i := 1 to repeatCount do
       begin
-        currentFixture.AddTest(method.Name, TTestMethod(meth), FormatTestName(method.Name, i, repeatCount), category, true, ignoredTest, ignoredReason, maxTime, willRaise, willRaiseInherit);
+        currentFixture.AddTest(method.Name, TTestMethod(meth), FormatTestName(method.Name, i, repeatCount), category, method, true, ignoredTest, ignoredReason, maxTime, willRaise, willRaiseInherit);
       end;
       continue;
     end;
@@ -526,7 +526,7 @@ begin
       // Add Published Method that has no Attributes
       for i := 1 to repeatCount do
       begin
-        currentFixture.AddTest(method.Name, TTestMethod(meth), FormatTestName(method.Name, i, repeatCount), category, true, ignoredTest, ignoredReason, maxTime);
+        currentFixture.AddTest(method.Name, TTestMethod(meth), FormatTestName(method.Name, i, repeatCount), category, method, true, ignoredTest, ignoredReason, maxTime);
       end;
     end;
   end;
