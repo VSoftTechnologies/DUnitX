@@ -270,36 +270,20 @@ begin
   sExeName := ParamStr(0);
   FIndent := 0;
   sTime := Format('%.3f',[RunResults.Duration.TotalSeconds]);
-  sDate := FormatDateTime('yyyy-MM-dd',RunResults.StartTime);
+  sDate := FormatDateTime('yyyy-MM-dd"T"hh:nn:ss',RunResults.StartTime);
 
-  WriteXMLLine('<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>');
-  WriteXMLLine(Format('<test-results name="%s" total="%d" errors="%d" failures="%d" ignored="%d" inconclusive="0" not-run="%d" skipped="0" invalid="0" date="%s" time="%s">',
-                      [sExeName,totalTests,RunResults.ErrorCount,RunResults.FailureCount,RunResults.IgnoredCount,RunResults.IgnoredCount,sDate,sTime]));
-  sExeName := ExtractFileName(sExeName);
-
-  if RunResults.AllPassed then
-    sResult := 'Success'
-  else
-    sResult := 'Failure';
-
+  WriteXMLLine('<?xml version="1.0" encoding="UTF-8"?>');
+  WriteXMLLine('<testsuites>');
   Indent;
-  //TODO: Populate these properly.
-//  WriteXMLLine('<environment nunit-version="DUnitX" clr-version="2.0.0.0" os-version="6.1.0.0" platform="Windows" cwd="" machine-name="" user="" user-domain=""  />');
-  WriteXMLLine('<culture-info current-culture="en" current-uiculture="en" />');
-  WriteXMLLine(Format('<test-suite type="Assembly" name="%s" executed="true" result="%s" success="%s" time="%s" asserts="0">',[sExeName,sResult,BoolToStr(RunResults.AllPassed,true),sTime]));
-  Indent;
-  WriteXMLLine('<results>');
 
-  Indent;
+  // Global overview
+  WriteXMLLine(Format('<testsuite name="%s" errors="%d" tests="%d" failures="%d" time="%s" timestamp="%s" />',[sExeName,RunResults.ErrorCount, RunResults.TestCount, RunResults.FailureCount, sTime, sDate]));
+
   for fixtureRes in RunResults.FixtureResults do
     WriteFixtureResult(fixtureRes);
-  Outdent;
-  WriteXMLLine('</results>');
-  Outdent;
-  WriteXMLLine('</test-suite>');
-  Outdent;
-  WriteXMLLine('</test-results>');
 
+  Outdent;
+  WriteXMLLine('</testsuites>');
 end;
 
 procedure TDUnitXXMLJUnitLogger.Outdent;
@@ -318,7 +302,7 @@ var
   sName: string;
   sSuccess: string;
 begin
-  Indent;
+  //Indent;
   try
     if not fixtureResult.HasFailures then
       sResult := 'Success'
@@ -326,7 +310,7 @@ begin
       sResult := 'Failure';
     sTime := Format('%.3f',[fixtureResult.Duration.TotalSeconds]);
 
-    sName := EscapeForXML(fixtureResult.Fixture.Name);
+    sName := EscapeForXML(fixtureResult.Fixture.FullName);
     sResult := EscapeForXML(sResult);
     sSuccess := EscapeForXML(BoolToStr(not fixtureResult.HasFailures,true));
     sTime := EscapeForXML(sTime);
@@ -340,22 +324,19 @@ begin
       sExecuted := BoolToStr(fixtureResult.ResultCount > 0,true);
       sExecuted := EscapeForXML(sExecuted);
 
-      WriteXMLLine(Format('<test-suite type="Fixture" name="%s" executed="%s" result="%s" success="%s" time="%s" >',[sName, sExecuted, sResult, sSuccess, sTime]));
-        WriteCategoryNodes(fixtureResult.Fixture.Categories);
-          Indent;
-          WriteXMLLine('<results>');
-          for testResult in fixtureResult.TestResults do
-          begin
-            WriteTestResult(testResult);
-          end;
+      WriteXMLLine(Format('<testsuite type="Fixture" name="%s" executed="%s" result="%s" success="%s" time="%s" >',[sName, sExecuted, sResult, sSuccess, sTime]));
 
-          for child in fixtureResult.Children do
-          begin
-            WriteFixtureResult(child);
-          end;
-          WriteXMLLine('</results>');
-        Outdent;
-        WriteXMLLine('</test-suite>');
+        //WriteCategoryNodes(fixtureResult.Fixture.Categories);
+      for testResult in fixtureResult.TestResults do
+      begin
+        WriteTestResult(testResult);
+      end;
+      WriteXMLLine('</testsuite>');
+
+      for child in fixtureResult.Children do
+      begin
+        WriteFixtureResult(child);
+      end;
     end
     else
     begin
@@ -363,25 +344,25 @@ begin
         sLineEnd := '/';
       //It's a Namespace.
 
-      WriteXMLLine(Format('<test-suite type="Namespace" name="%s" executed="true" result="%s" success="%s" time="%s" asserts="0" %s>',[sName, sResult, sSuccess, sTime, sLineEnd]));
+      //WriteXMLLine(Format('<test-suite type="Namespace" name="%s" executed="true" result="%s" success="%s" time="%s" asserts="0" %s>',[sName, sResult, sSuccess, sTime, sLineEnd]));
 
       if fixtureResult.ChildCount > 0 then
       begin
-        Indent;
-        WriteXMLLine('<results>');
-        Indent;
+//        Indent;
+//        WriteXMLLine('<results>');
+//        Indent;
         for child in fixtureResult.Children do
         begin
             WriteFixtureResult(child);
         end;
-        Outdent;
-        WriteXMLLine('</results>');
-        Outdent;
-        WriteXMLLine('</test-suite>');
+//        Outdent;
+//        WriteXMLLine('</results>');
+//        Outdent;
+//        WriteXMLLine('</test-suite>');
       end;
     end;
   finally
-    Outdent;
+    //Outdent;
   end;
 end;
 
@@ -425,8 +406,8 @@ begin
     sResult := EscapeForXML(sResult);
     sTime := EscapeForXML(sTime);
 
-    WriteXMLLine(Format('<test-case name="%s" executed="%s" result="%s" %s time="%s" asserts="0" %s>', [sName, sExecuted, sResult, sSuccess, sTime, sLineEnd]));
-    WriteCategoryNodes(testResult.Test.Categories);
+    WriteXMLLine(Format('<testcase name="%s" executed="%s" result="%s" %s time="%s" asserts="0" %s>', [sName, sExecuted, sResult, sSuccess, sTime, sLineEnd]));
+    //WriteCategoryNodes(testResult.Test.Categories);
     case testResult.ResultType of
       TTestResultType.MemoryLeak,
       TTestResultType.Failure,
@@ -473,7 +454,7 @@ begin
       end;
     end;
     Outdent;
-    WriteXMLLine('</test-case>');
+    WriteXMLLine('</testcase>');
 
   finally
     Outdent;
