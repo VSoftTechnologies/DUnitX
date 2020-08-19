@@ -295,6 +295,7 @@ procedure TDUnitXXMLJUnitLogger.WriteFixtureResult(const fixtureResult: IFixture
 var
   sResult : string;
   sTime   : string;
+  sDate   : string;
   sLineEnd : string;
   child : IFixtureResult;
   testResult : ITestResult;
@@ -302,7 +303,6 @@ var
   sName: string;
   sSuccess: string;
 begin
-  //Indent;
   try
     if not fixtureResult.HasFailures then
       sResult := 'Success'
@@ -314,6 +314,7 @@ begin
     sResult := EscapeForXML(sResult);
     sSuccess := EscapeForXML(BoolToStr(not fixtureResult.HasFailures,true));
     sTime := EscapeForXML(sTime);
+    sDate := FormatDateTime('yyyy-MM-dd"T"hh:nn:ss', fixtureResult.StartTime);
 
     //its a real fixture if the class is not TObject.
     if (not fixtureResult.Fixture.TestClass.ClassNameIs('TObject'))  then
@@ -324,9 +325,9 @@ begin
       sExecuted := BoolToStr(fixtureResult.ResultCount > 0,true);
       sExecuted := EscapeForXML(sExecuted);
 
-      WriteXMLLine(Format('<testsuite type="Fixture" name="%s" executed="%s" result="%s" success="%s" time="%s" >',[sName, sExecuted, sResult, sSuccess, sTime]));
+      WriteXMLLine(Format('<testsuite name="%s" errors="%d" tests="%d" failures="%d" time="%s" timestamp="%s">',[sName, fixtureResult.ErrorCount, fixtureResult.TestResults.Count, fixtureResult.FailureCount, sTime, sDate]));
+      //WriteCategoryNodes(fixtureResult.Fixture.Categories);
 
-        //WriteCategoryNodes(fixtureResult.Fixture.Categories);
       for testResult in fixtureResult.TestResults do
       begin
         WriteTestResult(testResult);
@@ -344,25 +345,16 @@ begin
         sLineEnd := '/';
       //It's a Namespace.
 
-      //WriteXMLLine(Format('<test-suite type="Namespace" name="%s" executed="true" result="%s" success="%s" time="%s" asserts="0" %s>',[sName, sResult, sSuccess, sTime, sLineEnd]));
-
       if fixtureResult.ChildCount > 0 then
       begin
-//        Indent;
-//        WriteXMLLine('<results>');
-//        Indent;
         for child in fixtureResult.Children do
         begin
             WriteFixtureResult(child);
         end;
-//        Outdent;
-//        WriteXMLLine('</results>');
-//        Outdent;
-//        WriteXMLLine('</test-suite>');
       end;
     end;
   finally
-    //Outdent;
+
   end;
 end;
 
@@ -387,6 +379,7 @@ var
   sExecuted : string;
   sSuccess : string;
   sName : string;
+  sClassName: string;
 begin
   Indent;
   try
@@ -402,47 +395,37 @@ begin
       sSuccess := '';
 
     sName := EscapeForXML(testResult.Test.Name);
+    sClassName := EscapeForXML(testResult.Test.Fixture.FullName);
     sExecuted := EscapeForXML(sExecuted);
     sResult := EscapeForXML(sResult);
     sTime := EscapeForXML(sTime);
 
-    WriteXMLLine(Format('<testcase name="%s" executed="%s" result="%s" %s time="%s" asserts="0" %s>', [sName, sExecuted, sResult, sSuccess, sTime, sLineEnd]));
+    WriteXMLLine(Format('<testcase classname="%s" name="%s" executed="%s" result="%s" %s time="%s" asserts="0" %s>', [sClassName, sName, sExecuted, sResult, sSuccess, sTime, sLineEnd]));
     //WriteCategoryNodes(testResult.Test.Categories);
     case testResult.ResultType of
+      TTestResultType.Failure:
+      begin
+        Indent;
+        WriteXMLLine(Format('<failure message="%s">', [EscapeForXML(testResult.Message)]));
+        Indent;
+          WriteXMLLine(Format('<![CDATA[ %s ]]>', [EscapeForXML(testResult.Message, False, True)]));
+        Outdent;
+        WriteXMLLine('</failure>');
+      end;
       TTestResultType.MemoryLeak,
-      TTestResultType.Failure,
       TTestResultType.Error:
       begin
         Indent;
-        WriteXMLLine('<failure>');
+        WriteXMLLine(Format('<error message="%s">', [EscapeForXML(testResult.Message)]));
         Indent;
-          WriteXMLLine('<message>');
-          Indent;
-            WriteXMLLine(Format('<![CDATA[ %s ]]>',[EscapeForXML(testResult.Message, False, True)]));
-          Outdent;
-          WriteXMLLine('</message>');
+          WriteXMLLine(Format('<![CDATA[ %s ]]>', [EscapeForXML(testResult.StackTrace, False, True)]));
         Outdent;
-        Indent;
-          WriteXMLLine('<stack-trace>');
-          Indent;
-            WriteXMLLine(Format('<![CDATA[ %s ]]>',[EscapeForXML(testResult.StackTrace, False, True)]));
-          Outdent;
-          WriteXMLLine('</stack-trace>');
-        Outdent;
-        WriteXMLLine('</failure>');
+        WriteXMLLine('</error>');
       end;
       TTestResultType.Ignored:
       begin
         Indent;
-        WriteXMLLine('<reason>');
-        Indent;
-          WriteXMLLine('<message>');
-          Indent;
-            WriteXMLLine(Format('<![CDATA[ %s ]]>',[EscapeForXML(testResult.Message, False, True)]));
-          Outdent;
-          WriteXMLLine('</message>');
-        Outdent;
-        WriteXMLLine('</reason>');
+        WriteXMLLine('<skipped/>');
       end;
       TTestResultType.Pass :
       begin
