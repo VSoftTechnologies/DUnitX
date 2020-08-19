@@ -30,8 +30,8 @@ interface
 
 {$I DUnitX.inc}
 
-function IsCharValidXML(wideChar: WideChar): Boolean;
-function StripInvalidXML(const xmlString: string): string;
+function IsValidXMLChar(const wc: WideChar): Boolean;
+function StripInvalidXML(const s: string): string;
 function EscapeForXML(const value: string; const isAttribute: boolean = True; const isCDATASection : Boolean = False): string;
 
 implementation
@@ -43,9 +43,9 @@ uses
   SysUtils;
   {$ENDIF}
 
-function IsCharValidXML(wideChar: WideChar): Boolean;
+function IsValidXMLChar(const wc: WideChar): Boolean;
 begin
-  case Word(wideChar) of
+  case Word(wc) of
     $0009, $000A, $000C, $000D,
       $0020..$D7FF,
       $E000..$FFFD, // Standard Unicode chars below $FFFF
@@ -58,37 +58,36 @@ begin
 end;
 
 
-function StripInvalidXML(const xmlString: string): string;
+function StripInvalidXML(const s: string): string;
 var
-  index: integer;
-  count: Integer;
+  i, count: Integer;
 begin
   {$IFNDEF NEXTGEN}
-  count := Length(xmlString);
+  count := Length(s);
   setLength(result, count);
-  for index := 1 to Count do
+  for i := 1 to Count do // Iterate
   begin
-    if IsCharValidXML(WideChar(xmlString[index])) then
-      result[index] := xmlString[index]
+    if IsValidXMLChar(WideChar(s[i])) then
+      result[i] := s[i]
     else
-      result[index] := ' ';
-  end;
+      result[i] := ' ';
+  end; // for}
   {$ELSE}
-  count := xmlString.Length;
-  setLength(result, count);
-  for index := 0 to Count - 1 do
+  count := s.Length;
+  SetLength(result, count);
+  for i := 0 to count - 1 do // Iterate
   begin
-    if IsCharValidXML(WideChar(xmlString.Chars[index])) then
+    if IsValidXMLChar(s.Chars[i]) then
     begin
-      result := result.Remove(index, 1);
-      result := result.Insert(index, xmlString.Chars[index]);
+      result := result.Remove(i, 1);
+      result := result.Insert(i, s.Chars[i]);
     end
     else
     begin
-      result := result.Remove(index, 1);
-      result := result.Insert(index, ' ');
+      result := result.Remove(i, 1);
+      result := result.Insert(i, s.Chars[i]);
     end;
-  end;
+  end; // for}
   {$ENDIF}
 end;
 
@@ -96,6 +95,7 @@ end;
 function EscapeForXML(const value: string; const isAttribute: boolean = True; const isCDATASection : Boolean = False): string;
 begin
   result := StripInvalidXML(value);
+  {$IFNDEF NEXTGEN}
   if isCDATASection  then
   begin
     Result := StringReplace(Result, ']]>', ']>',[rfReplaceAll]);
@@ -114,6 +114,26 @@ begin
     Result := StringReplace(result, '''', '&#39;',[rfReplaceAll]);
     Result := StringReplace(result, '"', '&quot;',[rfReplaceAll]);
   end;
+  {$ELSE}
+  if isCDATASection  then
+  begin
+    Result := Result.Replace(']]>', ']>', [rfReplaceAll]);
+    exit;
+  end;
+
+  //note we are avoiding replacing &amp; with &amp;amp; !!
+  Result := Result.Replace('&amp;', '[[-xy-amp--]]',[rfReplaceAll]);
+  Result := Result.Replace('&', '&amp;',[rfReplaceAll]);
+  Result := Result.Replace('[[-xy-amp--]]', '&amp;amp;',[rfReplaceAll]);
+  Result := Result.Replace('<', '&lt;',[rfReplaceAll]);
+  Result := Result.Replace('>', '&gt;',[rfReplaceAll]);
+
+  if isAttribute then
+  begin
+    Result := Result.Replace('''', '&#39;',[rfReplaceAll]);
+    Result := Result.Replace('"', '&quot;',[rfReplaceAll]);
+  end;
+  {$ENDIF}
 end;
 
 end.
