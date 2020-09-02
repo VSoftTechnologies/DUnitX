@@ -37,7 +37,7 @@ Tips and Tricks
 Support
 =======
 
-A [Google+ Community](https://plus.google.com/communities/110602661860791972403) has been setup to discuss DUnitX.
+A [Delphi Praxis Forum](https://en.delphipraxis.net/forum/36-dunitx/) has been setup to discuss DUnitX.
 
 Contributors
 ============ 
