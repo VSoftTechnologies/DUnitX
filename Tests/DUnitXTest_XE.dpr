@@ -1,9 +1,14 @@
 program DUnitXTest_XE;
 
+{$IFNDEF GUI}
 {$APPTYPE CONSOLE}
+{$ENDIF}
+
 {$STRONGLINKTYPES ON}
+
 uses
   SysUtils,
+  DUnitX.Loggers.GUI.VCL in '..\DUnitX.Loggers.GUI.VCL.pas',
   DUnitX.Loggers.Console in '..\DUnitX.Loggers.Console.pas',
   DUnitX.Loggers.Text in '..\DUnitX.Loggers.Text.pas',
   DUnitX.MacOS.Console in '..\DUnitX.MacOS.Console.pas',
@@ -26,7 +31,6 @@ uses
   DUnitX.StackTrace.JCL in '..\DUnitX.StackTrace.JCL.pas',
   DUnitX.StackTrace.MadExcept3 in '..\DUnitX.StackTrace.MadExcept3.pas',
   DUnitX.StackTrace.MadExcept4 in '..\DUnitX.StackTrace.MadExcept4.pas',
-  DUnitX.Loggers.GUI in '..\DUnitX.Loggers.GUI.pas' {Form1},
   DUnitX.StackTrace.EurekaLog7 in '..\DUnitX.StackTrace.EurekaLog7.pas',
   DUnitX.Loggers.Null in '..\DUnitX.Loggers.Null.pas',
   DUnitX.FixtureResult in '..\DUnitX.FixtureResult.pas',
@@ -62,7 +66,8 @@ uses
   DUnitX.Tests.Inheritance in 'DUnitX.Tests.Inheritance.pas',
   DUnitX.Tests.ConsoleWriter.Base in 'DUnitX.Tests.ConsoleWriter.Base.pas',
   DUnitX.Assert in '..\DUnitX.Assert.pas',
-  DUnitX.Types in '..\DUnitX.Types.pas';
+  DUnitX.Types in '..\DUnitX.Types.pas',
+  DUnitX.Tests.Utils in 'DUnitX.Tests.Utils.pas';
 
 var
   runner : ITestRunner;
@@ -70,16 +75,27 @@ var
   logger : ITestLogger;
   nunitLogger : ITestLogger;
 begin
+{$IFDEF GUI}
+  DUnitX.Loggers.GUI.VCL.Run;
+  exit;
+{$ENDIF}
+
   try
     TDUnitX.CheckCommandLine;
     //Create the runner
     runner := TDUnitX.CreateRunner;
     runner.UseRTTI := True;
     runner.FailsOnNoAsserts := True; //Assertions must be made during tests;
+
     //tell the runner how we will log things
-    logger := TDUnitXConsoleLogger.Create(false);
+
+    if TDUnitX.Options.ConsoleMode <> TDunitXConsoleMode.Off then
+    begin
+      logger := TDUnitXConsoleLogger.Create(TDUnitX.Options.ConsoleMode = TDunitXConsoleMode.Quiet);
+      runner.AddLogger(logger);
+    end;
+
     nunitLogger := TDUnitXXMLNUnitFileLogger.Create(TDUnitX.Options.XMLOutputFile);
-    runner.AddLogger(logger);
     runner.AddLogger(nunitLogger);
 
     logger := nil;
@@ -96,7 +112,7 @@ begin
     //We don;t want this happening when running under CI.
     if TDUnitX.Options.ExitBehavior = TDUnitXExitBehavior.Pause then
     begin
-      System.Write('Done.. press <Enter> key to quit.');
+      System.Write('Done...  Press <Enter> key to quit.');
       System.Readln;
     end;
     {$ENDIF}

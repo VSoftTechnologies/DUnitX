@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2012 Vincent Parrett                              }
+{           Copyright (C) 2017 Vincent Parrett                              }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -28,11 +28,15 @@ unit DUnitX.Tests.Example;
 
 interface
 
-{$I DUnitX.inc}
+{$I ..\Source\DUnitX.inc}
 
 uses
-  DUnitX.TestFramework;
-
+  DUnitX.TestFramework,
+  {$IFDEF USE_NS}
+  System.SysUtils;
+  {$ELSE}
+  SysUtils;
+  {$ENDIF}
 
 type
   {$M+}
@@ -62,6 +66,23 @@ type
     procedure AnotherTestMethod(const a : string; const b : integer);
 
     [Test]
+    [TestCase('Date, space, time', '1988-10-21 17:44:23.456')]
+    [TestCase('Date, T, time', '1988-10-21T17:44:23.456')]
+    [TestCase('Date, T, time, Z', '1988-10-21T17:44:23.456Z')]
+    [TestCase('Date, T, time, offset (1)', '1988-10-21T17:44:23.456+02:30')]
+    [TestCase('Date, T, time, offset (2)', '1988-10-21T17:44:23.456+0230')]
+    procedure TestDateTimeArgument(dateTime: TDateTime);
+
+    [Test]
+    [TestCase('Just date', '1988-10-21')]
+    procedure TestDateArgument(const date: TDate);
+
+    [Test]
+    [TestCase('time with ms', '17:44:23.456')]
+    [TestCase('time without ms', '17:44:23')]
+    procedure TestTimeArgument(time: TTime);
+
+    [Test]
     [Category('Bar,foo')]
     procedure TestTwo;
 
@@ -76,6 +97,19 @@ type
     [Test]
     [Ignore('I was told to ignore me')]
     procedure IgnoreMe;
+
+    [WillRaise(EOutOfMemory)]
+    procedure FailMe;
+
+    [WillRaise(EHeapException, exDescendant)]
+    procedure FailMeToo;
+
+    [WillRaise(Exception, exDescendant)]
+    procedure FailAny;
+
+    [WillRaise(EOutOfMemory)]
+    [Ignore('I am not behaving as I should')]
+    procedure IgnoreMeCauseImWrong;
 
     [Setup]
     procedure Setup;
@@ -111,36 +145,46 @@ type
   private
     FSetupCalled : boolean;
   public
-
-    [SetupFixture]
-    procedure SetupFixture;
-
     //testing constructor/destructor as fixture setup/teardown
     constructor Create;
     destructor Destroy;override;
+
+    [SetupFixture]
+    procedure SetupFixture;
   published
     procedure ATest;
-
   end;
-
 
 implementation
 
 uses
+  DUnitX.DUnitCompatibility,
   {$IFDEF USE_NS}
-  System.SysUtils,
+  System.DateUtils;
   {$ELSE}
-  SysUtils,
+  DateUtils;
   {$ENDIF}
-  DUnitX.DUnitCompatibility;
-
-{ TMyExampleTests }
 
 
 procedure TMyExampleTests.DontCallMe;
 begin
   TDUnitX.CurrentRunner.Status('DontCallMe called');
   raise Exception.Create('DontCallMe was called!!!!');
+end;
+
+procedure TMyExampleTests.FailAny;
+begin
+  Abort;
+end;
+
+procedure TMyExampleTests.FailMe;
+begin
+  OutOfMemoryError;
+end;
+
+procedure TMyExampleTests.FailMeToo;
+begin
+  OutOfMemoryError;
 end;
 
 procedure TMyExampleTests.IgnoreMe;
@@ -151,6 +195,11 @@ end;
 procedure TMyExampleTests.IgnoreMeAnyway;
 begin
   Assert.IsTrue(false,'I should not have been called!');
+end;
+
+procedure TMyExampleTests.IgnoreMeCauseImWrong;
+begin
+  Abort;
 end;
 
 procedure TMyExampleTests.Setup;
@@ -169,6 +218,23 @@ begin
   Assert.Pass;
 end;
 
+procedure TMyExampleTests.TestDateArgument(const date: TDate);
+var
+  expected: TDate;
+begin
+  expected := EncodeDate(1988, 10, 21);
+  Assert.IsTrue( SameDate(expected, date) );
+end;
+
+procedure TMyExampleTests.TestDateTimeArgument(dateTime: TDateTime);
+var
+  expected: TDateTime;
+begin
+  dateTime := RecodeMilliSecond(dateTime, 000);
+  expected := EncodeDateTime(1988, 10, 21, 17, 44, 23, 000);
+  Assert.IsTrue( SameDateTime(expected, dateTime) );
+end;
+
 procedure TMyExampleTests.TestMeAnyway;
 begin
   TDUnitX.CurrentRunner.Status('TestMeAnyway called');
@@ -181,6 +247,14 @@ begin
   Assert.Pass;
 end;
 
+procedure TMyExampleTests.TestTimeArgument(time: TTime);
+var
+  expected: TTime;
+begin
+  time := RecodeMilliSecond(time, 0);
+  expected := EncodeTime(17, 44, 23, 000);
+  Assert.IsTrue( SameTime(expected, time) );
+end;
 
 procedure TMyExampleTests.TestTwo;
 var
@@ -206,11 +280,9 @@ begin
   x.Free;
 end;
 
-{ TExampleFixture2 }
-
 destructor TExampleFixture2.Destroy;
 begin
-
+  //Empty
   inherited;
 end;
 
@@ -232,8 +304,6 @@ begin
   Assert.IsTrue(FPublished_Procedures_Are_Included_As_Tests_Called);
 end;
 
-{ TExampleFixture3 }
-
 procedure TExampleFixture3.ATest;
 begin
   Assert.IsTrue(FSetupCalled);
@@ -246,7 +316,7 @@ end;
 
 destructor TExampleFixture3.Destroy;
 begin
-
+  //Empty
   inherited;
 end;
 
@@ -274,4 +344,5 @@ initialization
   TDUnitX.RegisterTestFixture(TMyExampleTests);
   TDUnitX.RegisterTestFixture(TExampleFixture2);
   TDUnitX.RegisterTestFixture(TExampleFixture3);
+
 end.

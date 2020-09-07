@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<codetemplate xmlns="http://schemas.borland.com/Delphi/2005/codetemplates" version="1.0.0">
+	<template name="dxtc" invoke="auto">
+		<description>Create test case attribute</description>
+		<author>DUnitX Group</author>
+        <point name="testcasename">
+            <text>
+                TestCaseName
+            </text>
+            <hint>
+                Name of the test case
+            </hint>
+        </point>
+        <point name="testcaseparams">
+            <text>
+                TestCaseParams
+            </text>
+            <hint>
+                Test case parameters - separate with default delimiter (comma)
+            </hint>
+        </point>
+		<code language="Delphi" context="memberdecl" delimiter="|" >
+			<![CDATA[[TestCase('|testcasename|', '|testcaseparams|')]|end|]]>
+		</code>
+	</template>
+</codetemplate>

@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<codetemplate xmlns="http://schemas.borland.com/Delphi/2005/codetemplates" version="1.0.0">
+	<template name="dxst" invoke="auto">
+		<description>Create Setup procedure</description>
+		<author>DUnitX Group</author>
+        <point name="setupprocname">
+            <text>
+                Setup
+            </text>
+            <hint>
+                Name of the setup procedure
+            </hint>
+        </point>
+        <point name="teardownprocname">
+            <text>
+                Teardown
+            </text>
+            <hint>
+                Name of the teardown procedure
+            </hint>
+        </point>
+		<code language="Delphi" context="memberdecl" delimiter="|" >
+			<![CDATA[[Setup]
+procedure |setupprocname|;
+[Teardown]
+procedure |teardownprocname|;|end|]]>
+		</code>
+	</template>
+</codetemplate>

@@ -37,7 +37,7 @@ Tips and Tricks
 Support
 =======
 
-A [Google+ Community](https://plus.google.com/communities/110602661860791972403) has been setup to discuss DUnitX.
+A [Delphi Praxis Forum](https://en.delphipraxis.net/forum/36-dunitx/) has been setup to discuss DUnitX.
 
 Contributors
 ============ 
@@ -53,7 +53,7 @@ A [recent list of contributors](https://github.com/VSoftTechnologies/DUnitX/grap
 License
 ========
 Apache Version 2.0 
-Copyright (C) 2012-2014 Vincent Parrett
+Copyright (C) 2012-2016 Vincent Parrett
 vincent@finalbuilder.com                                         
 http://www.finalbuilder.com
 

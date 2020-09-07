@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2012 Vincent Parrett                              }
+{           Copyright (C) 2017 Vincent Parrett                              }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -28,97 +28,168 @@ unit DUnitX.Tests.Assert;
 
 interface
 
+{$I ..\Source\DUnitX.inc}
+
 uses
   DUnitX.TestFramework;
-
-{$I DUnitX.inc}
 
 type
   {$M+}
   [TestFixture]
   TTestsAssert = class
-  private
   published
     [Test]
     procedure Pass_Throws_ETestPass_Exception;
+
     [Test]
     procedure Pass_Throws_ETestPass_Exception_With_Message;
+
     [Test]
     procedure Fail_Throws_ETestFailure_Exception;
+
     [Test]
     procedure Fail_Throws_ETestFailure_Exception_With_Message;
+
     [Test]
     procedure Fail_Throws_ETestFailure_Exception_With_Return_Address_Reference;
+
     [Test]
     procedure Fail_Throws_ETestFailure_Exception_With_Caller_Address_Reference;
+
     [Test]
     procedure AreEqual_String_Throws_No_Exception_When_Values_Are_Equal;
+
     [Test]
-    procedure AreEqual_String_Throws_ETestFailure_When_Values_Are_NotEqual;
+    procedure AreEqual_Integer_Throws_No_Exception_When_Values_Are_Equal;
+
+    [Test]
+    procedure AreEqual_Integer_Throws_ETestFailure_When_Values_Are_NotEqual;
+
     [Test]
     procedure AreEqual_Extended_Throws_No_Exception_When_Values_Are_Equal;
+
     [Test]
     procedure AreEqual_Extended_Throws_ETestFailure_When_Values_Are_NotEqual;
+
     [Test]
     procedure AreEqual_Double_Throws_No_Exception_When_Values_Are_Equal;
+
     [Test]
     procedure AreEqual_Double_Throws_ETestFailure_When_Values_Are_NotEqual;
+
+    [Test]
+    procedure AreEqual_GUID_Throws_No_Exception_When_Values_Are_Equal;
+
+    [Test]
+    procedure AreEqual_GUID_Throws_ETestFailure_When_Values_Are_NotEqual;
+
+    [Test]
+    procedure AreEqual_Stream_Throws_No_Exception_When_Values_Are_Equal;
+
+    [Test]
+    procedure AreEqual_Stream_Throws_ETestFailure_When_Values_Are_NotEqual;
+
     [Test]
     procedure AreEqual_TClass_Throws_No_Exception_When_Classes_Are_Equal;
+
     [Test]
     procedure AreEqual_TClass_Throws_ETestFailure_When_Classes_Are_NotEqual;
+
+    [Test]
+    procedure NoDiff_Throws_No_Exception_When_Strings_Are_Equal;
+
+    [Test]
+    procedure NoDiff_Throws_ETestFailure_When_Strings_Are_NotEqual;
+
+    [Test]
+    procedure AreEqual_TStrings_Throws_No_Exception_When_Strings_Are_Equal;
+
+    [Test]
+    procedure AreEqual_TStrings_Throws_ETestFailure_When_Strings_Are_NotEqual;
+
 {$IFNDEF DELPHI_XE_DOWN}
     [Test]
     procedure AreEqual_T_Throws_No_Exception_When_Interfaces_Are_Equal;
+
     [Test]
     procedure AreEqual_T_Throws_ETestFailure_When_Interfaces_Are_NotEqual;
+
     [Test]
     procedure AreEqual_T_Throws_ETestFailure_When_Interfaces_Are_Nil;
+
     [Test]
     procedure AreEqual_T_Throws_No_Exception_When_Objects_Are_Equal;
+
     [Test]
     procedure AreEqual_T_Throws_ETestFailure_When_Objects_Are_NotEqual;
+
     [Test]
     procedure AreEqual_T_Throws_ETestFailure_When_Objects_Are_Nil;
 {$ENDIF}
+
     [Test]
     procedure AreEqualMemory_Throws_No_Exception_When_Pointers_Are_Equal;
+
     [Test]
     procedure AreEqualMemory_Throws_ETestFailure_When_Pointers_Are_NotEqual;
+
     [Test]
     procedure AreEqual_Throws_No_Exception_When_Values_Are_Exactly_Equal;
+
     [Test]
     procedure AreNotEqual_Integer_Throws_No_Exception_When_Values_Are_NotEqual;
+
     [Test]
     procedure AreNotEqual_Integer_Throws_Exception_When_Values_Are_Equal;
+
+    [Test]
+    procedure AreNotEqual_GUID_Throws_No_Exception_When_Values_Are_NotEqual;
+
+    [Test]
+    procedure AreNotEqual_GUID_Throws_Exception_When_Values_Are_Equal;
+
     [Test]
     procedure WillRaise_Without_Exception_Class_Will_Capture_Any_Exception;
+
     [Test]
     procedure WillRaiseWithMessage_Exception_And_Message_Will_Check_ExceptionClass_And_Exception_Message;
+
     [Test]
     procedure WillRaiseWithMessage_Without_Exception_Class_And_Message_Will_Capture_Any_Exception;
+
     [Test]
     procedure WillRaiseWithMessage_Without_Exception_Class_With_Message_Will_Capture_Any_Exception_With_Message;
+
     [Test]
     procedure WillRaiseWithMessage_Exception_Not_Thrown_Throws_ETestFailure_Exception;
+
     [Test]
     procedure WillRaiseDescenadant_With_NonDescendingClass;
+
     [Test]
     procedure WillRaiseDescenadant_With_DescendingClass;
+
     [Test]
     procedure WillRaiseDescenadant_With_ExactClass;
+
     [Test]
     procedure WillRaiseAny;
+
     [Test]
     procedure WillRaiseAny_NoExecption;
+
     [Test]
     procedure WillNotRaise_With_ExactClass_Positive;
+
     [Test]
     procedure WillNotRaise_With_ExactClass_Negative;
+
     [Test]
     procedure WillNotRaise_With_DescendingClass_Positive;
+
     [Test]
     procedure WillNotRaise_With_DescendingClass_Negative;
+
     [Test]
     procedure WillNotRaise_With_NoClass;
 
@@ -149,7 +220,8 @@ type
     [Test]
     [TestCase( 'substring', 'a str,a string,false' )]
     [TestCase( 'substring - case sensitive', 'a str,a string,true' )]
-    procedure StartsWith_SubString_Is_At_The_Start__Of_String( const subString, theString: string; caseSensitive: boolean );
+    procedure StartsWith_SubString_Is_At_The_Start_Of_String(const subString, theString: string; caseSensitive: boolean);
+
     [Test]
     [TestCase( 'empty substring', ',a string,false' )]
     [TestCase( 'empty substring - case sensitive', ',a string,true' )]
@@ -166,7 +238,8 @@ type
     [Test]
     [TestCase( 'substring', 'ing,a string,false' )]
     [TestCase( 'substring - case sensitive', 'ing,a string,true' )]
-    procedure EndsWith_SubString_Is_At_The_End__Of_String( const subString, theString: string; caseSensitive: boolean );
+    procedure EndsWith_SubString_Is_At_The_End_Of_String( const subString, theString: string; caseSensitive: boolean );
+
     [Test]
     [TestCase( 'empty substring', ',a string,false' )]
     [TestCase( 'empty substring - case sensitive', ',a string,true' )]
@@ -179,6 +252,24 @@ type
     [TestCase( 'not in the string', 'something else,the substring is not here,false' )]
     [TestCase( 'not in the string - case sensitive', 'something else,the substring is not here,true' )]
     procedure EndsWith_SubString_Is_Not_At_End( const subString, theString: string; caseSensitive: boolean );
+
+    [Test]
+    procedure IgnoreCaseDefault;
+
+{$IFDEF SUPPORTS_REGEX}
+    [Test]
+    [TestCase('GUID with dash', '[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12},C687683F-F25B-4F9A-A231-31C52253B6A1')]
+    [TestCase('GUID without dash', '[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12},C687683FF25B4F9AA23131C52253B6A1')]
+    procedure IsMatch_True_Will_Not_Raise(const regexPattern, theString: string);
+
+    [Test]
+    [TestCase('GUID with dash', '[0-9A-F]{8}[-]([0-9A-F]{4}[-]){3}[0-9A-F]{12},C687683F-F25B-4F9A-A231-31C52253B6A#')]
+    [TestCase('GUID without dash', '[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12},C687683FF25B4F9AA23131C52253B6A#')]
+    procedure IsMatch_False_Will_Raise_ETestFailure(const regexPattern, theString: string);
+
+    [Test]
+    procedure WillRaiseWithMessageRegex;
+{$ENDIF}
   end;
 
 implementation
@@ -186,11 +277,13 @@ implementation
 uses
   {$IFDEF USE_NS}
   System.SysUtils,
-  System.Classes;
+  System.Classes,
   {$ELSE}
   SysUtils,
-  Classes;
+  Classes,
   {$ENDIF}
+  DUnitX.Exceptions,
+  DUnitX.Assert;
 
 type
   {$M+}
@@ -212,7 +305,8 @@ type
   TImplemented = class(TInterfacedObject,IAmImplemented)
   end;
 
-{ TTestAssert }
+  //Mask to override the default AssertEx in DUnitX.TestFramework
+  Assert = class(DUnitX.Assert.Assert);
 
 procedure TTestsAssert.Fail_Throws_ETestFailure_Exception;
 begin
@@ -271,6 +365,88 @@ begin
 
   Assert.WillRaise(MyProc, ETestFailure);
   MyProc := nil;
+end;
+
+procedure TTestsAssert.IgnoreCaseDefault;
+const
+  cStr1 = 'String';
+  cStr2 = 'STRING';
+var
+  OldVal: Boolean;
+begin
+  //Don't assume start value
+  OldVal := Assert.IgnoreCaseDefault;
+  try
+    Assert.IgnoreCaseDefault := True;
+    Assert.WillNotRaiseAny(procedure begin Assert.AreEqual(cStr1, cStr2) end);
+    Assert.WillNotRaiseAny(procedure begin Assert.StartsWith(cStr1, cStr2) end);
+    Assert.WillNotRaiseAny(procedure begin Assert.EndsWith(cStr1, cStr2) end);
+    Assert.WillRaise(procedure begin Assert.AreNotEqual(cStr1, cStr2) end, ETestFailure);
+
+    Assert.IgnoreCaseDefault := False;
+    Assert.WillRaise(procedure begin Assert.AreEqual(cStr1, cStr2) end, ETestFailure);
+    Assert.WillRaise(procedure begin Assert.StartsWith(cStr1, cStr2) end, ETestFailure);
+    Assert.WillRaise(procedure begin Assert.EndsWith(cStr1, cStr2) end, ETestFailure);
+    Assert.WillNotRaiseAny(procedure begin Assert.AreNotEqual(cStr1, cStr2) end);
+  finally
+    Assert.IgnoreCaseDefault := OldVal;
+  end;
+end;
+
+procedure TTestsAssert.NoDiff_Throws_ETestFailure_When_Strings_Are_NotEqual;
+begin
+  Assert.WillRaiseWithMessage(procedure
+    begin
+      Assert.NoDiff('  '#8, ' ');
+    end, ETestFailure, 'Length of strings is not equal: Expected 3 but got 1 ');
+
+  Assert.WillRaiseWithMessage(procedure
+    begin
+      Assert.NoDiff('lorem ipsum', 'lorem ipsum ', 'characters');
+    end,
+    ETestFailure, 'Length of strings is not equal: Expected 11 but got 12 characters');
+
+  Assert.WillRaiseWithMessage(procedure
+    begin
+      Assert.NoDiff('lorem ipsum', 'lorem Ipsum');
+    end,
+    ETestFailure, 'Difference at position 7: [''ipsum''] does not match [''Ipsum''] ');
+
+  Assert.WillRaiseWithMessage(procedure
+    begin
+      Assert.NoDiff(#13, #10);
+    end,
+    ETestFailure, 'Difference at position 1: [#13] does not match [#10] ');
+
+  Assert.WillRaiseWithMessage(procedure
+    begin
+      Assert.NoDiff('lorem ipsum'#9' ', 'lorem'#13'ipsum'#13#10);
+    end,
+    ETestFailure, 'Difference at position 6: ['' ipsum''#9'' ''] does not match [#13''ipsum''#13#10] ');
+end;
+
+procedure TTestsAssert.NoDiff_Throws_No_Exception_When_Strings_Are_Equal;
+begin
+  Assert.WillNotRaise(procedure
+    begin
+      Assert.NoDiff('', '');
+    end);
+  Assert.WillNotRaise(procedure
+    begin
+      Assert.NoDiff(#13, #13);
+    end);
+  Assert.WillNotRaise(procedure
+    begin
+      Assert.NoDiff('abc', 'abc');
+    end);
+  Assert.WillNotRaise(procedure
+    begin
+      Assert.NoDiff('abc', 'ABC', true);
+    end);
+  Assert.WillNotRaise(procedure
+    begin
+      Assert.NoDiff('LoReM iPsUm DoLoR sIt AmEt', 'lOrEm IpSuM dOlOr SiT aMeT', true);
+    end);
 end;
 
 procedure TTestsAssert.Pass_Throws_ETestPass_Exception;
@@ -581,16 +757,88 @@ begin
     end, Exception);
 end;
 
-procedure TTestsAssert.AreEqual_String_Throws_ETestFailure_When_Values_Are_NotEqual;
+procedure TTestsAssert.AreEqual_GUID_Throws_ETestFailure_When_Values_Are_NotEqual;
 const
-  ACTUAL_STRING = 'the brown dog jumped something';
-  EXPECTED_STRING = 'SOMETHING JUMPED THE BROWN DOG';
+  EXPECTED_GUID: TGUID = (D1: 0; D2: 0; D3: 0; D4: (0, 0, 0, 0, 0, 0, 0, 0));
+  ACTUAL_GUID: TGUID = (D1: 1; D2: 1; D3: 1; D4: (1, 1, 1, 1, 1, 1, 1, 1));
 begin
   Assert.WillRaise(
     procedure
     begin
-      Assert.AreEqual(ACTUAL_STRING, EXPECTED_STRING);
-    end, ETestFailure, Format('[%s] is Not Equal to [%s] %s', [ACTUAL_STRING, EXPECTED_STRING, '']));
+      Assert.AreEqual(EXPECTED_GUID, ACTUAL_GUID);
+    end, ETestFailure);
+end;
+
+procedure TTestsAssert.AreEqual_GUID_Throws_No_Exception_When_Values_Are_Equal;
+const
+  EXPECTED_GUID: TGUID = (D1: 0; D2: 0; D3: 0; D4: (0, 0, 0, 0, 0, 0, 0, 0));
+  ACTUAL_GUID: TGUID = (D1: 1; D2: 1; D3: 1; D4: (1, 1, 1, 1, 1, 1, 1, 1));
+begin
+  Assert.WillNotRaise(
+    procedure
+    begin
+      Assert.AreNotEqual(EXPECTED_GUID, ACTUAL_GUID);
+    end, Exception);
+end;
+
+procedure TTestsAssert.AreEqual_Integer_Throws_ETestFailure_When_Values_Are_NotEqual;
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.AreEqual(1, 2);
+    end, ETestFailure, Format('[%d] is Not Equal to [%d] %s', [2, 1, '']));
+end;
+
+procedure TTestsAssert.AreEqual_Integer_Throws_No_Exception_When_Values_Are_Equal;
+begin
+  Assert.WillNotRaise(
+    procedure
+    begin
+      Assert.AreEqual(1, 1);
+    end, Exception);
+end;
+
+procedure TTestsAssert.AreEqual_Stream_Throws_ETestFailure_When_Values_Are_NotEqual;
+const
+  TESTSTR_STRING = 'This is a test';
+var
+  Expected: TStringStream;
+  Actual: TStringStream;
+begin
+  Expected := TStringStream.Create(TESTSTR_STRING);
+  Actual := TStringStream.Create('A different value');
+  try
+    Assert.WillRaise(
+      procedure
+      begin
+        Assert.AreEqual(Expected, Actual);
+      end, ETestFailure);
+  finally
+    Expected.Free();
+    Actual.Free();
+  end;
+end;
+
+procedure TTestsAssert.AreEqual_Stream_Throws_No_Exception_When_Values_Are_Equal;
+const
+  TESTSTR_STRING = 'This is a test';
+var
+  Expected: TStringStream;
+  Actual: TStringStream;
+begin
+  Expected := TStringStream.Create(TESTSTR_STRING);
+  Actual := TStringStream.Create(TESTSTR_STRING);
+  try
+    Assert.WillNotRaise(
+      procedure
+      begin
+        Assert.AreEqual(Expected, Actual);
+      end, Exception);
+  finally
+    Expected.Free();
+    Actual.Free();
+  end;
 end;
 
 procedure TTestsAssert.AreEqual_String_Throws_No_Exception_When_Values_Are_Equal;
@@ -635,6 +883,64 @@ begin
     begin
       Assert.AreEqual(actualAndExpected, actualAndExpected, tolerance);
     end, Exception);
+end;
+
+procedure TTestsAssert.AreEqual_TStrings_Throws_ETestFailure_When_Strings_Are_NotEqual;
+var
+  expected, actual: TStrings;
+begin
+  expected := TStringList.Create;
+  actual := TStringList.Create;
+  try
+    expected.CommaText := '1,2,3';
+    actual.CommaText := '1,2,3,4';
+    Assert.WillRaiseWithMessage(procedure
+      begin
+        Assert.AreEqual(expected, actual);
+      end, ETestFailure, 'Number of strings is not equal: Expected 3 but got 4 ');
+
+    expected.CommaText := '"Lorem ipsum dolor sit amet","consectetur adipisici elit","sed eiusmod tempor incidunt"';
+    actual.CommaText := '"Lorem ipsum dolor sit amet","consectetur adisipici elit","sed eiusmod tempor incidunt"';
+    Assert.WillRaiseWithMessage(procedure
+      begin
+        Assert.AreEqual(expected, actual);
+      end, ETestFailure,
+      'Difference at position 16: [''pisici eli''] does not match [''sipici eli''] at line 2 ');
+  finally
+    expected.Free;
+    actual.Free;
+  end;
+end;
+
+procedure TTestsAssert.AreEqual_TStrings_Throws_No_Exception_When_Strings_Are_Equal;
+var
+  expected, actual: TStrings;
+begin
+  expected := TStringList.Create;
+  actual := TStringList.Create;
+  try
+    Assert.WillNotRaise(procedure
+      begin
+        Assert.AreEqual(expected, actual);
+      end, Exception);
+
+    expected.CommaText := '1,2,3';
+    actual.CommaText := '1,2,3';
+    Assert.WillNotRaise(procedure
+      begin
+        Assert.AreEqual(expected, actual);
+      end, Exception);
+
+    expected.CommaText := '1,2,3';
+    actual.CommaText := '1,-,3';
+    Assert.WillNotRaise(procedure
+      begin
+        Assert.AreEqual(expected, actual, [2]);
+      end, Exception);
+  finally
+    expected.Free;
+    actual.Free;
+  end;
 end;
 
 {$IFNDEF DELPHI_XE_DOWN}
@@ -779,6 +1085,30 @@ begin
     end, ETestFailure);
 end;
 
+procedure TTestsAssert.AreNotEqual_GUID_Throws_Exception_When_Values_Are_Equal;
+const
+  EXPECTED_GUID: TGUID = (D1: 0; D2: 0; D3: 0; D4: (0, 0, 0, 0, 0, 0, 0, 0));
+  ACTUAL_GUID: TGUID = (D1: 0; D2: 0; D3: 0; D4: (0, 0, 0, 0, 0, 0, 0, 0));
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.AreNotEqual(EXPECTED_GUID, ACTUAL_GUID);
+    end, ETestFailure);
+end;
+
+procedure TTestsAssert.AreNotEqual_GUID_Throws_No_Exception_When_Values_Are_NotEqual;
+const
+  EXPECTED_GUID: TGUID = (D1: 0; D2: 0; D3: 0; D4: (0, 0, 0, 0, 0, 0, 0, 0));
+  ACTUAL_GUID: TGUID = (D1: 1; D2: 1; D3: 1; D4: (1, 1, 1, 1, 1, 1, 1, 1));
+begin
+  Assert.WillNotRaise(
+    procedure
+    begin
+      Assert.AreNotEqual(EXPECTED_GUID, ACTUAL_GUID);
+    end, ETestFailure);
+end;
+
 procedure TTestsAssert.AreNotEqual_Integer_Throws_Exception_When_Values_Are_Equal;
 begin
   Assert.WillRaise(
@@ -824,7 +1154,7 @@ begin
     end, ETestFailure);
 end;
 
-procedure TTestsAssert.StartsWith_SubString_Is_At_The_Start__Of_String( const subString, theString: string; caseSensitive: boolean );
+procedure TTestsAssert.StartsWith_SubString_Is_At_The_Start_Of_String(const subString, theString: string; caseSensitive: boolean);
 begin
   Assert.WillNotRaise(
     procedure
@@ -842,7 +1172,7 @@ begin
     end, ETestFailure);
 end;
 
-procedure TTestsAssert.EndsWith_SubString_Is_At_The_End__Of_String( const subString, theString: string; caseSensitive: boolean );
+procedure TTestsAssert.EndsWith_SubString_Is_At_The_End_Of_String(const subString, theString: string; caseSensitive: boolean);
 begin
   Assert.WillNotRaise(
     procedure
@@ -860,7 +1190,64 @@ begin
     end, ETestFailure);
 end;
 
+{$IFDEF SUPPORTS_REGEX}
+procedure TTestsAssert.IsMatch_True_Will_Not_Raise(const regexPattern, theString: string);
+begin
+  Assert.WillNotRaiseAny(
+    procedure
+    begin
+      Assert.IsMatch(regexPattern, theString);
+    end
+  );
+end;
+
+procedure TTestsAssert.IsMatch_False_Will_Raise_ETestFailure(const regexPattern, theString: string);
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.IsMatch(regexPattern, theString);
+    end, ETestFailure);
+end;
+
+procedure TTestsAssert.WillRaiseWithMessageRegex;
+const
+  EXCEPTION_MSG_PATT = 'Exception on "%s" doing "%s"';
+  EXCEPTION_RE_MATCH = 'Exception on ".+?" doing ".+?"';
+  EXCEPTION_RE_NOT_MATCH = 'Exception on something doing anything';
+begin
+  Assert.WillNotRaiseAny(
+    procedure
+    begin
+      Assert.WillRaiseWithMessageRegex(
+        procedure
+        begin
+          raise Exception.CreateFmt(EXCEPTION_MSG_PATT, ['this', 'that']);
+        end,
+        nil,
+        EXCEPTION_RE_MATCH
+      );
+    end
+  );
+
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.WillRaiseWithMessageRegex(
+        procedure
+        begin
+          raise Exception.CreateFmt(EXCEPTION_MSG_PATT, ['this', 'that']);
+        end,
+        nil,
+        EXCEPTION_RE_NOT_MATCH
+      );
+    end,
+  ETestFailure);
+end;
+
+{$ENDIF}
 
 initialization
   TDUnitX.RegisterTestFixture(TTestsAssert);
+
 end.

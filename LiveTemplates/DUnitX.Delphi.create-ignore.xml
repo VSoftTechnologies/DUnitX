@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<codetemplate xmlns="http://schemas.borland.com/Delphi/2005/codetemplates" version="1.0.0">
+	<template name="dxti" invoke="auto">
+		<description>Create ignore attribute</description>
+		<author>DUnitX Group</author>
+        <point name="ignoremessage">
+            <text>
+                IgnoreMessage
+            </text>
+            <hint>
+                Message displayed in logger
+            </hint>
+        </point>
+		<code language="Delphi" context="memberdecl" delimiter="|" >
+			<![CDATA[[Ignore('|ignoremessage|')]|end|]]>
+		</code>
+	</template>
+</codetemplate>

@@ -25,6 +25,7 @@
 *.drc
 *.rc
 *.res
+*.dres
 
 # Output Folders  #
 ###################
@@ -52,3 +53,4 @@ Examples/Win64/
 Examples/OSX32/
 
 
+*.lnk
