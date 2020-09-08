@@ -24,7 +24,7 @@
 {                                                                           }
 {***************************************************************************}
 
-unit DUnitX.StackTrace.MadExcept4;
+unit DUnitX.StackTrace.MadExcept5;
 
 interface
 
