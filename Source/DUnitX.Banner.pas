@@ -57,7 +57,7 @@ begin
     consoleWriter.SetColour(ccBrightWhite, ccDefault);
 
   WriteLine('**********************************************************************');
-  WriteLine('*        DUnitX - (c) 2015-2018 Vincent Parrett & Contributors       *');
+  WriteLine('*        DUnitX - (c) 2015-2020 Vincent Parrett & Contributors       *');
   WriteLine('*                                                                    *');
   WriteLine('*        License - http://www.apache.org/licenses/LICENSE-2.0        *');
   WriteLine('**********************************************************************');
