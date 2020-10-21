@@ -40,7 +40,8 @@ uses
   DUnitX.Tests.ConsoleWriter.Base in 'DUnitX.Tests.ConsoleWriter.Base.pas',
   DUnitX.Tests.TestDataProvider in 'DUnitX.Tests.TestDataProvider.pas',
   DUnitX.Tests.IgnoreFixture in 'DUnitX.Tests.IgnoreFixture.pas',
-  DUnitX.Tests.Utils in 'DUnitX.Tests.Utils.pas';
+  DUnitX.Tests.Utils in 'DUnitX.Tests.Utils.pas',
+  DUnitX.Tests.Loggers.XML.JUnit in 'DUnitX.Tests.Loggers.XML.JUnit.pas';
 
 var
   runner : ITestRunner;
