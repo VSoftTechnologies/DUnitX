@@ -34,6 +34,9 @@
 // Uncomment to use MadExcept 4 for stacktrace support.
 {.$DEFINE USE_MADEXCEPT4}
 
+// Uncomment to use MadExcept 5 for stacktrace support.
+{.$DEFINE USE_MADEXCEPT5}
+
 // Uncomment to use EurekaLog 7 for stacktrace support.
 {.$DEFINE USE_EUREKALOG7}
 
