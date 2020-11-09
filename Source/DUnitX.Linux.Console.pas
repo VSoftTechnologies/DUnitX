@@ -162,6 +162,6 @@ end;
 {$IF Defined(LINUX)}
  initialization
    TDUnitXIoC.DefaultContainer.RegisterType<IDUnitXConsoleWriter, TDUnitXLinuxConsoleWriter>();
-{$ENDIF}
+{$IFEND}
 
 end.

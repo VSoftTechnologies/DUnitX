@@ -37,6 +37,11 @@
   Unsupported Compiler Version (Delphi 2010 or later required!)
 {$ENDIF}
 
+{$IF CompilerVersion >= 24.0 }
+  {$LEGACYIFEND ON}
+{$IFEND}
+
+
 //Use namespaces
 {$DEFINE USE_NS}
 
