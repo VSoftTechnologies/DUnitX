@@ -13,7 +13,9 @@ DUnitX Features
  * Setup and TearDown per test method and per test fixture.
  * API Documented using Xml-Doc
  * Console Based Runner
- * XML Logging which produces output compatible with NUnit (this will make it compatible with CI servers like [ContinuaCI](http://www.finalbuilder.com/continua-ci) which can process NUnit xml)
+ * XML Logging
+   * produces output compatible with NUnit (compatible with CI servers like [ContinuaCI](http://www.finalbuilder.com/continua-ci))
+   * produces output compatible with JUnit (compatible with [Gitlab CI](https://docs.gitlab.com/ee/ci/unit_test_reports.html))
  * Cross platform currently supporting:
     * Win32,Win64 and OSX Compilers.
  * Limited backwards compatibility with DUnit test classes. 
