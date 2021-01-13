@@ -149,6 +149,7 @@ type
 
     procedure AddStatus(const threadId; const msg: string);
 
+    function DoCreateFixture(const AInstance: TObject; const AFixtureClass: TClass; const AName: string; const ACategory: string): ITestFixture; virtual;
     function CreateFixture(const AInstance: TObject; const AFixtureClass: TClass; const AName: string; const ACategory: string): ITestFixture;
 
     function ShouldRunThisTest(const test: ITest): boolean;
@@ -362,12 +363,17 @@ begin
   FLoggers.AddRange(AListeners);
 end;
 
-function TDUnitXTestRunner.CreateFixture(const AInstance : TObject;const AFixtureClass: TClass; const AName: string; const ACategory : string): ITestFixture;
+function TDUnitXTestRunner.DoCreateFixture(const AInstance : TObject;const AFixtureClass: TClass; const AName: string; const ACategory : string): ITestFixture;
 begin
   if AInstance <> nil then
     result := TDUnitXTestFixture.Create(AName,ACategory, AInstance,AInstance.ClassType.UnitName)
   else
     result := TDUnitXTestFixture.Create(AName, ACategory, AFixtureClass,AFixtureClass.UnitName);
+end;
+
+function TDUnitXTestRunner.CreateFixture(const AInstance : TObject;const AFixtureClass: TClass; const AName: string; const ACategory : string): ITestFixture;
+begin
+  Result := DoCreateFixture(AInstance, AFixtureClass, AName, ACategory);
   FFixtureList.Add(Result);
 end;
 
