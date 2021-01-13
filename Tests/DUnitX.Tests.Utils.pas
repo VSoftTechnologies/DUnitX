@@ -100,14 +100,14 @@ procedure TValueHelperTests.setFormatSettings(const locale: String);
 {$If Defined(XE2_DOWN)}
 var
 	_lcid: LCID;
-{$EndIf}
+{$IFEND}
 begin
 	{$If Defined(XE2_DOWN)}
 	_lcid := LocaleNameToLCID(PChar(locale), 0);
 	GetLocaleFormatSettings(_lcid, FormatSettings);
 	{$Else}
 	FormatSettings := TFormatSettings.Create(locale);
-	{$EndIf}
+	{$IFEND}
 end;
 
 procedure TValueHelperTests.TestDateConversion(const locale, text: String);
