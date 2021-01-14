@@ -664,7 +664,7 @@ constructor TDUnitXOptions.Create;
 begin
   FRun := TStringList.Create;
   FLogLevel := TLogLevel.Information;
-  FExitBehavior := TDUnitXExitBehavior.Pause;
+  FExitBehavior := TDUnitXExitBehavior.Continue;
   FConsoleMode := TDUnitXConsoleMode.Verbose;
 end;
 
