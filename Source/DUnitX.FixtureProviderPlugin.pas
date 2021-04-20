@@ -563,9 +563,6 @@ var
   attributes : TArray<TCustomAttribute>;
   sName : string;
   fixtureAttribute : TestFixtureAttribute;
-  categoryAttrib : CategoryAttribute;
-  sNameSpace : string;
-  sCategory : string;
 begin
   types := FRttiContext.GetTypes;
   for rType in types do
@@ -582,12 +579,6 @@ begin
           sName := fixtureattribute.Name;
           if sName = '' then
             sName := TRttiInstanceType(rType).MetaclassType.ClassName;
-          sNameSpace := TRttiInstanceType(rType).MetaclassType.UnitName;
-          if TryGetAttributeOfType<CategoryAttribute>(attributes,categoryAttrib) then
-            sCategory := categoryAttrib.Category
-          else
-            sCategory := '';
-
           if not FFixtureClasses.ContainsKey(TRttiInstanceType(rType).MetaclassType) then
             FFixtureClasses.Add(TRttiInstanceType(rType).MetaclassType,sName);
         end;
