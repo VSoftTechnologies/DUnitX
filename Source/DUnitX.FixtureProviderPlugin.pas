@@ -122,9 +122,11 @@ var
   parentFixture : ITestFixture;
   uName : string;
   namespaces : TStringDynArray;
+  fixtureNamespaces : TStringDynArray;
   namespace : string;
   parentNamespace : string;
   fixtureNamespace : string;
+  fixtureName : string;
   tmpFixtures : TDictionary<string,ITestFixture>;
   fixtureList : ITestFixtureList;
   rType : TRttiType;
@@ -157,6 +159,17 @@ begin
       uName := pair.Key.UnitName;
 
       namespaces := SplitString(uName,'.');
+      //check if the fixture name has namespaces (possible via testfixtureattribute)
+      fixtureNamespaces := SplitString(pair.Value, '.');
+      if length(fixtureNamespaces) > 1 then
+      begin
+        fixtureName := fixtureNamespaces[Length(fixtureNamespaces) -1];
+        Delete(fixtureNamespaces,Length(fixtureNamespaces) -1,1);
+        fixtureNamespaces := System.Concat(namespaces, fixtureNamespaces);
+      end
+      else
+        fixtureName := pair.Value;
+
       //if the unit name has no namespaces the just add the tests.
       fixtureNamespace := '';
       parentNameSpace := '';
@@ -176,7 +189,7 @@ begin
         begin
           if not tmpFixtures.TryGetValue(fixtureNamespace, parentFixture) then
           begin
-            parentFixture := context.CreateFixture(TObject,fixtureNamespace,'');
+            parentFixture := context.CreateFixture(TObject,fixtureNamespace,''); //<< Should this not take category??
             tmpFixtures.Add(fixtureNamespace,parentFixture);
             fixtureList.Add(parentFixture);
           end;
@@ -202,16 +215,10 @@ begin
         end;
       end;
 
-      fixtureNamespace := fixtureNamespace + '.' + pair.Value;
+      fixtureNamespace := fixtureNamespace + '.' + fixtureName;
 
       //per issue #253 - looking at the code above, parentFixture should always be assigned by the time we get here.
       System.Assert(Assigned(parentFixture));
-//      if parentFixture = nil then
-//      begin
-//        fixture := context.CreateFixture(pair.Key,fixtureNamespace,category);
-//        fixtureList.Add(fixture);
-//      end
-//      else
       parentFixture.AddChildFixture(pair.Key,fixtureNamespace,category);
     end;
     for fixture in fixtureList do
