@@ -39,7 +39,7 @@ uses
 
 type
   {$M+}
-  [TestFixture('ExampleFixture1','General Example Tests')]
+  [TestFixture('Examples.Fixture1','General Example Tests')]
   TMyExampleTests = class
   public
     //Run the same test with mulitiple parameters.
