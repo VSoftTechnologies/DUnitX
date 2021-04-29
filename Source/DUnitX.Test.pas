@@ -386,7 +386,11 @@ end;
 
 function TDUnitXTestCase.GetName: string;
 begin
-  Result := FName + '.' + FCaseName;
+  if FCaseName <> '' then
+    Result := FName + '.' + FCaseName
+  else
+    Result := FName;
+
 end;
 
 procedure TDUnitXTestCase.UpdateInstance(const fixtureInstance: TObject);
