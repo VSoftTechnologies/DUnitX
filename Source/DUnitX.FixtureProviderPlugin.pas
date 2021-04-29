@@ -165,7 +165,7 @@ begin
       begin
         fixtureName := fixtureNamespaces[Length(fixtureNamespaces) -1];
         Delete(fixtureNamespaces,Length(fixtureNamespaces) -1,1);
-        fixtureNamespaces := System.Concat(namespaces, fixtureNamespaces);
+        namespaces := System.Concat(namespaces, fixtureNamespaces);
       end
       else
         fixtureName := pair.Value;
