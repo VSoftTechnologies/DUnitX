@@ -273,7 +273,7 @@ type
     function GetName: string;
     function GetValues: TValueArray;
   public
-    constructor Create(const ACaseName : string; const AValues : string; const ASeparator : string = ',');overload;
+    constructor Create(const ACaseName : string; const AValues : string; const ASeparator : string = ',');
     property Name : String read GetName;
     property Values : TValueArray read GetValues;
   end;
