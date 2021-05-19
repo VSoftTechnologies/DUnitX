@@ -297,6 +297,9 @@ begin
 
   if not result then
     result := FNames.IndexOf(test.FullName) <> -1;
+  //hacky way to allow filtering on test cases.
+  if (not result) and test.IsTestCase then
+    result := FNames.IndexOf(test.MethodName) <> -1;
 end;
 
 { TAndFilter }

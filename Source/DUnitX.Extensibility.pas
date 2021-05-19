@@ -76,6 +76,7 @@ type
     procedure SetMaxTime(const AValue: cardinal);
     function GetTimedOut: Boolean;
     procedure SetTimedOut(const AValue: Boolean);
+    function GetIsTestCase : boolean;
 
     property Name : string read GetName;
     property FullName : string read GetFullName;
@@ -85,6 +86,7 @@ type
     property Fixture : ITestFixture read GetTestFixture;
     property Ignored : boolean read GetIgnored;
     property IgnoreReason : string read GetIgnoreReason;
+    property IsTestCase : boolean read GetIsTestCase;
     property TestMethod : TTestMethod read GetTestMethod;
     property IgnoreMemoryLeaks : Boolean read GetIgnoreMemoryLeaks write SetIgnoreMemoryLeaks;
     property MaxTime: cardinal read GetMaxTime write SetMaxTime;

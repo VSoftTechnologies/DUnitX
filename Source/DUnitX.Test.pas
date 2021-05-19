@@ -83,6 +83,8 @@ type
     procedure SetMaxTime(const AValue: cardinal);
     function GetTimedOut: Boolean;
     procedure SetTimedOut(const AValue: Boolean);
+    function GetIsTestCase : boolean;virtual;
+
 
     //ITestInfo
     function GetActive : boolean;
@@ -128,6 +130,7 @@ type
     FRttiMethod : TRttiMethod;
     FInstance : TObject;
   protected
+    function GetIsTestCase : boolean;override;
     function GetName: string; override;
     procedure Execute(const context : ITestExecuteContext); override;
     procedure UpdateInstance(const fixtureInstance : TObject);override;
@@ -244,6 +247,11 @@ end;
 function TDUnitXTest.GetIgnoreReason: string;
 begin
   result := FIgnoreReason;
+end;
+
+function TDUnitXTest.GetIsTestCase: boolean;
+begin
+  result := false;
 end;
 
 function TDUnitXTest.GetMethodName: string;
@@ -382,6 +390,11 @@ begin
     FEndTime := Now();
     FDuration := TTimeSpan.Subtract(FEndTime,FStartTime);
   end;
+end;
+
+function TDUnitXTestCase.GetIsTestCase: boolean;
+begin
+  result := true;
 end;
 
 function TDUnitXTestCase.GetName: string;
