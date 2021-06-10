@@ -36,7 +36,8 @@ uses
   DUnitX.CommandLine.Options in '..\Source\DUnitX.CommandLine.Options.pas',
   DUnitX.CommandLine.Parser in '..\Source\DUnitX.CommandLine.Parser.pas',
   DUnitX.FixtureProviderPlugin in '..\Source\DUnitX.FixtureProviderPlugin.pas',
-  ProviderExample in 'ProviderExample.pas';
+  ProviderExample in 'ProviderExample.pas',
+  DUnitX.Timeout in '..\Source\DUnitX.Timeout.pas';
 
 var
   runner : ITestRunner;

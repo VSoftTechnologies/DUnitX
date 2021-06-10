@@ -153,8 +153,7 @@ begin
   stopwatch.Reset;
   stopwatch.Start;
 
-  // TODO: Not sure if 10.1 is absolutely correct, but 10.2 atleast this gives hint
-  {$IFDEF DELPHI_XE101_DOWN} // <- H2077 Value assigned to 'elapsedTime' never used 10.2 Tokyo and up
+  {$IFDEF DELPHI_XE100_DOWN} // <- H2077 Value assigned to 'elapsedTime' never used 10.1 Berlin and up
   elapsedTime := 0;
   {$ENDIF}
 
