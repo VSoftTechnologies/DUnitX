@@ -1073,16 +1073,9 @@ begin
   except
     on E: Exception do
     begin
-      if exceptionClass <> nil then
-      begin
-        if e.ClassType = exceptionClass then
-        begin
-          if (exceptionMsg = '') or SameStr(E.Message, exceptionMsg) then
-            FailFmt(SMethodRaisedExceptionMessage, [exceptionClass.ClassName, e.Message, AddLineBreak(msg)], ReturnAddress);
-        end;
-      end
-      else
-        FailFmt(SMethodRaisedExceptionAlt, [e.ClassName, exceptionClass.ClassName, e.message, AddLineBreak(msg)], ReturnAddress);
+      if ((exceptionMsg = '') or SameStr(e.Message, exceptionMsg)) and
+         (((exceptionClass <> nil) and (e.ClassType = exceptionClass)) or (exceptionClass = nil)) then
+        FailFmt(SMethodRaisedExceptionMessage, [exceptionClass.ClassName, e.Message, AddLineBreak(msg)], ReturnAddress);
     end;
   end;
 end;
