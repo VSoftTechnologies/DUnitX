@@ -230,6 +230,15 @@ type
     /// </summary>
     class procedure WillNotRaiseAny(const AMethod : TTestMethod; const msg : string = ''); overload;
 
+    /// <summary>
+    ///   Checks that an exception exactly matching ExceptClass and Message will not be raised.
+    /// </summary>
+    class procedure WillNotRaiseWithMessage(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass = nil; const exceptionMsg: string = ''; const msg : string = ''); overload;
+    /// <summary>
+    ///   Checks that an exception exactly matching ExceptClass and Message will not be raised.
+    /// </summary>
+    class procedure WillNotRaiseWithMessage(const AMethod : TTestMethod; const exceptionClass : ExceptClass = nil; const exceptionMsg: string = ''; const msg : string = ''); overload;
+
     class procedure Contains(const theString : string; const subString : string; const ignoreCase : boolean; const message : string = ''); overload;
     class procedure Contains(const theString : string; const subString : string; const message : string = ''); overload;
     class procedure DoesNotContain(const theString : string; const subString : string; const ignoreCase : boolean; const message : string = ''); overload;
@@ -1041,7 +1050,7 @@ begin
           Fail(SMethodRaisedException + exceptionClass.ClassName + sLineBreak + e.Message + AddLineBreak(msg), ReturnAddress);
       end
       else
-        FailFmt(SMethodRaisedExceptionAlt, [e.ClassName, exceptionClass.ClassName, e.message], ReturnAddress);
+        FailFmt(SMethodRaisedExceptionAlt, [e.ClassName, exceptionClass.ClassName, e.message, AddLineBreak(msg)], ReturnAddress);
     end;
   end;
 end;
@@ -1054,6 +1063,31 @@ begin
       AMethod;
     end,
     exceptionClass, msg);
+end;
+
+class procedure Assert.WillNotRaiseWithMessage(const AMethod: TTestLocalMethod; const exceptionClass: ExceptClass; const exceptionMsg, msg: string);
+begin
+  DoAssert;
+  try
+    AMethod;
+  except
+    on E: Exception do
+    begin
+      if ((exceptionMsg = '') or SameStr(e.Message, exceptionMsg)) and
+         (((exceptionClass <> nil) and (e.ClassType = exceptionClass)) or (exceptionClass = nil)) then
+        FailFmt(SMethodRaisedExceptionMessage, [exceptionClass.ClassName, e.Message, AddLineBreak(msg)], ReturnAddress);
+    end;
+  end;
+end;
+
+class procedure Assert.WillNotRaiseWithMessage(const AMethod: TTestMethod; const exceptionClass: ExceptClass; const exceptionMsg, msg: string);
+begin
+  Assert.WillNotRaiseWithMessage(
+      procedure
+      begin
+        AMethod;
+      end,
+      exceptionClass, exceptionMsg, msg);
 end;
 
 class procedure Assert.WillRaise(const AMethod : TTestLocalMethod; const exceptionClass : ExceptClass; const msg : string);

@@ -79,7 +79,8 @@ resourcestring
   SUnexpectedException = 'Method raised [%s] was expecting not to raise Any exception. %s';
   SUnexpectedExceptionAlt = 'Method raised [%s] was expecting not to raise Any exception.';
   SMethodRaisedException = 'Method raised an exception of type : ';
-  SMethodRaisedExceptionAlt = 'Method raised [%s] was expecting not to raise [%s]. %s';
+  SMethodRaisedExceptionMessage = 'Exception [%s] was raised with message [%s]. %s';
+  SMethodRaisedExceptionAlt = 'Method raised [%s] was expecting not to raise [%s] %s. %s';
   SNoException = 'Method did not throw any exceptions.';
   SUnexpectedExceptionMessage = 'Exception [%s] was raised with message [%s] was expecting [%s] %s';
   SCheckExceptionClassError = 'Method raised [%s] was expecting [%s]. %s';

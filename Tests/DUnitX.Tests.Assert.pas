@@ -164,13 +164,13 @@ type
     procedure WillRaiseWithMessage_Exception_Not_Thrown_Throws_ETestFailure_Exception;
 
     [Test]
-    procedure WillRaiseDescenadant_With_NonDescendingClass;
+    procedure WillRaiseDescendant_With_NonDescendingClass;
 
     [Test]
-    procedure WillRaiseDescenadant_With_DescendingClass;
+    procedure WillRaiseDescendant_With_DescendingClass;
 
     [Test]
-    procedure WillRaiseDescenadant_With_ExactClass;
+    procedure WillRaiseDescendant_With_ExactClass;
 
     [Test]
     procedure WillRaiseAny;
@@ -205,6 +205,7 @@ type
     [Test]
     procedure Test_AreNotSameOnSameObjectWithDifferentInterfaces_Throws_Exception;
 
+    {$IFDEF DELPHI_XE_UP}
     [Test]
     procedure Contains_ArrayOfT_Throws_No_Exception_When_Value_In_Array;
 
@@ -216,6 +217,7 @@ type
 
     [Test]
     procedure DoesNotContain_ArrayOfT_Throws_Exception_When_Value_In_Array;
+    {$ENDIF}
 
     [Test]
     [TestCase( 'substring', 'a str,a string,false' )]
@@ -270,6 +272,16 @@ type
     [Test]
     procedure WillRaiseWithMessageRegex;
 {$ENDIF}
+
+    procedure WillNotRaiseWithMessage_NilExceptionParam_NoExceptionMessage_WillRaise;
+    procedure WillNotRaiseWithMessage_MatchingExceptionParam_MatchingExceptionMessage_WillRaise;
+    procedure WillNotRaiseWithMessage_MatchingExceptionParam_NoExceptionMessage_WillRaise;
+    procedure WillNotRaiseWithMessage_MatchingExceptionParam_NonMatchingExceptionMessage_WillNotRaise;
+    procedure WillNotRaiseWithMessage_NilExceptionParam_MatchingExceptionMessage_WillRaise;
+    procedure WillNotRaiseWithMessage_NilExceptionParam_NonMatchingExceptionMessage_WillNotRaise;
+    procedure WillNotRaiseWithMessage_NonMatchingExceptionParam_MatchingExceptionMessage_WillNotRaise;
+    procedure WillNotRaiseWithMessage_NonMatchingExceptionParam_NoExceptionMessage_WillNotRaise;
+    procedure WillNotRaiseWithMessage_NonMatchingExceptionParam_NonMatchingExceptionMessage_WillNotRaise;
   end;
 
 implementation
@@ -304,6 +316,9 @@ type
 
   TImplemented = class(TInterfacedObject,IAmImplemented)
   end;
+
+  TestExceptionOne = class(Exception);
+  TestExceptionTwo = class(Exception);
 
   //Mask to override the default AssertEx in DUnitX.TestFramework
   Assert = class(DUnitX.Assert.Assert);
@@ -497,6 +512,123 @@ begin
   Assert.IsNotNull(res);
 end;
 
+procedure TTestsAssert.WillNotRaiseWithMessage_NilExceptionParam_NoExceptionMessage_WillRaise;
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.WillNotRaiseWithMessage(
+        procedure
+        begin
+          raise Exception.Create('Test');
+        end);
+    end);
+end;
+
+procedure TTestsAssert.WillNotRaiseWithMessage_NilExceptionParam_MatchingExceptionMessage_WillRaise;
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.WillNotRaiseWithMessage(
+        procedure
+        begin
+          raise Exception.Create('Test');
+        end, nil, 'Test');
+    end);
+end;
+
+procedure TTestsAssert.WillNotRaiseWithMessage_NilExceptionParam_NonMatchingExceptionMessage_WillNotRaise;
+begin
+  Assert.WillNotRaise(
+    procedure
+    begin
+      Assert.WillNotRaiseWithMessage(
+        procedure
+        begin
+          raise Exception.Create('Test');
+        end, nil, 'Different Exception Message');
+    end);
+end;
+
+procedure TTestsAssert.WillNotRaiseWithMessage_MatchingExceptionParam_NoExceptionMessage_WillRaise;
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.WillNotRaiseWithMessage(
+        procedure
+        begin
+          raise TestExceptionOne.Create('Test');
+        end, TestExceptionOne);
+    end);
+end;
+
+procedure TTestsAssert.WillNotRaiseWithMessage_MatchingExceptionParam_MatchingExceptionMessage_WillRaise;
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.WillNotRaiseWithMessage(
+        procedure
+        begin
+          raise TestExceptionOne.Create('Test');
+        end, TestExceptionOne, 'Test');
+    end);
+end;
+
+procedure TTestsAssert.WillNotRaiseWithMessage_MatchingExceptionParam_NonMatchingExceptionMessage_WillNotRaise;
+begin
+  Assert.WillNotRaise(
+    procedure
+    begin
+      Assert.WillNotRaiseWithMessage(
+        procedure
+        begin
+          raise TestExceptionOne.Create('Test');
+        end, TestExceptionOne, 'Different Exception Message');
+    end);
+end;
+
+procedure TTestsAssert.WillNotRaiseWithMessage_NonMatchingExceptionParam_NoExceptionMessage_WillNotRaise;
+begin
+  Assert.WillNotRaise(
+    procedure
+    begin
+      Assert.WillNotRaiseWithMessage(
+        procedure
+        begin
+          raise TestExceptionOne.Create('Test');
+        end, TestExceptionTwo);
+    end);
+end;
+
+procedure TTestsAssert.WillNotRaiseWithMessage_NonMatchingExceptionParam_MatchingExceptionMessage_WillNotRaise;
+begin
+  Assert.WillNotRaise(
+    procedure
+    begin
+      Assert.WillNotRaiseWithMessage(
+        procedure
+        begin
+          raise TestExceptionOne.Create('Test');
+        end, TestExceptionTwo, 'Test');
+    end);
+end;
+
+procedure TTestsAssert.WillNotRaiseWithMessage_NonMatchingExceptionParam_NonMatchingExceptionMessage_WillNotRaise;
+begin
+  Assert.WillNotRaise(
+    procedure
+    begin
+      Assert.WillNotRaiseWithMessage(
+        procedure
+        begin
+          raise TestExceptionOne.Create('Test');
+        end, TestExceptionTwo, 'Different Exception Message');
+    end);
+end;
+
 procedure TTestsAssert.WillNotRaise_With_DescendingClass_Negative;
 begin
  Assert.WillRaise(
@@ -594,7 +726,7 @@ begin
     end, ETestFailure, EXPECTED_EXCEPTION_MSG);
 end;
 
-procedure TTestsAssert.WillRaiseDescenadant_With_DescendingClass;
+procedure TTestsAssert.WillRaiseDescendant_With_DescendingClass;
 const
   EXPECTED_EXCEPTION_MSG = 'Failed Message';
 begin
@@ -607,7 +739,7 @@ begin
 
 end;
 
-procedure TTestsAssert.WillRaiseDescenadant_With_ExactClass;
+procedure TTestsAssert.WillRaiseDescendant_With_ExactClass;
 const
   EXPECTED_EXCEPTION_MSG = 'Failed Message';
 begin
@@ -619,7 +751,7 @@ begin
    EFilerError,EXPECTED_EXCEPTION_MSG);
 end;
 
-procedure TTestsAssert.WillRaiseDescenadant_With_NonDescendingClass;
+procedure TTestsAssert.WillRaiseDescendant_With_NonDescendingClass;
 const
   EXPECTED_EXCEPTION_MSG = 'Failed Message';
 begin
@@ -1118,6 +1250,7 @@ begin
     end, ETestFailure);
 end;
 
+{$IFDEF DELPHI_XE_UP}
 procedure TTestsAssert.Contains_ArrayOfT_Throws_No_Exception_When_Value_In_Array;
 begin
   Assert.WillNotRaise(
@@ -1153,6 +1286,7 @@ begin
       Assert.DoesNotContain<string>(['x', 'y', 'z'], 'x');
     end, ETestFailure);
 end;
+{$ENDIF}
 
 procedure TTestsAssert.StartsWith_SubString_Is_At_The_Start_Of_String(const subString, theString: string; caseSensitive: boolean);
 begin
