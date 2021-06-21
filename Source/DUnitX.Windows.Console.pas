@@ -217,7 +217,7 @@ end;
 {$IFDEF MSWINDOWS}
 initialization
     //Refer to IoC.pas for why the double generic class function isn't being used.
-{$IFDEF DELPHI_XE_UP}
+{$IFDEF DELPHI_2010_UP}
     TDUnitXIoC.DefaultContainer.RegisterType<IDUnitXConsoleWriter,TDUnitXWindowsConsoleWriter>;
 {$ELSE}
     TDUnitXIoC.DefaultContainer.RegisterType<IDUnitXConsoleWriter>(
