@@ -1,0 +1,85 @@
+{
+  "search_pathes": [{
+    "pathes": ".",
+    "platforms": "Win32;Win64"
+  }],
+  "browsing_pathes": [{
+    "pathes": ".",
+    "platforms": "Win32;Win64"
+  }],
+  "source_folders": [{
+    "folder": "."
+  },
+  {
+    "folder": "Build",
+    "recursive": true
+  },
+  {
+    "folder": "Examples",
+    "recursive": true
+  },
+  {
+    "folder": "Expert",
+    "recursive": true
+  },
+  {
+    "folder": "Images",
+    "recursive": true
+  },
+  {
+    "folder": "LiveTemplates",
+    "recursive": true
+  },
+  {
+    "folder": "Tests",
+    "recursive": true
+  }],
+  "projects": [{
+    "project": "Expert\\DUnitX_2010.dproj",
+    "compiler": 21
+  },
+  {
+    "project": "Expert\\DUnitX_XE.dproj",
+    "compiler": 22
+  },
+  {
+    "project": "Expert\\DUnitX_XE2.dproj",
+    "compiler": 23
+  },
+  {
+    "project": "Expert\\DUnitX_XE3.dproj",
+    "compiler": 24
+  },
+  {
+    "project": "Expert\\DUnitX_XE4.dproj",
+    "compiler": 25
+  },
+  {
+    "project": "Expert\\DUnitX_XE5.dproj",
+    "compiler": 26
+  },
+  {
+    "project": "Expert\\DUnitX_XE6.dproj",
+    "compiler": 27
+  },
+  {
+    "project": "Expert\\DUnitX_XE7.dproj",
+    "compiler": 28
+  },
+  {
+    "project": "Expert\\DUnitX_XE8.dproj",
+    "compiler": 29
+  },
+  {
+    "project": "Expert\\DUnitX_D10Seattle.dproj",
+    "compiler": 30
+  },
+  {
+    "project": "Expert\\DUnitX_D10Berlin.dproj",
+    "compiler": 31
+  },
+  {
+    "project": "Expert\\DUnitX_IDE_Expert_D10Tokyo.dproj",
+    "compiler": 32
+  }]
+}
