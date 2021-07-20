@@ -609,7 +609,7 @@ begin
   Self.Loggers_TestingStarts(threadId, testCount, testActiveCount);
   try
     ExecuteFixtures(nil,context, threadId, fixtureList);
-    context.RollupResults;
+    context.RollupResults; //still need this for overall time.
   finally
     Self.Loggers_TestingEnds(result);
   end;
@@ -681,6 +681,9 @@ begin
       if fixture.HasActiveTests and Assigned(fixture.TearDownFixtureMethod) then
         //TODO: Tricker yet each test above us requires errors that occur here
         ExecuteTearDownFixtureMethod(context, threadId, fixture, fixtureResult);
+
+      //rollup durations - needs to be done here to ensure correct timing.
+      (fixtureResult as IFixtureResultBuilder).RollUpResults;
     finally
       Self.Loggers_EndTestFixture(threadId, fixtureResult);
     end;
