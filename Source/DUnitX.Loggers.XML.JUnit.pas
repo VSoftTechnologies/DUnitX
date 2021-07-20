@@ -162,7 +162,7 @@ var
   sExeName    : string;
   sTime       : string;
   sDate       : string;
-  totalTests  : integer;
+  //totalTests  : integer;
 begin
 
 { first things first, rollup the namespaces.
@@ -175,7 +175,7 @@ begin
   end;
 
   //JUnit reports the total without the Ignored.
-  totalTests := RunResults.TestCount - RunResults.IgnoredCount;
+//  totalTests := RunResults.TestCount - RunResults.IgnoredCount;
 
   sExeName := ParamStr(0);
   FIndent := 0;
