@@ -347,6 +347,10 @@ procedure TDUnitXFixtureResult.RollUpResults;
 var
   fixture : IFixtureResult;
 begin
+  //guard against rolling up multiple times.
+  if FFinishTime <> UNDEFINED_DATETIME then
+    exit;
+
   if FChildren <> nil then
   begin
     FDuration := TTimeSpan.Zero;
