@@ -161,7 +161,6 @@ var
   fixtureRes  : IFixtureResult;
   sExeName    : string;
   sTime       : string;
-  sDate       : string;
   //totalTests  : integer;
 begin
 
@@ -180,14 +179,15 @@ begin
   sExeName := ParamStr(0);
   FIndent := 0;
   sTime := Format('%.3f',[RunResults.Duration.TotalSeconds]);
-  sDate := FormatDateTime('yyyy-MM-dd"T"hh:nn:ss',RunResults.StartTime);
 
   WriteXMLLine('<?xml version="1.0" encoding="UTF-8"?>');
-  WriteXMLLine('<testsuites>');
-  Indent;
 
   // Global overview
-  WriteXMLLine(Format('<testsuite name="%s" tests="%d" skipped="%d" errors="%d" failures="%d" time="%s" timestamp="%s" />',[sExeName,RunResults.TestCount, RunResults.IgnoredCount, RunResults.ErrorCount, RunResults.FailureCount, sTime, sDate]));
+  // There is only a "disabled" attribute on the top level, but "disabled" and "skipped" on fixture level. Return ignored tests as "disabled"
+  WriteXMLLine(Format('<testsuites name="%s" tests="%d" disabled="%d" errors="%d" failures="%d" time="%s"/>',
+    [sExeName,RunResults.TestCount, RunResults.IgnoredCount, RunResults.ErrorCount, RunResults.FailureCount, sTime]));
+
+  Indent;
 
   for fixtureRes in RunResults.FixtureResults do
     WriteFixtureResult(fixtureRes);
@@ -210,50 +210,49 @@ var
   sExecuted : string;
   sName: string;
 begin
-  try
+  //its a real fixture if the class is not TObject.
+  if (not fixtureResult.Fixture.TestClass.ClassNameIs('TObject'))  then
+  begin
+    //if there were no tests then just ignore this fixture.
+    if fixtureResult.ResultCount = 0 then
+      exit;
+    sExecuted := BoolToStr(fixtureResult.ResultCount > 0,true);
+    sExecuted := EscapeForXML(sExecuted);
+
+    sName := StringReplace(fixtureResult.Fixture.FullName, '.' + fixtureResult.Fixture.Name, '' , []);
     sTime := Format('%.3f',[fixtureResult.Duration.TotalSeconds]);
 
-    sName := EscapeForXML(fixtureResult.Fixture.FullName);
+    sName := EscapeForXML(sName);
     sTime := EscapeForXML(sTime);
     sDate := FormatDateTime('yyyy-MM-dd"T"hh:nn:ss', fixtureResult.StartTime);
 
-    //its a real fixture if the class is not TObject.
-    if (not fixtureResult.Fixture.TestClass.ClassNameIs('TObject'))  then
+    // There is only a "disabled" attribute on the top level, but "disabled" and "skipped" on fixture level. Return ignored tests as "disabled"
+    WriteXMLLine(Format('<testsuite name="%s" tests="%d" disabled="%d" errors="%d" failures="%d" time="%s" timestamp="%s">',
+      [sName, fixtureResult.TestResults.Count, fixtureResult.IgnoredCount, fixtureResult.ErrorCount, fixtureResult.FailureCount, sTime, sDate]));
+    //WriteCategoryNodes(fixtureResult.Fixture.Categories);
+
+    for testResult in fixtureResult.TestResults do
     begin
-      //if there were no tests then just ignore this fixture.
-      if fixtureResult.ResultCount = 0 then
-        exit;
-      sExecuted := BoolToStr(fixtureResult.ResultCount > 0,true);
-      sExecuted := EscapeForXML(sExecuted);
+      WriteTestResult(testResult);
+    end;
+    WriteXMLLine('</testsuite>');
 
-      WriteXMLLine(Format('<testsuite name="%s" tests="%d" skipped="%d" errors="%d" failures="%d" time="%s" timestamp="%s">',[sName, fixtureResult.TestResults.Count, fixtureResult.IgnoredCount, fixtureResult.ErrorCount, fixtureResult.FailureCount, sTime, sDate]));
-      //WriteCategoryNodes(fixtureResult.Fixture.Categories);
+    for child in fixtureResult.Children do
+    begin
+      WriteFixtureResult(child);
+    end;
+  end
+  else
+  begin
+    //It's a Namespace.
 
-      for testResult in fixtureResult.TestResults do
-      begin
-        WriteTestResult(testResult);
-      end;
-      WriteXMLLine('</testsuite>');
-
+    if fixtureResult.ChildCount > 0 then
+    begin
       for child in fixtureResult.Children do
       begin
-        WriteFixtureResult(child);
-      end;
-    end
-    else
-    begin
-      //It's a Namespace.
-
-      if fixtureResult.ChildCount > 0 then
-      begin
-        for child in fixtureResult.Children do
-        begin
-            WriteFixtureResult(child);
-        end;
+          WriteFixtureResult(child);
       end;
     end;
-  finally
-
   end;
 end;
 
@@ -268,7 +267,7 @@ begin
     sTime := Format('%.3f',[testResult.Duration.TotalSeconds]);
 
     sName := EscapeForXML(testResult.Test.Name);
-    sClassName := EscapeForXML(testResult.Test.Fixture.FullName);
+    sClassName := EscapeForXML(testResult.Test.Fixture.Name);
     sTime := EscapeForXML(sTime);
 
     WriteXMLLine(Format('<testcase classname="%s" name="%s" time="%s">', [sClassName, sName, sTime]));
