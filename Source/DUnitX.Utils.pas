@@ -719,6 +719,7 @@ type
   public
     class function Concat<T>(const Arrays: array of TArray<T>): TArray<T>; static;
     class function Create<T>(const a : T; const b : T) : TArray<T>;static;
+    class procedure Delete<T>(var source : TArray<T>; index, count : integer);static;
 {$IF DELPHI_2010}
     class function ToArray<T>(Enumerable: TEnumerable<T>; Count: Integer): TArray<T>; static;
 {$IFEND}
@@ -1769,8 +1770,7 @@ end;
 
 { TArrayHelper }
 
-class function TArrayHelper.Concat<T>(
-  const Arrays: array of TArray<T>): TArray<T>;
+class function TArrayHelper.Concat<T>(const Arrays: array of TArray<T>): TArray<T>;
 var
   i, k, LIndex, LLength: Integer;
 begin
@@ -1810,6 +1810,31 @@ begin
   result[0] := a;
   result[1] := b;
 end;
+
+class procedure TArrayHelper.Delete<T>(var source: TArray<T>; index, count : integer);
+var
+  len, tailLen: integer;
+  i, tailStart : integer;
+begin
+  Len := Length(Source);
+  if (Index >= 1) and (Index <= Len) then
+  begin
+    if Count > 0 then
+    begin
+      TailLen := len - index;
+      tailStart := index + count ;
+      if Count > tailLen then
+        Count := tailLen;
+      if (tailLen > 0) and (tailStart <= len -1) then
+      begin
+        for i := 0 to tailLen -1 do
+          source[index + i] := source[tailStart + i];
+      end;
+      SetLength(source, len - count);
+    end;
+  end;
+end;
+
 
 { TObjectHelper }
 

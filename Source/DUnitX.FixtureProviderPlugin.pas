@@ -121,8 +121,8 @@ var
   fixture : ITestFixture;
   parentFixture : ITestFixture;
   uName : string;
-  namespaces : TStringDynArray;
-  fixtureNamespaces : TStringDynArray;
+  namespaces : TArray<string>;
+  fixtureNamespaces : TArray<string>;
   namespace : string;
   parentNamespace : string;
   fixtureNamespace : string;
@@ -158,14 +158,15 @@ begin
 
       uName := pair.Key.UnitName;
 
-      namespaces := SplitString(uName,'.');
+      namespaces := TStrUtils.SplitString(uName,'.');
       //check if the fixture name has namespaces (possible via testfixtureattribute)
-      fixtureNamespaces := SplitString(pair.Value, '.');
+      fixtureNamespaces := TStrUtils.SplitString(pair.Value, '.');
       if length(fixtureNamespaces) > 1 then
       begin
         fixtureName := fixtureNamespaces[Length(fixtureNamespaces) -1];
-        Delete(fixtureNamespaces,Length(fixtureNamespaces) -1,1);
-        namespaces := System.Concat(namespaces, fixtureNamespaces);
+        TArrayHelper.Delete<string>(fixtureNamespaces, Length(fixtureNamespaces) -1,1);
+
+        namespaces := TArrayHelper.Concat<string>([namespaces, fixtureNamespaces]);
       end
       else
         fixtureName := pair.Value;
