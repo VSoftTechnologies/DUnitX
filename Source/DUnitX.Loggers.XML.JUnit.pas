@@ -184,7 +184,7 @@ begin
 
   // Global overview
   // There is only a "disabled" attribute on the top level, but "disabled" and "skipped" on fixture level. Return ignored tests as "disabled"
-  WriteXMLLine(Format('<testsuites name="%s" tests="%d" disabled="%d" errors="%d" failures="%d" time="%s"/>',
+  WriteXMLLine(Format('<testsuites name="%s" tests="%d" disabled="%d" errors="%d" failures="%d" time="%s">',
     [sExeName,RunResults.TestCount, RunResults.IgnoredCount, RunResults.ErrorCount, RunResults.FailureCount, sTime]));
 
   Indent;
