@@ -1,5 +1,6 @@
 unit DUnitX.Tests.Utils;
-{$I ..\Source\DUnitX.inc}
+
+{$I DUnitX.inc}
 
 interface
 
@@ -47,7 +48,7 @@ type
 	[TestCase('EN-GB local 24 h format',                           'EN-GB,18:36')]
 	procedure TestTimeConversion(const locale: String; const text: String);
 
-    [Test]
+	[Test]
 	[TestCase('EN-US local format, verbose',        'EN-US,06/22/2020 06:36:00 pm')]
 	[TestCase('EN-US local format short',           'EN-US,6/22/2020 6:36 pm')]
 	[TestCase('EN-US iso 8601 format',              'EN-US,2020-06-22 18:36:00')]
@@ -67,20 +68,19 @@ implementation uses
   System.DateUtils,
   System.Rtti,
   WinApi.Windows,
-  DUnitX.Utils;
   {$ELSE}
   DateUtils,
   Rtti,
   Windows,
-  Utils;
   {$ENDIF}
+  DUnitX.Utils;
 
 { TMyExampleTests }
 
 constructor TValueHelperTests.Create();
 begin
 	inherited;
-	originalFormatSettings := System.SysUtils.FormatSettings;
+	originalFormatSettings := {$IFDEF USE_NS}System.{$ENDIF}SysUtils.FormatSettings;
 	expectedDate := EncodeDate(2020, 06, 22);
 	expectedTime := EncodeTime(18, 36, 00, 000);
 end;
@@ -93,7 +93,7 @@ end;
 
 procedure TValueHelperTests.revertFormatSettings();
 begin
-	System.SysUtils.FormatSettings := originalFormatSettings;
+	{$IFDEF USE_NS}System.{$ENDIF}SysUtils.FormatSettings := originalFormatSettings;
 end;
 
 procedure TValueHelperTests.setFormatSettings(const locale: String);

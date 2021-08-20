@@ -89,9 +89,7 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
         ActionManager = ActionManager
         Caption = 'tbrTests'
         Color = clMenuBar
-        ColorMap.DisabledFontColor = 7171437
         ColorMap.HighlightColor = clWhite
-        ColorMap.BtnSelectedFont = clBlack
         ColorMap.UnusedColor = clWhite
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
@@ -296,9 +294,7 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
             ActionManager = ActionManager
             Caption = 'tbrResults'
             Color = clMenuBar
-            ColorMap.DisabledFontColor = 7171437
             ColorMap.HighlightColor = clWhite
-            ColorMap.BtnSelectedFont = clBlack
             ColorMap.UnusedColor = clWhite
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clBlack
@@ -312,10 +308,6 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
         object tabText: TTabSheet
           Caption = 'Text'
           ImageIndex = 2
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object pnlText: TPanel
             Left = 0
             Top = 0
@@ -339,7 +331,7 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
               BevelInner = bvNone
               BevelOuter = bvNone
               BorderStyle = bsNone
-              Font.Charset = EASTEUROPE_CHARSET
+              Font.Charset = ANSI_CHARSET
               Font.Color = clWindowText
               Font.Height = -11
               Font.Name = 'Courier New'
@@ -351,7 +343,6 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
               ScrollBars = ssBoth
               TabOrder = 0
               WordWrap = False
-              Zoom = 100
             end
           end
         end
