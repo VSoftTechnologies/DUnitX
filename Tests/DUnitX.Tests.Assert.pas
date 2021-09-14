@@ -413,13 +413,13 @@ begin
   Assert.WillRaiseWithMessage(procedure
     begin
       Assert.NoDiff('  '#8, ' ');
-    end, ETestFailure, 'Length of strings is not equal: Expected 3 but got 1 ');
+    end, ETestFailure, 'Length of strings is not equal: Expected [3] but got [1] ');
 
   Assert.WillRaiseWithMessage(procedure
     begin
       Assert.NoDiff('lorem ipsum', 'lorem ipsum ', 'characters');
     end,
-    ETestFailure, 'Length of strings is not equal: Expected 11 but got 12 characters');
+    ETestFailure, 'Length of strings is not equal: Expected [11] but got [12] characters');
 
   Assert.WillRaiseWithMessage(procedure
     begin
@@ -1029,7 +1029,7 @@ begin
     Assert.WillRaiseWithMessage(procedure
       begin
         Assert.AreEqual(expected, actual);
-      end, ETestFailure, 'Number of strings is not equal: Expected 3 but got 4 ');
+      end, ETestFailure, 'Number of strings is not equal: Expected [3] but got [4] ');
 
     expected.CommaText := '"Lorem ipsum dolor sit amet","consectetur adipisici elit","sed eiusmod tempor incidunt"';
     actual.CommaText := '"Lorem ipsum dolor sit amet","consectetur adisipici elit","sed eiusmod tempor incidunt"';

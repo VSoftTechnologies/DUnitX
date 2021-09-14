@@ -549,7 +549,7 @@ begin
     expectedValue := TValue.From<T>(expected);
     actualValue := TValue.From<T>(actual);
 
-    FailFmt(SEqualsErrorStr2,[expectedValue.ToString, actualValue.ToString, message], ReturnAddress);
+    FailFmt(SEqualsErrorStr,[expectedValue.ToString, actualValue.ToString, message], ReturnAddress);
   end;
 end;
 {$ENDIF}
