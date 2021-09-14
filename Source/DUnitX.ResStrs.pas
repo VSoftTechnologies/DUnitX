@@ -55,6 +55,8 @@ resourcestring
   SMemoryValuesEqual = 'Memory values are equal. ';
   SNotEqualErrorIntf = 'references are Not the same. %s';
   SNotEqualErrorObj = 'Object [%s] does not equal object [%s] %s';
+  SArraysHaveDifferentLength = 'Arrays have different length. Expected [%d] but got [%d] %s';
+  SArraysAreDifferent = 'Arrays are different at position [%d]. Expected [%s] but got [%s] %s';
   SValueNotInList = 'List does not contain value %s. %s';
   SValueInList = 'List contains value %s. %s';
   SIntfNotImplemented = 'value does not implement %s. %s';
