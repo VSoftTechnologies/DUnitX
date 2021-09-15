@@ -47,7 +47,8 @@ uses
   DUnitX.Utils in '..\Source\DUnitX.Utils.pas',
   DUnitX.Attributes in '..\Source\DUnitX.Attributes.pas',
   DUnitX.Types in '..\Source\DUnitX.Types.pas',
-  DUnitX.Timeout in '..\Source\DUnitX.Timeout.pas';
+  DUnitX.Timeout in '..\Source\DUnitX.Timeout.pas',
+  DUnitX.Exceptions in '..\Source\DUnitX.Exceptions.pas';
 
 var
   runner : ITestRunner;
