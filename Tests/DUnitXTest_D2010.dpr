@@ -66,7 +66,8 @@ uses
   DUnitX.Tests.Inheritance in 'DUnitX.Tests.Inheritance.pas',
   DUnitX.Tests.ConsoleWriter.Base in 'DUnitX.Tests.ConsoleWriter.Base.pas',
   DUnitX.Assert in '..\Source\DUnitX.Assert.pas',
-  DUnitX.Types in '..\Source\DUnitX.Types.pas';
+  DUnitX.Types in '..\Source\DUnitX.Types.pas',
+  DUnitX.Tests.Utils in 'DUnitX.Tests.Utils.pas';
 
 var
   runner : ITestRunner;

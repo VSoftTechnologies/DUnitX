@@ -2,7 +2,7 @@
 		<PropertyGroup>
 			<Base>True</Base>
 			<AppType>Console</AppType>
-			<Config Condition="'$(Config)'==''">Debug</Config>
+			<Config Condition="'$(Config)'==''">GUI</Config>
 			<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
 			<FrameworkType>None</FrameworkType>
 			<MainSource>DUnitXTest_D2010.dpr</MainSource>
@@ -24,6 +24,12 @@
 			<CfgParent>Base</CfgParent>
 			<Base>true</Base>
 		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='GUI' or '$(Cfg_3)'!=''">
+			<Cfg_3>true</Cfg_3>
+			<CfgParent>Cfg_2</CfgParent>
+			<Cfg_2>true</Cfg_2>
+			<Base>true</Base>
+		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
 			<DCC_DependencyCheckOutputName>DUnitXTest_D2010.exe</DCC_DependencyCheckOutputName>
 			<DCC_ImageBase>00400000</DCC_ImageBase>
@@ -42,8 +48,12 @@
 			<DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_2)'!=''">
+			<DCC_DebugDCUs>true</DCC_DebugDCUs>
 			<DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
 			<DCC_Define>DEBUG;DEBUG-DUNITX;$(DCC_Define)</DCC_Define>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_3)'!=''">
+			<DCC_Define>GUI;$(DCC_Define)</DCC_Define>
 		</PropertyGroup>
 		<ItemGroup>
 			<DelphiCompile Include="DUnitXTest_D2010.dpr">
@@ -110,11 +120,16 @@
 			<DCCReference Include="DUnitX.Tests.ConsoleWriter.Base.pas"/>
 			<DCCReference Include="..\Source\DUnitX.Assert.pas"/>
 			<DCCReference Include="..\Source\DUnitX.Types.pas"/>
+			<DCCReference Include="DUnitX.Tests.Utils.pas"/>
 			<None Include="..\Source\DUnitX.inc"/>
 			<None Include="..\Source\DUnitX.Stacktrace.inc"/>
 			<None Include="..\Source\DUnitX.MemoryLeaks.inc"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
+			</BuildConfiguration>
+			<BuildConfiguration Include="GUI">
+				<Key>Cfg_3</Key>
+				<CfgParent>Cfg_2</CfgParent>
 			</BuildConfiguration>
 			<BuildConfiguration Include="Release">
 				<Key>Cfg_1</Key>
