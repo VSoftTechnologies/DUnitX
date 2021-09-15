@@ -62,6 +62,7 @@ begin
     //Create the runner
     runner := TDUnitX.CreateRunner;
     runner.UseRTTI := True;
+    TDUnitX.Options.ExitBehavior := TDUnitXExitBehavior.Pause;
 
     //tell the runner how we will log things
 
