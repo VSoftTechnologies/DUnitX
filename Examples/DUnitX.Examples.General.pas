@@ -71,6 +71,9 @@ type
     procedure TestError;
 
     [Test]
+    {$IFDEF DELPHI_2010}
+    [Ignore('MaxTime does not work in D2010')]
+    {$ENDIF}
     [MaxTime(2000)]
     procedure TooLong;
 
