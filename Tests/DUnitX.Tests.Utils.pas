@@ -32,9 +32,13 @@ type
     function GetLCIDFromLocale(const locale: string): integer;
     {$ENDIF}
   public
-    destructor Destroy; override;
-    // Using Create is not supported with D2010, but would be a good approach for XE+
+    // Delphi 2010 does support calling of constructor
+    {$IFDEF DELPHI_XE_UP}
+    constructor Create;
+    {$ELSE}
     procedure AfterConstruction; override;
+    {$ENDIF}
+    destructor Destroy; override;
     [Test]
     [TestCase('EN-US local format',                   'EN-US,06/22/2020')]
     [TestCase('EN-US iso8601 format',                 'EN-US,2020-06-22')]
@@ -83,9 +87,13 @@ implementation uses
   {$ENDIF}
   DUnitX.Utils;
 
-{ TMyExampleTests }
+{ TValueHelperTests }
 
+{$IFDEF DELPHI_XE_UP}
+constructor TValueHelperTests.Create;
+{$ELSE}
 procedure TValueHelperTests.AfterConstruction;
+{$ENDIF}
 begin
  	inherited;
   {$IFDEF DELPHI_XE_UP}
