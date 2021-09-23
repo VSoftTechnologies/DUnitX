@@ -125,6 +125,13 @@ type
 
     [Test]
     procedure AreEqual_T_Throws_ETestFailure_When_Objects_Are_Nil;
+
+    [Test]
+    procedure AreEqual_Array_T_Throws_No_Exception_When_Arrays_Are_Equal;
+
+    [Test]
+    procedure AreEqual_Array_T_Throws_ETestFailure_When_Arrays_Are_Not_Equal;
+
 {$ENDIF}
 
     [Test]
@@ -413,13 +420,13 @@ begin
   Assert.WillRaiseWithMessage(procedure
     begin
       Assert.NoDiff('  '#8, ' ');
-    end, ETestFailure, 'Length of strings is not equal: Expected 3 but got 1 ');
+    end, ETestFailure, 'Length of strings is not equal: Expected [3] but got [1] ');
 
   Assert.WillRaiseWithMessage(procedure
     begin
       Assert.NoDiff('lorem ipsum', 'lorem ipsum ', 'characters');
     end,
-    ETestFailure, 'Length of strings is not equal: Expected 11 but got 12 characters');
+    ETestFailure, 'Length of strings is not equal: Expected [11] but got [12] characters');
 
   Assert.WillRaiseWithMessage(procedure
     begin
@@ -1029,7 +1036,7 @@ begin
     Assert.WillRaiseWithMessage(procedure
       begin
         Assert.AreEqual(expected, actual);
-      end, ETestFailure, 'Number of strings is not equal: Expected 3 but got 4 ');
+      end, ETestFailure, 'Number of strings is not equal: Expected [3] but got [4] ');
 
     expected.CommaText := '"Lorem ipsum dolor sit amet","consectetur adipisici elit","sed eiusmod tempor incidunt"';
     actual.CommaText := '"Lorem ipsum dolor sit amet","consectetur adisipici elit","sed eiusmod tempor incidunt"';
@@ -1181,6 +1188,42 @@ begin
   finally
     FreeAndNil(mock);
   end;
+end;
+
+procedure TTestsAssert.AreEqual_Array_T_Throws_ETestFailure_When_Arrays_Are_Not_Equal;
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.AreEqual<integer>([1, 2, 3], [1, 2, 3, 4]);
+    end, ETestFailure);
+
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.AreEqual<real>([3.14, 3.15], [3.15, 3.14]);
+    end, ETestFailure);
+
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.AreEqual<string>(['a', 'b', 'c'], ['a', 'c', 'b']);
+    end, ETestFailure);
+end;
+
+procedure TTestsAssert.AreEqual_Array_T_Throws_No_Exception_When_Arrays_Are_Equal;
+begin
+  Assert.WillNotRaise(
+    procedure
+    begin
+      Assert.AreEqual<string>(['a', 'b', 'c'], ['a', 'b', 'c']);
+    end, ETestFailure);
+
+  Assert.WillNotRaise(
+    procedure
+    begin
+      Assert.AreEqual<real>([3.14, 3.15], [3.14, 3.15]);
+    end, ETestFailure);
 end;
 {$ENDIF}
 
