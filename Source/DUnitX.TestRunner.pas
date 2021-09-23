@@ -68,7 +68,7 @@ type
     FLogMessagesEx    : TLogMessageArray;
 
     FFailsOnNoAsserts : boolean;
-
+    FCurrentTestName  : string;
   protected
     procedure CountAndFilterTests(const fixtureList: ITestFixtureList; var count, active: Cardinal);
     //Logger calls - sequence ordered
@@ -142,6 +142,7 @@ type
     //redirects WriteLn to our loggers.
     procedure WriteLn(const msg: string); overload;
     procedure WriteLn; overload;
+    function CurrentTestName : string;
 
     //internals
     procedure RTTIDiscoverFixtureClasses;
@@ -162,6 +163,7 @@ type
     constructor Create(const AListeners: array of ITestLogger); overload;
     destructor Destroy; override;
     class function GetActiveRunner: ITestRunner;
+    class function GetCurrentTestName : string;
   end;
 
 implementation
@@ -377,6 +379,11 @@ begin
   FFixtureList.Add(Result);
 end;
 
+
+function TDUnitXTestRunner.CurrentTestName: string;
+begin
+  result := FCurrentTestName;
+end;
 
 destructor TDUnitXTestRunner.Destroy;
 var
@@ -632,6 +639,15 @@ begin
     result := ref.Data;
 end;
 
+class function TDUnitXTestRunner.GetCurrentTestName: string;
+var
+  runner : ITestRunner;
+begin
+  runner := GetActiveRunner;
+  if runner <> nil then
+    result := runner.CurrentTestName;
+end;
+
 function TDUnitXTestRunner.GetFailsOnNoAsserts: boolean;
 begin
   Result := FFailsOnNoAsserts;
@@ -745,27 +761,32 @@ begin
   begin
     FLogMessages.Clear;
     SetLength(FLogMessagesEx, 0);
-    Self.Loggers_ExecuteTest(threadId, test as ITestInfo);
-    assertBeforeCount := 0;//to shut the compiler up;
-    if FFailsOnNoAsserts then
-      assertBeforeCount := TDUnitX.GetAssertCount(threadId);
-    memoryAllocationProvider.PreTest;
+    FCurrentTestName := test.Name;
     try
-      testExecute.Execute(context);
+      Self.Loggers_ExecuteTest(threadId, test as ITestInfo);
+      assertBeforeCount := 0;//to shut the compiler up;
+      if FFailsOnNoAsserts then
+        assertBeforeCount := TDUnitX.GetAssertCount(threadId);
+      memoryAllocationProvider.PreTest;
+      try
+        testExecute.Execute(context);
+      finally
+        memoryAllocationProvider.PostTest;
+      end;
+
+      if FFailsOnNoAsserts then
+      begin
+        assertAfterCount := TDUnitX.GetAssertCount(threadId);
+        if (assertBeforeCount = assertAfterCount)  then
+          raise ENoAssertionsMade.Create(SNoAssertions);
+      end;
+
+      Result := ExecuteSuccessfulResult(context, threadId, test, FLogMessages.Text, FLogMessagesEx);
+      FLogMessages.Clear;
+      SetLength(FLogMessagesEx, 0);
     finally
-      memoryAllocationProvider.PostTest;
+      FCurrentTestName := '';
     end;
-
-    if FFailsOnNoAsserts then
-    begin
-      assertAfterCount := TDUnitX.GetAssertCount(threadId);
-      if (assertBeforeCount = assertAfterCount)  then
-        raise ENoAssertionsMade.Create(SNoAssertions);
-    end;
-
-    Result := ExecuteSuccessfulResult(context, threadId, test, FLogMessages.Text, FLogMessagesEx);
-    FLogMessages.Clear;
-    SetLength(FLogMessagesEx, 0);
   end
   else
   begin

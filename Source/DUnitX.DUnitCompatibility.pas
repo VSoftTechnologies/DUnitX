@@ -45,6 +45,7 @@ type
   protected
     procedure SetUp; virtual;
     procedure TearDown; virtual;
+    function TestName : string;
   public
     procedure Check(const condition: Boolean; const msg: string = '');deprecated  'Use DUnitX.Assert class';
     procedure CheckTrue(const condition: Boolean; const msg: string = '');deprecated  'Use DUnitX.Assert class';
@@ -151,6 +152,11 @@ end;
 procedure TTestCase.CheckTrue(const condition: Boolean; const msg: string);
 begin
   Assert.IsTrue(condition,msg);
+end;
+
+function TTestCase.TestName: string;
+begin
+  result := TDUnitXTestRunner.GetCurrentTestName;
 end;
 
 procedure TTestCase.SetUp;
