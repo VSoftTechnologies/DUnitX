@@ -87,8 +87,8 @@ end;
 
 procedure TMyDUnitTestSetup.Test_TestName;
 begin
-  Status('The Test Name is : ' + Self.TestName);
-  CheckEqualsString('Test_TestName', Self.TestName,'TestName not working');
+  Status('The Test Name is : ' + Self.Name);
+  CheckEqualsString('Test_TestName', Self.Name,'Test Name not working');
 end;
 
 initialization
