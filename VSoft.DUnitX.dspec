@@ -2,7 +2,7 @@
   "specVersion" : "1",
   "metadata": {
     "id": "VSoft.DUnitX",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "description": "Delphi Unit Testing Framework.",
     "authors": "Vincent Parrett",
     "projectUrl": "https://github.com/VSoftTechnologies/DUnitX",
@@ -73,7 +73,7 @@
       "template": "default"
     },
     {
-      "compiler": "11",
+      "compiler": "11.0",
       "platforms": "Win32, Win64",
       "template": "default"
     }
