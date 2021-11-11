@@ -54,6 +54,7 @@ resourcestring
  '{$ENDIF}'#13#10 +
  '  DUnitX.TestFramework;'#13#10 +
  #13#10 +
+ '// Just a comment to Delphi don''t remove the next line!'#13#10 +
  '{$IFNDEF TESTINSIGHT}'#13#10 +
  'var'#13#10 +
  '  runner: ITestRunner;'#13#10 +
