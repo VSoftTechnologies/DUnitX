@@ -42,7 +42,7 @@ uses
   VCL.Forms,
   VCL.Dialogs,
   VCL.StdCtrls,
-  Vcl.ExtCtrls;
+  Vcl.ExtCtrls,
   {$ELSE}
   Windows,
   Messages,
@@ -54,8 +54,9 @@ uses
   Forms,
   Dialogs,
   StdCtrls,
-  ExtCtrls;
+  ExtCtrls,
   {$ENDIF}
+  DUnitX.Expert.CodeGen.NewTestProject;
 
 type
   TfrmDunitXNewProject = class(TForm)
@@ -78,6 +79,7 @@ type
     function GetCreateSetupTearDownMethods: boolean;
     function GetCreateTestUnit: boolean;
     function GetTestFixtureClassName: string;
+    function GetReportLeakOption: TReportLeakOptions;
   public
     { Public declarations }
     // Read Only Properties to extract values without having to know control values.
@@ -86,6 +88,7 @@ type
     property CreateSampleMethods : boolean read GetCreateSampleMethods;
     property CreateTestUnit : boolean read GetCreateTestUnit;
     property AddToProjectGroup : boolean read GetAddToProjectGroup;
+    property ReportLeakOption: TReportLeakOptions read GetReportLeakOption;
   end;
 
 var
@@ -129,6 +132,11 @@ end;
 function TfrmDunitXNewProject.GetCreateTestUnit: boolean;
 begin
   result := chkCreateTestUnit.Checked;
+end;
+
+function TfrmDunitXNewProject.GetReportLeakOption: TReportLeakOptions;
+begin
+  Result := TReportLeakOptions(rgReportLeakOptions.ItemIndex);
 end;
 
 function TfrmDunitXNewProject.GetTestFixtureClassName: string;
