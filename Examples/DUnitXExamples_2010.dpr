@@ -47,7 +47,8 @@ uses
   DUnitX.Utils in '..\Source\DUnitX.Utils.pas',
   DUnitX.Attributes in '..\Source\DUnitX.Attributes.pas',
   DUnitX.Types in '..\Source\DUnitX.Types.pas',
-  DUnitX.Timeout in '..\Source\DUnitX.Timeout.pas';
+  DUnitX.Timeout in '..\Source\DUnitX.Timeout.pas',
+  DUnitX.Exceptions in '..\Source\DUnitX.Exceptions.pas';
 
 var
   runner : ITestRunner;
@@ -61,6 +62,7 @@ begin
     //Create the runner
     runner := TDUnitX.CreateRunner;
     runner.UseRTTI := True;
+    TDUnitX.Options.ExitBehavior := TDUnitXExitBehavior.Pause;
 
     //tell the runner how we will log things
 

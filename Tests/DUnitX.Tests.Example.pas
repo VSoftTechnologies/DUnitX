@@ -145,8 +145,13 @@ type
   private
     FSetupCalled : boolean;
   public
-    //testing constructor/destructor as fixture setup/teardown
+    // Testing constructor/destructor as fixture setup/teardown
+    // Delphi 2010 does support calling of constructor
+    {$IFDEF DELPHI_XE_UP}
     constructor Create;
+    {$ELSE}
+    procedure AfterConstruction; override;
+    {$ENDIF}
     destructor Destroy;override;
 
     [SetupFixture]
@@ -309,7 +314,11 @@ begin
   Assert.IsTrue(FSetupCalled);
 end;
 
+{$IFDEF DELPHI_XE_UP}
 constructor TExampleFixture3.Create;
+{$ELSE}
+procedure TExampleFixture3.AfterConstruction;
+{$ENDIF}
 begin
   FSetupCalled := True;
 end;
