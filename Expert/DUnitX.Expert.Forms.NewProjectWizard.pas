@@ -41,7 +41,8 @@ uses
   VCL.Controls,
   VCL.Forms,
   VCL.Dialogs,
-  VCL.StdCtrls;
+  VCL.StdCtrls,
+  Vcl.ExtCtrls;
   {$ELSE}
   Windows,
   Messages,
@@ -52,7 +53,8 @@ uses
   Controls,
   Forms,
   Dialogs,
-  StdCtrls;
+  StdCtrls,
+  ExtCtrls;
   {$ENDIF}
 
 type
@@ -66,6 +68,7 @@ type
     chkAddToProjectGroup: TCheckBox;
     edtClassName: TEdit;
     lblClassName: TLabel;
+    rgReportLeakOptions: TRadioGroup;
     procedure chkCreateTestUnitClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
   private
