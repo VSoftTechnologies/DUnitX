@@ -17,6 +17,7 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
   KeyPreview = True
   OldCreateOrder = False
   Position = poScreenCenter
+  WindowState = wsMaximized
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
@@ -89,7 +90,10 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
         ActionManager = ActionManager
         Caption = 'tbrTests'
         Color = clMenuBar
+        ColorMap.DisabledFontColor = 10461087
         ColorMap.HighlightColor = clWhite
+        ColorMap.BtnSelectedFont = clWhite
+        ColorMap.SelectedFontColor = clWhite
         ColorMap.UnusedColor = clWhite
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
@@ -294,7 +298,10 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
             ActionManager = ActionManager
             Caption = 'tbrResults'
             Color = clMenuBar
+            ColorMap.DisabledFontColor = 10461087
             ColorMap.HighlightColor = clWhite
+            ColorMap.BtnSelectedFont = clWhite
+            ColorMap.SelectedFontColor = clWhite
             ColorMap.UnusedColor = clWhite
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clBlack
@@ -343,6 +350,7 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
               ScrollBars = ssBoth
               TabOrder = 0
               WordWrap = False
+              Zoom = 100
             end
           end
         end
@@ -1314,7 +1322,7 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
     Left = 332
     Top = 320
     Bitmap = {
-      494C01010A000D00080010001000FFFFFF00FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010A000D00050010001000FFFFFF00FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000003000000001002000000000000030
       000000000000000000000000000000000000FFFFFF00FFFFFF00FFFFFF00FFFF
       FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF

@@ -37,14 +37,16 @@ uses
 type
   TReportLeakOptions = (rloNone, rloFastMM4, rloFastMM5);
 
+  TProjectType = (ptTestInsight, ptGUI, ptConsole);
+
   TTestProjectFile = class({$IFNDEF DELPHIX_SEATTLE_UP}TNewProject{$ELSE}TNewProjectEx{$ENDIF})
   private
+    FProjectType: TProjectType;
     FReportLeakOptions: TReportLeakOptions;
   protected
     function NewProjectSource(const ProjectName: string): IOTAFile; override;
   public
-    constructor Create(const ReportLeakOptions: TReportLeakOptions); overload;
-    constructor Create(const APersonality: String; const ReportLeakOptions: TReportLeakOptions); overload;
+    constructor Create(const APersonality: String; const ProjectType: TProjectType; const ReportLeakOptions: TReportLeakOptions);
   end;
 
 implementation
@@ -59,43 +61,40 @@ uses
   {$ENDIF}
 
 const
+  PROJECT_TYPE_DECLARATION: array[TProjectType] of String = (STestDPR_TestInsight, STestDPR_GUI, STestDPR_Console);
   REPORT_LEAK_DECLARATION: array[TReportLeakOptions] of String = ('', '  FastMM4,'#13#10'  DUnitX.MemoryLeakMonitor.FastMM4,'#13#10, '  FastMM5,'#13#10'  DUnitX.MemoryLeakMonitor.FastMM5,'#13#10);
 
 { TProjectFile }
 
-constructor TTestProjectFile.Create(const ReportLeakOptions: TReportLeakOptions);
+constructor TTestProjectFile.Create(const APersonality: String; const ProjectType: TProjectType; const ReportLeakOptions: TReportLeakOptions);
 begin
- //TODO: Figure out how to make this be TestProjectX where X is the next available.
- //Return Blank and the project will be 'ProjectX.dpr' where X is the next available number
-  FFileName := '';
-  FReportLeakOptions := ReportLeakOptions;
-end;
+  inherited Create;
 
-constructor TTestProjectFile.Create(const APersonality: String; const ReportLeakOptions: TReportLeakOptions);
-begin
-  Create(ReportLeakOptions);
+  //TODO: Figure out how to make this be TestProjectX where X is the next available.
+  //Return Blank and the project will be 'ProjectX.dpr' where X is the next available number
+  FFileName := '';
+  FProjectType := ProjectType;
+  FReportLeakOptions := ReportLeakOptions;
+
   {$IFDEF DELPHIX_SEATTLE_UP}
   Personality := APersonality;
   {$ENDIF}
 end;
 
 function TTestProjectFile.NewProjectSource(const ProjectName: string): IOTAFile;
-{$IFDEF DELPHIX_SEATTLE_UP}
 var
   TestProjectCode: string;
-{$ENDIF}
 begin
   {$IFNDEF DELPHIX_SEATTLE_UP}
-  result := TSourceFile.Create(STestDPR,[ProjectName, REPORT_LEAK_DECLARATION[FReportLeakOptions]]);
+  TestProjectCode := PROJECT_TYPE_DECLARATION[FProjectType];
   {$ELSE}
-  if Personality.isEmpty or SameText(Personality, sDelphiPersonality) then
-    TestProjectCode := STestDPR
-  else
-    if SameText(Personality, sCBuilderPersonality) then
-      TestProjectCode := STestCBPROJ;
-
-  result := TSourceFile.Create(TestProjectCode, [ProjectName, REPORT_LEAK_DECLARATION[FReportLeakOptions]]);
+  if Personality.IsEmpty or SameText(Personality, sDelphiPersonality) then
+    TestProjectCode := PROJECT_TYPE_DECLARATION[FProjectType]
+  else if SameText(Personality, sCBuilderPersonality) then
+    TestProjectCode := STestCBPROJ;
   {$ENDIF}
+
+  Result := TSourceFile.Create(TestProjectCode, [ProjectName, REPORT_LEAK_DECLARATION[FReportLeakOptions]]);
 end;
 
 end.

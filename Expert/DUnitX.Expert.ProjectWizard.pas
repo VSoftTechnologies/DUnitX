@@ -110,7 +110,7 @@ begin
       end;
       ModuleServices := (BorlandIDEServices as IOTAModuleServices);
       // Create Project Source
-      ModuleServices.CreateModule(TTestProjectFile.Create(WizardForm.ReportLeakOption));
+      ModuleServices.CreateModule(TTestProjectFile.Create('', WizardForm.ProjectType, WizardForm.ReportLeakOption));
       Project :=  GetActiveProject;
       Config := (Project.ProjectOptions as IOTAProjectOptionsConfigurations).BaseConfiguration;
       Config.SetValue(sUnitSearchPath,'$(DUnitX)');

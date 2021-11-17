@@ -63,7 +63,8 @@ uses
   System.Generics.Defaults,
   System.Generics.Collections,
   System.IniFiles,
-  System.Actions, //IDE keeps adding this at the end even if it's in the infdef'd section. make sure it's not there when committing!
+  System.Actions,
+  System.ImageList, //IDE keeps adding this at the end even if it's in the infdef'd section. make sure it's not there when committing!
 {$ELSE}
   Windows,
   Messages,
@@ -90,6 +91,7 @@ uses
   Generics.Defaults,
   Generics.Collections,
   IniFiles,
+  ImageList,
 {$ENDIF}
   DUnitX.TestFrameWork,
   DUnitX.Extensibility,

@@ -99,10 +99,18 @@ begin
           end;
           ModuleServices := (BorlandIDEServices as IOTAModuleServices);
           // Create Project Source
-          ModuleServices.CreateModule(TTestProjectFile.Create(APersonality, WizardForm.ReportLeakOption));
+          ModuleServices.CreateModule(TTestProjectFile.Create(APersonality, WizardForm.ProjectType, WizardForm.ReportLeakOption));
           Project :=  GetActiveProject;
           Config := (Project.ProjectOptions as IOTAProjectOptionsConfigurations).BaseConfiguration;
           Config.SetValue(sUnitSearchPath,'$(DUnitX)');
+
+          if WizardForm.ProjectType = ptTestInsight then
+            Config.InsertValues(sDefine, ['TESTINSIGHT']);
+
+          {$IFDEF USE_NS}
+          Config.InsertValues(sDefine, ['USE_NS']);
+          {$ENDIF}
+
           // Create Test Unit
           if WizardForm.CreateTestUnit then
           begin

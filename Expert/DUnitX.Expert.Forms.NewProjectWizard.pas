@@ -70,6 +70,7 @@ type
     edtClassName: TEdit;
     lblClassName: TLabel;
     rgReportLeakOptions: TRadioGroup;
+    rgProjectType: TRadioGroup;
     procedure chkCreateTestUnitClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
   private
@@ -80,6 +81,7 @@ type
     function GetCreateTestUnit: boolean;
     function GetTestFixtureClassName: string;
     function GetReportLeakOption: TReportLeakOptions;
+    function GetProjectType: TProjectType;
   public
     { Public declarations }
     // Read Only Properties to extract values without having to know control values.
@@ -89,6 +91,7 @@ type
     property CreateTestUnit : boolean read GetCreateTestUnit;
     property AddToProjectGroup : boolean read GetAddToProjectGroup;
     property ReportLeakOption: TReportLeakOptions read GetReportLeakOption;
+    property ProjectType: TProjectType read GetProjectType;
   end;
 
 var
@@ -132,6 +135,11 @@ end;
 function TfrmDunitXNewProject.GetCreateTestUnit: boolean;
 begin
   result := chkCreateTestUnit.Checked;
+end;
+
+function TfrmDunitXNewProject.GetProjectType: TProjectType;
+begin
+  Result := TProjectType(rgProjectType.ItemIndex);
 end;
 
 function TfrmDunitXNewProject.GetReportLeakOption: TReportLeakOptions;
