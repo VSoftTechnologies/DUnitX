@@ -98,9 +98,10 @@ begin
   inherited Create;
   {$IFDEF DELPHI_XE_UP }
   FFormatSettings := TFormatSettings.Create;
+  {$ENDIF}
   FFormatSettings.ThousandSeparator := ',';
   FFormatSettings.DecimalSeparator := '.';
-  {$ELSE}
+  {$IFNDEF DELPHI_XE_UP}
   oldThousandSeparator        := {$IFDEF USE_NS}System.{$ENDIF}SysUtils.ThousandSeparator;
   oldDecimalSeparator         := {$IFDEF USE_NS}System.{$ENDIF}DecimalSeparator;
   try
