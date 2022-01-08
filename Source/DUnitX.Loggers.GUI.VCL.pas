@@ -228,7 +228,7 @@ type
     FRootNodes : array[TTestResultType] of TTreeNode;
     FRunning : boolean;
     FFixtureCount: integer;
-
+    FRunner: ITestRunner;
     procedure LoadTests;
     procedure BuildTestTreeNode(const FixtureList: ITestFixtureList;
       const ParentNode: TTreeNode);
@@ -237,7 +237,7 @@ type
     procedure Invert;
     procedure SelectAll;
     procedure UnselectAll;
-    function NeedRunner: ITestRunner;
+    function GetRunner: ITestRunner;
     function GetNodeByTestFullName(const TestFullName: string): TTreeNode;
     procedure SetNodeTestResult(const Node: TTreeNode; const ImageIndex: integer);
     procedure ProcessTestResult(const Test: ITestResult);
@@ -278,6 +278,8 @@ type
 
     procedure WMLoadTests(var message : TMessage); message WM_LOAD_TESTS;
     procedure Loaded; override;
+  public
+    property Runner: ITestRunner read GetRunner;
   end;
 
 var
@@ -626,10 +628,14 @@ begin
   PostMessage(Self.Handle, WM_LOAD_TESTS, 0, 0);
 end;
 
-function TGUIVCLTestRunner.NeedRunner: ITestRunner;
+function TGUIVCLTestRunner.GetRunner: ITestRunner;
 begin
-  Result := TDUnitX.CreateRunner([Self, TDUnitXGUIVCLRichEditLogger.Create(rchText, FTestBookmarkList)]);
-  Result.FailsOnNoAsserts := True;
+  if not Assigned(FRunner) then
+  begin
+    FRunner := TDUnitX.CreateRunner([Self, TDUnitXGUIVCLRichEditLogger.Create(rchText, FTestBookmarkList)]);
+    FRunner.FailsOnNoAsserts := True;
+  end;
+  Result := FRunner;
 end;
 
 procedure TGUIVCLTestRunner.OnBeginTest(const threadId: TThreadID; const Test: ITestInfo);
@@ -846,11 +852,7 @@ begin
 end;
 
 procedure TGUIVCLTestRunner.LoadTests;
-var
-  Runner: ITestRunner;
 begin
-  Runner := NeedRunner;
-
   FFixtureList := Runner.BuildFixtures as ITestFixtureList;
 
   tvwTests.Items.BeginUpdate;
@@ -876,8 +878,6 @@ begin
 end;
 
 procedure TGUIVCLTestRunner.RunExecute;
-var
-  Runner: ITestRunner;
 begin
   FRunning := true;
   UpdateFormActions;
@@ -887,7 +887,6 @@ begin
     //Make sure UI is up-to-date before entering test run
     Application.ProcessMessages;
 
-    Runner := NeedRunner;
     FLastResult := Runner.Execute;
 
     if tvwResults.Items.Count > 0 then
