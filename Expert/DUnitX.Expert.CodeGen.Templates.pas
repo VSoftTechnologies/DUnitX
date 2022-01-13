@@ -41,6 +41,7 @@ resourcestring
  '{$ENDIF}'#13#10 +
  '{$STRONGLINKTYPES ON}'#13#10 +
  'uses'#13#10 +
+ '%1:s' +
  {$IFDEF USE_NS}
  '  System.SysUtils,'#13#10 +
  {$ELSE}

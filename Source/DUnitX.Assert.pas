@@ -79,6 +79,7 @@ type
 {$IFNDEF DELPHI_XE_DOWN}
     //Delphi 2010 and XE compiler bug breaks this
     class procedure AreEqual<T>(const expected, actual : T; const message : string = '');overload;
+    class procedure AreEqual<T>(const expected, actual : TArray<T>; const message : string = '');overload;
 {$ENDIF}
     class procedure AreEqual(const expected, actual : word; const message : string = '');overload;
     class procedure AreEqual(const expected, actual : Integer; const message : string = '');overload;
@@ -427,6 +428,30 @@ begin
     FailFmt(SNotEqualErrorStr, [expectedValue.ToString, actualValue.ToString, message], ReturnAddress)
   end;
 end;
+
+class procedure Assert.AreEqual<T>(const expected, actual : TArray<T>; const message : string = '');
+var
+  i : integer;
+  comparer : IComparer<T>;
+  expectedValue, actualValue : TValue;
+begin
+  DoAssert;
+  if Length(expected) <> Length(actual) then
+    FailFmt(SArraysHaveDifferentLength, [Length(expected), Length(actual), message], ReturnAddress)
+  else begin
+    comparer := TComparer<T>.Default;
+    for i := 0 to High(expected) do
+    begin
+      if comparer.Compare(expected[i],actual[i]) <> 0 then
+      begin
+        expectedValue := TValue.From<T>(expected[i]);
+        actualValue := TValue.From<T>(actual[i]);
+        FailFmt(SArraysAreDifferent, [i, expectedValue.ToString, actualValue.ToString, message], ReturnAddress)
+      end;
+    end;
+  end;
+end;
+
 {$ENDIF}
 
 class function Assert.AddLineBreak(const msg: string): string;
@@ -549,7 +574,7 @@ begin
     expectedValue := TValue.From<T>(expected);
     actualValue := TValue.From<T>(actual);
 
-    FailFmt(SEqualsErrorStr2,[expectedValue.ToString, actualValue.ToString, message], ReturnAddress);
+    FailFmt(SEqualsErrorStr,[expectedValue.ToString, actualValue.ToString, message], ReturnAddress);
   end;
 end;
 {$ENDIF}

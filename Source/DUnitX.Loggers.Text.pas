@@ -87,6 +87,9 @@ type
 implementation
 
 uses
+  {$IFDEF DELPHI_2010}
+  DUnitX.Exceptions, //ENotImplemented is not in SysUtils in D2010
+  {$ENDIF}
   {$IFDEF USE_NS}
   System.SysUtils;
   {$ELSE}

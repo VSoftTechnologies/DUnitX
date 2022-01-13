@@ -553,7 +553,7 @@ type
     //If true do not show the banner
     property HideBanner : boolean read FHideBanner write FHideBanner;
 
-    //Defaults to Pause
+    //Defaults to Continue
     property ExitBehavior : TDUnitXExitBehavior read FExitBehavior write FExitBehavior;
 
     property ConsoleMode : TDunitXConsoleMode read FConsoleMode write FConsoleMode ;
