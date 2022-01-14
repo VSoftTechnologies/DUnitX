@@ -273,6 +273,8 @@ type
     class procedure IsMatch(const regexPattern : string; const theString : string; const message : string = '');
     {$ENDIF}
 
+    class procedure CheckExpectation(const EmptyExpectation: String; const Message: String = '');
+
     class property OnAssert: TProc read fOnAssert write fOnAssert;
     class property TestFailure: ExceptClass read fTestFailure write fTestFailure;
     class property TestPass: ExceptClass read fTestPass write fTestPass;
@@ -1279,6 +1281,14 @@ begin
 
   if not (E is exceptionClass) then
     FailFmt(SCheckExceptionClassDescError, [E.ClassName, exceptionClass.ClassName, E.message], ReturnAddress);
+end;
+
+class procedure Assert.CheckExpectation(const EmptyExpectation, Message: String);
+begin
+  DoAssert;
+
+  if EmptyExpectation <> '' then
+    FailFmt(SCheckEmptyExpectation, [EmptyExpectation, Message]);
 end;
 
 class procedure Assert.Contains(const theStrings: TStrings; const subString: string; const ignoreCase: boolean; const message: string);

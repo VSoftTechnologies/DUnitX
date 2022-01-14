@@ -94,6 +94,7 @@ resourcestring
   SNumberOfStringsNotEqual = 'Number of strings is not equal';
   SLengthOfStringsNotEqual = 'Length of strings is not equal';
   SDiffAtPosition = 'Difference at position %d';
+  SCheckEmptyExpectation = 'Expectation not achieved [%s] %s';
 
   SInvalidValueBool = 'Invalid value, not boolean';
   SInvalidOptionType = 'Invalid option type - only string, integer, float, boolean, enum and sets are supported';
