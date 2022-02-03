@@ -55,6 +55,7 @@ resourcestring
  '{$ENDIF}'#13#10 +
  '  DUnitX.TestFramework;'#13#10 +
  #13#10 +
+ '{ keep comment here to protect the following conditional from being removed by the IDE when adding a unit }'#13#0 +
  '{$IFNDEF TESTINSIGHT}'#13#10 +
  'var'#13#10 +
  '  runner: ITestRunner;'#13#10 +
