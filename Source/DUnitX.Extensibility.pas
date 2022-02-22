@@ -243,12 +243,18 @@ procedure TTestFixtureList.Sort;
 var
   AFixture: ITestFixture;
 
+  Comparer: TDelegatedComparer<ITestFixture>;
+
 begin
-  inherited Sort(TDelegatedComparer<ITestFixture>.Create(
+  Comparer := TDelegatedComparer<ITestFixture>.Create(
     function (const Left, Right: ITestFixture): Integer
     begin
       Result := CompareStr(Left.FullName, Right.FullName);
-    end));
+    end);
+
+  inherited Sort(Comparer);
+
+  Comparer.Free;
 
   for AFixture in (Self as ITestFixtureList) do
     AFixture.Children.Sort;
