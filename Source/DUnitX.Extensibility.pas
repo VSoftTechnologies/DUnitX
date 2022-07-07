@@ -185,6 +185,8 @@ type
   end;
 
   TTestFixtureList = class(TDUnitXList<ITestFixture>, ITestFixtureList)
+  private
+    procedure Sort;
   end;
 
 
@@ -227,4 +229,36 @@ type
 
 implementation
 
+uses
+  {$IFDEF USE_NS}
+  System.Generics.Defaults
+  {$ELSE}
+  Generics.Defaults
+  {$ENDIF}
+  ;
+
+{ TTestFixtureList }
+
+procedure TTestFixtureList.Sort;
+var
+  AFixture: ITestFixture;
+
+  Comparer: TDelegatedComparer<ITestFixture>;
+
+begin
+  Comparer := TDelegatedComparer<ITestFixture>.Create(
+    function (const Left, Right: ITestFixture): Integer
+    begin
+      Result := CompareStr(Left.FullName, Right.FullName);
+    end);
+
+  inherited Sort(Comparer);
+
+  Comparer.Free;
+
+  for AFixture in (Self as ITestFixtureList) do
+    AFixture.Children.Sort;
+end;
+
 end.
+

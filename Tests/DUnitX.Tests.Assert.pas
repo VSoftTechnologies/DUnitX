@@ -289,6 +289,9 @@ type
     procedure WillNotRaiseWithMessage_NonMatchingExceptionParam_MatchingExceptionMessage_WillNotRaise;
     procedure WillNotRaiseWithMessage_NonMatchingExceptionParam_NoExceptionMessage_WillNotRaise;
     procedure WillNotRaiseWithMessage_NonMatchingExceptionParam_NonMatchingExceptionMessage_WillNotRaise;
+
+    [Test]
+    procedure CheckExpectation_Not_Empty_String_Will_Raise;
   end;
 
 implementation
@@ -1257,6 +1260,15 @@ begin
     procedure
     begin
       Assert.AreNotEqual(1, 2);
+    end, ETestFailure);
+end;
+
+procedure TTestsAssert.CheckExpectation_Not_Empty_String_Will_Raise;
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.CheckExpectation('My expectation');
     end, ETestFailure);
 end;
 
