@@ -102,7 +102,7 @@ begin
                                              TDUnitX.Options.LogLevel := value
                                           end);
 
-  TOptionsRegistry.RegisterOption<TDUnitXExitBehavior>('exitbehavior','exit','Exit behavior - Continue, Pause (default)',
+  TOptionsRegistry.RegisterOption<TDUnitXExitBehavior>('exitbehavior','exit','Exit behavior - Continue (default), Pause',
                                           procedure(value : TDUnitXExitBehavior)
                                           begin
                                              TDUnitX.Options.ExitBehavior := value
