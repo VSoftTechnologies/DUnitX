@@ -1198,19 +1198,19 @@ begin
   Assert.WillRaise(
     procedure
     begin
-      Assert.AreEqual<integer>([1, 2, 3], [1, 2, 3, 4]);
+      Assert.AreEqual<integer>(TArray<integer>.Create(1, 2, 3), TArray<integer>.Create(1, 2, 3, 4));
     end, ETestFailure);
 
   Assert.WillRaise(
     procedure
     begin
-      Assert.AreEqual<real>([3.14, 3.15], [3.15, 3.14]);
+      Assert.AreEqual<real>(TArray<real>.Create(3.14, 3.15), TArray<real>.Create(3.15, 3.14));
     end, ETestFailure);
 
   Assert.WillRaise(
     procedure
     begin
-      Assert.AreEqual<string>(['a', 'b', 'c'], ['a', 'c', 'b']);
+      Assert.AreEqual<string>(TArray<string>.Create('a', 'b', 'c'), TArray<string>.Create('a', 'c', 'b'));
     end, ETestFailure);
 end;
 
@@ -1219,13 +1219,13 @@ begin
   Assert.WillNotRaise(
     procedure
     begin
-      Assert.AreEqual<string>(['a', 'b', 'c'], ['a', 'b', 'c']);
+      Assert.AreEqual<string>(TArray<string>.Create('a', 'b', 'c'), TArray<string>.Create('a', 'b', 'c'));
     end, ETestFailure);
 
   Assert.WillNotRaise(
     procedure
     begin
-      Assert.AreEqual<real>([3.14, 3.15], [3.14, 3.15]);
+      Assert.AreEqual<real>(TArray<real>.Create(3.14, 3.15),TArray<real>.Create(3.14, 3.15));
     end, ETestFailure);
 end;
 {$ENDIF}
