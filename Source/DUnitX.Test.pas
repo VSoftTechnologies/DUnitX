@@ -365,12 +365,8 @@ begin
     //Only keep as many arguments as there are params
     SetLength(FArgs, len);
     for index := 0 to Pred(len) do
-    begin
-      if index <= high(AArgs) then
-        if AArgs[index].TryConvert(parameters[index].ParamType.Handle, tmp) then
-          FArgs[index] := tmp;
-
-    end;
+      if (index <= high(AArgs)) and Assigned(parameters[index].ParamType) and AArgs[index].TryConvert(parameters[index].ParamType.Handle, tmp) then
+        FArgs[index] := tmp;
   end;
 end;
 

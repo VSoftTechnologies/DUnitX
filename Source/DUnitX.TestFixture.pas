@@ -49,7 +49,7 @@ uses
   DUnitX.Generics;
 
 type
-  TDUnitXTestFixture = class(TWeakReferencedObject, ITestFixture,ITestFixtureInfo)
+  TDUnitXTestFixture = class(TWeakReferencedObject, ITestFixture, ITestFixtureInfo)
   private class var
     FRttiContext  : TRttiContext;
   private
