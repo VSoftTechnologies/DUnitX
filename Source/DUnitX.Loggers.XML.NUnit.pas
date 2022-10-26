@@ -319,7 +319,6 @@ var
   sExecuted : string;
   sSuccess : string;
   sName : string;
-  sFullName : string;
 begin
   Indent;
   try
@@ -335,12 +334,11 @@ begin
       sSuccess := '';
 
     sName := EscapeForXML(testResult.Test.Name);
-    sFullName := EscapeForXML(testResult.Test.FullName);
     sExecuted := EscapeForXML(sExecuted);
     sResult := EscapeForXML(sResult);
     sTime := EscapeForXML(sTime);
 
-    WriteXMLLine(Format('<test-case name="%s" fullname="%s" executed="%s" result="%s" %s time="%s" asserts="0" %s>', [sName, sFullName, sExecuted, sResult, sSuccess, sTime, sLineEnd]));
+    WriteXMLLine(Format('<test-case name="%s" executed="%s" result="%s" %s time="%s" asserts="0" %s>', [sName, sExecuted, sResult, sSuccess, sTime, sLineEnd]));
     WriteCategoryNodes(testResult.Test.Categories);
     case testResult.ResultType of
       TTestResultType.MemoryLeak,
