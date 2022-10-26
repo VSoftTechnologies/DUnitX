@@ -144,6 +144,7 @@ uses
   SysUtils,
   Rtti,
   {$ENDIF}
+  DUnitX.Types,
   DUnitX.Extensibility;
 
 var
@@ -258,16 +259,23 @@ end;
 { TDUnitXTestFixtureTests }
 
 procedure TDUnitXTestFixtureTests.WhenATestCaseHasAUntypedParameterCantRaiseAnyError;
+var
+  Context : TRttiContext;
+  MyClass : TRttiType;
+  MyMethod : TRttiMethod;
+  TestFixture : ITestFixture;
+  args : TValueArray;
 begin
-  var Context := TRttiContext.Create;
-  var MyClass := Context.GetType(TTestCaseAttribute);
-  var MyMethod := MyClass.GetMethod('ProcedureWithUntypedParameter');
-  var TestFixture := TDUnitXTestFixture.Create(MyClass.Name, EmptyStr, TTestCaseAttribute, MyClass.UnitName) as ITestFixture;
+  Context := TRttiContext.Create;
+  MyClass := Context.GetType(TTestCaseAttribute);
+  MyMethod := MyClass.GetMethod('ProcedureWithUntypedParameter');
+  TestFixture := TDUnitXTestFixture.Create(MyClass.Name, EmptyStr, TTestCaseAttribute, MyClass.UnitName) as ITestFixture;
 
   Assert.WillNotRaise(
     procedure
     begin
-      TestFixture.AddTestCase(MyMethod.Name, 'My test case', 'My name', 'My category', MyMethod, True, [0]);
+      args := [0];
+      TestFixture.AddTestCase(MyMethod.Name, 'My test case', 'My name', 'My category', MyMethod, True, args);
     end);
 
   TestFixture := nil;
