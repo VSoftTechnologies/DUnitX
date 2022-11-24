@@ -118,7 +118,7 @@ object frmDunitXNewProject: TfrmDunitXNewProject
     Caption = 'Report Leak Options'
     ItemIndex = 0
     Items.Strings = (
-      'Nome'
+      'None'
       'FastMM 4'
       'FastMM 5')
     TabOrder = 1
