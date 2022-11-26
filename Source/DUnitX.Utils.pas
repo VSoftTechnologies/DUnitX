@@ -1208,7 +1208,7 @@ begin
   else if ATarget = TypeInfo(TColor) then
     AResult := TValue.FromOrdinal(ATarget, StringToColor(ASource.AsString))
   else
-    AResult := TValue.FromOrdinal(ATarget, StrToIntDef(ASource.AsString, 0));
+    AResult := TValue.FromOrdinal(ATarget, StrToInt64Def(ASource.AsString, 0));
   Result := True;
 end;
 
