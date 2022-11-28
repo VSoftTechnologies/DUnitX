@@ -7,9 +7,11 @@ interface
 uses
   DUnitX.TestFramework,
   {$IFDEF USE_NS}
-  System.SysUtils;
+  System.SysUtils,
+  System.UITypes;
   {$ELSE}
-  SysUtils;
+  SysUtils,
+  UITypes;
   {$ENDIF}
 
 type
@@ -73,6 +75,23 @@ type
     [TestCase('DE local format, short',             'DE,22.6.20 18:36')]
     [TestCase('DE iso8601 format',                  'DE,2020-06-22 18:36:00')]
     procedure TestDateTimeConversion(const locale: String; const text: String);
+
+    [Test]
+    [TestCase('claRed = xFFFF0000',    'claRed,xFFFF0000')]
+    [TestCase('Red = xFFFF0000',       'Red,xFFFF0000')]
+    [TestCase('red = xFFFF0000',       'red,xFFFF0000')]
+    [TestCase('$FFFF0000 = xFFFF0000', '$FFFF0000,xFFFF0000')]
+    [TestCase('xFFFF0000 = xFFFF0000', 'xFFFF0000,xFFFF0000')]
+    procedure TestAlphaColorTestCase(const AColor: TAlphaColor; const AColorOrd: Cardinal);
+
+    [Test]
+    [TestCase('clRed = 255',           'clRed,255')]
+    [TestCase('clred = 255',           'clred,255')]
+    [TestCase('clRed = $000000FF',     'clRed,$000000FF')]
+    [TestCase('clBlue = $00FF0000',    'clBlue,$00FF0000')]
+    [TestCase('$00FF0000 = $00FF0000', '$00FF0000,$00FF0000')]
+    [TestCase('$000000FF = $000000FF', '$000000FF,$000000FF')]
+    procedure TestColorTestCase(const AColor: TColor; const AColorOrd: Integer);
   end;
 
 implementation uses
@@ -156,6 +175,18 @@ begin
 	{$Else}
 	FormatSettings := TFormatSettings.Create(locale);
 	{$IFEND}
+end;
+
+procedure TValueHelperTests.TestAlphaColorTestCase(const AColor: TAlphaColor;
+  const AColorOrd: Cardinal);
+begin
+  Assert.AreEqual(AColorOrd, AColor);
+end;
+
+procedure TValueHelperTests.TestColorTestCase(const AColor: TColor;
+  const AColorOrd: Integer);
+begin
+  Assert.AreEqual(AColorOrd, AColor);
 end;
 
 procedure TValueHelperTests.TestDateConversion(const locale, text: String);
