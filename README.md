@@ -35,6 +35,11 @@ This is far from a complete list, but a few planned features are listed here to 
 Tips and Tricks
 ===========
 * In order to workaround the [Delphi XE3 Bug](https://github.com/VSoftTechnologies/DUnitX/issues/117), you need to add the unit DUnitX.Init to your test projects.
+* To use this GitHub version of DUnitX in place of the bundled version included iwth RAD Studio, it’s pretty simple by following these steps (as the bundled version is quite a few commits behind this repo):
+  - Remove the Embarcadero Unit test package (DUnitXIDEExpert280.bpl) from the installed packages list.
+  - In the cloned repo, open DUnitX_IDE_Expert_D11Alexandria.dproj, compile and install the package.
+  - In your unit test projects, adjust your search paths to point to the repo\Source folder.
+
 
 Support
 =======
