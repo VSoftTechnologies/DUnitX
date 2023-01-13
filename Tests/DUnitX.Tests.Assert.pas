@@ -96,10 +96,39 @@ type
     procedure AreEqual_TClass_Throws_ETestFailure_When_Classes_Are_NotEqual;
 
     [Test]
-    procedure NoDiff_Throws_No_Exception_When_Strings_Are_Equal;
+    [TestCase('Empty', ',')]
+    [TestCase('CR', #13','#13)]
+    [TestCase('Simple','abc,abc')]
+    [TestCase('Ignore case simple','abc,ABC,true')]
+    [TestCase('Ignore case complex','LoReM iPsUm DoLoR sIt AmEt,lOrEm IpSuM dOlOr SiT aMeT,true')]
+    procedure NoDiff_Throws_No_Exception_When_Strings_Are_Equal(const A, B: string; AIgnoreCase:boolean = false);
 
-    [Test]
-    procedure NoDiff_Throws_ETestFailure_When_Strings_Are_NotEqual;
+    [TestCase('Length',
+      '  '#8',' +
+      ' ,' +
+      'Length of strings is not equal: Expected [3] but got [1] ',
+      ',', false)]
+    [TestCase('Different Spaces',
+      'lorem ipsum,' +
+      'lorem  ipsum,' +
+      'Length of strings is not equal: Expected [11] but got [12] characters,characters',
+      ',', false)]
+    [TestCase('Capitalization',
+      'lorem ipsum,'+
+      'lorem Ipsum,' +
+      'Difference at position 7: [''ipsum''] does not match [''Ipsum''] ',
+      ',', false)]
+    [TestCase('CR vs LF',
+      #13',' +
+      #10',' +
+      'Difference at position 1: [#13] does not match [#10] ',
+      ',', false)]
+    [TestCase('TAB vs CR',
+      'lorem ipsum'#9' ,' +
+      'lorem'#13'ipsum'#13#10',' +
+      'Difference at position 6: ['' ipsum''#9'' ''] does not match [#13''ipsum''#13#10] ',
+      ',', false)]
+    procedure NoDiff_Throws_ETestFailure_When_Strings_Are_NotEqual(const A, B, AException, AMessage : string);
 
     [Test]
     procedure AreEqual_TStrings_Throws_No_Exception_When_Strings_Are_Equal;
@@ -418,59 +447,19 @@ begin
   end;
 end;
 
-procedure TTestsAssert.NoDiff_Throws_ETestFailure_When_Strings_Are_NotEqual;
+procedure TTestsAssert.NoDiff_Throws_ETestFailure_When_Strings_Are_NotEqual(const A, B, AException, AMessage : string);
 begin
   Assert.WillRaiseWithMessage(procedure
     begin
-      Assert.NoDiff('  '#8, ' ');
-    end, ETestFailure, 'Length of strings is not equal: Expected [3] but got [1] ');
-
-  Assert.WillRaiseWithMessage(procedure
-    begin
-      Assert.NoDiff('lorem ipsum', 'lorem ipsum ', 'characters');
-    end,
-    ETestFailure, 'Length of strings is not equal: Expected [11] but got [12] characters');
-
-  Assert.WillRaiseWithMessage(procedure
-    begin
-      Assert.NoDiff('lorem ipsum', 'lorem Ipsum');
-    end,
-    ETestFailure, 'Difference at position 7: [''ipsum''] does not match [''Ipsum''] ');
-
-  Assert.WillRaiseWithMessage(procedure
-    begin
-      Assert.NoDiff(#13, #10);
-    end,
-    ETestFailure, 'Difference at position 1: [#13] does not match [#10] ');
-
-  Assert.WillRaiseWithMessage(procedure
-    begin
-      Assert.NoDiff('lorem ipsum'#9' ', 'lorem'#13'ipsum'#13#10);
-    end,
-    ETestFailure, 'Difference at position 6: ['' ipsum''#9'' ''] does not match [#13''ipsum''#13#10] ');
+      Assert.NoDiff(A, B, AMessage);
+    end, ETestFailure, AException);
 end;
 
-procedure TTestsAssert.NoDiff_Throws_No_Exception_When_Strings_Are_Equal;
+procedure TTestsAssert.NoDiff_Throws_No_Exception_When_Strings_Are_Equal(const A, B: string; AIgnoreCase:boolean = false);
 begin
   Assert.WillNotRaise(procedure
     begin
-      Assert.NoDiff('', '');
-    end);
-  Assert.WillNotRaise(procedure
-    begin
-      Assert.NoDiff(#13, #13);
-    end);
-  Assert.WillNotRaise(procedure
-    begin
-      Assert.NoDiff('abc', 'abc');
-    end);
-  Assert.WillNotRaise(procedure
-    begin
-      Assert.NoDiff('abc', 'ABC', true);
-    end);
-  Assert.WillNotRaise(procedure
-    begin
-      Assert.NoDiff('LoReM iPsUm DoLoR sIt AmEt', 'lOrEm IpSuM dOlOr SiT aMeT', true);
+      Assert.NoDiff(A,B,AIgnoreCase);
     end);
 end;
 
