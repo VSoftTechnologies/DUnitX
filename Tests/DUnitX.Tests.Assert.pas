@@ -146,7 +146,7 @@ type
     [TestCase('CR vs LF',
       #13',' +
       #10',' +
-      'Difference at position 1: [#13] does not match [#10] ',
+      'Difference at position 1: [#13] does not match [#10] Linebreak style,Linebreak style',
       ',', false)]
     [TestCase('TAB vs CR',
       'lorem ipsum'#9' ,' +
