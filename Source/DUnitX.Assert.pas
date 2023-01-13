@@ -724,7 +724,7 @@ end;
 
 class procedure Assert.FailFmt(const message: string; const args: array of const; const errorAddrs: pointer);
 begin
-  Fail(Format(message, args), errorAddrs);
+  Fail(Trim(Format(message, args)), errorAddrs);
 end;
 
 class procedure Assert.Pass(const message: string);

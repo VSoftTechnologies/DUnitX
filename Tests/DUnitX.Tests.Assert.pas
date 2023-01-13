@@ -106,42 +106,42 @@ type
     [TestCase('Length',
       '  '#8',' +
       ' ,' +
-      'Difference at position 2: ['' ''#8] does not match [] ',
+      'Difference at position 2: ['' ''#8] does not match []',
       ',', false)]
     [TestCase('First Char',
       'Lorem ipsum,' +
       'lorem ipsum,' +
-      'Difference at position 1: [''Lorem ipsu''] does not match [''lorem ipsu''] ',
+      'Difference at position 1: [''Lorem ipsu''] does not match [''lorem ipsu'']',
       ',', false)]
     [TestCase('Last Char',
       'Lorem ipsum,' +
       'Lorem ipsuM,' +
-      'Difference at position 11: [''m''] does not match [''M''] ',
+      'Difference at position 11: [''m''] does not match [''M'']',
       ',', false)]
     [TestCase('A sub B',
       'Lorem ip,' +
       'Lorem ipsum,' +
-      'Difference at position 9: [] does not match [''sum''] ',
+      'Difference at position 9: [] does not match [''sum'']',
       ',', false)]
     [TestCase('B sub A',
       'Lorem ipsum,' +
       'Lorem ip,' +
-      'Difference at position 9: [''sum''] does not match [] ',
+      'Difference at position 9: [''sum''] does not match []',
       ',', false)]
     [TestCase('Tab vs Space',
       'lorem ipsum,' +
       'lorem'#9'ipsum,' +
-      'Difference at position 6: ['' ipsum''] does not match [#9''ipsum''] ',
+      'Difference at position 6: ['' ipsum''] does not match [#9''ipsum'']',
       ',', false)]
     [TestCase('Different Spaces',
       'lorem ipsum,' +
       'lorem  ipsum,' +
-      'Difference at position 7: [''ipsum''] does not match ['' ipsum''] ',
+      'Difference at position 7: [''ipsum''] does not match ['' ipsum'']',
       ',', false)]
     [TestCase('Capitalization',
       'lorem ipsum,'+
       'lorem Ipsum,' +
-      'Difference at position 7: [''ipsum''] does not match [''Ipsum''] ',
+      'Difference at position 7: [''ipsum''] does not match [''Ipsum'']',
       ',', false)]
     [TestCase('CR vs LF',
       #13',' +
@@ -151,7 +151,7 @@ type
     [TestCase('TAB vs CR',
       'lorem ipsum'#9' ,' +
       'lorem'#13'ipsum'#13#10',' +
-      'Difference at position 6: ['' ipsum''#9'' ''] does not match [#13''ipsum''#13#10] ',
+      'Difference at position 6: ['' ipsum''#9'' ''] does not match [#13''ipsum''#13#10]',
       ',', false)]
     procedure NoDiff_Throws_ETestFailure_When_Strings_Are_NotEqual(const A, B, AException, AMessage : string);
 
@@ -1053,7 +1053,7 @@ begin
     Assert.WillRaiseWithMessage(procedure
       begin
         Assert.AreEqual(expected, actual);
-      end, ETestFailure, 'Number of strings is not equal: Expected [3] but got [4] ');
+      end, ETestFailure, 'Number of strings is not equal: Expected [3] but got [4]');
 
     expected.CommaText := '"Lorem ipsum dolor sit amet","consectetur adipisici elit","sed eiusmod tempor incidunt"';
     actual.CommaText := '"Lorem ipsum dolor sit amet","consectetur adisipici elit","sed eiusmod tempor incidunt"';
@@ -1061,7 +1061,7 @@ begin
       begin
         Assert.AreEqual(expected, actual);
       end, ETestFailure,
-      'Difference at position 16: [''pisici eli''] does not match [''sipici eli''] at line 2 ');
+      'Difference at position 16: [''pisici eli''] does not match [''sipici eli''] at line 2');
   finally
     expected.Free;
     actual.Free;
