@@ -106,12 +106,37 @@ type
     [TestCase('Length',
       '  '#8',' +
       ' ,' +
-      'Length of strings is not equal: Expected [3] but got [1] ',
+      'Difference at position 2: ['' ''#8] does not match [] ',
+      ',', false)]
+    [TestCase('First Char',
+      'Lorem ipsum,' +
+      'lorem ipsum,' +
+      'Difference at position 1: [''Lorem ipsu''] does not match [''lorem ipsu''] ',
+      ',', false)]
+    [TestCase('Last Char',
+      'Lorem ipsum,' +
+      'Lorem ipsuM,' +
+      'Difference at position 11: [''m''] does not match [''M''] ',
+      ',', false)]
+    [TestCase('A sub B',
+      'Lorem ip,' +
+      'Lorem ipsum,' +
+      'Difference at position 9: [] does not match [''sum''] ',
+      ',', false)]
+    [TestCase('B sub A',
+      'Lorem ipsum,' +
+      'Lorem ip,' +
+      'Difference at position 9: [''sum''] does not match [] ',
+      ',', false)]
+    [TestCase('Tab vs Space',
+      'lorem ipsum,' +
+      'lorem'#9'ipsum,' +
+      'Difference at position 6: ['' ipsum''] does not match [#9''ipsum''] ',
       ',', false)]
     [TestCase('Different Spaces',
       'lorem ipsum,' +
       'lorem  ipsum,' +
-      'Length of strings is not equal: Expected [11] but got [12] characters,characters',
+      'Difference at position 7: [''ipsum''] does not match ['' ipsum''] ',
       ',', false)]
     [TestCase('Capitalization',
       'lorem ipsum,'+
