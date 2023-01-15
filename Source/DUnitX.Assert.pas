@@ -724,7 +724,7 @@ end;
 
 class procedure Assert.FailFmt(const message: string; const args: array of const; const errorAddrs: pointer);
 begin
-  Fail(Format(message, args), errorAddrs);
+  Fail(Trim(Format(message, args)), errorAddrs);
 end;
 
 class procedure Assert.Pass(const message: string);
@@ -971,37 +971,42 @@ begin
 end;
 
 class procedure Assert.NoDiff(const expected, actual: string; const ignoreCase : boolean; const message: string);
-const
-  DIFF_LENGTH = 10;
+
+  procedure FailSubstring(position: integer);
+  const
+    DIFF_LENGTH = 10;
+  begin
+    FailFmt(SDiffAtPosition + ': ' + SStrDoesNotMatch, [position,
+      TStrUtils.EncodeWhitespace(Copy(expected, position, DIFF_LENGTH)),
+      TStrUtils.EncodeWhitespace(Copy(actual, position, DIFF_LENGTH)), message]);
+  end;
+
 var
-  lenExp, lenAct: integer;
+  lenExp, lenAct, lenCmp: integer;
   strExp, strAct: string;
   position: Integer;
 begin
   DoAssert;
   lenExp := Length(expected);
   lenAct := Length(actual);
+  lenCmp := Min(lenExp, lenAct);
 
-  if lenExp <> lenAct then
-    FailFmt(SLengthOfStringsNotEqual + ': ' + SUnexpectedErrorInt, [lenExp, lenAct, message])
+  if ignoreCase then
+  begin
+    strExp := UpperCase(expected);
+    strAct := UpperCase(actual);
+  end
   else begin
-    if ignoreCase then
-    begin
-      strExp := UpperCase(expected);
-      strAct := UpperCase(actual);
-    end
-    else begin
-      strExp := expected;
-      strAct := actual;
-    end;
-    for position := 1 to lenExp do
-    begin
-      if (position <= lenAct) and (strExp[position] <> strAct[position]) then
-        FailFmt(SDiffAtPosition + ': ' + SStrDoesNotMatch, [position,
-          TStrUtils.EncodeWhitespace(Copy(expected, position, DIFF_LENGTH)),
-          TStrUtils.EncodeWhitespace(Copy(actual, position, DIFF_LENGTH)), message]);
-    end;
+    strExp := expected;
+    strAct := actual;
   end;
+  for position := 1 to lenCmp do
+  begin
+    if strExp[position] <> strAct[position] then
+      FailSubstring(position);
+  end;
+  if lenExp <> lenAct then
+    FailSubstring(lenCmp + 1);
 end;
 
 class procedure Assert.NoDiff(const expected, actual, message: string);

@@ -92,7 +92,6 @@ resourcestring
   SStrCannotBeEmpty = 'subString cannot be empty';
   SStrDoesNotStartWith = '[%s] does not start with [%s] %s';
   SNumberOfStringsNotEqual = 'Number of strings is not equal';
-  SLengthOfStringsNotEqual = 'Length of strings is not equal';
   SDiffAtPosition = 'Difference at position %d';
   SCheckEmptyExpectation = 'Expectation not achieved [%s] %s';
 
