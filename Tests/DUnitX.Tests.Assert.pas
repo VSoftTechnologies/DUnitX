@@ -148,10 +148,10 @@ type
       #10',' +
       'Difference at position 1: [#13] does not match [#10] Linebreak style,Linebreak style',
       ',', false)]
-    [TestCase('TAB vs CR',
-      'lorem ipsum'#9' ,' +
-      'lorem'#13'ipsum'#13#10',' +
-      'Difference at position 6: ['' ipsum''#9'' ''] does not match [#13''ipsum''#13#10]',
+    [TestCase('TAB vs Space',
+      'lorem'#9'ipsum,' +
+      'lorem ipsum,' +
+      'Difference at position 6: [#9''ipsum''] does not match ['' ipsum'']',
       ',', false)]
     procedure NoDiff_Throws_ETestFailure_When_Strings_Are_NotEqual(const A, B, AException, AMessage : string);
 
@@ -1454,3 +1454,4 @@ initialization
   TDUnitX.RegisterTestFixture(TTestsAssert);
 
 end.
+
