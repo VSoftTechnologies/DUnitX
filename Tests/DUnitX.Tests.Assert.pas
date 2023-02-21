@@ -78,6 +78,10 @@ type
     procedure AreEqual_Double_Throws_ETestFailure_When_Values_Are_NotEqual;
 
     [Test]
+    procedure AreEqual_Currency_Throws_ETestFailure_When_Values_Are_NotEqual;
+
+
+    [Test]
     procedure AreEqual_GUID_Throws_No_Exception_When_Values_Are_Equal;
 
     [Test]
@@ -202,6 +206,10 @@ type
 
     [Test]
     procedure AreNotEqual_Integer_Throws_Exception_When_Values_Are_Equal;
+
+    [Test]
+    procedure AreNotEqual_Currency_Throws_Exception_When_Values_Are_Equal;
+
 
     [Test]
     procedure AreNotEqual_GUID_Throws_No_Exception_When_Values_Are_NotEqual;
@@ -874,6 +882,19 @@ begin
     end, ETestFailure, Format('[%e] with in [%e] from [%e]', [ACTUAL_DOUBLE, TOLERANCE_DOUBLE, EXPECTED_DOUBLE]));
 end;
 
+procedure TTestsAssert.AreEqual_Currency_Throws_ETestFailure_When_Values_Are_NotEqual;
+const
+  ACTUAL_CURRENCY : Currency = 1.34;
+  EXPECTED_CURRENCY : Currency = 1.35;
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.AreEqual(ACTUAL_CURRENCY, EXPECTED_CURRENCY);
+    end, ETestFailure, Format('[%e] not equal to [%e]', [ACTUAL_CURRENCY, EXPECTED_CURRENCY]));
+end;
+
+
 procedure TTestsAssert.AreEqual_Double_Throws_No_Exception_When_Values_Are_Equal;
 const
   ACTUAL_DOUBLE : double = 1.19E20;
@@ -1284,6 +1305,19 @@ begin
     begin
       Assert.CheckExpectation('My expectation');
     end, ETestFailure);
+end;
+
+procedure TTestsAssert.AreNotEqual_Currency_Throws_Exception_When_Values_Are_Equal;
+const
+  expected : currency = 1.34;
+  actual : currency = 1.34;
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.AreNotEqual(expected, actual);
+    end, ETestFailure);
+
 end;
 
 procedure TTestsAssert.AreNotEqual_GUID_Throws_Exception_When_Values_Are_Equal;

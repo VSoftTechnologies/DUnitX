@@ -74,6 +74,7 @@ type
     class procedure AreEqual(const expected, actual : Double; const message : string = '');overload;
     class procedure AreEqual(const expected, actual : Extended; const tolerance : Extended; const message : string = '');overload;
     class procedure AreEqual(const expected, actual : Extended; const message : string = '');overload;
+    class procedure AreEqual(const expected, actual : Currency; const message : string = '');overload;
     class procedure AreEqual(const expected, actual : TClass; const message : string = '');overload;
     class procedure AreEqual(const expected, actual : TStream; const message : string = '');overload;
 {$IFNDEF DELPHI_XE_DOWN}
@@ -101,6 +102,7 @@ type
 
     class procedure AreNotEqual(const expected, actual : Double; const tolerance : double; const message : string = '');overload;
     class procedure AreNotEqual(const expected, actual : Double; const message : string = '');overload;
+    class procedure AreNotEqual(const expected, actual : Currency; const message : string = '');overload;
 
     class procedure AreNotEqual(const expected, actual : TClass; const message : string = '');overload;
 
@@ -507,6 +509,14 @@ begin
   tolerance := 0;
   AreEqual(expected, actual, tolerance, message);
 end;
+
+class procedure Assert.AreEqual(const expected, actual: Currency; const message: string);
+begin
+  DoAssert;
+  if expected <> actual then
+    FailFmt(SEqualsErrorExt ,[expected,actual,message], ReturnAddress);
+end;
+
 
 class procedure Assert.AreEqualMemory(const expected : Pointer; const actual : Pointer; const size : Cardinal; const message : string);
 begin
@@ -1413,6 +1423,14 @@ begin
   DoAssert;
   if IsEqualGUID(expected, actual) then
     FailFmt(SEqualsErrorGUID,[GUIDToString(expected), GUIDToString(actual), message], ReturnAddress);
+end;
+
+class procedure Assert.AreNotEqual(const expected, actual: Currency; const message: string);
+begin
+  DoAssert;
+  if expected = actual then
+    FailFmt(SEqualsErrorExt ,[expected,actual,message], ReturnAddress);
+
 end;
 
 class procedure Assert.AreNotEqual(const expected, actual: TStream; const message: string);
