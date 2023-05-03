@@ -53,9 +53,11 @@ uses
   {$IFDEF USE_NS}
   WinAPI.Windows,
   System.Diagnostics,
+  System.SysUtils,
   {$ELSE}
   Windows,
   Diagnostics,
+  SysUtils,
   {$ENDIF}
   DUnitX.ResStrs,
   DUnitX.TestFramework,
@@ -172,6 +174,7 @@ begin
   //If we haven't been terminated then we have timed out.
   if not Terminated then
     TimeoutThread;
+  CloseHandle(ThreadHandle);
 end;
 
 
