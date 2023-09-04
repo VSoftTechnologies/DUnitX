@@ -165,7 +165,7 @@ type
     [Test]
     procedure AreEqual_TStrings_Throws_ETestFailure_When_Strings_Are_NotEqual;
 
-{$IFNDEF DELPHI_XE_DOWN}
+{$IFDEF DELPHI_XE2_UP}
     [Test]
     procedure AreEqual_T_Throws_No_Exception_When_Interfaces_Are_Equal;
 
@@ -354,6 +354,9 @@ type
 
     [Test]
     procedure CheckExpectation_Not_Empty_String_Will_Raise;
+
+    [Test]
+    procedure Test64BitListIndex;
   end;
 
 implementation
@@ -362,6 +365,7 @@ uses
   {$IFDEF USE_NS}
   System.SysUtils,
   System.Classes,
+  System.Generics.Collections,
   {$ELSE}
   SysUtils,
   Classes,
@@ -1120,7 +1124,7 @@ begin
   end;
 end;
 
-{$IFNDEF DELPHI_XE_DOWN}
+{$IFDEF DELPHI_XE2_UP}
 procedure TTestsAssert.AreEqual_T_Throws_ETestFailure_When_Interfaces_Are_NotEqual;
 var
   mock : IInterface;
@@ -1275,6 +1279,16 @@ begin
     begin
       Assert.AreSame(myObject, myObject as IInterface);
     end, ETestFailure);
+end;
+
+procedure TTestsAssert.Test64BitListIndex;
+var
+  x : Int64;
+begin
+  x := 0;
+  Assert.AreEqual(x, x);
+  Assert.AreEqual(Int64(0), x); //compiler can't find overload with 0
+  Assert.AreEqual(x, Int64(0)); //compiler can't find overload with 0
 end;
 
 procedure TTestsAssert.Test_AreNotSameOnSameObjectWithDifferentInterfaces_Throws_Exception;

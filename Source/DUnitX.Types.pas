@@ -42,7 +42,7 @@ uses
 {$ENDIF}
 
 type
-  {$IFDEF DELPHI_XE_UP}
+  {$IFDEF SUPPORTS_TARRAY}
   TValueArray = TArray<TValue>;
   {$ELSE}
   TValueArray = array of TValue;

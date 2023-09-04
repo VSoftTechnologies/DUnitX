@@ -38,12 +38,10 @@ uses
   TypInfo;
   {$ENDIF}
 
-{.$IFDEF XE2_DOWN}
 type
   TTypeInfoHelper = record helper for TTypeInfo
     function TypeData : PTypeData;
   end;
-{.$ENDIF}
 
 
 implementation

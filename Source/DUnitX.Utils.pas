@@ -725,7 +725,7 @@ type
 {$IFEND}
   end;
 
-{$IFDEF DELPHI_XE7_DOWN }
+{$IFNDEF DELPHI_XE8_UP }
   TFormatSettingsHelper = record helper for TFormatSettings
     class function Invariant: TFormatSettings; static;
   end;
@@ -3446,7 +3446,7 @@ begin
     result[i] := values[i];
 end;
 
-{$IFDEF DELPHI_XE7_DOWN}
+{$IFNDEF DELPHI_XE8_UP}
 
 //copied from System.Sysconst - can't use Sysconst as when compiling with runtime packages
 //it results in 'E2201 Need imported data reference ($G) to access...'

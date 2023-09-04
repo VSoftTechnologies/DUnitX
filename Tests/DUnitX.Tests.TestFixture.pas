@@ -274,7 +274,8 @@ begin
   Assert.WillNotRaise(
     procedure
     begin
-      args := [0];
+      SetLength(args, 1);
+      args[0] := 0;
       TestFixture.AddTestCase(MyMethod.Name, 'My test case', 'My name', 'My category', MyMethod, True, args);
     end);
 

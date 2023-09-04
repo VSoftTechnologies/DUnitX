@@ -155,7 +155,7 @@ begin
   stopwatch.Reset;
   stopwatch.Start;
 
-  {$IFDEF DELPHI_XE100_DOWN} // <- H2077 Value assigned to 'elapsedTime' never used 10.1 Berlin and up
+  {$IFNDEF DELPHI_XE101_UP} // <- H2077 Value assigned to 'elapsedTime' never used 10.1 Berlin and up
   elapsedTime := 0;
   {$ENDIF}
 

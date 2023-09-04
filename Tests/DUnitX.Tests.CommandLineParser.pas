@@ -126,7 +126,7 @@ begin
     sList.Free;
   end;
   Assert.IsFalse(parseResult.HasErrors);
-{$IFNDEF DELPHI_XE_DOWN}
+{$IFDEF DELPHI_XE2_UP}
   Assert.AreEqual<TExampleEnum>(enTwo,test);
 {$ENDIF}
 end;
@@ -226,7 +226,7 @@ begin
     sList.Free;
   end;
   Assert.IsFalse(parseResult.HasErrors);
-{$IFNDEF DELPHI_XE_DOWN}
+{$IFDEF DELPHI_XE2_UP}
   Assert.AreEqual<TExampleSet>(test,[enOne,enThree]);
 {$ENDIF}
 end;

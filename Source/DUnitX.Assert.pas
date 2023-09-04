@@ -77,13 +77,14 @@ type
     class procedure AreEqual(const expected, actual : Currency; const message : string = '');overload;
     class procedure AreEqual(const expected, actual : TClass; const message : string = '');overload;
     class procedure AreEqual(const expected, actual : TStream; const message : string = '');overload;
-{$IFNDEF DELPHI_XE_DOWN}
+{$IFDEF DELPHI_XE2_UP}
     //Delphi 2010 and XE compiler bug breaks this
     class procedure AreEqual<T>(const expected, actual : T; const message : string = '');overload;
     class procedure AreEqual<T>(const expected, actual : TArray<T>; const message : string = '');overload;
 {$ENDIF}
     class procedure AreEqual(const expected, actual : word; const message : string = '');overload;
     class procedure AreEqual(const expected, actual : Integer; const message : string = '');overload;
+    class procedure AreEqual(const expected, actual : Int64; const message : string = '');overload;
     class procedure AreEqual(const expected, actual : cardinal; const message : string = '');overload;
     class procedure AreEqual(const expected, actual : boolean; const message : string = '');overload;
 
@@ -107,11 +108,12 @@ type
     class procedure AreNotEqual(const expected, actual : TClass; const message : string = '');overload;
 
     class procedure AreNotEqual(const expected, actual : TStream; const message : string = '');overload;
-{$IFNDEF DELPHI_XE_DOWN}
+{$IFDEF DELPHI_XE2_UP}
     //Delphi 2010 and XE compiler bug breaks this
     class procedure AreNotEqual<T>(const expected, actual : T; const message : string = '');overload;
 {$ENDIF}
     class procedure AreNotEqual(const expected, actual : Integer; const message : string = '');overload;
+    class procedure AreNotEqual(const expected, actual : Int64; const message : string = '');overload;
     class procedure AreNotEqual(const expected, actual : TGUID; const message : string = '');overload;
     class procedure AreNotEqualMemory(const expected : Pointer; const actual : Pointer; const size : Cardinal; const message : string = '');
 
@@ -285,7 +287,7 @@ type
     class constructor Create;
   end;
 
-{$IFDEF DELPHI_XE_DOWN}
+{$IFNDEF DELPHI_XE2_UP}
   function ReturnAddress: Pointer; assembler;
 {$ENDIF}
 
@@ -320,7 +322,7 @@ uses
   Variants;
   {$ENDIF}
 
-{$IFDEF DELPHI_XE_DOWN}
+{$IFNDEF DELPHI_XE2_UP}
 function IsBadPointer(P: Pointer):Boolean;register;
 begin
   try
@@ -416,7 +418,7 @@ begin
   end;
 end;
 
-{$IFNDEF DELPHI_XE_DOWN}
+{$IFDEF DELPHI_XE2_UP}
     //Delphi 2010 and XE compiler bug breaks this
 class procedure Assert.AreEqual<T>(const expected, actual: T; const message: string);
 var
@@ -473,6 +475,13 @@ begin
     FailFmt(SUnexpectedErrorInt ,[expected, actual, message], ReturnAddress);
 end;
 
+class procedure Assert.AreEqual(const expected, actual: Int64; const message: string);
+begin
+  DoAssert;
+  if expected <> actual then
+    FailFmt(SUnexpectedErrorInt ,[expected, actual, message], ReturnAddress);
+end;
+
 class procedure Assert.AreEqual(const expected, actual: boolean; const message: string);
 begin
   DoAssert;
@@ -486,6 +495,7 @@ begin
   if expected <> actual then
     FailFmt(SUnexpectedErrorInt ,[expected, actual, message], ReturnAddress);
 end;
+
 
 class procedure Assert.AreEqual(const expected, actual, tolerance: Double; const message: string);
 begin
@@ -572,7 +582,7 @@ begin
   end;
 end;
 
-{$IFNDEF DELPHI_XE_DOWN}
+{$IFDEF DELPHI_XE2_UP}
 //Delphi 2010 and XE compiler bug breaks this
 class procedure Assert.AreNotEqual<T>(const expected, actual: T; const message: string);
 var
@@ -597,6 +607,14 @@ begin
   if expected = actual then
     FailFmt(SEqualsErrorInt ,[expected, actual, message], ReturnAddress);
 end;
+
+class procedure Assert.AreNotEqual(const expected, actual: Int64; const message: string);
+begin
+  DoAssert;
+  if expected = actual then
+    FailFmt(SEqualsErrorInt ,[expected, actual, message], ReturnAddress);
+end;
+
 
 class procedure Assert.AreNotEqual(const expected, actual: Extended; const message: string);
 var

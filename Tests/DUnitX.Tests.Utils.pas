@@ -30,7 +30,7 @@ type
   protected
     procedure setFormatSettings(const locale: String);
     procedure revertFormatSettings();
-    {$IFDEF DELPHI_2010_DOWN}
+    {$IFDEF DELPHI_2010}
     function GetLCIDFromLocale(const locale: string): integer;
     {$ENDIF}
   public
@@ -75,6 +75,21 @@ type
     [TestCase('DE local format, short',             'DE,22.6.20 18:36')]
     [TestCase('DE iso8601 format',                  'DE,2020-06-22 18:36:00')]
     procedure TestDateTimeConversion(const locale: String; const text: String);
+
+    [Test]
+    [TestCase('EN-US local format, verbose',        'EN-US,06/22/2020 06:36:00 pm')]
+    [TestCase('EN-US local format short',           'EN-US,6/22/2020 6:36 pm')]
+    [TestCase('EN-US iso 8601 format',              'EN-US,2020-06-22 18:36:00')]
+    [TestCase('EN-US iso 8601 format, verbose',     'EN-US,2020-06-22T18:36:00.000Z')]
+    [TestCase('EN-GB local format, 24 h, verbose',  'EN-GB,22/06/2020 18:36:00')]
+    [TestCase('EN-GB local format, 12 h, verbose',  'EN-GB,22/06/2020 06:36:00 pm')]
+    [TestCase('EN-GB iso8601 format',               'EN-GB,2020-06-22 18:36')]
+    [TestCase('EN-GB iso8601 format, verbose',      'EN-GB,2020-06-22T18:36:00+00')]
+    [TestCase('DE local format, verbose',           'DE,22.06.2020 18:36:00.000')]
+    [TestCase('DE local format, short',             'DE,22.6.20 18:36')]
+    [TestCase('DE iso8601 format',                  'DE,2020-06-22 18:36:00')]
+    procedure TestDateTimeConversion2(const locale: String; const text: String);
+
 
     [Test]
     [TestCase('claRed = xFFFF0000',    'claRed,xFFFF0000')]
@@ -141,7 +156,7 @@ begin
   {$ENDIF}
 end;
 
-{$IFDEF DELPHI_2010_DOWN}
+{$IFDEF DELPHI_2010}
 // I could not find a better way than hardcode them for D2010..
 // Full list: https://docs.microsoft.com/en-us/openspecs/office_standards/ms-oe376/6c085406-a698-4e12-9d4d-c3b0ee3dbc4a
 function TValueHelperTests.GetLCIDFromLocale(const locale: string): integer;
@@ -158,13 +173,13 @@ end;
 {$ENDIF}
 
 procedure TValueHelperTests.setFormatSettings(const locale: String);
-{$If Defined(DELPHI_XE2_DOWN)}
+{$IFNDEF DELPHI_XE3_UP}
 var
 	_lcid: LCID;
-{$IFEND}
+{$ENDIF}
 begin
-	{$If Defined(DELPHI_XE2_DOWN)}
-    {$IFDEF DELPHI_2010_DOWN}
+	{$IFNDEF DELPHI_XE3_UP}
+    {$IFDEF DELPHI_2010}
     _lcid := GetLCIDFromLocale(locale);
     SetThreadLocale(_lcid);
   	GetFormatSettings;
@@ -172,9 +187,9 @@ begin
     _lcid := LocaleNameToLCID(PChar(locale), 0);
   	GetLocaleFormatSettings(_lcid, FormatSettings);
     {$ENDIF}
-	{$Else}
+	{$ELSE}
 	FormatSettings := TFormatSettings.Create(locale);
-	{$IFEND}
+	{$ENDIF}
 end;
 
 procedure TValueHelperTests.TestAlphaColorTestCase(const AColor: TAlphaColor;
@@ -213,6 +228,17 @@ begin
 
 	expected := (expectedDate + expectedTime);
 	actual := asTValue.AsType<TDateTime>();
+	Assert.IsTrue( SameDateTime(expected, actual), 'SameDateTime(..)' );
+end;
+
+procedure TValueHelperTests.TestDateTimeConversion2(const locale, text: String);
+var
+	expected, actual: TDateTime;
+begin
+	setFormatSettings(locale);
+
+	expected := (expectedDate + expectedTime);
+	actual := StrToDateTime(text);
 	Assert.IsTrue( SameDateTime(expected, actual), 'SameDateTime(..)' );
 end;
 

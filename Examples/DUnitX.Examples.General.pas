@@ -171,10 +171,10 @@ uses
   {$ELSE}
   SysUtils,
   Classes,
-    {$IFDEF DELPHI_2010_DOWN}
-    //D2010 doesn't have TThread.Sleep
-    Windows,
-    {$ENDIF}
+  {$IFDEF DELPHI_2010}
+  //D2010 doesn't have TThread.Sleep
+  Windows,
+  {$ENDIF}
   {$ENDIF}
   DUnitX.DUnitCompatibility;
 
@@ -357,11 +357,9 @@ initialization
 //manual registration for now.
 
 //Register the test fixtures
-//{$IFNDEF DELPHI_XE_UP}
   TDUnitX.RegisterTestFixture(TMyExampleTests);
   TDUnitX.RegisterTestFixture(TExampleFixture2);
   TDUnitX.RegisterTestFixture(TExampleFixture3);
   TDUnitX.RegisterTestFixture(TExampleFixture5);
   TDUnitX.RegisterTestFixture(TExampleFixture7);
-//{$ENDIF}
 end.

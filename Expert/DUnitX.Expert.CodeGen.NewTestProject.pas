@@ -37,7 +37,7 @@ uses
 type
   TReportLeakOptions = (rloNone, rloFastMM4, rloFastMM5);
 
-  TTestProjectFile = class({$IFNDEF DELPHIX_SEATTLE_UP}TNewProject{$ELSE}TNewProjectEx{$ENDIF})
+  TTestProjectFile = class({$IFNDEF DELPHI_SEATTLE_UP}TNewProject{$ELSE}TNewProjectEx{$ENDIF})
   private
     FReportLeakOptions: TReportLeakOptions;
   protected
@@ -74,18 +74,18 @@ end;
 constructor TTestProjectFile.Create(const APersonality: String; const ReportLeakOptions: TReportLeakOptions);
 begin
   Create(ReportLeakOptions);
-  {$IFDEF DELPHIX_SEATTLE_UP}
+  {$IFDEF DELPHI_SEATTLE_UP}
   Personality := APersonality;
   {$ENDIF}
 end;
 
 function TTestProjectFile.NewProjectSource(const ProjectName: string): IOTAFile;
-{$IFDEF DELPHIX_SEATTLE_UP}
+{$IFDEF DELPHI_SEATTLE_UP}
 var
   TestProjectCode: string;
 {$ENDIF}
 begin
-  {$IFNDEF DELPHIX_SEATTLE_UP}
+  {$IFNDEF DELPHI_SEATTLE_UP}
   result := TSourceFile.Create(STestDPR,[ProjectName, REPORT_LEAK_DECLARATION[FReportLeakOptions]]);
   {$ELSE}
   if Personality.isEmpty or SameText(Personality, sDelphiPersonality) then

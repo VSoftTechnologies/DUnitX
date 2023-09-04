@@ -74,6 +74,8 @@ begin
       System.ExitCode := EXIT_ERRORS;
 
     {$IFNDEF CI}
+    TDUnitX.Options.ExitBehavior := TDUnitXExitBehavior.Pause;
+
     //We don't want this happening when running under CI.
     if TDUnitX.Options.ExitBehavior = TDUnitXExitBehavior.Pause then
     begin
