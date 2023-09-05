@@ -29,7 +29,7 @@
    {$IF CompilerVersion < 21.0} // Before RAD Studio 2010
       {$DEFINE UNSUPPORTED_COMPILER_VERSION}
    {$IFEND}
-  {$IF CompilerVersion > 23.0 } //XE3 or later
+  {$IF CompilerVersion > 24.0 } //XE4 or later
     {$LEGACYIFEND ON}
   {$IFEND}
 {$ELSE}
