@@ -2,14 +2,15 @@
   "specVersion" : "1",
   "metadata": {
     "id": "VSoft.DUnitX",
-    "version": "0.3.1",
+    "version": "0.3.2",
     "description": "Delphi Unit Testing Framework.",
     "authors": "Vincent Parrett",
     "projectUrl": "https://github.com/VSoftTechnologies/DUnitX",
     "icon" : "Images\\logo.svg",
     "license": "Apache-2.0",
     "copyright": "Vincent Parrett and contributors",
-    "tags": "unit testing dunitx dunit"
+    "tags": "unit testing dunitx dunit",
+	"readme" :"README.md"
   },
   "targetPlatforms": [
     {
