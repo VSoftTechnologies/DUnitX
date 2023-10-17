@@ -2270,8 +2270,6 @@ end;
 function TRttiTypeHelper.GetAttributesOfType<T>: TArray<T>;
 var
   LAttribute: TCustomAttribute;
-  LAttributes: TArray<T>;
-  i: Integer;
 begin
   SetLength(Result, 0);
   for LAttribute in GetAttributes do
