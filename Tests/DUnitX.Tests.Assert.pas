@@ -110,52 +110,62 @@ type
     [TestCase('Length',
       '  '#8',' +
       ' ,' +
-      'Difference at position 2: ['' ''#8] does not match []',
+      'Difference at position 2: [''  ''#8] does not match ['' '']',
       ',', false)]
     [TestCase('First Char',
-      'Lorem ipsum,' +
       'lorem ipsum,' +
-      'Difference at position 1: [''Lorem ipsu''] does not match [''lorem ipsu'']',
+      '1orem ipsum,' +
+      'Difference at position 1: [''lorem ''] does not match [''1orem '']',
       ',', false)]
     [TestCase('Last Char',
       'Lorem ipsum,' +
-      'Lorem ipsuM,' +
-      'Difference at position 11: [''m''] does not match [''M'']',
+      'Lorem ipsuw,' +
+      'Difference at position 11: ['' ipsum''] does not match ['' ipsuw'']',
+      ',', false)]
+    [TestCase('Leading Space',
+      ' Lorem ipsum,' +
+      'Lorem ipsum ,' +
+      'Difference at position 1: ['' Lorem''] does not match [''Lorem '']',
+      ',', false)]
+    [TestCase('Trailing Space',
+      'Lorem ipsum,' +
+      'Lorem ipsum ,' +
+      'Difference at position 12: [''ipsum''] does not match [''ipsum '']',
       ',', false)]
     [TestCase('A sub B',
       'Lorem ip,' +
       'Lorem ipsum,' +
-      'Difference at position 9: [] does not match [''sum'']',
+      'Difference at position 9: [''em ip''] does not match [''em ipsum'']',
       ',', false)]
     [TestCase('B sub A',
       'Lorem ipsum,' +
       'Lorem ip,' +
-      'Difference at position 9: [''sum''] does not match []',
-      ',', false)]
-    [TestCase('Tab vs Space',
-      'lorem ipsum,' +
-      'lorem'#9'ipsum,' +
-      'Difference at position 6: ['' ipsum''] does not match [#9''ipsum'']',
+      'Difference at position 9: [''em ipsum''] does not match [''em ip'']',
       ',', false)]
     [TestCase('Different Spaces',
       'lorem ipsum,' +
       'lorem  ipsum,' +
-      'Difference at position 7: [''ipsum''] does not match ['' ipsum'']',
+      'Difference at position 7: [''orem ipsum''] does not match [''orem  ipsu'']',
       ',', false)]
     [TestCase('Capitalization',
       'lorem ipsum,'+
       'lorem Ipsum,' +
-      'Difference at position 7: [''ipsum''] does not match [''Ipsum'']',
+      'Difference at position 7: [''orem ipsum''] does not match [''orem Ipsum'']',
       ',', false)]
     [TestCase('CR vs LF',
       #13',' +
       #10',' +
       'Difference at position 1: [#13] does not match [#10] Linebreak style,Linebreak style',
       ',', false)]
+    [TestCase('Space vs TAB',
+      'lorem ipsum,' +
+      'lorem'#9'ipsum,' +
+      'Difference at position 6: [''lorem ipsu''] does not match [''lorem''#9''ipsu'']',
+      ',', false)]
     [TestCase('TAB vs Space',
       'lorem'#9'ipsum,' +
       'lorem ipsum,' +
-      'Difference at position 6: [#9''ipsum''] does not match ['' ipsum'']',
+      'Difference at position 6: [''lorem''#9''ipsu''] does not match [''lorem ipsu'']',
       ',', false)]
     procedure NoDiff_Throws_ETestFailure_When_Strings_Are_NotEqual(const A, B, AException, AMessage : string);
 

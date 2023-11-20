@@ -1002,11 +1002,23 @@ class procedure Assert.NoDiff(const expected, actual: string; const ignoreCase :
 
   procedure FailSubstring(position: integer);
   const
-    DIFF_LENGTH = 10;
+    HALF_LENGTH = 5;
+    DIFF_LENGTH = 2 * HALF_LENGTH;
+  var
+    startCopy, copyLen:integer;
   begin
+    startCopy := position - HALF_LENGTH;
+    if startCopy < 0 then
+    begin
+      copyLen := DIFF_LENGTH + startCopy;
+      startCopy := 0;
+    end
+    else
+      copyLen := DIFF_LENGTH;
+
     FailFmt(SDiffAtPosition + ': ' + SStrDoesNotMatch, [position,
-      TStrUtils.EncodeWhitespace(Copy(expected, position, DIFF_LENGTH)),
-      TStrUtils.EncodeWhitespace(Copy(actual, position, DIFF_LENGTH)), message]);
+      TStrUtils.EncodeWhitespace(Copy(expected, startCopy, copyLen)),
+      TStrUtils.EncodeWhitespace(Copy(actual, startCopy, copyLen)), message]);
   end;
 
 var
