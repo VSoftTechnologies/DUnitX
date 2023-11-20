@@ -18,7 +18,7 @@ type
 implementation
 
 uses
-  {$IFDEF DELPHI_2010_DOWN}
+  {$IFDEF DELPHI_2010}
   //D2010 doesn't have TThread.Sleep
   Windows,
   {$ENDIF}
@@ -29,7 +29,7 @@ uses
 
 procedure TSingleNamespaceTest.ATest;
 begin
-  {$IFDEF DELPHI_2010_DOWN}
+  {$IFDEF DELPHI_2010}
     Windows.Sleep(50);// just so we can test duration output.
   {$ELSE}
     TThread.Sleep(50);

@@ -124,7 +124,7 @@ resourcestring
   SRunningSetup = 'Running Setup for : ';
   STest = 'Test : ';
   SFixture = 'Fixture : ';
-  SSuccess = 'Success.';
+  SSuccess = 'Success';
   SRunningFixtureTeardown = 'Running Fixture Teardown Method : ';
   SRunningTestTeardown = 'Running Teardown for Test : ';
   SDoneTesting = 'Done testing.';
@@ -152,6 +152,7 @@ resourcestring
   SSetupTeardownBytesLeaked = '%d bytes were leaked in the setup/teardown methods';
   STestBytesLeaked = '%d bytes were leaked in the test method';
   SSetupTestTeardownBytesLeaked = '%d bytes were leaked in the setup/test/teardown methods';
+  STestPassed = 'Test Passed : ';
   STestFailed = 'Test Failed : ';
   STestError = 'Test Error : ';
   STestIgnored = 'Test Ignored : ';

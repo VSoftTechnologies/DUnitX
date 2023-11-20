@@ -78,6 +78,10 @@ type
     procedure AreEqual_Double_Throws_ETestFailure_When_Values_Are_NotEqual;
 
     [Test]
+    procedure AreEqual_Currency_Throws_ETestFailure_When_Values_Are_NotEqual;
+
+
+    [Test]
     procedure AreEqual_GUID_Throws_No_Exception_When_Values_Are_Equal;
 
     [Test]
@@ -161,7 +165,7 @@ type
     [Test]
     procedure AreEqual_TStrings_Throws_ETestFailure_When_Strings_Are_NotEqual;
 
-{$IFNDEF DELPHI_XE_DOWN}
+{$IFDEF DELPHI_XE2_UP}
     [Test]
     procedure AreEqual_T_Throws_No_Exception_When_Interfaces_Are_Equal;
 
@@ -202,6 +206,10 @@ type
 
     [Test]
     procedure AreNotEqual_Integer_Throws_Exception_When_Values_Are_Equal;
+
+    [Test]
+    procedure AreNotEqual_Currency_Throws_Exception_When_Values_Are_Equal;
+
 
     [Test]
     procedure AreNotEqual_GUID_Throws_No_Exception_When_Values_Are_NotEqual;
@@ -346,6 +354,9 @@ type
 
     [Test]
     procedure CheckExpectation_Not_Empty_String_Will_Raise;
+
+    [Test]
+    procedure Test64BitListIndex;
   end;
 
 implementation
@@ -354,6 +365,7 @@ uses
   {$IFDEF USE_NS}
   System.SysUtils,
   System.Classes,
+  System.Generics.Collections,
   {$ELSE}
   SysUtils,
   Classes,
@@ -874,6 +886,19 @@ begin
     end, ETestFailure, Format('[%e] with in [%e] from [%e]', [ACTUAL_DOUBLE, TOLERANCE_DOUBLE, EXPECTED_DOUBLE]));
 end;
 
+procedure TTestsAssert.AreEqual_Currency_Throws_ETestFailure_When_Values_Are_NotEqual;
+const
+  ACTUAL_CURRENCY : Currency = 1.34;
+  EXPECTED_CURRENCY : Currency = 1.35;
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.AreEqual(ACTUAL_CURRENCY, EXPECTED_CURRENCY);
+    end, ETestFailure, Format('[%e] not equal to [%e]', [ACTUAL_CURRENCY, EXPECTED_CURRENCY]));
+end;
+
+
 procedure TTestsAssert.AreEqual_Double_Throws_No_Exception_When_Values_Are_Equal;
 const
   ACTUAL_DOUBLE : double = 1.19E20;
@@ -1099,7 +1124,7 @@ begin
   end;
 end;
 
-{$IFNDEF DELPHI_XE_DOWN}
+{$IFDEF DELPHI_XE2_UP}
 procedure TTestsAssert.AreEqual_T_Throws_ETestFailure_When_Interfaces_Are_NotEqual;
 var
   mock : IInterface;
@@ -1256,6 +1281,16 @@ begin
     end, ETestFailure);
 end;
 
+procedure TTestsAssert.Test64BitListIndex;
+var
+  x : Int64;
+begin
+  x := 0;
+  Assert.AreEqual(x, x);
+  Assert.AreEqual(Int64(0), x); //compiler can't find overload with 0
+  Assert.AreEqual(x, Int64(0)); //compiler can't find overload with 0
+end;
+
 procedure TTestsAssert.Test_AreNotSameOnSameObjectWithDifferentInterfaces_Throws_Exception;
 var
   myObject  : IInterfaceList;
@@ -1284,6 +1319,19 @@ begin
     begin
       Assert.CheckExpectation('My expectation');
     end, ETestFailure);
+end;
+
+procedure TTestsAssert.AreNotEqual_Currency_Throws_Exception_When_Values_Are_Equal;
+const
+  expected : currency = 1.34;
+  actual : currency = 1.34;
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.AreNotEqual(expected, actual);
+    end, ETestFailure);
+
 end;
 
 procedure TTestsAssert.AreNotEqual_GUID_Throws_Exception_When_Values_Are_Equal;

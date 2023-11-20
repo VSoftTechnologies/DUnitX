@@ -90,6 +90,10 @@ type
     [Category('Bar,foo')]
     procedure TestTwoOne;
 
+    [Test]
+    [MaxTime(1000)]
+    procedure TestMaxTime;
+
     //Disabled test
     [Test(false)]
     procedure DontCallMe;
@@ -164,9 +168,12 @@ implementation
 
 uses
   DUnitX.DUnitCompatibility,
+  DUnitX.Exceptions,
+  System.Diagnostics,
   {$IFDEF USE_NS}
   System.DateUtils;
   {$ELSE}
+  Diagnostics,
   DateUtils;
   {$ENDIF}
 
@@ -238,6 +245,31 @@ begin
   dateTime := RecodeMilliSecond(dateTime, 000);
   expected := EncodeDateTime(1988, 10, 21, 17, 44, 23, 000);
   Assert.IsTrue( SameDateTime(expected, dateTime) );
+end;
+
+procedure TMyExampleTests.TestMaxTime;
+var
+  elapsedTime : Int64;
+  stopwatch : TStopWatch;
+begin
+  stopwatch := TStopWatch.Create;
+  stopwatch.Reset;
+  stopwatch.Start;
+  try
+    repeat
+      //Give some time back to the system to process the test.
+      Sleep(20);
+
+      elapsedTime :=  stopwatch.ElapsedMilliseconds;
+    until (elapsedTime >= 2000);
+    Assert.Fail('Timeout did not work');
+  except
+    on e : ETimedOut do
+    begin
+      Assert.Pass('timed out as expected');
+
+    end;
+  end;
 end;
 
 procedure TMyExampleTests.TestMeAnyway;

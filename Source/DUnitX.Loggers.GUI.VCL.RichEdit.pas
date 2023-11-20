@@ -356,10 +356,16 @@ begin
 end;
 
 procedure TDUnitXGUIVCLRichEditLogger.OnTestSuccess(const threadId: TThreadID; const Test: ITestResult);
+var
+  sMessage : string;
 begin
   Indent(2);
   SetConsolePassColor;
-  Write(SSuccess);
+  if Test.Message <> '' then
+    sMessage := SSuccess + ' : ' + Test.Message
+  else
+    sMessage := SSuccess + '.';
+  Write(sMessage);
   SetConsoleDefaultColor;
   Outdent(2);
 end;

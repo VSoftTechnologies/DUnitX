@@ -271,6 +271,8 @@ end;
 
 
 procedure TDUnitXConsoleLogger.OnTestSuccess(const threadId: TThreadID; const Test: ITestResult);
+var
+  sMessage : string;
 begin
   if FQuietMode then
   begin
@@ -279,7 +281,11 @@ begin
   end;
   FConsoleWriter.Indent(2);
   SetConsolePassColor;
-  FConsoleWriter.WriteLn(SSuccess);
+  if Test.Message <> '' then
+    sMessage := SSuccess + ' : ' + Test.Message
+  else
+    sMessage := SSuccess + '.';
+  FConsoleWriter.WriteLn(sMessage);
   SetConsoleDefaultColor;
   FConsoleWriter.Outdent(2);
 end;
