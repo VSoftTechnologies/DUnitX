@@ -37,7 +37,12 @@ uses
   {$ELSE}
   Graphics,
   {$ENDIF}
-  PlatformAPI;
+  {$IFDEF DELPHI_XE103_UP}
+  PlatformConst
+  {$ELSE}
+  PlatformAPI
+  {$ENDIF}
+  ;
 
 type
   TDUnitXNewProjectWizard = class
@@ -94,7 +99,7 @@ begin
           end;
           ModuleServices := (BorlandIDEServices as IOTAModuleServices);
           // Create Project Source
-          ModuleServices.CreateModule(TTestProjectFile.Create(APersonality));
+          ModuleServices.CreateModule(TTestProjectFile.Create(APersonality, WizardForm.ReportLeakOption));
           Project :=  GetActiveProject;
           Config := (Project.ProjectOptions as IOTAProjectOptionsConfigurations).BaseConfiguration;
           Config.SetValue(sUnitSearchPath,'$(DUnitX)');
@@ -118,7 +123,11 @@ begin
     begin
       Result := LoadIcon(HInstance,'DUnitXNewProjectIcon');
     end,
+    {$IFDEF DELPHI_XE103_UP}
+    GetAllPlatforms,
+    {$ELSE}
     TArray<string>.Create(cWin32Platform, cWin64Platform, cOSX32Platform, cAndroidPlatform, ciOSSimulatorPlatform, ciOSDevice32Platform, ciOSDevice64Platform),
+    {$ENDIF}
     nil));
 end;
 

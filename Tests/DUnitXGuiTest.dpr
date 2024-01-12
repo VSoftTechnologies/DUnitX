@@ -13,7 +13,6 @@ uses
   DUnitX.Generics in '..\DUnitX.Generics.pas',
   DUnitX.Utils in '..\DUnitX.Utils.pas',
   DUnitX.WeakReference in '..\DUnitX.WeakReference.pas',
-  DUnitX.CommandLine in '..\DUnitX.CommandLine.pas',
   DUnitX.Test in '..\DUnitX.Test.pas',
   DUnitX.TestFixture in '..\DUnitX.TestFixture.pas',
   DUnitX.TestResult in '..\DUnitX.TestResult.pas',
@@ -37,7 +36,8 @@ uses
   DUnitX.Tests.Utils.XML in 'DUnitX.Tests.Utils.XML.pas',
   DUnitX.Tests.WeakReference in 'DUnitX.Tests.WeakReference.pas',
   DUnitX.RunResults in '..\DUnitX.RunResults.pas',
-  DUnitX.Tests.ConsoleWriter.Base in 'DUnitX.Tests.ConsoleWriter.Base.pas';
+  DUnitX.Tests.ConsoleWriter.Base in 'DUnitX.Tests.ConsoleWriter.Base.pas',
+  DUnitX.Tests.Utils in 'DUnitX.Tests.Utils.pas';
 
 begin
   Application.Initialize;

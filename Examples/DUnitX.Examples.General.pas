@@ -39,7 +39,7 @@ uses
 
 type
   {$M+}
-  [TestFixture('ExampleFixture1','General Example Tests')]
+  [TestFixture('Examples.Fixture1','General Example Tests')]
   TMyExampleTests = class
   public
     //Run the same test with mulitiple parameters.
@@ -71,6 +71,9 @@ type
     procedure TestError;
 
     [Test]
+    {$IFDEF DELPHI_2010}
+    [Ignore('MaxTime does not work in D2010')]
+    {$ENDIF}
     [MaxTime(2000)]
     procedure TooLong;
 
@@ -125,6 +128,7 @@ type
     procedure ATest;
   end;
 
+  {$M+}
   TExampleFixture4 = class
   protected
     FObject: TObject;
@@ -143,6 +147,21 @@ type
     procedure Testing;
   end;
 
+  TExampleFixture6 = class
+  protected
+    FObject: TObject;
+  public
+    constructor Create;
+    destructor Destroy;override;
+  end;
+
+  TExampleFixture7 = class(TExampleFixture6)
+  public
+    [Test]
+    procedure Testing;
+  end;
+
+
 implementation
 
 uses
@@ -152,10 +171,10 @@ uses
   {$ELSE}
   SysUtils,
   Classes,
-    {$IFDEF DELPHI_2010_DOWN}
-    //D2010 doesn't have TThread.Sleep
-    Windows,
-    {$ENDIF}
+  {$IFDEF DELPHI_2010}
+  //D2010 doesn't have TThread.Sleep
+  Windows,
+  {$ENDIF}
   {$ENDIF}
   DUnitX.DUnitCompatibility;
 
@@ -303,6 +322,26 @@ begin
   Assert.IsNotNull(FObject, 'Problem with inheritance');
 end;
 
+{ TExampleFixture6 }
+
+constructor TExampleFixture6.Create;
+begin
+  FObject := TObject.Create;
+end;
+
+destructor TExampleFixture6.Destroy;
+begin
+  FObject.Free;
+  inherited;
+end;
+
+{ TExampleFixture7 }
+
+procedure TExampleFixture7.Testing;
+begin
+  Assert.IsNotNull(FObject, 'Problem with inheritance');
+end;
+
 initialization
 //I was hoping to use RTTI to discover the TestFixture classes, however unlike .NET
 //if we don't touch the class somehow then the linker will remove
@@ -318,10 +357,9 @@ initialization
 //manual registration for now.
 
 //Register the test fixtures
-//{$IFNDEF DELPHI_XE_UP}
   TDUnitX.RegisterTestFixture(TMyExampleTests);
   TDUnitX.RegisterTestFixture(TExampleFixture2);
   TDUnitX.RegisterTestFixture(TExampleFixture3);
   TDUnitX.RegisterTestFixture(TExampleFixture5);
-//{$ENDIF}
+  TDUnitX.RegisterTestFixture(TExampleFixture7);
 end.

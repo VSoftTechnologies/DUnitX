@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<codetemplate xmlns="http://schemas.borland.com/Delphi/2005/codetemplates" version="1.0.0">
+    <template name="dxus" invoke="auto">
+        <description>Expand to uses with DUnitX.TestFramework included</description>
+        <author>DUnitX Group</author>
+        <code language="Delphi" delimiter="|">
+            <![CDATA[uses
+  DUnitX.TestFramework;|end|]]>
+        </code>
+    </template>
+</codetemplate>

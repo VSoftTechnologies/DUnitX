@@ -2,6 +2,8 @@ unit DUnitX.SingleNameSpace;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
   DUnitX.TestFramework,
   DUnitX.WeakReference;
@@ -16,6 +18,10 @@ type
 implementation
 
 uses
+  {$IFDEF DELPHI_2010}
+  //D2010 doesn't have TThread.Sleep
+  Windows,
+  {$ENDIF}
   classes;
 
 
@@ -23,7 +29,12 @@ uses
 
 procedure TSingleNamespaceTest.ATest;
 begin
-  TThread.Sleep(50);// just so we can test duration output.
+  {$IFDEF DELPHI_2010}
+    Windows.Sleep(50);// just so we can test duration output.
+  {$ELSE}
+    TThread.Sleep(50);
+  {$ENDIF}
+
   Assert.IsTrue(true);
 end;
 

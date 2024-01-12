@@ -302,6 +302,7 @@ end;
 
 constructor TDUnitXConsoleWriterTester.Create;
 begin
+  inherited Create;
   FWrittenLine := TStringList.Create;
   FLastLine := '';
 end;

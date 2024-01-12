@@ -48,6 +48,7 @@ type
     procedure TearDown; override;
   published
     procedure ATest;
+    procedure Test_TestName;
   end;
 
 
@@ -82,6 +83,12 @@ procedure TMyDUnitTestSetup.TearDown;
 begin
   FObject.Free;
   inherited;
+end;
+
+procedure TMyDUnitTestSetup.Test_TestName;
+begin
+  Status('The Test Name is : ' + Self.Name);
+  CheckEqualsString('Test_TestName', Self.Name,'Test Name not working');
 end;
 
 initialization

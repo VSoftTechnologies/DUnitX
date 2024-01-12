@@ -45,7 +45,7 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
-        <DCC_UnitSearchPath>..\;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\Source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <SanitizedProjectName>DUnitX_IDE_Expert_XE7</SanitizedProjectName>
         <DCC_Description>DUnitX - IDE Expert</DCC_Description>
         <VerInfo_Locale>1033</VerInfo_Locale>

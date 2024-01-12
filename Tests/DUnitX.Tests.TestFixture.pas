@@ -118,16 +118,34 @@ type
   end;
   {$M-}
 
+  TTestCaseAttribute = class
+  public
+    procedure ProcedureWithUntypedParameter(const Param1);
+  end;
+
+  {$M+}
+  [TestFixture]
+  TDUnitXTestFixtureTests = class
+  public
+    [Test]
+    procedure WhenATestCaseHasAUntypedParameterCantRaiseAnyError;
+  end;
+  {$M-}
+
 implementation
 
 uses
   {$IFDEF USE_NS}
   System.Math,
-  System.SysUtils;
+  System.SysUtils,
+  System.Rtti,
   {$ELSE}
   Math,
-  SysUtils;
+  SysUtils,
+  Rtti,
   {$ENDIF}
+  DUnitX.Types,
+  DUnitX.Extensibility;
 
 var
   _TimesRun: Integer;
@@ -238,11 +256,47 @@ begin
   Assert.Pass;  // the test should NOT time out before this point
 end;
 
+{ TDUnitXTestFixtureTests }
+
+procedure TDUnitXTestFixtureTests.WhenATestCaseHasAUntypedParameterCantRaiseAnyError;
+var
+  Context : TRttiContext;
+  MyClass : TRttiType;
+  MyMethod : TRttiMethod;
+  TestFixture : ITestFixture;
+  args : TValueArray;
+begin
+  Context := TRttiContext.Create;
+  MyClass := Context.GetType(TTestCaseAttribute);
+  MyMethod := MyClass.GetMethod('ProcedureWithUntypedParameter');
+  TestFixture := TDUnitXTestFixture.Create(MyClass.Name, EmptyStr, TTestCaseAttribute, MyClass.UnitName) as ITestFixture;
+
+  Assert.WillNotRaise(
+    procedure
+    begin
+      SetLength(args, 1);
+      args[0] := 0;
+      TestFixture.AddTestCase(MyMethod.Name, 'My test case', 'My name', 'My category', MyMethod, True, args);
+    end);
+
+  TestFixture := nil;
+
+  Context.Free;
+end;
+
+{ TTestCaseAttribute }
+
+procedure TTestCaseAttribute.ProcedureWithUntypedParameter(const Param1);
+begin
+  Assert.IsTrue(True);
+end;
 
 initialization
   TDUnitX.RegisterTestFixture(TTestClassWithNonPublicSetup);
   TDUnitX.RegisterTestFixture(TTestClassWithTestSource);
   TDUnitX.RegisterTestFixture(TTestRepeatAttribute);
   TDUnitX.RegisterTestFixture(TTestMaxTimeAttribute);
+  TDUnitX.RegisterTestFixture(TDUnitXTestFixtureTests);
 
 end.
+

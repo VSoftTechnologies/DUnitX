@@ -50,7 +50,7 @@ type
     procedure OnTestingStarts_Fills_The_Start_Of_The_Stream_With_Header_Info;
   //  [Test(false)]
 //    procedure OnTestingEnds_Fills_The_End_Of_The_Stream_With_Testing_Result_Info;
-{$IFNDEF DELPHI_XE_DOWN}
+{$IFDEF DELPHI_XE2_UP}
     [Test(false)]
     procedure OnTestWarning_Adds_Warnings_To_Be_Written_Out_On_Next_Error;
     procedure OnTestWarning_Adds_Warnings_To_Be_Written_Out_On_Next_Success;
@@ -71,7 +71,7 @@ uses
   TimeSpan,
   DateUtils,
   {$ENDIF}
-{$IFNDEF DELPHI_XE_DOWN}
+{$IFDEF DELPHI_XE2_UP}
   Delphi.Mocks,
 {$ENDIF}
   DUnitX.Generics,
@@ -189,7 +189,7 @@ begin
   Assert.AreEqual(sAppName, sExpectedAppName);
 end;
 
-{$IFNDEF DELPHI_XE_DOWN}
+{$IFDEF DELPHI_XE2_UP}
 procedure TDUnitX_LoggerXMLNUnitTests.OnTestWarning_Adds_Warnings_To_Be_Written_Out_On_Next_Error;
 var
   logger : ITestLogger;

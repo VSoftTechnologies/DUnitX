@@ -9,22 +9,21 @@ type
   [TestFixture]
   TTestNameParserTests = class
   public
-
-    [TestCase('SingleName','Test.Namespace.Fixture.Method')]
-    [TestCase('SingleName','Test.Namespace.Fixture.Method,')]
-    [TestCase('SingleName','  Test.Namespace.Fixture.Method  ')]
-    [TestCase('SingleName','  Test.Namespace.Fixture.Method  ,')]
-    [TestCase('SingleName','Test.Namespace.Fixture.Method()')]
-    [TestCase('SingleName','Test.Namespace.Fixture.Method(''string,argument'')')]
-    [TestCase('SingleName','Test.Namespace.Fixture.Method(1,2,3)')]
-    [TestCase('SingleName','Test.Namespace.Fixture.Method<int,int>()')]
-    [TestCase('SingleName','Test.Namespace.Fixture.Method(")")')]
+    [TestCase('SingleName1','Test.Namespace.Fixture.Method')]
+    [TestCase('SingleName2','Test.Namespace.Fixture.Method,')]
+    [TestCase('SingleName3','  Test.Namespace.Fixture.Method  ')]
+    [TestCase('SingleName4','  Test.Namespace.Fixture.Method  ,')]
+    [TestCase('SingleName5','Test.Namespace.Fixture.Method()')]
+    [TestCase('SingleName6','Test.Namespace.Fixture.Method(''string,argument'')')]
+    [TestCase('SingleName7','Test.Namespace.Fixture.Method(1,2,3)')]
+    [TestCase('SingleName8','Test.Namespace.Fixture.Method<int,int>()')]
+    [TestCase('SingleName9','Test.Namespace.Fixture.Method(")")')]
     procedure SingleName(const name : string);
 
-    [TestCase('TwoNames','Test.Namespace.Fixture.Method1|Test.Namespace.Fixture.Method2','|')]
-    [TestCase('TwoNames','Test.Namespace.Fixture.Method1|Test.Namespace.Fixture.Method2,','|')]
-    [TestCase('TwoNames','Test.Namespace.Fixture.Method1(1,2)|Test.Namespace.Fixture.Method2(3,4)','|')]
-    [TestCase('TwoNames','Test.Namespace.Fixture.Method1("(")|Test.Namespace.Fixture.Method2("<")','|')]
+    [TestCase('TwoNames1','Test.Namespace.Fixture.Method1|Test.Namespace.Fixture.Method2','|')]
+    [TestCase('TwoNames2','Test.Namespace.Fixture.Method1|Test.Namespace.Fixture.Method2,','|')]
+    [TestCase('TwoNames3','Test.Namespace.Fixture.Method1(1,2)|Test.Namespace.Fixture.Method2(3,4)','|')]
+    [TestCase('TwoNames4','Test.Namespace.Fixture.Method1("(")|Test.Namespace.Fixture.Method2("<")','|')]
     procedure TwoNames(const name1 : string;const name2 : string);
   end;
 
@@ -58,5 +57,8 @@ begin
   Assert.AreEqual(Trim(name1), names[0]);
   Assert.AreEqual(Trim(name2), names[1]);
 end;
+
+initialization
+  TDUnitX.RegisterTestFixture(TTestNameParserTests);
 
 end.
