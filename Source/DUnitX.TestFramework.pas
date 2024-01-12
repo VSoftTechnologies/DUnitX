@@ -730,7 +730,7 @@ begin
     //if it's a console tell the user what they did wrong
     if IsConsole then
     begin
-      //we may have sucessfully parsed this option so we should respect it.
+      //we may have successfully parsed this option so we should respect it.
       if not FOptions.HideBanner then
         DUnitX.Banner.ShowBanner;
 
