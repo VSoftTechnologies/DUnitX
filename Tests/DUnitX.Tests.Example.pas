@@ -92,7 +92,7 @@ type
     [TestCase('Set [teThree]', '[teThree]|4', '|')]
     [TestCase('Set [teOne,teTwo]', '[teOne,teTwo]|3', '|')]
     [TestCase('Set [teOne,teThree]', '[teOne,teThree]|5', '|')]
-    [TestCase('Set [teTwoteOne,teTwo,teThree]', '[teOne,teTwo,teThree]|7', '|')]
+    [TestCase('Set [teOne,teTwo,teThree]', '[teOne,teTwo,teThree]|7', '|')]
     [TestCase('Set [teThree,teTwo,teOne]', '[teThree,teTwo,teOne]|7', '|')]
     procedure TestSetArgument(aset: TTestEnums; ExpectedAsInteger: UInt8);
 
