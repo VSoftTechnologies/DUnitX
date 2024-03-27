@@ -1214,7 +1214,10 @@ end;
 
 function ConvStr2Ord(const ASource: TValue; ATarget: PTypeInfo; out AResult: TValue): Boolean;
 begin
-  AResult := TValue.FromOrdinal(ATarget, StrToInt64Def(ASource.AsString, 0));
+  if ATarget = System.TypeInfo(UInt64) then
+    AResult := TValue.FromOrdinal(ATarget, StrToUInt64Def(ASource.AsString, 0))
+  else
+    AResult := TValue.FromOrdinal(ATarget, StrToInt64Def(ASource.AsString, 0));
   Result := True;
 end;
 

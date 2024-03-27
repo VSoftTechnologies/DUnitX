@@ -65,6 +65,9 @@ type
     [TestCase('Case 3','5,6')]
     procedure TestOne(param1 : integer; param2 : integer);
 
+    [TestCase('UInt64 18446744073709551615', '18446744073709551615')]
+    procedure TestUint64Argument(Value: UInt64);
+
     [TestCase('Case 3','Blah,1')]
     procedure AnotherTestMethod(const a : string; const b : integer);
 
@@ -335,6 +338,11 @@ begin
   TDUnitX.CurrentRunner.Status('hello world');
   Assert.IsTrue(x is TObject); /// a bit pointless since it's strongly typed.
   x.Free;
+end;
+
+procedure TMyExampleTests.TestUint64Argument(Value: UInt64);
+begin
+  Assert.AreEqual(18446744073709551615, Value);
 end;
 
 destructor TExampleFixture2.Destroy;
