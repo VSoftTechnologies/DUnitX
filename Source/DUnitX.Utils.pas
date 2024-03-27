@@ -1218,6 +1218,17 @@ begin
   Result := True;
 end;
 
+function ConvStr2Set(const ASource: TValue; ATarget: PTypeInfo; out AResult: TValue): Boolean;
+var
+  pInt: PInteger;
+begin
+  AResult := TValue.From(0, ATarget);
+  pInt  := AResult.GetReferenceToRawData;
+  pInt^ := StringToSet(ATarget, Asource.AsString);
+
+  Result := True;
+end;
+
 {$ENDREGION}
 
 {$REGION 'Conversions'}
@@ -1426,7 +1437,7 @@ const
       // tkUnknown, tkInteger, tkChar, tkEnumeration, tkFloat, tkString,
       ConvFail, ConvStr2Int, ConvFail, ConvStr2Enum, ConvStr2Float, ConvFail,
       // tkSet, tkClass, tkMethod, tkWChar, tkLString, tkWString
-      ConvFail, ConvFail, ConvFail, ConvFail, ConvFail, ConvFail,
+      ConvStr2Set, ConvFail, ConvFail, ConvFail, ConvFail, ConvFail,
       // tkVariant, tkArray, tkRecord, tkInterface, tkInt64, tkDynArray
       ConvFail, ConvFail, ConvFail, ConvFail, ConvStr2Ord, {$IFDEF DELPHI_XE3_UP}ConvStr2DynArray{$ELSE}ConvFail{$ENDIF},
       // tkUString, tkClassRef, tkPointer, tkProcedure, tkMRecord

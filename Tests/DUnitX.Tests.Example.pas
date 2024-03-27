@@ -39,6 +39,9 @@ uses
   {$ENDIF}
 
 type
+  TTestEnum = (teOne, teTwo, teThree);
+  TTestEnums = set of TTestEnum;
+
   {$M+}
   [TestFixture('ExampleFixture1')]
   [Category('examples')]
@@ -81,6 +84,17 @@ type
     [TestCase('time with ms', '17:44:23.456')]
     [TestCase('time without ms', '17:44:23')]
     procedure TestTimeArgument(time: TTime);
+
+    [Test]
+    [TestCase('Set []', '[]|0', '|')]
+    [TestCase('Set [teOne]', '[teOne]|1', '|')]
+    [TestCase('Set [teTwo]', '[teTwo]|2', '|')]
+    [TestCase('Set [teThree]', '[teThree]|4', '|')]
+    [TestCase('Set [teOne,teTwo]', '[teOne,teTwo]|3', '|')]
+    [TestCase('Set [teOne,teThree]', '[teOne,teThree]|5', '|')]
+    [TestCase('Set [teOne,teTwo,teThree]', '[teOne,teTwo,teThree]|7', '|')]
+    [TestCase('Set [teThree,teTwo,teOne]', '[teThree,teTwo,teOne]|7', '|')]
+    procedure TestSetArgument(aset: TTestEnums; ExpectedAsInteger: UInt8);
 
     [Test]
     [Category('Bar,foo')]
@@ -282,6 +296,12 @@ procedure TMyExampleTests.TestOne(param1 : integer; param2 : integer);
 begin
   TDUnitX.CurrentRunner.Status(Format('TestOnce called with %d %d',[param1,param2]));
   Assert.Pass;
+end;
+
+procedure TMyExampleTests.TestSetArgument(aset: TTestEnums;
+  ExpectedAsInteger: UInt8);
+begin
+  Assert.AreEqual(ExpectedAsInteger, UInt8(aset));
 end;
 
 procedure TMyExampleTests.TestTimeArgument(time: TTime);
