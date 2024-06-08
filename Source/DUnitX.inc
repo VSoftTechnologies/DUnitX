@@ -74,6 +74,11 @@
   {$DEFINE DELPHI_XE4_UP}
 {$IFEND}
 
+{$IF CompilerVersion > 26.0} // XE6 up
+  {$DEFINE DELPHI_XE6_UP}
+{$IFEND}
+
+
 
 {$IF CompilerVersion > 28.0} // XE8 up
   {$DEFINE DELPHI_XE8_UP}
