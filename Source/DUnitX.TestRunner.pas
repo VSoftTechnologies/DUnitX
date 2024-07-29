@@ -108,7 +108,7 @@ type
     function Execute: IRunResults;
 
     procedure ExecuteFixtures(const parentFixtureResult: IFixtureResult; const context: ITestExecuteContext; const threadId: TThreadID; const fixtures: ITestFixtureList);
-    procedure ExecuteSetupFixtureMethod(const context: ITestExecuteContext; const threadId: TThreadID; const fixture: ITestFixture; const fixtureResult: IFixtureResult);
+    function ExecuteSetupFixtureMethod(const context: ITestExecuteContext; const threadId: TThreadID; const fixture: ITestFixture; const fixtureResult: IFixtureResult) : boolean;
     function  ExecuteTestSetupMethod(const context: ITestExecuteContext; const threadId: TThreadID; const fixture: ITestFixture; const test: ITest; out errorResult: ITestResult; const memoryAllocationProvider: IMemoryLeakMonitor): boolean;
 
     procedure ExecuteTests(const context: ITestExecuteContext; const threadId: TThreadID; const fixture: ITestFixture; const fixtureResult: IFixtureResult);
@@ -666,6 +666,7 @@ procedure TDUnitXTestRunner.ExecuteFixtures(const parentFixtureResult : IFixture
 var
   fixture: ITestFixture;
   fixtureResult : IFixtureResult;
+  setupOk : boolean;
 begin
   for fixture in fixtures do
   begin
@@ -675,6 +676,7 @@ begin
     if (not fixture.HasTests) and (not fixture.HasChildTests) then
       System.Continue;
 
+    setupOk := True;
     fixtureResult := TDUnitXFixtureResult.Create(parentFixtureResult, fixture as ITestFixtureInfo);
     if parentFixtureResult = nil then
       context.RecordFixture(fixtureResult);
@@ -686,15 +688,17 @@ begin
         fixture.InitFixtureInstance;
       //only run the setup method if there are actually tests
       if fixture.HasActiveTests and Assigned(fixture.SetupFixtureMethod) then
-        ExecuteSetupFixtureMethod(context, threadId, fixture, fixtureResult);
+        //returns false if an exception happens in the setup.
+        setupOk := ExecuteSetupFixtureMethod(context, threadId, fixture, fixtureResult);
 
-      if fixture.HasTests then
+      if setupOk and fixture.HasTests then
         ExecuteTests(context, threadId, fixture, fixtureResult);
 
       if fixture.HasChildFixtures then
         ExecuteFixtures(fixtureResult, context, threadId, fixture.Children);
 
-      if fixture.HasActiveTests and Assigned(fixture.TearDownFixtureMethod) then
+      // teardown will not run if the fixture setup errored.
+      if setupOk and fixture.HasActiveTests and Assigned(fixture.TearDownFixtureMethod) then
         //TODO: Tricker yet each test above us requires errors that occur here
         ExecuteTearDownFixtureMethod(context, threadId, fixture, fixtureResult);
 
@@ -711,19 +715,22 @@ begin
   result := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Ignored, ignoreReason);
 end;
 
-procedure TDUnitXTestRunner.ExecuteSetupFixtureMethod(const context: ITestExecuteContext; const threadId: TThreadID; const fixture: ITestFixture; const fixtureResult: IFixtureResult);
+function TDUnitXTestRunner.ExecuteSetupFixtureMethod(const context: ITestExecuteContext; const threadId: TThreadID; const fixture: ITestFixture; const fixtureResult: IFixtureResult) : boolean;
 begin
   try
     Self.Loggers_SetupFixture(threadid, fixture as ITestFixtureInfo);
     fixture.SetupFixtureMethod;
     Self.Loggers_EndSetupFixture(threadid, fixture as ITestFixtureInfo);
+    result := true;
   except
     on e: Exception do
     begin
+      result := false;
       // Log error into each test
       InvalidateTestsInFixture(fixture, context, threadId, e, fixtureResult);
       Log(TLogLevel.Error, Format(SFixtureSetupError, [fixture.Name, e.Message]));
       Log(TLogLevel.Error, SSkippingFixture);
+
     end;
   end;
 end;
