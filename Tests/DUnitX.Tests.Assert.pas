@@ -1091,12 +1091,12 @@ begin
       end, ETestFailure, 'Number of strings is not equal: Expected [3] but got [4]');
 
     expected.CommaText := '"Lorem ipsum dolor sit amet","consectetur adipisici elit","sed eiusmod tempor incidunt"';
-    actual.CommaText := '"Lorem ipsum dolor sit amet","consectetur adisipici elit","sed eiusmod tempor incidunt"';
+    actual.CommaText   := '"Lorem ipsum dolor sit amet","consectetur adisipici elit","sed eiusmod tempor incidunt"';
     Assert.WillRaiseWithMessage(procedure
       begin
         Assert.AreEqual(expected, actual);
       end, ETestFailure,
-      'Difference at position 16: [''pisici eli''] does not match [''sipici eli''] at line 2');
+      'Difference at position 16: [''r adipisic''] does not match [''r adisipic''] at line 2');
   finally
     expected.Free;
     actual.Free;
