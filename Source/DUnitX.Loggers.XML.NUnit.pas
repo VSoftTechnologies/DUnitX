@@ -182,7 +182,7 @@ begin
 
   sExeName := ParamStr(0);
   FIndent := 0;
-  sTime := Format('%.3f',[RunResults.Duration.TotalSeconds]);
+  sTime := FormatDateTime('hh":"nn":"ss',RunResults.StartTime);
   sDate := FormatDateTime('yyyy-MM-dd',RunResults.StartTime);
 
   WriteXMLLine('<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>');
