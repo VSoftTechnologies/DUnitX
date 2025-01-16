@@ -134,7 +134,7 @@ var
   j : integer;
   value : string;
   key : string;
-  option : IOptionDefintion;
+  option : IOptionDefinition;
   bTryValue : boolean;
   bUseKey : boolean;
 begin
@@ -283,7 +283,7 @@ end;
 
 procedure TCommandLineParser.InternalValidate(const parseErrors: IParseResultAddError);
 var
-  option : IOptionDefintion;
+  option : IOptionDefinition;
 begin
   for option in TOptionsRegistry.AllRegisteredOptions do
   begin

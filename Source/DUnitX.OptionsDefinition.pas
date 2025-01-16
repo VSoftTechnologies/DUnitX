@@ -43,7 +43,7 @@ uses
 
 procedure RegisterOptions;
 var
-  def : IOptionDefintion;
+  def : IOptionDefinition;
 begin
   //enable passing an options file containing options.
   def := TOptionsRegistry.RegisterOption<string>('options','opt','Options File',nil);

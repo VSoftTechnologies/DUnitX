@@ -55,7 +55,7 @@ type
     function GetTypeInfo : PTypeInfo;
   end;
 
-  TOptionDefinition<T> = class(TInterfacedObject,IOptionDefintion,IOptionDefInvoke)
+  TOptionDefinition<T> = class(TInterfacedObject,IOptionDefinition,IOptionDefInvoke)
   private
     FLongName : string;
     FShortName : string;
