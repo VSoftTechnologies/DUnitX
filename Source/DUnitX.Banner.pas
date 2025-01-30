@@ -34,6 +34,8 @@ procedure ShowBanner;
 implementation
 
 uses
+  DateUtils,
+  SysUtils,
   DUnitX.ConsoleWriter.Base,
   DUnitX.IoC;
 
@@ -41,6 +43,7 @@ uses
 procedure ShowBanner;
 var
   consoleWriter : IDUnitXConsoleWriter;
+  yr : integer;
 
   procedure WriteLine(const value : string);
   begin
@@ -56,8 +59,11 @@ begin
   if consoleWriter <> nil then
     consoleWriter.SetColour(ccBrightWhite, ccDefault);
 
+  yr := YearOf(Today);
+
+
   WriteLine('**********************************************************************');
-  WriteLine('*        DUnitX - (c) 2015-2020 Vincent Parrett & Contributors       *');
+  WriteLine(Format('*        DUnitX - (c) 2015-%d Vincent Parrett & Contributors       *', [yr]));
   WriteLine('*                                                                    *');
   WriteLine('*        License - http://www.apache.org/licenses/LICENSE-2.0        *');
   WriteLine('**********************************************************************');
