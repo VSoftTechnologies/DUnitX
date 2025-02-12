@@ -489,7 +489,11 @@ begin
           begin
             for i := 1 to repeatCount do
             begin
-              currentFixture.AddTestCase(method.Name, testCaseAttrib.CaseInfo.Name, FormatTestName(method.Name, i, repeatCount), category, method, testEnabled, testCaseAttrib.CaseInfo.Values);
+              if testCaseAttrib is AutoNameTestCaseAttribute then
+                caseName := '(' + AutoNameTestCaseAttribute(testCaseAttrib).ValuesText + ')'
+              else
+                caseName := testCaseAttrib.CaseInfo.Name;
+              currentFixture.AddTestCase(method.Name, caseName, FormatTestName(method.Name, i, repeatCount), category, method, testEnabled, testCaseAttrib.CaseInfo.Values);
             end;
           end;
           // Add test case from test \case sources

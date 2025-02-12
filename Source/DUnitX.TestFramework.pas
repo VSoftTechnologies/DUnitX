@@ -89,6 +89,7 @@ type
   CustomTestCaseAttribute = DUnitX.Attributes.CustomTestCaseAttribute;
   CustomTestCaseSourceAttribute = DUnitX.Attributes.CustomTestCaseSourceAttribute;
   TestCaseAttribute = DUnitX.Attributes.TestCaseAttribute;
+  AutoNameTestCaseAttribute = DUnitX.Attributes.AutoNameTestCaseAttribute;
   TestCaseProviderAttribute = DUnitX.Attributes.TestCaseProviderAttribute;
 
   TExceptionInheritance = DUnitX.Types.TExceptionInheritance;

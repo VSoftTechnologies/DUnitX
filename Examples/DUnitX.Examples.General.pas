@@ -57,6 +57,14 @@ type
     [TestCase('Case 3','5,6')]
     procedure TestOne(param1 : integer; param2 : integer);
 
+
+    [Test]
+    [AutoNameTestCase('1,2')]
+    [AutoNameTestCase('3,4')]
+    [AutoNameTestCase('5,6')]
+    [Category('auto')]
+    procedure TestAutoName(param1 : integer; param2 : integer);
+
     [TestCase('Case 3','Blah,1')]
     procedure AnotherTestMethod(const a : string; const b : integer);
 
@@ -218,6 +226,12 @@ end;
 procedure TMyExampleTests.AnotherTestMethod(const a: string; const b: integer);
 begin
   TDUnitX.CurrentRunner.Status(Format('AnotherTestMethod called with %s %d',[a,b]));
+end;
+
+procedure TMyExampleTests.TestAutoName(param1, param2: integer);
+begin
+  TDUnitX.CurrentRunner.Status(Format('TestAutoName called with %d %d',[param1,param2]));
+
 end;
 
 procedure TMyExampleTests.TestCaseWithStrings(const AInput, AResult: string);

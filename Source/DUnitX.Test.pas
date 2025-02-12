@@ -146,8 +146,10 @@ implementation
 uses
   {$IFDEF USE_NS}
   System.Generics.Defaults,
+  System.StrUtils,
   {$ELSE}
   Generics.Defaults,
+  StrUtils,
   {$ENDIF}
   {$IFDEF MSWINDOWS}
   DUnitX.Timeout,
@@ -396,7 +398,12 @@ end;
 function TDUnitXTestCase.GetName: string;
 begin
   if FCaseName <> '' then
-    Result := FName + '.' + FCaseName
+  begin
+    if StartsText('(', FCaseName) then
+      Result := FName + FCaseName
+    else
+      Result := FName + '.' + FCaseName;
+  end
   else
     Result := FName;
 

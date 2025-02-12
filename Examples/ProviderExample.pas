@@ -35,8 +35,8 @@ type
   [TestFixture('ProviderExample1','Example using TestCaseProviders')]
   TProviderExample = class(TObject)
   public
-   // [Test]
-   // [TestCaseProvider('Demoprovider')]
+    [Test]
+    [TestCaseProvider(TSampleProvider)]
     Procedure Addtest(const v1,v2:integer;expected:integer);
     [Test]
     [TestCaseProvider(TSampleProvider)]
