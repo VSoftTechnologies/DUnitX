@@ -28,14 +28,20 @@ unit DUnitX.Banner;
 
 interface
 
+{$I DUnitX.inc}
 
 procedure ShowBanner;
 
 implementation
 
 uses
+  {$IFDEF USE_NS}
+  System.DateUtils,
+  System.SysUtils,
+  {$ELSE}
   DateUtils,
   SysUtils,
+  {$ENDIF}
   DUnitX.ConsoleWriter.Base,
   DUnitX.IoC;
 
