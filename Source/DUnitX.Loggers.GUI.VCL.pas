@@ -30,11 +30,6 @@ interface
 
 {$I DUnitX.inc}
 
-// Be aware that editing this in the higher versions of RAD Studio (10 Seattle for sure)
-// results in the form designer continuously adding units to the uses that are
-// already there.  I have been unable to find a workaround short of editing the
-// file outside of the IDE...  The units are: System.ImageList and System.Actions
-
 uses
 {$IFDEF USE_NS}
   Winapi.Windows,
@@ -63,7 +58,8 @@ uses
   System.Generics.Defaults,
   System.Generics.Collections,
   System.IniFiles,
-  System.Actions, //IDE keeps adding this at the end even if it's in the infdef'd section. make sure it's not there when committing!
+  System.Actions,
+  System.ImageList,
 {$ELSE}
   Windows,
   Messages,
@@ -90,6 +86,8 @@ uses
   Generics.Defaults,
   Generics.Collections,
   IniFiles,
+  Actions,
+  ImageList,
 {$ENDIF}
   DUnitX.TestFrameWork,
   DUnitX.Extensibility,
