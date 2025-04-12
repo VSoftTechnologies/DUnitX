@@ -221,12 +221,15 @@ type
     procedure tvwTestsCustomDrawItem(Sender: TCustomTreeView; Node: TTreeNode;
       State: TCustomDrawState; var DefaultDraw: Boolean);
     procedure tvwTestsChange(Sender: TObject; Node: TTreeNode);
+  private type
+    TTreeViewIterateProc = reference to procedure(const Node: TTreeNode; var Stop: boolean);
   private
     FFixtureList: ITestFixtureList;
     FLastResult: IRunResults;
     FTestBookmarkList: TTestBookmarkList;
-    FRootNodes : array[TTestResultType] of TTreeNode;
-    FRunning : boolean;
+    FRootNodes: array[TTestResultType] of TTreeNode;
+    FTestNodes: TDictionary<string, TTreeNode>;
+    FRunning: boolean;
     FFixtureCount: integer;
 
     procedure LoadTests;
@@ -239,6 +242,7 @@ type
     procedure UnselectAll;
     function NeedRunner: ITestRunner;
     function GetNodeByTestFullName(const TestFullName: string): TTreeNode;
+    function IterateTestNodes(const Proc: TTreeViewIterateProc): boolean;
     procedure SetNodeTestResult(const Node: TTreeNode; const ImageIndex: integer);
     procedure ProcessTestResult(const Test: ITestResult);
     procedure ProcessMessagesForNode(const ResultNode: TResultNode; const Test: ITestResult);
@@ -333,18 +337,16 @@ type
     class procedure Compare(const ExpFile, ActFile: string); static;
   end;
 
-  TTreeViewIterateProc = reference to procedure(const Node: TTreeNode; var Stop: boolean);
-
   TTreeViewHelper = class helper for TTreeView
   public
-    function IterateAll(const Proc: TTreeViewIterateProc): boolean;
+    function IterateAll(const Proc: TGUIVCLTestRunner.TTreeViewIterateProc): boolean;
   end;
 
   TTreeNodeHelper = class helper for TTreeNode
   public
-    function IterateAllChilds(const Proc: TTreeViewIterateProc): boolean;
-    function IterateChilds(const Proc: TTreeViewIterateProc): boolean;
-    function IterateParents(const Proc: TTreeViewIterateProc): boolean;
+    function IterateAllChilds(const Proc: TGUIVCLTestRunner.TTreeViewIterateProc): boolean;
+    function IterateChilds(const Proc: TGUIVCLTestRunner.TTreeViewIterateProc): boolean;
+    function IterateParents(const Proc: TGUIVCLTestRunner.TTreeViewIterateProc): boolean;
   end;
 
 
@@ -422,6 +424,7 @@ end;
 procedure TGUIVCLTestRunner.FormDestroy(Sender: TObject);
 begin
   FTestBookmarkList.Free;
+  FTestNodes.Free;
 end;
 
 function TGUIVCLTestRunner.GetComparableResultsNode: TResultNode;
@@ -442,26 +445,8 @@ begin
 end;
 
 function TGUIVCLTestRunner.GetNodeByTestFullName(const TestFullName: string): TTreeNode;
-var
-  TestNode: TTreeNode;
 begin
-  TestNode := nil;
-
-  tvwTests.IterateAll
-  (
-    procedure(const Node: TTreeNode; var Stop: boolean)
-    begin
-      if Node.Text = TestFullName then
-      begin
-        TestNode := Node;
-        Stop := True;
-      end;
-    end
-  );
-
-  Result := TestNode;
-
-  if Result = nil then
+  if not FTestNodes.TryGetValue(TestFullName, Result) then
     raise Exception.Create('Could not find node for test: ' + TestFullName);
 end;
 
@@ -493,15 +478,13 @@ var
 begin
   StrList := TStringList.Create;
   try
-    tvwTests.IterateAll
-    (
+    IterateTestNodes(
       procedure(const Node: TTreeNode; var Stop: boolean)
       begin
         if (not TTestNode(Node).IsFixtureNode) and
           (Node.StateIndex = cTestNodeStateChecked) then
           StrList.Add(Node.Text);
-      end
-    );
+      end);
     TDUnitX.Filter := TNameFilter.Create(StrList);
     UpdateGUIForRun(StrList.Count);
   finally
@@ -591,13 +574,12 @@ var
 begin
   IniFile := TMemIniFile.Create(ChangeFileExt(ParamStr(0), '.ini'));
   try
-    tvwTests.IterateAll(
+    IterateTestNodes(
       procedure(const Node: TTreeNode; var Stop: boolean)
       begin
         if TTestNode(Node).IsFixtureNode then Exit;
         IniFile.WriteBool(cTestSetup, Node.Text, Node.StateIndex = cTestNodeStateChecked);
-      end
-    );
+      end);
     IniFile.UpdateFile;
   finally
     IniFile.Free;
@@ -610,6 +592,7 @@ begin
   Height := Screen.WorkAreaHeight;
 
   FTestBookmarkList := TTestBookmarkList.Create;
+  FTestNodes := TDictionary<string, TTreeNode>.Create;
 
   Self.Caption := Format(SApplicationName, [ExtractFileName(ParamStr(0))]);
   Application.Title := Self.Caption;
@@ -858,7 +841,8 @@ begin
   try
     tvwTests.Items.Clear;
     FTestBookmarkList.Clear;
-    FFixtureCount:=0;
+    FTestNodes.Clear;
+    FFixtureCount := 0;
     BuildTestTreeNode(FFixtureList,nil);
 
     if tvwTests.Items.Count > 0 then
@@ -990,7 +974,6 @@ var
   FixtureNode: TTreeNode;
   HasTests: boolean;
   HasChildTests: boolean;
-
 begin
   IniFile := TIniFile.Create(ChangeFileExt(ParamStr(0), '.ini'));
   try
@@ -1001,6 +984,7 @@ begin
       if (not HasTests) and (not HasChildTests) then
         continue;
       FixtureNode:= tvwTests.Items.AddChild(ParentNode, Fixture.FullName);
+      FTestNodes.TryAdd(Fixture.FullName, FixtureNode);
       FixtureNode.StateIndex:=cTestNodeStateUnChecked;
       inc(FFixtureCount);
       TTestNode(FixtureNode).FIsFixtureNode:=true;
@@ -1014,6 +998,7 @@ begin
           ((edtFilter.Text = '') or ContainsText(Test.FullName, edtFilter.Text)) then
         begin
           TestNode := tvwTests.Items.AddChild(FixtureNode, Test.FullName);
+          FTestNodes.TryAdd(Test.FullName, TestNode);
           TestNode.StateIndex:=cTestNodeStateUnchecked;
           if IniFile.ReadBool(cTestSetup, Test.FullName, true) then
             TTestNode(TestNode).InvertState;
@@ -1080,7 +1065,7 @@ end;
 
 procedure TGUIVCLTestRunner.Invert;
 begin
-  tvwTests.IterateAll(
+  IterateTestNodes(
     procedure(const Node: TTreeNode; var Stop: boolean)
     begin
       if not TTestNode(Node).IsFixtureNode then
@@ -1088,12 +1073,27 @@ begin
     end);
 end;
 
+function TGUIVCLTestRunner.IterateTestNodes(const Proc: TTreeViewIterateProc): boolean;
+var
+  Node: TTreeNode;
+begin
+  System.Assert(Assigned(Proc));
+  
+  Result := False;
+  for Node in FTestNodes.Values do
+  begin
+    Proc(Node, Result);
+    if Result then
+      break;
+  end;
+end;
+
 procedure TGUIVCLTestRunner.SelectAll;
 begin
-  tvwTests.IterateAll(
+  IterateTestNodes(
     procedure(const Node: TTreeNode; var Stop: boolean)
     begin
-      Node.StateIndex:=cTestNodeStateChecked;
+      Node.StateIndex := cTestNodeStateChecked;
     end);
 end;
 
@@ -1186,10 +1186,10 @@ end;
 
 procedure TGUIVCLTestRunner.UnselectAll;
 begin
-  tvwTests.IterateAll(
+  IterateTestNodes(
     procedure(const Node: TTreeNode; var Stop: boolean)
     begin
-      Node.StateIndex:=cTestNodeStateUnchecked;
+      Node.StateIndex := cTestNodeStateUnchecked;
     end);
 end;
 
@@ -1400,7 +1400,7 @@ end;
 
 // TTreeViewHelper
 //================
-function TTreeViewHelper.IterateAll(const Proc: TTreeViewIterateProc): boolean;
+function TTreeViewHelper.IterateAll(const Proc: TGUIVCLTestRunner.TTreeViewIterateProc): boolean;
 var
   Node: TTreeNode;
 begin
@@ -1417,7 +1417,7 @@ end;
 
 // TTreeNodeHelper
 //================
-function TTreeNodeHelper.IterateAllChilds(const Proc: TTreeViewIterateProc): boolean;
+function TTreeNodeHelper.IterateAllChilds(const Proc: TGUIVCLTestRunner.TTreeViewIterateProc): boolean;
 var
   Child: TTreeNode;
 begin
@@ -1437,7 +1437,7 @@ begin
   end;
 end;
 
-function TTreeNodeHelper.IterateChilds(const Proc: TTreeViewIterateProc): boolean;
+function TTreeNodeHelper.IterateChilds(const Proc: TGUIVCLTestRunner.TTreeViewIterateProc): boolean;
 var
   Child: TTreeNode;
 begin
@@ -1454,7 +1454,7 @@ begin
   end;
 end;
 
-function TTreeNodeHelper.IterateParents(const Proc: TTreeViewIterateProc): boolean;
+function TTreeNodeHelper.IterateParents(const Proc: TGUIVCLTestRunner.TTreeViewIterateProc): boolean;
 var
   Parent: TTreeNode;
 begin
