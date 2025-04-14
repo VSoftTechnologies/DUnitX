@@ -49,7 +49,8 @@ resourcestring
  {$ENDIF}
  '{$IFDEF TESTINSIGHT}'#13#10 +
  '  TestInsight.DUnitX,'#13#10 +
- '{$ELSE}'#13#10 +
+ '{$ENDIF}'#13#10 +
+ '{$IFNDEF TESTINSIGHT}'#13#10 +
  '  DUnitX.Loggers.Console,'#13#10 +
  '  DUnitX.Loggers.Xml.NUnit,'#13#10 +
  '{$ENDIF}'#13#10 +
