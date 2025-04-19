@@ -150,9 +150,6 @@ type
 
     procedure AddStatus(const threadId; const msg: string);
 
-    function DoCreateFixture(const AInstance: TObject; const AFixtureClass: TClass; const AName: string; const ACategory: string): ITestFixture; virtual;
-    function CreateFixture(const AInstance: TObject; const AFixtureClass: TClass; const AName: string; const ACategory: string): ITestFixture;
-
     function ShouldRunThisTest(const test: ITest): boolean;
 
     class constructor Create;
@@ -176,7 +173,7 @@ uses
   {$ELSE}
   TypInfo,
   StrUtils,
-  Types,  
+  Types,
   {$ENDIF}
   DUnitX.Attributes,
   DUnitX.CommandLine.Options,
@@ -186,8 +183,8 @@ uses
   DUnitX.FixtureResult,
   DUnitX.Utils,
   DUnitX.IoC,
-  DUnitX.Extensibility.PluginManager,
-  DUnitX.ResStrs;
+  DUnitX.ResStrs,
+  DUnitX.FixtureBuilder;
 
 { TDUnitXTestRunner }
 
@@ -260,20 +257,11 @@ end;
 
 function TDUnitXTestRunner.BuildFixtures  : IInterface;
 var
-  pluginManager : IPluginManager;
+  fixtureBuilder : IFixtureBuilder;
 begin
-  result := FFixtureList;
-  if FFixtureList <> nil then
-    exit;
+  fixtureBuilder := TDUnitXFixtureBuilder.Create(FUseRTTI);
 
-  FFixtureList := TTestFixtureList.Create;
-
-
-  pluginManager := TPluginManager.Create(Self.CreateFixture,FUseRTTI);
-  pluginManager.Init;//loads the plugin features.
-
-  //generate the fixtures. The plugin Manager calls back into CreateFixture
-  pluginManager.CreateFixtures;
+  FFixtureList := fixtureBuilder.BuildFixtureList;
   FFixtureList.Sort;
 
   result := FFixtureList;
@@ -363,20 +351,6 @@ begin
   Create;
 
   FLoggers.AddRange(AListeners);
-end;
-
-function TDUnitXTestRunner.DoCreateFixture(const AInstance : TObject;const AFixtureClass: TClass; const AName: string; const ACategory : string): ITestFixture;
-begin
-  if AInstance <> nil then
-    result := TDUnitXTestFixture.Create(AName,ACategory, AInstance,AInstance.ClassType.UnitName)
-  else
-    result := TDUnitXTestFixture.Create(AName, ACategory, AFixtureClass,AFixtureClass.UnitName);
-end;
-
-function TDUnitXTestRunner.CreateFixture(const AInstance : TObject;const AFixtureClass: TClass; const AName: string; const ACategory : string): ITestFixture;
-begin
-  Result := DoCreateFixture(AInstance, AFixtureClass, AName, ACategory);
-  FFixtureList.Add(Result);
 end;
 
 

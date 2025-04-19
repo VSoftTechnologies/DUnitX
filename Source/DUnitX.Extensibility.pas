@@ -190,41 +190,26 @@ type
   end;
 
 
+  //Used by the runner to call the provider.
+  IFixtureBuilder = interface
+  ['{71A5DFE1-AE08-46C8-9405-65000A96FAA0}']
+    function BuildFixtureList : ITestFixtureList;
+  end;
 
+  //used by the fixture provider to create the fixtures, abstracts the fixture class.
   IFixtureProviderContext = interface
     ['{933F8442-77F1-4574-BB5E-2F3D0B8E6E6F}']
     function CreateFixture(const AFixtureClass : TClass; const AName : string; const ACategory : string) : ITestFixture;overload;
-    function CreateFixture(const AInstance : TObject; const AName : string; const ACategory : string) : ITestFixture;overload;
     function GetUseRtti : boolean;
-    //The runner UseRtti property exposed for plugin use.
+    //The runner UseRtti property exposed for provider use.
     property UseRtti : boolean read GetUseRtti;
   end;
 
-
+  //Generates test fixtures from classes
   IFixtureProvider = interface
     ['{48D58C88-1236-4B96-9D5F-5DD81DB71504}']
     procedure Execute(const context : IFixtureProviderContext);
   end;
-
-
-  IPluginLoadContext = interface
-    ['{0A60FE65-C3E3-4E98-9686-8BB6A793810B}']
-    procedure RegisterFixtureProvider(const provider : IFixtureProvider);
-    //procedure RegisterSomeOtherFeature(const provider : ISomeOtherFeature);
-  end;
-
-
-  IPlugin = interface
-    ['{C706DD67-58D0-4B66-92A6-6FBE2AF065A4}']
-    procedure GetPluginFeatures(const context : IPluginLoadContext);
-  end;
-
-
-  IFixtureFilter = interface
-    ['{0FBC270E-2DC0-4135-8724-C2AD567A009A}']
-    procedure InitFromOptions(const ARun : string; const AInclude : string; const AExclude : string);
-  end;
-
 
 
 implementation

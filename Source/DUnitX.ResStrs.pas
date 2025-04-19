@@ -147,7 +147,6 @@ resourcestring
   SUsage = 'Usage : %s options';
   SOptions = ' Options :';
   SNoRunner = 'No Runner found for current thread';
-  SNilPlugin = 'Nil plugin registered!';
 
   SSetupTeardownBytesLeaked = '%d bytes were leaked in the setup/teardown methods';
   STestBytesLeaked = '%d bytes were leaked in the test method';
@@ -176,6 +175,8 @@ resourcestring
 
   SGUIStatusIdle = 'Idle';
   SGUIStatusRunning = 'Running (%d of %d)';
+
+  SNoFixtureProvider = 'No FixtureProvider registered';
 
 implementation
 

@@ -2,7 +2,7 @@
 {                                                                           }
 {           DUnitX                                                          }
 {                                                                           }
-{           Copyright (C) 2017 Vincent Parrett & Contributors               }
+{           Copyright (C) 2015 Vincent Parrett & Contributors               }
 {                                                                           }
 {           vincent@finalbuilder.com                                        }
 {           http://www.finalbuilder.com                                     }
@@ -24,44 +24,66 @@
 {                                                                           }
 {***************************************************************************}
 
-unit DUnitX.Init;
-
-// In order to workaround the Delphi XE3 Bug noted at
-// https://github.com/VSoftTechnologies/DUnitX/issues/117),
-// you need to add the unit DUnitX.Init to your test projects - all
-// other versions do this in the initialization of DUnitX.TestFramework.
-// This file is safe to include in ALL projects as it with IFDEF out
-// if not running under XE3.
+unit DUnitX.FixtureBuilder;
 
 interface
 
-{$I DUnitX.inc}
-
-{$IFDEF DELPHI_XE3}
-
 uses
-  DUnitX.TestFramework,
-  DUnitX.FixtureProvider;
+  DUnitX.Extensibility;
 
-{$ENDIF}
+type
+  TDUnitXFixtureBuilder = class(TInterfacedObject, IFixtureBuilder, IFixtureProviderContext)
+  private
+    FUseRtti : boolean;
+    FFixtureList : ITestFixtureList;
+  protected
+    function GetUseRtti : boolean;
+    function CreateFixture(const AFixtureClass : TClass; const AName : string; const ACategory : string) : ITestFixture;overload;
+    function BuildFixtureList : ITestFixtureList;
+
+  public
+    constructor Create(useRtti : boolean);
+  end;
 
 implementation
 
-{$IFDEF DELPHI_XE3}
-
 uses
-  DUnitX.Exceptions;
+  DUnitX.Exceptions,
+  DUnitX.IoC,
+  DUnitX.TestFixture,
+  DUnitX.ResStrs;
 
-procedure InitAssert;
+{ TDUnitXFixtureBuilder }
+
+function TDUnitXFixtureBuilder.BuildFixtureList: ITestFixtureList;
+var
+  provider : IFixtureProvider;
 begin
-  DUnitX.TestFramework.Assert.TestFailure := ETestFailure;
-  DUnitX.TestFramework.Assert.TestPass := ETestPass;
+  result := FFixtureList;
+
+  provider := TDUnitXIoC.DefaultContainer.Resolve<IFixtureProvider>();
+  if provider = nil then
+    raise ETestFrameworkException.Create(SNoFixtureProvider);
+
+  provider.Execute(Self);
+
 end;
 
-initialization
-  InitAssert;
-  TDUnitXIoC.DefaultContainer.RegisterType<IFixtureProvider,TDUnitXFixtureProvider>();
+constructor TDUnitXFixtureBuilder.Create(useRtti: boolean);
+begin
+  FUseRtti := useRtti;
+  FFixtureList := TTestFixtureList.Create;
+end;
 
-{$ENDIF}
 
+function TDUnitXFixtureBuilder.CreateFixture(const AFixtureClass: TClass; const AName, ACategory: string): ITestFixture;
+begin
+  result := TDUnitXTestFixture.Create(AName, ACategory, AFixtureClass, AFixtureClass.UnitName);
+  FFixtureList.Add(Result);
+end;
+
+function TDUnitXFixtureBuilder.GetUseRtti: boolean;
+begin
+  result := FUseRtti;
+end;
 end.

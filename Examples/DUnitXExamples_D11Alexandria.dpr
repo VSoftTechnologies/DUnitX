@@ -35,11 +35,14 @@ uses
   DUnitX.CommandLine.OptionDef in '..\Source\DUnitX.CommandLine.OptionDef.pas',
   DUnitX.CommandLine.Options in '..\Source\DUnitX.CommandLine.Options.pas',
   DUnitX.CommandLine.Parser in '..\Source\DUnitX.CommandLine.Parser.pas',
-  DUnitX.FixtureProviderPlugin in '..\Source\DUnitX.FixtureProviderPlugin.pas',
+  DUnitX.FixtureProvider in '..\Source\DUnitX.FixtureProvider.pas',
   DUnitX.Timeout in '..\Source\DUnitX.Timeout.pas',
   DUnitX.Attributes in '..\Source\DUnitX.Attributes.pas',
   DUnitX.Linux.Console in '..\Source\DUnitX.Linux.Console.pas',
-  ProviderExample in 'ProviderExample.pas';
+  ProviderExample in 'ProviderExample.pas',
+  DUnitX.FixtureBuilder in '..\Source\DUnitX.FixtureBuilder.pas',
+  DUnitX.FilterBuilder in '..\Source\DUnitX.FilterBuilder.pas',
+  DUnitX.Filters in '..\Source\DUnitX.Filters.pas';
 
 var
   runner : ITestRunner;

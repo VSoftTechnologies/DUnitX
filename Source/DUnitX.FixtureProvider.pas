@@ -24,7 +24,7 @@
 {                                                                           }
 {***************************************************************************}
 
-unit DUnitX.FixtureProviderPlugin;
+unit DUnitX.FixtureProvider;
 
 interface
 
@@ -43,12 +43,6 @@ uses
   DUnitX.TestDataProvider;
 
 type
-  TDUnitXFixtureProviderPlugin = class(TInterfacedObject,IPlugin)
-  protected
-    procedure GetPluginFeatures(const context: IPluginLoadContext);
-  end;
-
-
   TDUnitXFixtureProvider = class(TInterfacedObject,IFixtureProvider)
   private class var
     FRttiContext : TRttiContext;
@@ -90,7 +84,8 @@ uses
   DUnitX.TestFramework,
   DUnitX.ResStrs,
   DUnitX.InternalInterfaces,
-  DUnitX.InternalDataProvider;
+  DUnitX.InternalDataProvider,
+  DUnitX.IoC;
 
 { TDUnitXFixtureProvider }
 
@@ -590,13 +585,6 @@ begin
       end;
     end;
   end;
-end;
-
-{ TDUnitXFixtureProviderPlugin }
-
-procedure TDUnitXFixtureProviderPlugin.GetPluginFeatures(const context: IPluginLoadContext);
-begin
-  context.RegisterFixtureProvider(TDUnitXFixtureProvider.Create);
 end;
 
 end.

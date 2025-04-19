@@ -49,8 +49,8 @@ uses
   DUnitX.MemoryLeakMonitor.FastMM4 in '..\Source\DUnitX.MemoryLeakMonitor.FastMM4.pas',
   DUnitX.Tests.MemoryLeaks in 'DUnitX.Tests.MemoryLeaks.pas',
   DUnitX.Extensibility in '..\Source\DUnitX.Extensibility.pas',
-  DUnitX.Extensibility.PluginManager in '..\Source\DUnitX.Extensibility.PluginManager.pas',
-  DUnitX.FixtureProviderPlugin in '..\Source\DUnitX.FixtureProviderPlugin.pas',
+
+  DUnitX.FixtureProvider in '..\Source\DUnitX.FixtureProvider.pas',
   DUnitX.Tests.CommandLineParser in 'DUnitX.Tests.CommandLineParser.pas',
   DUnitX.Filters in '..\Source\DUnitX.Filters.pas',
   DUnitX.CategoryExpression in '..\Source\DUnitX.CategoryExpression.pas',

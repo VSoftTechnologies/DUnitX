@@ -92,8 +92,8 @@
         <DCCReference Include="..\Source\DUnitX.MemoryLeakMonitor.FastMM4.pas"/>
         <DCCReference Include="DUnitX.Tests.MemoryLeaks.pas"/>
         <DCCReference Include="..\Source\DUnitX.Extensibility.pas"/>
-        <DCCReference Include="..\Source\DUnitX.Extensibility.PluginManager.pas"/>
-        <DCCReference Include="..\Source\DUnitX.FixtureProviderPlugin.pas"/>
+        
+        <DCCReference Include="..\Source\DUnitX.FixtureProvider.pas"/>
         <DCCReference Include="DUnitX.Tests.CommandLineParser.pas"/>
         <DCCReference Include="..\Source\DUnitX.Filters.pas"/>
         <DCCReference Include="..\Source\DUnitX.CategoryExpression.pas"/>

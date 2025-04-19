@@ -71,8 +71,8 @@
 			<DCCReference Include="..\Source\DUnitX.ConsoleWriter.Base.pas"/>
 			<DCCReference Include="..\Source\DUnitX.DUnitCompatibility.pas"/>
 			<DCCReference Include="..\Source\DUnitX.Extensibility.pas"/>
-			<DCCReference Include="..\Source\DUnitX.Extensibility.PluginManager.pas"/>
-			<DCCReference Include="..\Source\DUnitX.FixtureProviderPlugin.pas"/>
+			
+			<DCCReference Include="..\Source\DUnitX.FixtureProvider.pas"/>
 			<DCCReference Include="..\Source\DUnitX.FixtureResult.pas"/>
 			<DCCReference Include="..\Source\DUnitX.Generics.pas"/>
 			<DCCReference Include="..\Source\DUnitX.InternalInterfaces.pas"/>

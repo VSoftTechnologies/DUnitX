@@ -29,8 +29,8 @@ uses
   DUnitX.ConsoleWriter.Base in '..\Source\DUnitX.ConsoleWriter.Base.pas',
   DUnitX.DUnitCompatibility in '..\Source\DUnitX.DUnitCompatibility.pas',
   DUnitX.Extensibility in '..\Source\DUnitX.Extensibility.pas',
-  DUnitX.Extensibility.PluginManager in '..\Source\DUnitX.Extensibility.PluginManager.pas',
-  DUnitX.FixtureProviderPlugin in '..\Source\DUnitX.FixtureProviderPlugin.pas',
+
+  DUnitX.FixtureProvider in '..\Source\DUnitX.FixtureProvider.pas',
   DUnitX.FixtureResult in '..\Source\DUnitX.FixtureResult.pas',
   DUnitX.Generics in '..\Source\DUnitX.Generics.pas',
   DUnitX.InternalInterfaces in '..\Source\DUnitX.InternalInterfaces.pas',

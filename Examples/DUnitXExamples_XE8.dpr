@@ -35,7 +35,7 @@ uses
   DUnitX.CommandLine.OptionDef in '..\Source\DUnitX.CommandLine.OptionDef.pas',
   DUnitX.CommandLine.Options in '..\Source\DUnitX.CommandLine.Options.pas',
   DUnitX.CommandLine.Parser in '..\Source\DUnitX.CommandLine.Parser.pas',
-  DUnitX.FixtureProviderPlugin in '..\Source\DUnitX.FixtureProviderPlugin.pas';
+  DUnitX.FixtureProvider in '..\Source\DUnitX.FixtureProvider.pas';
 
 var
   runner : ITestRunner;
