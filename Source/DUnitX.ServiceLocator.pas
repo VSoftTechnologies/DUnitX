@@ -24,7 +24,7 @@
 {                                                                           }
 {***************************************************************************}
 
-unit DUnitX.IoC;
+unit DUnitX.ServiceLocator;
 
 {$I DUnitX.inc}
 
@@ -53,7 +53,7 @@ type
   TActivatorDelegate<TInterface: IInterface> = reference to function: TInterface;
   TActivatorDelegate = reference to function: IInterface;
 
-  TDUnitXIoC = class
+  TDUnitXServiceLocator = class
   private
     type
       TIoCRegistration = class
@@ -65,7 +65,7 @@ type
   private
     FRaiseIfNotFound : boolean;
     FContainerInfo : TDictionary<string,TIoCRegistration>;
-    class var FDefault : TDUnitXIoC;
+    class var FDefault : TDUnitXServiceLocator;
   protected
     function GetInterfaceKey(const typeInfo: PTypeInfo; const AName: string = ''): string;
     function InternalResolve(const typeInfo: PTypeInfo; const AName: string = ''): IInterface;
@@ -75,7 +75,7 @@ type
     destructor Destroy;override;
     class destructor ClassDestroy;
     //Default Container - used internally by DUnitX
-    class function DefaultContainer : TDUnitXIoC;
+    class function DefaultContainer : TDUnitXServiceLocator;
 
     procedure RegisterType<TInterface: IInterface; TImplementation: class>(const name : string = '');overload;
     procedure RegisterType<TInterface: IInterface; TImplementation: class>(const singleton : boolean;const name : string = '');overload;
@@ -99,9 +99,9 @@ type
     property RaiseIfNotFound : boolean read FRaiseIfNotFound write FRaiseIfNotFound;
   end;
 
-  EIoCException = class(Exception);
-  EIoCRegistrationException = class(EIoCException);
-  EIoCResolutionException = class(EIoCException);
+  EServiceLocatorException = class(Exception);
+  EServiceLocatorRegistrationException = class(EServiceLocatorException);
+  EServiceLocatorResolutionException = class(EServiceLocatorException);
 
 
   //Makes sure virtual constructors are called correctly. Just using a class reference will not call the overriden constructor!
@@ -164,32 +164,32 @@ begin
           begin
             obj := ctor(AClass);
             if not Supports(obj, guid, Result) and raiseOnError then
-              raise EIoCResolutionException.CreateFmt(SRegisteredImplementationError, [AClass.ClassName, typeInfo.Name]);
+              raise EServiceLocatorResolutionException.CreateFmt(SRegisteredImplementationError, [AClass.ClassName, typeInfo.Name]);
           end;
         Exit;
       end;
 end;
 
-{ TDUnitXIoC }
+{ TDUnitXServiceLocator }
 
-function TDUnitXIoC.HasService<T>: boolean;
+function TDUnitXServiceLocator.HasService<T>: boolean;
 begin
   Result := FContainerInfo.ContainsKey(GetInterfaceKey(TypeInfo(T)));
 end;
 
-procedure TDUnitXIoC.RegisterType<TInterface, TImplementation>(const name: string);
+procedure TDUnitXServiceLocator.RegisterType<TInterface, TImplementation>(const name: string);
 begin
   InternalRegisterType(TypeInfo(TInterface), False,
     TClassActivator.CreateActivatorDelegate(TImplementation, TypeInfo(TInterface), FRaiseIfNotFound), name);
 end;
 
-procedure TDUnitXIoC.RegisterType<TInterface, TImplementation>(const singleton: boolean; const name: string);
+procedure TDUnitXServiceLocator.RegisterType<TInterface, TImplementation>(const singleton: boolean; const name: string);
 begin
   InternalRegisterType(TypeInfo(TInterface), singleton,
     TClassActivator.CreateActivatorDelegate(TImplementation, TypeInfo(TInterface), FRaiseIfNotFound), name);
 end;
 
-procedure TDUnitXIoC.InternalRegisterType(const typeInfo: PTypeInfo; const singleton : boolean; const delegate : TActivatorDelegate; const name : string = '');
+procedure TDUnitXServiceLocator.InternalRegisterType(const typeInfo: PTypeInfo; const singleton : boolean; const delegate : TActivatorDelegate; const name : string = '');
 var
   key : string;
   rego : TIoCRegistration;
@@ -206,12 +206,12 @@ begin
   begin
     //cannot replace a singleton that has already been instanciated (Instance property is only used by singletons)
     if rego.Instance <> nil then
-      raise EIoCRegistrationException.Create(Format(SImplementationAlreadyRegistered, [typeInfo.Name, name]));
+      raise EServiceLocatorRegistrationException.Create(Format(SImplementationAlreadyRegistered, [typeInfo.Name, name]));
     rego.Initialize(delegate, singleton);
   end;
 end;
 
-procedure TDUnitXIoC.RegisterType<TInterface>(const delegate: TActivatorDelegate<TInterface>; const name: string);
+procedure TDUnitXServiceLocator.RegisterType<TInterface>(const delegate: TActivatorDelegate<TInterface>; const name: string);
 var
   internalDelegate: TActivatorDelegate;
 begin
@@ -219,37 +219,37 @@ begin
   InternalRegisterType(TypeInfo(TInterface), False, internalDelegate, name);
 end;
 
-class destructor TDUnitXIoC.ClassDestroy;
+class destructor TDUnitXServiceLocator.ClassDestroy;
 begin
   FDefault.Free;
 end;
 
-procedure TDUnitXIoC.Clear;
+procedure TDUnitXServiceLocator.Clear;
 begin
   FContainerInfo.Clear;
 end;
 
-constructor TDUnitXIoC.Create;
+constructor TDUnitXServiceLocator.Create;
 begin
   FContainerInfo := TObjectDictionary<string,TIoCRegistration>.Create([doOwnsValues]);
   FRaiseIfNotFound := False;
 end;
 
-class function TDUnitXIoC.DefaultContainer: TDUnitXIoC;
+class function TDUnitXServiceLocator.DefaultContainer: TDUnitXServiceLocator;
 begin
   if FDefault = nil then
-    FDefault := TDUnitXIoC.Create;
+    FDefault := TDUnitXServiceLocator.Create;
 
   Result := FDefault;
 end;
 
-destructor TDUnitXIoC.Destroy;
+destructor TDUnitXServiceLocator.Destroy;
 begin
   FContainerInfo.Free;
   inherited;
 end;
 
-function TDUnitXIoC.GetInterfaceKey(const typeInfo: PTypeInfo; const AName: string): string;
+function TDUnitXServiceLocator.GetInterfaceKey(const typeInfo: PTypeInfo; const AName: string): string;
 begin
   //By default the key is the interface name unless otherwise found.
   Result := GetTypeName(typeInfo);
@@ -261,7 +261,7 @@ begin
   Result := LowerCase(Result);
 end;
 
-function TDUnitXIoC.InternalResolve(const typeInfo: PTypeInfo; const AName: string): IInterface;
+function TDUnitXServiceLocator.InternalResolve(const typeInfo: PTypeInfo; const AName: string): IInterface;
 var
   key : string;
   registration : TIoCRegistration;
@@ -273,7 +273,7 @@ begin
   if not FContainerInfo.TryGetValue(key, registration) then
   begin
     if FRaiseIfNotFound then
-      raise EIoCResolutionException.CreateFmt(SNoImplementationRegistered, [typeInfo.Name])
+      raise EServiceLocatorResolutionException.CreateFmt(SNoImplementationRegistered, [typeInfo.Name])
     //If we are not meant to raise exceptions, then handle the registration not being set.
     else
       Exit;
@@ -282,10 +282,10 @@ begin
   Result := registration.ActivatorDelegate();
   if Result = nil then
     if FRaiseIfNotFound then
-      raise EIoCResolutionException.CreateFmt(SNoInstance, [typeInfo.Name]);
+      raise EServiceLocatorResolutionException.CreateFmt(SNoInstance, [typeInfo.Name]);
 end;
 
-procedure TDUnitXIoC.RegisterSingleton<TInterface>(const instance: TInterface; const name: string);
+procedure TDUnitXServiceLocator.RegisterSingleton<TInterface>(const instance: TInterface; const name: string);
 begin
   InternalRegisterType(TypeInfo(TInterface), True,
     function: IInterface
@@ -294,7 +294,7 @@ begin
     end, name);
 end;
 
-procedure TDUnitXIoC.RegisterType<TInterface>(const singleton: boolean; const delegate: TActivatorDelegate<TInterface>; const name: string);
+procedure TDUnitXServiceLocator.RegisterType<TInterface>(const singleton: boolean; const delegate: TActivatorDelegate<TInterface>; const name: string);
 var
   internalDelegate: TActivatorDelegate;
 begin
@@ -302,14 +302,14 @@ begin
   InternalRegisterType(TypeInfo(TInterface), singleton, internalDelegate, name);
 end;
 
-function TDUnitXIoC.Resolve<TInterface>(const name: string = ''): TInterface;
+function TDUnitXServiceLocator.Resolve<TInterface>(const name: string = ''): TInterface;
 begin
   IInterface(Result) := InternalResolve(TypeInfo(TInterface), name);
 end;
 
-{ TDUnitXIoC.TIoCRegistration }
+{ TDUnitXServiceLocator.TIoCRegistration }
 
-procedure TDUnitXIoC.TIoCRegistration.Initialize(
+procedure TDUnitXServiceLocator.TIoCRegistration.Initialize(
   const delegate: TActivatorDelegate; singleton: Boolean);
 begin
   inherited Create;
@@ -319,7 +319,7 @@ begin
     ActivatorDelegate := delegate;
 end;
 
-function TDUnitXIoC.TIoCRegistration.CreateSingletonActivator(
+function TDUnitXServiceLocator.TIoCRegistration.CreateSingletonActivator(
   const delegate: TActivatorDelegate): TActivatorDelegate;
 begin
   Result :=

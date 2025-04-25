@@ -34,7 +34,7 @@ uses DUnitX.TestFramework;
 
 implementation
 
-uses System.SysUtils, DUnitX.IoC, FastMM5;
+uses System.SysUtils, DUnitX.ServiceLocator, FastMM5;
 
 type
   TDUnitXFastMM5MemoryLeakMonitor = class(TInterfacedObject, IMemoryLeakMonitor)
@@ -113,7 +113,7 @@ begin
 end;
 
 initialization
-  TDUnitXIoC.DefaultContainer.RegisterType<IMemoryLeakMonitor>(
+  TDUnitXServiceLocator.DefaultContainer.RegisterType<IMemoryLeakMonitor>(
     function: IMemoryLeakMonitor
     begin
       if FastMM_GetInstallationState <> mmisInstalled then

@@ -134,7 +134,7 @@
 	<DCCReference Include="..\Source\DUnitX.FixtureResult.pas"/>
 	<DCCReference Include="..\Source\DUnitX.Generics.pas"/>
 	<DCCReference Include="..\Source\DUnitX.InternalInterfaces.pas"/>
-	<DCCReference Include="..\Source\DUnitX.IoC.pas"/>
+	<DCCReference Include="..\Source\DUnitX.ServiceLocator.pas"/>
 	<DCCReference Include="..\Source\DUnitX.Loggers.Console.pas"/>
 	<DCCReference Include="..\Source\DUnitX.CommandLine.OptionDef.pas"/>
 	<DCCReference Include="..\Source\DUnitX.CommandLine.Options.pas"/>

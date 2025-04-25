@@ -32,7 +32,7 @@ interface
 
 uses
   DUnitX.TestFramework,
-  DUnitX.IoC;
+  DUnitX.ServiceLocator;
 
 type
   {$M+}
@@ -49,7 +49,7 @@ type
 
   TDUnitX_IoCTests = class
   private
-    FContainer : TDUnitXIoC;
+    FContainer : TDUnitXServiceLocator;
   public
     [SetupFixture]
     procedure Setup;
@@ -82,7 +82,7 @@ type
 
 procedure TDUnitX_IoCTests.Setup;
 begin
-  FContainer := TDUnitXIoC.Create;
+  FContainer := TDUnitXServiceLocator.Create;
 
   FContainer.RegisterType<IFoo>(
       function : IFoo
@@ -91,7 +91,7 @@ begin
       end);
 
   {$IFDEF DELPHI_XE_UP}
-  //NOTE: DUnitX.IoC has details on why this is only available for XE up.
+  //NOTE: DUnitX.ServiceLocator has details on why this is only available for XE up.
   FContainer.RegisterType<IFoo,TFoo>('test');
   {$ENDIF}
 
@@ -104,7 +104,7 @@ begin
       'activator_singleton');
 
   {$IFDEF DELPHI_XE_UP}
-  //NOTE: DUnitX.IoC has details on why this is only available for XE up.
+  //NOTE: DUnitX.ServiceLocator has details on why this is only available for XE up.
   FContainer.RegisterType<IFoo,TFoo>(true,'impl_singleton');
   {$ENDIF}
 end;
@@ -135,14 +135,14 @@ begin
   Assert.AreSame(foo1,foo2);
 
   {$IFDEF DELPHI_XE_UP}
-  //NOTE: DUnitX.IoC has details on why this is only available for XE up.
+  //NOTE: DUnitX.ServiceLocator has details on why this is only available for XE up.
   foo1 := FContainer.Resolve<IFoo>('impl_singleton');
   Assert.AreNotSame(foo1,foo2);
   {$ENDIF}
 end;
 
 {$IFDEF DELPHI_XE_UP}
-//NOTE: DUnitX.IoC has details on why this is only available for XE up.
+//NOTE: DUnitX.ServiceLocator has details on why this is only available for XE up.
 procedure TDUnitX_IoCTests.Test_Implementation_Non_Singleton;
 var
   foo1 : IFoo;

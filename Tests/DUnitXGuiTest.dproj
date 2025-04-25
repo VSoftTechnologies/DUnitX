@@ -66,7 +66,7 @@
 			<DCCReference Include="..\Source\DUnitX.InternalInterfaces.pas"/>
 			<DCCReference Include="..\Source\DUnitX.TestFramework.pas"/>
 			<DCCReference Include="..\Source\DUnitX.DUnitCompatibility.pas"/>
-			<DCCReference Include="..\Source\DUnitX.IoC.pas"/>
+			<DCCReference Include="..\Source\DUnitX.ServiceLocator.pas"/>
 			<DCCReference Include="..\Source\DUnitX.Utils.XML.pas"/>
 			<DCCReference Include="..\Source\DUnitX.StackTrace.JCL.pas"/>
 			<DCCReference Include="..\Source\DUnitX.StackTrace.MadExcept3.pas"/>

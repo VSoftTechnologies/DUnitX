@@ -126,7 +126,7 @@
         <DCCReference Include="..\Source\DUnitX.DUnitCompatibility.pas"/>
         <DCCReference Include="..\Source\DUnitX.Generics.pas"/>
         <DCCReference Include="..\Source\DUnitX.InternalInterfaces.pas"/>
-        <DCCReference Include="..\Source\DUnitX.IoC.pas"/>
+        <DCCReference Include="..\Source\DUnitX.ServiceLocator.pas"/>
         <DCCReference Include="..\Source\DUnitX.Loggers.Console.pas"/>
         <DCCReference Include="..\Source\DUnitX.Loggers.Text.pas"/>
         <DCCReference Include="..\Source\DUnitX.Loggers.XML.NUnit.pas"/>

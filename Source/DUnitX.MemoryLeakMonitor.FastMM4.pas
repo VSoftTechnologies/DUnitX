@@ -43,7 +43,7 @@ implementation
 
 uses
   DUnitX.MemoryLeakMonitor.Default,
-  DUnitX.IoC;
+  DUnitX.ServiceLocator;
 
 type
   TDUnitXFastMM4MemoryLeakMonitor = class(TInterfacedObject,IMemoryLeakMonitor)
@@ -135,7 +135,7 @@ end;
 
 initialization
 {$IFDEF USE_FASTMM4_LEAK_MONITOR}
-  TDUnitXIoC.DefaultContainer.RegisterType<IMemoryLeakMonitor>(
+  TDUnitXServiceLocator.DefaultContainer.RegisterType<IMemoryLeakMonitor>(
     function : IMemoryLeakMonitor
     begin
       result := TDUnitXFastMM4MemoryLeakMonitor.Create;

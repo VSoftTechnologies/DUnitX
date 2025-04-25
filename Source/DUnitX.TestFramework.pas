@@ -595,7 +595,7 @@ type
     class property Filter : ITestFilter read FFilter write FFilter;
   end;
 
-  // Register an implementation via TDUnitXIoC.DefaultContainer
+  // Register an implementation via TDUnitXServiceLocator.DefaultContainer
   IStacktraceProvider = interface
   ['{382288B7-932C-4B6E-8417-660FFCA849EB}']
     function GetStackTrace(const ex: Exception; const exAddressAddress: Pointer) : string;
@@ -651,7 +651,7 @@ uses
   DUnitX.CommandLine.Options,
   DUnitX.TestRunner,
   DUnitX.Utils,
-  DUnitX.IoC,
+  DUnitX.ServiceLocator,
   DUnitX.MemoryLeakMonitor.Default,
   DUnitX.FixtureProvider,
   DUnitX.FilterBuilder,
@@ -733,7 +733,7 @@ begin
       if not FOptions.HideBanner then
         DUnitX.Banner.ShowBanner;
 
-      consoleWriter := TDUnitXIoC.DefaultContainer.Resolve<IDUnitXConsoleWriter>;
+      consoleWriter := TDUnitXServiceLocator.DefaultContainer.Resolve<IDUnitXConsoleWriter>;
       if consoleWriter <> nil then
         consoleWriter.SetColour(ccBrightRed,ccDefault);
       Writeline(consoleWriter, parseResult.ErrorText);
@@ -762,7 +762,7 @@ begin
       //if /? or -h then just show usage and exit
       if FOptions.ShowUsage then
       begin
-        consoleWriter := TDUnitXIoC.DefaultContainer.Resolve<IDUnitXConsoleWriter>;
+        consoleWriter := TDUnitXServiceLocator.DefaultContainer.Resolve<IDUnitXConsoleWriter>;
         ShowUsage(consoleWriter);
         Halt(EXIT_OK);
       end;
@@ -778,7 +778,7 @@ begin
   FLock := TCriticalSection.Create;
   RegisteredFixtures := TDictionary<TClass,string>.Create;
   //Make sure we have at least a dummy memory leak monitor registered.
-  if not TDUnitXIoC.DefaultContainer.HasService<IMemoryLeakMonitor> then
+  if not TDUnitXServiceLocator.DefaultContainer.HasService<IMemoryLeakMonitor> then
     DUnitX.MemoryLeakMonitor.Default.RegisterDefaultProvider;
   FFilter := nil;
   Assert.OnAssert := procedure
@@ -914,7 +914,7 @@ end;
 
 initialization
   InitAssert;
-  TDUnitXIoC.DefaultContainer.RegisterType<IFixtureProvider,TDUnitXFixtureProvider>();
+  TDUnitXServiceLocator.DefaultContainer.RegisterType<IFixtureProvider,TDUnitXFixtureProvider>();
 
 finalization
 

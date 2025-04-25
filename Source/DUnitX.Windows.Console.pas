@@ -74,7 +74,7 @@ uses
   {$ENDIF}
 {$ENDIF}
   DUnitX.Utils,
-  DUnitX.IoC;
+  DUnitX.ServiceLocator;
 
 constructor TDUnitXWindowsConsoleWriter.Create;
 var
@@ -216,8 +216,8 @@ end;
 
 {$IFDEF MSWINDOWS}
 initialization
-    TDUnitXIoC.DefaultContainer.RegisterType<IDUnitXConsoleWriter,TDUnitXWindowsConsoleWriter>;
-//    TDUnitXIoC.DefaultContainer.RegisterType<IDUnitXConsoleWriter>(
+    TDUnitXServiceLocator.DefaultContainer.RegisterType<IDUnitXConsoleWriter,TDUnitXWindowsConsoleWriter>;
+//    TDUnitXServiceLocator.DefaultContainer.RegisterType<IDUnitXConsoleWriter>(
 //        function : IDUnitXConsoleWriter
 //        begin
 //          Result := TDUnitXWindowsConsoleWriter.Create;

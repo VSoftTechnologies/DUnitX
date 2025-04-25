@@ -129,7 +129,7 @@
         <DCCReference Include="..\Source\DUnitX.TestResult.pas"/>
         <DCCReference Include="..\Source\DUnitX.TestRunner.pas"/>
         <DCCReference Include="..\Source\DUnitX.Utils.pas"/>
-        <DCCReference Include="..\Source\DUnitX.IoC.pas"/>
+        <DCCReference Include="..\Source\DUnitX.ServiceLocator.pas"/>
         <DCCReference Include="..\Source\DUnitX.MemoryLeakMonitor.Default.pas"/>
         <DCCReference Include="..\Source\DUnitX.DUnitCompatibility.pas"/>
         <BuildConfiguration Include="Release">

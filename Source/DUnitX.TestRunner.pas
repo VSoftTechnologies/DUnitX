@@ -182,7 +182,7 @@ uses
   DUnitX.TestResult,
   DUnitX.FixtureResult,
   DUnitX.Utils,
-  DUnitX.IoC,
+  DUnitX.ServiceLocator,
   DUnitX.ResStrs,
   DUnitX.FixtureBuilder;
 
@@ -793,7 +793,7 @@ begin
     if not ShouldRunThisTest(test) then
       System.Continue;
 
-    memoryAllocationProvider := TDUnitXIoC.DefaultContainer.Resolve<IMemoryLeakMonitor>();
+    memoryAllocationProvider := TDUnitXServiceLocator.DefaultContainer.Resolve<IMemoryLeakMonitor>();
 
     //Start a fresh for this test. If we had an exception last execute of the
     //setup or tear down that may have changed this execution. Therefore we try

@@ -38,7 +38,7 @@ uses
   DUnitX.FixtureResult in '..\Source\DUnitX.FixtureResult.pas',
   DUnitX.Generics in '..\Source\DUnitX.Generics.pas',
   DUnitX.InternalInterfaces in '..\Source\DUnitX.InternalInterfaces.pas',
-  DUnitX.IoC in '..\Source\DUnitX.IoC.pas',
+  DUnitX.ServiceLocator in '..\Source\DUnitX.ServiceLocator.pas',
   DUnitX.Loggers.Console in '..\Source\DUnitX.Loggers.Console.pas',
   DUnitX.CommandLine.OptionDef in '..\Source\DUnitX.CommandLine.OptionDef.pas',
   DUnitX.CommandLine.Options in '..\Source\DUnitX.CommandLine.Options.pas',

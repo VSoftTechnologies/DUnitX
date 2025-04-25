@@ -58,7 +58,7 @@ type
   ///   Internal Class and should not be created directly. Adding this unit to
   ///   the uses will automatically register this class as a
   ///   <see_ cref="DUnitX.ConsoleWriter.Base|IDUnitXConsoleWriter">IDUnitXConsoleWriter</see>
-  ///    in the <see_ cref="TDUnitXIoC|TDUnitXIoC">DUnitX IOC Container</see>.
+  ///    in the <see_ cref="TDUnitXServiceLocator|TDUnitXServiceLocator">DUnitX IOC Container</see>.
   /// </summary>
   TDUnitXLinuxConsoleWriter = class(TDUnitXConsoleWriterBase)
   private
@@ -75,7 +75,7 @@ type
 implementation
 
 uses
- DUnitX.IoC;
+ DUnitX.ServiceLocator;
 
 
 const
@@ -161,7 +161,7 @@ end;
 
 {$IF Defined(LINUX)}
  initialization
-   TDUnitXIoC.DefaultContainer.RegisterType<IDUnitXConsoleWriter, TDUnitXLinuxConsoleWriter>();
+   TDUnitXServiceLocator.DefaultContainer.RegisterType<IDUnitXConsoleWriter, TDUnitXLinuxConsoleWriter>();
 {$IFEND}
 
 end.

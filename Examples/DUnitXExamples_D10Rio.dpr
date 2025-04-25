@@ -9,7 +9,7 @@ uses
   DUnitX.DUnitCompatibility in '..\Source\DUnitX.DUnitCompatibility.pas',
   DUnitX.Generics in '..\Source\DUnitX.Generics.pas',
   DUnitX.InternalInterfaces in '..\Source\DUnitX.InternalInterfaces.pas',
-  DUnitX.IoC in '..\Source\DUnitX.IoC.pas',
+  DUnitX.ServiceLocator in '..\Source\DUnitX.ServiceLocator.pas',
   DUnitX.Loggers.Console in '..\Source\DUnitX.Loggers.Console.pas',
   DUnitX.Loggers.Text in '..\Source\DUnitX.Loggers.Text.pas',
   DUnitX.Loggers.XML.NUnit in '..\Source\DUnitX.Loggers.XML.NUnit.pas',

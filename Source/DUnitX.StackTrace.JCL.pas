@@ -56,7 +56,7 @@ type
 implementation
 
 uses
-  DUnitX.IoC;
+  DUnitX.ServiceLocator;
 
 { TJCLStackTraceProvider }
 
@@ -119,10 +119,10 @@ initialization
 {$IFDEF USE_JCL}
 
   {$IFDEF DELPHI_XE_UP}
-    TDUnitXIoC.DefaultContainer.RegisterType<IStacktraceProvider,TJCLStackTraceProvider>(true);
+    TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider,TJCLStackTraceProvider>(true);
   {$ELSE}
     //D2010 bug prevents using above method.
-    TDUnitXIoC.DefaultContainer.RegisterType<IStacktraceProvider>(true,
+    TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider>(true,
      function : IStacktraceProvider
         begin
           result := TJCLStackTraceProvider.Create;

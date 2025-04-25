@@ -43,7 +43,7 @@ uses
   SysUtils,
   {$ENDIF}
   DUnitX.ConsoleWriter.Base,
-  DUnitX.IoC;
+  DUnitX.ServiceLocator;
 
 
 procedure ShowBanner;
@@ -61,7 +61,7 @@ var
 
 
 begin
-  consoleWriter := TDUnitXIoC.DefaultContainer.Resolve<IDUnitXConsoleWriter>();
+  consoleWriter := TDUnitXServiceLocator.DefaultContainer.Resolve<IDUnitXConsoleWriter>();
   if consoleWriter <> nil then
     consoleWriter.SetColour(ccBrightWhite, ccDefault);
 

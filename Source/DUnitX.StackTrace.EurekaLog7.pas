@@ -57,7 +57,7 @@ type
 implementation
 
 uses
-  DUnitX.IoC;
+  DUnitX.ServiceLocator;
 
 { TEurekaLog7StackTraceProvider }
 
@@ -101,10 +101,10 @@ initialization
 {$IFDEF USE_EUREKALOG7}
 
   {$IFDEF DELPHI_XE_UP}
-    TDUnitXIoC.DefaultContainer.RegisterType<IStacktraceProvider,TEurekaLog7StackTraceProvider>(true);
+    TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider,TEurekaLog7StackTraceProvider>(true);
   {$ELSE}
     //D2010 bug prevents using above method.
-    TDUnitXIoC.DefaultContainer.RegisterType<IStacktraceProvider>(true,
+    TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider>(true,
      function : IStacktraceProvider
         begin
           result := TEurekaLog7StackTraceProvider.Create;

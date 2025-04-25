@@ -95,7 +95,7 @@ type
 implementation
 
 uses
-  DUnitX.IoC;
+  DUnitX.ServiceLocator;
 
 constructor TDUnitXTestResult.Create(const ATestInfo : ITestInfo; const AType : TTestResultType; const AMessage: string; const ALogMessages : TLogMessageArray);
 begin
@@ -206,7 +206,7 @@ begin
   else FIsComparable := False;
 
   {$IFDEF DELPHI_XE_UP}
-  stackTraceProvider := TDUnitXIoC.DefaultContainer.Resolve<IStacktraceProvider>();
+  stackTraceProvider := TDUnitXServiceLocator.DefaultContainer.Resolve<IStacktraceProvider>();
 
   if stackTraceProvider <> nil then
     FStackTrace := stackTraceProvider.GetStackTrace(AThrownException,Addrs);
@@ -230,7 +230,7 @@ var
 {$ENDIF}
 begin
   {$IFDEF DELPHI_XE_UP}
-  stackTraceProvider := TDUnitXIoc.DefaultContainer.Resolve<IStacktraceProvider>();
+  stackTraceProvider := TDUnitXServiceLocator.DefaultContainer.Resolve<IStacktraceProvider>();
   if stackTraceProvider <> nil then
     Result := stackTraceProvider.PointerToAddressInfo(FExceptionAddress)
   else
@@ -250,7 +250,7 @@ var
 {$ENDIF}
 begin
   {$IFDEF DELPHI_XE_UP}
-  stackTraceProvider := TDUnitXIoc.DefaultContainer.Resolve<IStacktraceProvider>();
+  stackTraceProvider := TDUnitXServiceLocator.DefaultContainer.Resolve<IStacktraceProvider>();
   if stackTraceProvider <> nil then
     Result := stackTraceProvider.PointerToLocationInfo(FExceptionAddress)
   else

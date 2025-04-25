@@ -85,7 +85,7 @@ uses
   DUnitX.ResStrs,
   DUnitX.InternalInterfaces,
   DUnitX.InternalDataProvider,
-  DUnitX.IoC;
+  DUnitX.ServiceLocator;
 
 { TDUnitXFixtureProvider }
 

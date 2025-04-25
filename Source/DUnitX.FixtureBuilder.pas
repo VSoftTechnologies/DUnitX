@@ -49,7 +49,7 @@ implementation
 
 uses
   DUnitX.Exceptions,
-  DUnitX.IoC,
+  DUnitX.ServiceLocator,
   DUnitX.TestFixture,
   DUnitX.ResStrs;
 
@@ -61,7 +61,7 @@ var
 begin
   result := FFixtureList;
 
-  provider := TDUnitXIoC.DefaultContainer.Resolve<IFixtureProvider>();
+  provider := TDUnitXServiceLocator.DefaultContainer.Resolve<IFixtureProvider>();
   if provider = nil then
     raise ETestFrameworkException.Create(SNoFixtureProvider);
 

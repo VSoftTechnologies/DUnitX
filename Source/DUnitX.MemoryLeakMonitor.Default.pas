@@ -60,12 +60,12 @@ type
 implementation
 
 uses
-  DUnitX.IoC;
+  DUnitX.ServiceLocator;
 
 
 procedure RegisterDefaultProvider;
 begin
-  TDUnitXIoC.DefaultContainer.RegisterType<IMemoryLeakMonitor, TDUnitXDefaultMemoryLeakMonitor>;
+  TDUnitXServiceLocator.DefaultContainer.RegisterType<IMemoryLeakMonitor, TDUnitXDefaultMemoryLeakMonitor>;
 end;
 
 

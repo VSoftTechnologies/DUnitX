@@ -20,7 +20,7 @@ uses
   DUnitX.InternalInterfaces in '..\DUnitX.InternalInterfaces.pas',
   DUnitX.TestFramework in '..\DUnitX.TestFramework.pas',
   DUnitX.DUnitCompatibility in '..\DUnitX.DUnitCompatibility.pas',
-  DUnitX.IoC in '..\DUnitX.IoC.pas',
+  DUnitX.ServiceLocator in '..\DUnitX.ServiceLocator.pas',
   DUnitX.Utils.XML in '..\DUnitX.Utils.XML.pas',
   DUnitX.StackTrace.JCL in '..\DUnitX.StackTrace.JCL.pas',
   DUnitX.StackTrace.MadExcept3 in '..\DUnitX.StackTrace.MadExcept3.pas',

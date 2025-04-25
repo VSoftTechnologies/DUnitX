@@ -17,7 +17,7 @@ uses
   DUnitX.TestResult in '..\Source\DUnitX.TestResult.pas',
   DUnitX.TestRunner in '..\Source\DUnitX.TestRunner.pas',
   DUnitX.Utils in '..\Source\DUnitX.Utils.pas',
-  DUnitX.IoC in '..\Source\DUnitX.IoC.pas',
+  DUnitX.ServiceLocator in '..\Source\DUnitX.ServiceLocator.pas',
   DUnitX.MemoryLeakMonitor.Default in '..\Source\DUnitX.MemoryLeakMonitor.Default.pas',
   DUnitX.DUnitCompatibility in '..\Source\DUnitX.DUnitCompatibility.pas';
 

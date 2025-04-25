@@ -98,14 +98,14 @@ uses
   SysUtils,
   {$ENDIF}
   DUnitX.AutoDetect.Console,
-  DUnitX.IoC;
+  DUnitX.ServiceLocator;
 
 { TDUnitXConsoleLogger }
 
 constructor TDUnitXConsoleLogger.Create(const quietMode : boolean = false);
 begin
   FQuietMode := quietMode;
-  FConsoleWriter := TDUnitXIoC.DefaultContainer.Resolve<IDUnitXConsoleWriter>();
+  FConsoleWriter := TDUnitXServiceLocator.DefaultContainer.Resolve<IDUnitXConsoleWriter>();
   if FConsoleWriter = nil then
     raise Exception.Create(SNoConsoleWriterClassRegistered);
 end;

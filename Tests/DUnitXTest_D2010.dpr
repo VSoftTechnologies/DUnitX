@@ -26,7 +26,7 @@ uses
   DUnitX.InternalInterfaces in '..\Source\DUnitX.InternalInterfaces.pas',
   DUnitX.TestFramework in '..\Source\DUnitX.TestFramework.pas',
   DUnitX.DUnitCompatibility in '..\Source\DUnitX.DUnitCompatibility.pas',
-  DUnitX.IoC in '..\Source\DUnitX.IoC.pas',
+  DUnitX.ServiceLocator in '..\Source\DUnitX.ServiceLocator.pas',
   DUnitX.Utils.XML in '..\Source\DUnitX.Utils.XML.pas',
   DUnitX.StackTrace.JCL in '..\Source\DUnitX.StackTrace.JCL.pas',
   DUnitX.StackTrace.MadExcept3 in '..\Source\DUnitX.StackTrace.MadExcept3.pas',
