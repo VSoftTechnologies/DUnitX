@@ -52,24 +52,24 @@ type
     //test method.
 
     [Test]
-    [TestCase('Case 1','1,2')]
-    [TestCase('Case 2','3,4')]
-    [TestCase('Case 3','5,6')]
+    [NamedTestCase('Case 1','1,2')]
+    [NamedTestCase('Case 2','3,4')]
+    [NamedTestCase('Case 3','5,6')]
     procedure TestOne(param1 : integer; param2 : integer);
 
 
     [Test]
-    [AutoNameTestCase('1,2')]
-    [AutoNameTestCase('3,4')]
-    [AutoNameTestCase('5,6')]
+    [TestCase('1,2')]
+    [TestCase('3,4')]
+    [TestCase('5,6')]
     [Category('auto')]
     procedure TestAutoName(param1 : integer; param2 : integer);
 
-    [TestCase('Case 3','Blah,1')]
+    [TestCase('Blah,1')]
     procedure AnotherTestMethod(const a : string; const b : integer);
 
     [Test]
-    [TestCase('Case4','password="",password=""')]
+    [TestCase('password="",password=""')]
     procedure TestCaseWithStrings(const AInput : string; const AResult : string);
 
     [Test]
@@ -167,6 +167,26 @@ type
   public
     [Test]
     procedure Testing;
+  end;
+
+  TExternalTestCaseSource = class
+  public
+    class function AddSource : TArray<TArray<integer>>;static;
+  end;
+
+
+  [TestFixture]
+  TTestCaseSourceExampleFixture = class
+  public
+    class function AddSource : TArray<TArray<integer>>;static;
+
+    [Test]
+    [TestCaseSource('AddSource')]
+    procedure Add_Two_Integers(a : integer; b : integer; expected : integer);
+
+    [Test]
+    [TestCaseSource(TExternalTestCaseSource, 'AddSource')]
+    procedure Add_Two_Integers_externalsource(a : integer; b : integer; expected : integer);
   end;
 
 
@@ -356,6 +376,36 @@ begin
   Assert.IsNotNull(FObject, 'Problem with inheritance');
 end;
 
+{ TTestCaseSourceExampleFixtgure }
+
+class function TTestCaseSourceExampleFixture.AddSource: TArray<TArray<integer>>;
+begin
+  Result := TArray<TArray<Integer>>.Create(
+    TArray<Integer>.Create(1, 2, 3),
+    TArray<Integer>.Create(-5, -2, -7)
+  );
+end;
+
+procedure TTestCaseSourceExampleFixture.Add_Two_Integers(a, b, expected: integer);
+begin
+  Assert.AreEqual(expected, a + b);
+end;
+
+procedure TTestCaseSourceExampleFixture.Add_Two_Integers_externalsource(a, b, expected: integer);
+begin
+  Assert.AreEqual(expected, a + b);
+end;
+
+{ TExternalTestCaseSource }
+
+class function TExternalTestCaseSource.AddSource: TArray<TArray<integer>>;
+begin
+  Result := TArray<TArray<Integer>>.Create(
+    TArray<Integer>.Create(1, 2, 3),
+    TArray<Integer>.Create(-5, -2, -7)
+  );
+end;
+
 initialization
 //I was hoping to use RTTI to discover the TestFixture classes, however unlike .NET
 //if we don't touch the class somehow then the linker will remove
@@ -376,4 +426,5 @@ initialization
   TDUnitX.RegisterTestFixture(TExampleFixture3);
   TDUnitX.RegisterTestFixture(TExampleFixture5);
   TDUnitX.RegisterTestFixture(TExampleFixture7);
+  TDUnitX.RegisterTestFixture(TTestCaseSourceExampleFixture);
 end.

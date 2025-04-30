@@ -148,8 +148,6 @@ type
     procedure RTTIDiscoverFixtureClasses;
     function BuildFixtures: IInterface;
 
-    procedure AddStatus(const threadId; const msg: string);
-
     function ShouldRunThisTest(const test: ITest): boolean;
 
     class constructor Create;
@@ -247,12 +245,6 @@ begin
   begin
     logger.OnTestSuccess(threadId,Test);
   end;
-end;
-
-
-procedure TDUnitXTestRunner.AddStatus(const threadId; const msg: string);
-begin
-    //TODO : What should be here???
 end;
 
 function TDUnitXTestRunner.BuildFixtures  : IInterface;

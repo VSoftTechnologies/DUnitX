@@ -48,7 +48,6 @@ type
     FRttiContext : TRttiContext;
   private
     FFixtureClasses : TDictionary<TClass,string>;
-
   protected
     function FormatTestName(const AName: string; const ATimes, ACount: Integer): string;
     function FormatCaseName(const AName:string; Nr:integer):string;
@@ -56,6 +55,8 @@ type
     procedure RTTIDiscoverFixtureClasses;
     procedure GenerateTests(const context: IFixtureProviderContext; const fixture : ITestFixture);
     procedure Execute(const context: IFixtureProviderContext);
+
+
   public
     class constructor Create;
     class destructor Destroy;
@@ -244,6 +245,35 @@ begin
   end;
 end;
 
+
+function ConvertToArray(const v : TValue) : TValueArray;
+begin
+  if v.IsArray then
+    result := v.ToArray
+  else
+  begin
+    SetLength(result,1);
+    result[0]:= v;
+  end;
+end;
+
+function FormatParams( p : TValueArray) : string;
+var
+  j : integer;
+  l : integer;
+begin
+  l := Length(p);
+  for j := 0 to l -1 do
+  begin
+    if j = 0 then
+      result := '(' + p[j].ToString
+    else
+      result := result + ', ' + p[j].ToString;
+  end;
+  result := result + ')';
+end;
+
+
 procedure TDUnitXFixtureProvider.GenerateTests(const context: IFixtureProviderContext; const fixture: ITestFixture);
 var
   childFixture : ITestFixture;
@@ -268,23 +298,16 @@ var
   categoryAttrib : CategoryAttribute;
   ignoredAttrib   : IgnoreAttribute;
   willRaiseAttrib : WillRaiseAttribute;
+
   testCases       : TArray<CustomTestCaseAttribute>;
-  testCaseAttrib  : CustomTestCaseAttribute;
-  testCaseSources : TArray<CustomTestCaseSourceAttribute>;
-  testCaseSourceAttrb : CustomTestCaseSourceAttribute;
-  testCaseData    : TestCaseInfo;
+  testCaseGenerators : TArray<CustomTestCaseGeneratorAttribute>;
+  testCaseSources : TArray<TestCaseSourceAttribute>;
+  tstProviderAttribs : TArray<TestCaseProviderAttribute>;
+
   testEnabled     : boolean;
   isTestMethod    : boolean;
   repeatAttrib    : RepeatTestAttribute;
   maxTimeAttrib   : MaxTimeAttribute;
-
-  tstProviderAttribs : TArray<TestCaseProviderAttribute>;
-  tstProviderAttrib: TestCaseProviderAttribute;
-  iProvider: ITestDataProvider;
-  count,x     : integer;
-  Params      : TValueArray;
-  caseName    : string;
-
 
   category        : string;
   ignoredTest     : boolean;
@@ -296,9 +319,123 @@ var
   repeatCount: Cardinal;
   i: Integer;
   currentFixture: ITestFixture;
-begin
-//  WriteLn('Generating Tests for : ' + fixture.FullName);
 
+  function GenerateTestCases : boolean;
+  var
+    i : integer;
+    testCaseAttrib  : CustomTestCaseAttribute;
+    caseName : string;
+  begin
+    result := false;
+    for testCaseAttrib in testCases do
+    begin
+      for i := 1 to repeatCount do
+      begin
+        if testCaseAttrib is TestCaseAttribute then
+          caseName := '(' + TestCaseAttribute(testCaseAttrib).ValuesText + ')'
+        else
+          caseName := testCaseAttrib.CaseInfo.Name;
+        currentFixture.AddTestCase(method.Name, caseName, FormatTestName(method.Name, i, repeatCount), category, method, testEnabled, testCaseAttrib.CaseInfo.Values);
+        result := true;
+      end;
+    end;
+
+  end;
+
+  function GenerateTestCasesFromProvider : boolean;
+  var
+    i : integer;
+    x : integer;
+    tstProviderAttrib : TestCaseProviderAttribute;
+    iProvider : ITestDataProvider;
+    caseName  : string;
+    Params    : TValueArray;
+    count     : integer;
+  begin
+    result := false;
+    for tstProviderAttrib in tstProviderAttribs do
+    begin
+      if (tstProviderAttrib.ProviderClass <> nil) then
+          iProvider := TestDataProviderManager.GetProvider(tstProviderAttrib.ProviderClass)
+      else
+         iProvider := TestDataProviderManager.GetProvider(tstProviderAttrib.ProviderName);
+      if (iProvider <> nil) then
+      begin
+        count := iProvider.GetCaseCount(method.name);
+        for x := 0 to count -1 do
+        begin
+          caseName := iProvider.GetCaseName(method.name, x);
+          params := iProvider.GetCaseParams(method.name, x);
+          for i := 1 to repeatCount do
+            currentFixture.AddTestCase(method.Name, FormatCaseName(caseName,x), FormatTestName(method.Name, i, repeatCount), category, method, testEnabled, params);
+          result := true;
+        end;
+        iProvider := nil;
+      end;
+    end;
+  end;
+
+  function GenerateTestCasesFromSource : boolean;
+  var
+    testCaseSourceAttrib : TestCaseSourceAttribute;
+    i            : integer;
+    values       : TValue;
+    caseName     : string;
+    params       : TValueArray;
+    sourceMethod : TRttiMethod;
+    sourceType   : TRttiType;
+  begin
+    result := false;
+    for testCaseSourceAttrib in testCaseSources do
+    begin
+      if testCaseSourceAttrib.SourceClass <> nil then
+      begin
+        sourceType := FRttiContext.GetType(testCaseSourceAttrib.SourceClass);
+        sourceType.TryGetMethod(testCaseSourceAttrib.SourceMethodName, sourceMethod);
+      end
+      else
+        rType.TryGetMethod(testCaseSourceAttrib.SourceMethodName, sourceMethod);
+
+      if Assigned(sourceMethod) and sourceMethod.IsStatic then
+      begin
+        for values in sourceMethod.Invoke(fixture.TestClass,[]).ToArray do
+        begin
+          params := ConvertToArray(values);
+          caseName := FormatParams(params);
+          for i := 1 to repeatCount do
+            currentFixture.AddTestCase(method.Name, caseName, FormatTestName(method.Name, i, repeatCount), category, method, testEnabled, params);
+          result := true;
+        end;
+      end;
+    end;
+  end;
+
+  function GenerateTestCasesFromGenerator : boolean;
+  var
+    i : integer;
+    testCaseGeneratorAttrib : CustomTestCaseGeneratorAttribute;
+    testCaseData    : TestCaseInfo;
+  begin
+    result := false;
+    if Length(testCaseGenerators) > 0 then
+    begin
+      for testCaseGeneratorAttrib in testCaseGenerators do
+      begin
+        if Length(testCaseGeneratorAttrib.CaseInfoArray) > 0 then
+        begin
+          result := true;
+          for testCaseData in testCaseGeneratorAttrib.CaseInfoArray do
+          begin
+            for i := 1 to repeatCount do
+              currentFixture.AddTestCase(method.Name, TestCaseData.Name, FormatTestName(method.Name, i, repeatCount), category, method, testEnabled,TestCaseData.Values);
+          end;
+        end;
+      end;
+    end;
+  end;
+
+
+begin
   if fixture.HasChildFixtures then
   begin
     for childFixture in fixture.Children do
@@ -446,72 +583,31 @@ begin
     //if a test case is disabled then just ignore it.
     if testEnabled then
     begin
-      //find out if the test fixture has test cases.
       testCases := method.GetAttributesOfType<CustomTestCaseAttribute>;
-      //find out if the test has test sources
-      testCaseSources := method.GetAttributesOfType<CustomTestCaseSourceAttribute>;
-      //Find out if we got a TestProviderAttribute
+      testCaseGenerators := method.GetAttributesOfType<CustomTestCaseGeneratorAttribute>;
       tstProviderAttribs := Method.GetAttributesOfType<TestCaseProviderAttribute>;
+      testCaseSources := Method.GetAttributesOfType<TestCaseSourceAttribute>;
 
-      if (Length(testCases) > 0) or (Length(testCaseSources) > 0) or (Length(tstProviderAttribs)>0)then
+      if (Length(testCases) > 0) or (Length(testCaseGenerators) > 0) or (Length(tstProviderAttribs) > 0) or (Length(testCaseSources) > 0) then
       begin
         if not ignoredTest then
         begin
-          //Add the Providertests first
-          for tstProviderAttrib in tstProviderAttribs do
-          begin
-            if (tstProviderAttrib.ProviderClass <> nil) then
-                iProvider := TestDataProviderManager.GetProvider(tstProviderAttrib.ProviderClass)
-            else
-               iProvider := TestDataProviderManager.GetProvider(tstProviderAttrib.ProviderName);
-            if (iProvider <> nil) then
-            begin
-              count := iProvider.GetCaseCount(method.name);
-              for x := 0 to count -1 do
-              begin
-                caseName := iProvider.GetCaseName(method.name, x);
-                params := iProvider.GetCaseParams(method.name, x);
-                for i := 1 to repeatCount do
-                begin
-                  currentFixture.AddTestCase(method.Name, FormatCaseName(caseName,x), FormatTestName(method.Name, i, repeatCount), category, method, testEnabled, params);
-                end;
-              end;
-              iProvider := nil;
-            end;
-          end;
+          //Add TestCaseSource tests
+          if GenerateTestCasesFromSource then
+            continue;
+          //Add the Providertests
+          if GenerateTestCasesFromProvider then
+            continue;
           // Add individual test cases
-          for testCaseAttrib in testCases do
-          begin
-            for i := 1 to repeatCount do
-            begin
-              if testCaseAttrib is AutoNameTestCaseAttribute then
-                caseName := '(' + AutoNameTestCaseAttribute(testCaseAttrib).ValuesText + ')'
-              else
-                caseName := testCaseAttrib.CaseInfo.Name;
-              currentFixture.AddTestCase(method.Name, caseName, FormatTestName(method.Name, i, repeatCount), category, method, testEnabled, testCaseAttrib.CaseInfo.Values);
-            end;
-          end;
-          // Add test case from test \case sources
-          if Length(testCaseSources) > 0 then
-          begin
-            for testCaseSourceAttrb in testCaseSources do
-            begin
-              if Length(testCaseSourceAttrb.CaseInfoArray) > 0 then
-              begin
-                for testCaseData in testCaseSourceAttrb.CaseInfoArray do
-                begin
-                  for i := 1 to repeatCount do
-                  begin
-                    currentFixture.AddTestCase(method.Name, TestCaseData.Name, FormatTestName(method.Name, i, repeatCount), category, method, testEnabled,TestCaseData.Values);
-                  end;
-                end;
-              end;
-            end;
-          end;
+          if GenerateTestCases then
+            continue;
+          // Add test case from test case Generators
+          if GenerateTestCasesFromGenerator then
+            continue
         end
         else
         begin
-          //if a testcase is ignored, just add it as a regular test.
+          //if a testcase is ignored, just add it as a regular test. It will not be run but we need it for reporting.
           currentFixture.AddTest(method.Name, TTestMethod(meth), method.Name, category, method, true, true, ignoredReason, maxTime);
         end;
         continue;

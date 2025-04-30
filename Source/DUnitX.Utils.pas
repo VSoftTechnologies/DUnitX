@@ -624,6 +624,9 @@ type
 
     function ToObject: TObject;
     function ToVarRec: TVarRec;
+    function ToArray: TArray<TValue>;
+
+
 
     class function ToString(const Value: TValue): string; overload; static;
     class function ToString(const Values: array of TValue): string; overload; static;
@@ -2824,6 +2827,20 @@ begin
 {$ENDIF}
     vtInt64: Result := Value.VInt64^;
     vtUnicodeString: Result := string(Value.VUnicodeString);
+  end;
+end;
+
+function TValueHelper.ToArray: TArray<TValue>;
+var
+  len: Integer;
+  i: Integer;
+begin
+  len := GetArrayLength;
+  SetLength(Result, len);
+  if len > 0 then
+  begin
+    for i := 0 to len - 1 do
+      Result[i] := GetArrayElement(i);
   end;
 end;
 

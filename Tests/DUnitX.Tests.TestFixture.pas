@@ -52,7 +52,7 @@ type
   end;
   {$M-}
 
-  MockTestSourceAttribute = class(CustomTestCaseSourceAttribute)
+  MockTestSourceAttribute = class(CustomTestCaseGeneratorAttribute)
   protected
     function GetCaseInfoArray : TestCaseInfoArray; override;
   end;
