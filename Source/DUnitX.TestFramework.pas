@@ -606,6 +606,7 @@ type
     class procedure RegisterTestFixture(const AClass : TClass; const AName : string = '' );
     class function CurrentRunner : ITestRunner;
     class function GetAssertCount(const AThreadId: TThreadID) : Cardinal;
+    class procedure ResetAssertCount(const AThreadId: TThreadID);
     ///  Parses the command line options and applies them the the Options object.
     ///  Will throw exception if there are errors.
     class procedure CheckCommandLine;
@@ -871,6 +872,16 @@ begin
 
   if not RegisteredFixtures.ContainsKey(AClass) then
       RegisteredFixtures.Add(AClass,sName );
+end;
+
+class procedure TDUnitX.ResetAssertCount(const AThreadId: TThreadID);
+begin
+  FLock.Enter;
+  try
+    FAssertCounters.Remove(AThreadId);//
+  finally
+    FLock.Leave;
+  end;
 end;
 
 {$IFDEF DELPHI_XE2_UP}

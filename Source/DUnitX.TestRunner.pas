@@ -844,22 +844,17 @@ begin
     FCurrentTestName := test.Name;
     try
       Self.Loggers_ExecuteTest(threadId, test as ITestInfo);
-      assertBeforeCount := 0;//to shut the compiler up;
-      if FFailsOnNoAsserts then
-        assertBeforeCount := TDUnitX.GetAssertCount(threadId);
+      TDUnitX.ResetAssertCount(threadId);
+      assertBeforeCount := 0;
       memoryAllocationProvider.PreTest;
       try
         testExecute.Execute(context);
       finally
         memoryAllocationProvider.PostTest;
       end;
-
-      if FFailsOnNoAsserts then
-      begin
-        assertAfterCount := TDUnitX.GetAssertCount(threadId);
-        if (assertBeforeCount = assertAfterCount)  then
+      assertAfterCount := TDUnitX.GetAssertCount(threadId);
+      if FFailsOnNoAsserts and (assertBeforeCount = assertAfterCount) then
           raise ENoAssertionsMade.Create(SNoAssertions);
-      end;
 
       Result := ExecuteSuccessfulResult(context, threadId, test, FLogMessages.Text, FLogMessagesEx);
       FLogMessages.Clear;
