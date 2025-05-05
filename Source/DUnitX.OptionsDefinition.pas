@@ -114,6 +114,13 @@ begin
                                              TDUnitX.Options.ConsoleMode := value
                                           end);
 
+  TOptionsRegistry.RegisterOption<integer>('mdof','m','Max degree of parallelism (default = 0)',
+                                          procedure(value : integer)
+                                          begin
+                                             TDUnitX.Options.MaxDegreeOfParallelism := value;
+                                          end);
+
+
   def := TOptionsRegistry.RegisterOption<boolean>('h','?','Show Usage',
                                           procedure(value : boolean)
                                           begin

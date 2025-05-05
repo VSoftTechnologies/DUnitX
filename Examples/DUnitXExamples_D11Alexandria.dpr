@@ -4,6 +4,7 @@ program DUnitXExamples_D11Alexandria;
 
 uses
   System.SysUtils,
+  System.Diagnostics,
   DUnitX.Examples.General in 'DUnitX.Examples.General.pas',
   DUnitX.ConsoleWriter.Base in '..\Source\DUnitX.ConsoleWriter.Base.pas',
   DUnitX.DUnitCompatibility in '..\Source\DUnitX.DUnitCompatibility.pas',
@@ -42,15 +43,19 @@ uses
   ProviderExample in 'ProviderExample.pas',
   DUnitX.FixtureBuilder in '..\Source\DUnitX.FixtureBuilder.pas',
   DUnitX.FilterBuilder in '..\Source\DUnitX.FilterBuilder.pas',
-  DUnitX.Filters in '..\Source\DUnitX.Filters.pas';
+  DUnitX.Filters in '..\Source\DUnitX.Filters.pas',
+  DUnitX.Loggers.XML.JUnit in '..\Source\DUnitX.Loggers.XML.JUnit.pas',
+  DUnitX.OptionsDefinition in '..\Source\DUnitX.OptionsDefinition.pas';
 
 var
   runner : ITestRunner;
   results : IRunResults;
   logger : ITestLogger;
   nunitLogger : ITestLogger;
+  stopWatch : TStopWatch;
 begin
   try
+    TDUnitX.CheckCommandLine;
     //Create the runner
     runner := TDUnitX.CreateRunner;
     runner.UseRTTI := True;
@@ -67,9 +72,10 @@ begin
     runner.AddLogger(nunitLogger);
 
     //Run tests
+    stopWatch := TStopWatch.StartNew;
     results := runner.Execute;
-
-    System.Write('Done.. press <Enter> key to quit.');
+    stopWatch.Stop;
+    System.Write(Format('Done in %d ms.. press <Enter> key to quit.', [stopWatch.ElapsedMilliseconds]));
     System.Readln;
   except
     on E: Exception do

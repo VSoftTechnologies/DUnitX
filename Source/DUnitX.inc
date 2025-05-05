@@ -97,6 +97,11 @@
 {$IFEND}
 
 
+{$IF CompilerVersion >= 35.0 } //12.0 up
+  {$DEFINE THREADPOOL_ENABLED}
+{$IFEND}
+
+
 {$I DUnitX.Stacktrace.inc}
 {$I DUnitX.MemoryLeaks.inc}
 

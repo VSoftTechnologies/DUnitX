@@ -36,6 +36,11 @@ uses
   System.SysUtils,
   System.Rtti,
   System.Generics.Collections,
+
+  {$IFDEF THREADPOOL_ENABLED}
+  System.Threading,
+  {$ENDIF}
+
   {$ELSE}
   Classes,
   SysUtils,
@@ -57,7 +62,7 @@ type
   private class var
     FRttiContext : TRttiContext;
   public class var
-    FActiveRunners : TDictionary<TThreadID,IWeakReference<ITestRunner>>;
+    FActiveRunner : IWeakReference<ITestRunner>;
   private
     FLoggers          : TList<ITestLogger>;
     FUseRTTI          : boolean;
@@ -69,6 +74,10 @@ type
 
     FFailsOnNoAsserts : boolean;
     FCurrentTestName  : string;
+
+    FUseThreadPool    : boolean;
+    FMaxThreads       : integer;
+    FMinThreads       : integer;
   protected
     procedure CountAndFilterTests(const fixtureList: ITestFixtureList; var count, active: Cardinal);
     //Logger calls - sequence ordered
@@ -103,11 +112,13 @@ type
 
     procedure Loggers_TestingEnds(const RunResults: IRunResults);
 
+    procedure DoExecuteFixture({$IFDEF THREADPOOL_ENABLED}threadpool : TThreadPool;{$ENDIF} const theFixture : ITestFixture; const parentFixtureResult : IFixtureResult; const context: ITestExecuteContext; const threadId : Cardinal);
+
     //ITestRunner
     procedure AddLogger(const value: ITestLogger);
     function Execute: IRunResults;
 
-    procedure ExecuteFixtures(const parentFixtureResult: IFixtureResult; const context: ITestExecuteContext; const threadId: TThreadID; const fixtures: ITestFixtureList);
+    procedure ExecuteFixtures({$IFDEF THREADPOOL_ENABLED}threadpool : TThreadPool;{$ENDIF} const parentFixtureResult: IFixtureResult; const context: ITestExecuteContext; const threadId: TThreadID; const fixtures: ITestFixtureList);
     function ExecuteSetupFixtureMethod(const context: ITestExecuteContext; const threadId: TThreadID; const fixture: ITestFixture; const fixtureResult: IFixtureResult) : boolean;
     function  ExecuteTestSetupMethod(const context: ITestExecuteContext; const threadId: TThreadID; const fixture: ITestFixture; const test: ITest; out errorResult: ITestResult; const memoryAllocationProvider: IMemoryLeakMonitor): boolean;
 
@@ -132,6 +143,16 @@ type
     procedure SetUseRTTI(const value: Boolean);
     function GetFailsOnNoAsserts: boolean;
     procedure SetFailsOnNoAsserts(const value: boolean);
+
+    function GetUseThreadPool : boolean;
+    procedure SetUseThreadPool(value : boolean);
+
+    function GetMaxThreads : integer;
+    procedure SetMaxThreads(value : integer);
+
+    function GetMinThreads : integer;
+    procedure SetMinThreads(value : integer);
+
 
     procedure Log(const logType: TLogLevel; const msg: string); overload;
     procedure Log(const msg: string); overload;
@@ -173,6 +194,7 @@ uses
   StrUtils,
   Types,
   {$ENDIF}
+
   DUnitX.Attributes,
   DUnitX.CommandLine.Options,
   DUnitX.TestFixture,
@@ -262,7 +284,7 @@ end;
 class constructor TDUnitXTestRunner.Create;
 begin
   FRttiContext := TRttiContext.Create;
-  FActiveRunners := TDictionary<TThreadID,IWeakReference<ITestRunner>>.Create;
+  FActiveRunner := nil;
 end;
 
 function TDUnitXTestRunner.CheckMemoryAllocations(const test: ITest; out errorResult: ITestResult; const memoryAllocationProvider: IMemoryLeakMonitor): boolean;
@@ -321,13 +343,14 @@ begin
   FLoggers := TList<ITestLogger>.Create;
   FFixtureClasses := TDictionary<TClass,string>.Create;
   FUseRTTI := False;
+
+  //Defaulting to using the options here to make working with existing code/testinsight easier.
+  FMinThreads := 1;
+  FMaxThreads := TDUnitX.Options.MaxDegreeOfParallelism;
+  FUseThreadPool := FMaxThreads > 1;
+
   FLogMessages := TStringList.Create;
-  MonitorEnter(TDUnitXTestRunner.FActiveRunners);
-  try
-    TDUnitXTestRunner.FActiveRunners.Add(TThread.CurrentThread.ThreadID, TWeakReference<ITestRunner>.Create(Self));
-  finally
-    MonitorExit(TDUnitXTestRunner.FActiveRunners);
-  end;
+  TDUnitXTestRunner.FActiveRunner := TWeakReference<ITestRunner>.Create(Self);
 end;
 
 constructor TDUnitXTestRunner.Create(const AListener: ITestLogger);
@@ -355,15 +378,7 @@ destructor TDUnitXTestRunner.Destroy;
 var
   tId: TThreadID;
 begin
-  MonitorEnter(TDUnitXTestRunner.FActiveRunners);
-  try
-    tId := TThread.CurrentThread.ThreadID;
-    if TDUnitXTestRunner.FActiveRunners.ContainsKey(tId) then
-      TDUnitXTestRunner.FActiveRunners.Remove(tId);
-  finally
-    MonitorExit(TDUnitXTestRunner.FActiveRunners);
-  end;
-
+  TDUnitXTestRunner.FActiveRunner := nil;
   FLogMessages.Free;
   FLoggers.Free;
   FFixtureClasses.Free;
@@ -372,7 +387,7 @@ end;
 
 class destructor TDUnitXTestRunner.Destroy;
 begin
-  FActiveRunners.Free;
+  FActiveRunner := nil;
   FRttiContext.Free;
 end;
 
@@ -555,6 +570,12 @@ var
   testCount : Cardinal;
   testActiveCount : Cardinal;
   fixtures : IInterface;
+  fixtureRes : IFixtureResult;
+
+  {$IFDEF THREADPOOL_ENABLED}
+  threadPool : TThreadPool;
+  {$ENDIF}
+
 begin
   result := nil;
 
@@ -565,11 +586,7 @@ begin
     raise ENoTestsRegistered.Create(SNoFixturesFound);
 
   testCount := 0;
-  //TODO: Count the active tests that we have.
   testActiveCount := 0;
-
-  //TODO : Filter tests here?
-
 
   CountAndFilterTests(fixtureList,testCount,testActiveCount);
 
@@ -580,9 +597,24 @@ begin
   //TODO: Record Test metrics.. runtime etc.
   threadId := TThread.CurrentThread.ThreadID;
   Self.Loggers_TestingStarts(threadId, testCount, testActiveCount);
+
+  {$IFDEF THREADPOOL_ENABLED}
+  if FUseThreadPool then
+  begin
+    threadPool := TThreadPool.Create;
+    threadPool.MinWorkerThreads := FMinThreads;
+    threadPool.MaxWorkerThreads := FMaxThreads;
+  end
+  else
+    threadPool := nil;
+  {$ENDIF}
   try
-    ExecuteFixtures(nil,context, threadId, fixtureList);
+    ExecuteFixtures({$IFDEF THREADPOOL_ENABLED}threadpool,{$ENDIF} nil,context, threadId, fixtureList);
     context.RollupResults; //still need this for overall time.
+    //rollup the namespaces.
+    //if a fixture has no tests and only one child, then we reduce to that child.
+    for fixtureRes in result.FixtureResults do
+      fixtureRes.Reduce;
   finally
     Self.Loggers_TestingEnds(result);
   end;
@@ -597,12 +629,10 @@ begin
 end;
 
 class function TDUnitXTestRunner.GetActiveRunner: ITestRunner;
-var
-  ref : IWeakReference<ITestRunner>;
 begin
   result := nil;
-  if FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId,ref) then
-    result := ref.Data;
+  if TDUnitXTestRunner.FActiveRunner <> nil then
+    result :=  TDUnitXTestRunner.FActiveRunner.Data;
 end;
 
 class function TDUnitXTestRunner.GetCurrentTestName: string;
@@ -619,6 +649,16 @@ begin
   Result := FFailsOnNoAsserts;
 end;
 
+function TDUnitXTestRunner.GetMaxThreads: integer;
+begin
+  result := FMaxThreads;
+end;
+
+function TDUnitXTestRunner.GetMinThreads: integer;
+begin
+  result := FMinThreads;
+end;
+
 function TDUnitXTestRunner.ExecuteFailureResult(const context: ITestExecuteContext; const threadId: TThreadID; const test: ITest; const exception : Exception; const aLogMessages: TLogMessageArray) : ITestError;
 var
   testInfo : ITestInfo;
@@ -628,12 +668,55 @@ begin
   Result := TDUnitXTestError.Create(testInfo, TTestResultType.Failure, exception, ExceptAddr, exception.Message, aLogMessages);
 end;
 
-procedure TDUnitXTestRunner.ExecuteFixtures(const parentFixtureResult : IFixtureResult; const context: ITestExecuteContext; const threadId: TThreadID; const fixtures: ITestFixtureList);
+procedure TDUnitXTestRunner.DoExecuteFixture({$IFDEF THREADPOOL_ENABLED}threadpool : TThreadPool;{$ENDIF} const theFixture : ITestFixture; const parentFixtureResult : IFixtureResult; const context: ITestExecuteContext; const threadId : Cardinal);
 var
-  fixture: ITestFixture;
   fixtureResult : IFixtureResult;
   setupOk : boolean;
 begin
+  setupOk := true;
+  fixtureResult := TDUnitXFixtureResult.Create(parentFixtureResult, theFixture as ITestFixtureInfo);
+  if parentFixtureResult = nil then
+    context.RecordFixture(fixtureResult);
+
+  Self.Loggers_StartTestFixture(threadId, theFixture as ITestFixtureInfo);
+  try
+    //Initialize the fixture as it may have been destroyed in a previous run (when using gui runner).
+    if theFixture.HasTests then
+      theFixture.InitFixtureInstance;
+    //only run the setup method if there are actually tests
+    if theFixture.HasActiveTests and Assigned(theFixture.SetupFixtureMethod) then
+      //returns false if an exception happens in the setup.
+      setupOk := ExecuteSetupFixtureMethod(context, threadId, theFixture, fixtureResult);
+
+    if setupOk and theFixture.HasTests then
+      ExecuteTests(context, threadId, theFixture, fixtureResult);
+
+    if theFixture.HasChildFixtures then
+      ExecuteFixtures({$IFDEF THREADPOOL_ENABLED}threadpool,{$ENDIF} fixtureResult, context, threadId, theFixture.Children);
+
+    // teardown will not run if the fixture setup errored.
+    if setupOk and theFixture.HasActiveTests and Assigned(theFixture.TearDownFixtureMethod) then
+      //TODO: Tricker yet each test above us requires errors that occur here
+      ExecuteTearDownFixtureMethod(context, threadId, theFixture, fixtureResult);
+
+    //rollup durations - needs to be done here to ensure correct timing.
+    (fixtureResult as IFixtureResultBuilder).RollUpResults;
+    finally
+      Self.Loggers_EndTestFixture(threadId, fixtureResult);
+    end;
+end;
+
+procedure TDUnitXTestRunner.ExecuteFixtures({$IFDEF THREADPOOL_ENABLED}threadpool : TThreadPool;{$ENDIF}const parentFixtureResult : IFixtureResult; const context: ITestExecuteContext; const threadId: TThreadID; const fixtures: ITestFixtureList);
+var
+  fixture: ITestFixture;
+//  fixtureResult : IFixtureResult;
+//  setupOk : boolean;
+
+  fixtureCount : integer;
+  enabledFixtures : ITestFixtureList;
+begin
+  enabledFixtures := TTestFixtureList.Create;
+
   for fixture in fixtures do
   begin
     if not fixture.Enabled then
@@ -642,37 +725,61 @@ begin
     if (not fixture.HasTests) and (not fixture.HasChildTests) then
       System.Continue;
 
-    setupOk := True;
-    fixtureResult := TDUnitXFixtureResult.Create(parentFixtureResult, fixture as ITestFixtureInfo);
-    if parentFixtureResult = nil then
-      context.RecordFixture(fixtureResult);
+    enabledFixtures.Add(fixture);
+  end;
 
-    Self.Loggers_StartTestFixture(threadId, fixture as ITestFixtureInfo);
-    try
-      //Initialize the fixture as it may have been destroyed in a previous run (when using gui runner).
-      if fixture.HasTests then
-        fixture.InitFixtureInstance;
-      //only run the setup method if there are actually tests
-      if fixture.HasActiveTests and Assigned(fixture.SetupFixtureMethod) then
-        //returns false if an exception happens in the setup.
-        setupOk := ExecuteSetupFixtureMethod(context, threadId, fixture, fixtureResult);
+  fixtureCount := enabledFixtures.Count;
+  {$IFDEF THREADPOOL_ENABLED}
+  if FUseThreadPool then
+  begin
+    TParallel.For(0, fixtureCount - 1,
+      procedure(i: Integer)
+      var
+        currentFixture : ITestFixture;
+      begin
+        currentFixture := enabledFixtures[i];
+        DoExecuteFixture(threadPool, currentFixture, parentFixtureResult, context, TThread.Current.ThreadID );
+      end, threadPool);
+    exit;
+  end;
+  {$ENDIF}
 
-      if setupOk and fixture.HasTests then
-        ExecuteTests(context, threadId, fixture, fixtureResult);
+  //single threaded.
+  for fixture in enabledFixtures do
+  begin
+    DoExecuteFixture( {$IFDEF THREADPOOL_ENABLED}nil,{$ENDIF} fixture, parentFixtureResult, context, TThread.Current.ThreadID );
 
-      if fixture.HasChildFixtures then
-        ExecuteFixtures(fixtureResult, context, threadId, fixture.Children);
-
-      // teardown will not run if the fixture setup errored.
-      if setupOk and fixture.HasActiveTests and Assigned(fixture.TearDownFixtureMethod) then
-        //TODO: Tricker yet each test above us requires errors that occur here
-        ExecuteTearDownFixtureMethod(context, threadId, fixture, fixtureResult);
-
-      //rollup durations - needs to be done here to ensure correct timing.
-      (fixtureResult as IFixtureResultBuilder).RollUpResults;
-    finally
-      Self.Loggers_EndTestFixture(threadId, fixtureResult);
-    end;
+//    setupOk := True;
+//    fixtureResult := TDUnitXFixtureResult.Create(parentFixtureResult, fixture as ITestFixtureInfo);
+//    if parentFixtureResult = nil then
+//      context.RecordFixture(fixtureResult);
+//
+//    Self.Loggers_StartTestFixture(threadId, fixture as ITestFixtureInfo);
+//    try
+//      //Initialize the fixture as it may have been destroyed in a previous run (when using gui runner).
+//      if fixture.HasTests then
+//        fixture.InitFixtureInstance;
+//      //only run the setup method if there are actually tests
+//      if fixture.HasActiveTests and Assigned(fixture.SetupFixtureMethod) then
+//        //returns false if an exception happens in the setup.
+//        setupOk := ExecuteSetupFixtureMethod(context, threadId, fixture, fixtureResult);
+//
+//      if setupOk and fixture.HasTests then
+//        ExecuteTests(context, threadId, fixture, fixtureResult);
+//
+//      if fixture.HasChildFixtures then
+//        ExecuteFixtures(nil, fixtureResult, context, threadId, fixture.Children);
+//
+//      // teardown will not run if the fixture setup errored.
+//      if setupOk and fixture.HasActiveTests and Assigned(fixture.TearDownFixtureMethod) then
+//        //TODO: Tricker yet each test above us requires errors that occur here
+//        ExecuteTearDownFixtureMethod(context, threadId, fixture, fixtureResult);
+//
+//      //rollup durations - needs to be done here to ensure correct timing.
+//      (fixtureResult as IFixtureResultBuilder).RollUpResults;
+//    finally
+//      Self.Loggers_EndTestFixture(threadId, fixtureResult);
+//    end;
   end;
 end;
 
@@ -800,7 +907,7 @@ begin
 
     //If the setup fails then we need to show this as the result.
     if Assigned(fixture.SetupMethod) and (not test.Ignored) then
-    if not (ExecuteTestSetupMethod(context, threadId, fixture, test, setupResult, memoryAllocationProvider)) then
+      if not (ExecuteTestSetupMethod(context, threadId, fixture, test, setupResult, memoryAllocationProvider)) then
         testResult := setupResult;
 
     try
@@ -903,6 +1010,11 @@ begin
   result := FUseRTTI;
 end;
 
+function TDUnitXTestRunner.GetUseThreadPool: boolean;
+begin
+  result := FUseThreadPool;
+end;
+
 procedure TDUnitXTestRunner.InvalidateTestsInFixture(const aFixture: ITestFixture; const aContext: ITestExecuteContext; const aThreadId: TThreadID; const aException: Exception; const aFixtureResult: IFixtureResult);
 var
   lTest: ITest;
@@ -925,9 +1037,24 @@ begin
   FFailsOnNoAsserts := value;
 end;
 
+procedure TDUnitXTestRunner.SetMaxThreads(value: integer);
+begin
+  FMaxThreads := value;
+end;
+
+procedure TDUnitXTestRunner.SetMinThreads(value: integer);
+begin
+  FMinThreads := value;
+end;
+
 procedure TDUnitXTestRunner.SetUseRTTI(const value: Boolean);
 begin
   FUseRTTI := value;
+end;
+
+procedure TDUnitXTestRunner.SetUseThreadPool(value: boolean);
+begin
+  FUseThreadPool := value;
 end;
 
 procedure TDUnitXTestRunner.Status(const msg: string);

@@ -94,8 +94,10 @@ uses
   DUnitX.ResStrs,
   {$IFDEF USE_NS}
   System.SysUtils,
+  System.SyncObjs,
   {$ELSE}
   SysUtils,
+  SyncObjs,
   {$ENDIF}
   DUnitX.AutoDetect.Console,
   DUnitX.ServiceLocator;
@@ -120,19 +122,25 @@ procedure TDUnitXConsoleLogger.OnEndSetupFixture(const threadId: TThreadID; cons
 begin
   if FQuietMode then
     exit;
-
-  FConsoleWriter.Outdent(1);
-  FConsoleWriter.WriteLn;
+  MonitorEnter(Self);
+  try
+    FConsoleWriter.Outdent(1);
+    FConsoleWriter.WriteLn;
+  finally
+    MonitorExit(Self);
+  end;
 end;
 
 procedure TDUnitXConsoleLogger.OnEndSetupTest(const threadId: TThreadID; const Test: ITestInfo);
 begin
   if FQuietMode then
     exit;
-
-//  FConsoleWriter.WriteLn;
-//  FConsoleWriter.Outdent(1);
-  FConsoleWriter.WriteLn;
+  MonitorEnter(Self);
+  try
+    FConsoleWriter.WriteLn;
+  finally
+    MonitorExit(Self);
+  end;
 end;
 
 procedure TDUnitXConsoleLogger.OnEndTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
@@ -149,58 +157,81 @@ procedure TDUnitXConsoleLogger.OnEndTest(const threadId: TThreadID; const  Test:
 begin
   if FQuietMode then
     exit;
-
-  FConsoleWriter.Outdent(1);
-  FConsoleWriter.WriteLn;
+  MonitorEnter(Self);
+  try
+    FConsoleWriter.Outdent(1);
+    FConsoleWriter.WriteLn;
+  finally
+    MonitorExit(Self);
+  end;
 end;
 
 procedure TDUnitXConsoleLogger.OnEndTestFixture(const threadId: TThreadID; const results: IFixtureResult);
 begin
   if FQuietMode then
     exit;
-
-  FConsoleWriter.Outdent(3);
-  FConsoleWriter.WriteLn;
+  MonitorEnter(Self);
+  try
+    FConsoleWriter.Outdent(3);
+    FConsoleWriter.WriteLn;
+  finally
+    MonitorExit(Self);
+  end;
 end;
 
 procedure TDUnitXConsoleLogger.OnExecuteTest(const threadId: TThreadID; const  Test: ITestInfo);
 begin
-  if FQuietMode then
-  begin
-    FConsoleWriter.Write('.');
-    exit;
+  MonitorEnter(Self);
+  try
+    if FQuietMode then
+    begin
+      FConsoleWriter.Write('.');
+      exit;
+    end;
+    FConsoleWriter.WriteLn(SExecutingTest + Test.Name);
+    FConsoleWriter.WriteLn;
+  finally
+    MonitorExit(Self);
   end;
-
-
-  //SetConsoleRunTestColor();
-  //FConsoleWriter.Indent(1);
-  FConsoleWriter.WriteLn(SExecutingTest + Test.Name);
-  FConsoleWriter.WriteLn;
-  //SetConsoleDefaultColor();
 end;
 
 procedure TDUnitXConsoleLogger.OnTestError(const threadId: TThreadID; const  Error: ITestError);
 begin
-  if FQuietMode then
-  begin
-    FConsoleWriter.Write('E');
-    exit;
+  MonitorEnter(Self);
+  try
+    if FQuietMode then
+    begin
+      FConsoleWriter.Write('E');
+      exit;
+    end;
+  finally
+    MonitorExit(Self);
   end;
 end;
 
 procedure TDUnitXConsoleLogger.OnTestFailure(const threadId: TThreadID; const  Failure: ITestError);
 begin
-  if FQuietMode then
-  begin
-    FConsoleWriter.Write('F');
-    exit;
+  MonitorEnter(Self);
+  try
+    if FQuietMode then
+    begin
+      FConsoleWriter.Write('F');
+      exit;
+    end;
+  finally
+    MonitorExit(Self);
   end;
 end;
 
 procedure TDUnitXConsoleLogger.OnTestIgnored(const threadId: TThreadID; const AIgnored: ITestResult);
 begin
-  if FQuietMode then
-    FConsoleWriter.Write('I');
+  MonitorEnter(Self);
+  try
+    if FQuietMode then
+      FConsoleWriter.Write('I');
+  finally
+    MonitorExit(Self);
+  end;
 
 end;
 
@@ -209,19 +240,24 @@ begin
   if FQuietMode then
     exit;
 
-  FConsoleWriter.Indent(2);
+  MonitorEnter(Self);
   try
+    FConsoleWriter.Indent(2);
+    try
 
-    case logType  of
-      TLogLevel.Information: SetConsoleDefaultColor();
-      TLogLevel.Warning: SetConsoleWarningColor();
-      TLogLevel.Error: SetConsoleErrorColor();
+      case logType  of
+        TLogLevel.Information: SetConsoleDefaultColor();
+        TLogLevel.Warning: SetConsoleWarningColor();
+        TLogLevel.Error: SetConsoleErrorColor();
+      end;
+
+      FConsoleWriter.WriteLn(msg);
+    finally
+      FConsoleWriter.Outdent(2);
+      SetConsoleDefaultColor();
     end;
-
-    FConsoleWriter.WriteLn(msg);
   finally
-    FConsoleWriter.Outdent(2);
-    SetConsoleDefaultColor();
+    MonitorExit(Self);
   end;
 end;
 
@@ -229,31 +265,42 @@ procedure TDUnitXConsoleLogger.OnSetupFixture(const threadId: TThreadID; const f
 begin
   if FQuietMode then
     exit;
-
-  FConsoleWriter.Indent(1);
-  FConsoleWriter.WriteLn(SRunningFixtureSetup + fixture.SetupFixtureMethodName);
-
+  MonitorEnter(Self);
+  try
+    FConsoleWriter.Indent(1);
+    FConsoleWriter.WriteLn(SRunningFixtureSetup + fixture.SetupFixtureMethodName);
+  finally
+    MonitorExit(Self);
+  end;
 end;
 
 procedure TDUnitXConsoleLogger.OnSetupTest(const threadId: TThreadID; const  Test: ITestInfo);
 begin
   if FQuietMode then
     exit;
-
-  SetConsoleSetupTestColor();
-  FConsoleWriter.WriteLn(SRunningSetup + Test.Name);
+  MonitorEnter(Self);
+  try
+    SetConsoleSetupTestColor();
+    FConsoleWriter.WriteLn(SRunningSetup + Test.Name);
+  finally
+    MonitorExit(Self);
+  end;
 end;
 
 procedure TDUnitXConsoleLogger.OnBeginTest(const threadId: TThreadID; const  Test: ITestInfo);
 begin
   if FQuietMode then
     exit;
-
-  SetConsoleRunTestColor();
-  FConsoleWriter.Indent(1);
-  FConsoleWriter.WriteLn(STest +  Test.FullName);
-  FConsoleWriter.WriteLn('-------------------------------------------------');
-  SetConsoleDefaultColor();
+  MonitorEnter(Self);
+  try
+    SetConsoleRunTestColor();
+    FConsoleWriter.Indent(1);
+    FConsoleWriter.WriteLn(STest +  Test.FullName);
+    FConsoleWriter.WriteLn('-------------------------------------------------');
+    SetConsoleDefaultColor();
+  finally
+    MonitorExit(Self);
+  end;
 end;
 
 procedure TDUnitXConsoleLogger.OnStartTestFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
@@ -261,12 +308,17 @@ begin
   if FQuietMode then
     exit;
 
-  SetConsoleWarningColor();
-  FConsoleWriter.Indent(2);
-  FConsoleWriter.WriteLn(SFixture + fixture.FullName);
-  FConsoleWriter.WriteLn('-------------------------------------------------');
-  FConsoleWriter.Indent(1);
-  SetConsoleDefaultColor();
+  MonitorEnter(Self);
+  try
+    SetConsoleWarningColor();
+    FConsoleWriter.Indent(2);
+    FConsoleWriter.WriteLn(SFixture + fixture.FullName);
+    FConsoleWriter.WriteLn('-------------------------------------------------');
+    FConsoleWriter.Indent(1);
+    SetConsoleDefaultColor();
+  finally
+    MonitorExit(Self);
+  end;
 end;
 
 
@@ -274,29 +326,38 @@ procedure TDUnitXConsoleLogger.OnTestSuccess(const threadId: TThreadID; const Te
 var
   sMessage : string;
 begin
-  if FQuietMode then
-  begin
-    FConsoleWriter.Write('.');
-    exit;
+  MonitorEnter(Self);
+  try
+    if FQuietMode then
+    begin
+      FConsoleWriter.Write('.');
+      exit;
+    end;
+    FConsoleWriter.Indent(2);
+    SetConsolePassColor;
+    if Test.Message <> '' then
+      sMessage := SSuccess + ' : ' + Test.Message
+    else
+      sMessage := SSuccess + '.';
+    FConsoleWriter.WriteLn(sMessage);
+    SetConsoleDefaultColor;
+    FConsoleWriter.Outdent(2);
+  finally
+    MonitorExit(Self);
   end;
-  FConsoleWriter.Indent(2);
-  SetConsolePassColor;
-  if Test.Message <> '' then
-    sMessage := SSuccess + ' : ' + Test.Message
-  else
-    sMessage := SSuccess + '.';
-  FConsoleWriter.WriteLn(sMessage);
-  SetConsoleDefaultColor;
-  FConsoleWriter.Outdent(2);
 end;
 
 procedure TDUnitXConsoleLogger.OnTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
 begin
   if FQuietMode then
     exit;
-
-  FConsoleWriter.WriteLn(SRunningFixtureTeardown + fixture.TearDownFixtureMethodName);
-  FConsoleWriter.WriteLn;
+  MonitorEnter(Self);
+  try
+    FConsoleWriter.WriteLn(SRunningFixtureTeardown + fixture.TearDownFixtureMethodName);
+    FConsoleWriter.WriteLn;
+  finally
+    MonitorExit(Self);
+  end;
 end;
 
 procedure TDUnitXConsoleLogger.OnTeardownTest(const threadId: TThreadID; const Test: ITestInfo);
@@ -304,17 +365,23 @@ begin
   if FQuietMode then
     exit;
 
-  FConsoleWriter.WriteLn;
-  FConsoleWriter.Indent(1);
-  FConsoleWriter.WriteLn(SRunningTestTeardown + test.Name);
-  FConsoleWriter.WriteLn;
-  FConsoleWriter.Outdent(1);
+  MonitorEnter(Self);
+  try
+    FConsoleWriter.WriteLn;
+    FConsoleWriter.Indent(1);
+    FConsoleWriter.WriteLn(SRunningTestTeardown + test.Name);
+    FConsoleWriter.WriteLn;
+    FConsoleWriter.Outdent(1);
+  finally
+    MonitorExit(Self);
+  end;
 end;
 
 procedure TDUnitXConsoleLogger.OnTestingEnds(const RunResults: IRunResults);
 var
   testResult: ITestResult;
 begin
+
   if FQuietMode then
   begin
       FConsoleWriter.WriteLn;

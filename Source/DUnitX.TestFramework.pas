@@ -492,6 +492,15 @@ type
     function GetFailsOnNoAsserts : boolean;
     procedure SetFailsOnNoAsserts(const value : boolean);
 
+    function GetUseThreadPool : boolean;
+    procedure SetUseThreadPool(value : boolean);
+
+    function GetMaxThreads : integer;
+    procedure SetMaxThreads(value : integer);
+
+    function GetMinThreads : integer;
+    procedure SetMinThreads(value : integer);
+
     function CurrentTestName : string;
 
     //This is exposed for the GUI Runner cast as ITestFixtureList.
@@ -517,6 +526,13 @@ type
     property UseRTTI : boolean read GetUseRTTI write SetUseRTTI;
 
     property FailsOnNoAsserts : boolean read GetFailsOnNoAsserts write SetFailsOnNoAsserts;
+
+    //when true, fixtures are run using a threadpool
+    property UseThreadPool : boolean read GetUseThreadPool write SetUseThreadPool;
+
+    property MaxThreads : integer read GetMaxThreads write SetMaxThreads;
+    property MinThreads : integer read GetMinThreads write SetMinThreads;
+
   end;
 
   TDUnitXOptions = class
@@ -532,6 +548,7 @@ type
     FConsoleMode : TDunitXConsoleMode;
     FShowUsage : boolean;
     FDontShowIgnored : boolean;
+    FMaxDegreeOfParallelism : integer;
   public
     constructor Create;
     destructor Destroy;override;
@@ -565,6 +582,8 @@ type
 
     //Don't run or show ignored tests at all
     property DontShowIgnored : boolean read FDontShowIgnored write FDontShowIgnored;
+
+    property MaxDegreeOfParallelism : integer read FMaxDegreeOfParallelism write FMaxDegreeOfParallelism;
   end;
 
 
@@ -667,6 +686,7 @@ begin
   FLogLevel := TLogLevel.Information;
   FExitBehavior := TDUnitXExitBehavior.Continue;
   FConsoleMode := TDUnitXConsoleMode.Verbose;
+  FMaxDegreeOfParallelism := 0; //don't use threads by default.
 end;
 
 destructor TDUnitXOptions.Destroy;
@@ -687,8 +707,7 @@ begin
   result := TDUnitXTestRunner.Create(ALogger);
 end;
 
-class function TDUnitX.CreateRunner(
-  const ALoggers: array of ITestLogger): ITestRunner;
+class function TDUnitX.CreateRunner(const ALoggers: array of ITestLogger): ITestRunner;
 begin
   Result := TDUnitXTestRunner.Create(ALoggers);
 end;
@@ -804,13 +823,8 @@ begin
 end;
 
 class function TDUnitX.CurrentRunner: ITestRunner;
-var
-  ref : IWeakReference<ITestRunner>;
 begin
-  if not TDUnitXTestRunner.FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId,ref) then
-    raise Exception.Create(SNoRunner);
-  result := ref.Data;
-
+  result := TDUnitXTestRunner.GetActiveRunner;
 end;
 
 class destructor TDUnitX.Destroy;
@@ -851,12 +865,8 @@ begin
       if rType.TryGetAttributeOfType<TestFixtureAttribute>(attrib) then
         sName := attrib.Name;
     end;
-
-
     if sName = '' then
       sName := AClass.ClassName;
-
-
   end;
 
   if not RegisteredFixtures.ContainsKey(AClass) then
@@ -875,16 +885,10 @@ end;
 procedure TTestFixtureHelper.Log(const logType : TLogLevel; const msg: string);
 var
   runner : ITestRunner;
-  ref : IWeakReference<ITestRunner>;
 begin
-  if TDUnitXTestRunner.FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId,ref) then
-  begin
-    runner := ref.Data;
-    if runner <> nil then
-      runner.Log(logType,msg)
-    else
-      System.Writeln(msg);
-  end
+  runner := TDUnitXTestRunner.GetActiveRunner;
+  if runner <> nil then
+    runner.Log(logType,msg)
   else
     System.Writeln(msg);
 end;

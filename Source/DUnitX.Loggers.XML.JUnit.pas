@@ -141,21 +141,21 @@ end;
 procedure TDUnitXXMLJUnitLogger.OnTestingEnds(const RunResults: IRunResults);
 
 
-procedure LogFixture(const fixture : IFixtureResult; level : integer);
-var
-  child : IFixtureResult;
-  sLevel : string;
-begin
-  sLevel := StringOfChar(' ', level * 2 );
-  System.WriteLn(sLevel + fixture.Fixture.NameSpace + ':' + fixture.Fixture.Name + Format(' [Tests: %d] [Children: %d] [Passed : %d]',[fixture.ResultCount,fixture.ChildCount,fixture.PassCount]));
-
-  Inc(level);
-  for child in fixture.Children do
-  begin
-    LogFixture(child,level);
-  end;
-
-end;
+//procedure LogFixture(const fixture : IFixtureResult; level : integer);
+//var
+//  child : IFixtureResult;
+//  sLevel : string;
+//begin
+//  sLevel := StringOfChar(' ', level * 2 );
+//  System.WriteLn(sLevel + fixture.Fixture.NameSpace + ':' + fixture.Fixture.Name + Format(' [Tests: %d] [Children: %d] [Passed : %d]',[fixture.ResultCount,fixture.ChildCount,fixture.PassCount]));
+//
+//  Inc(level);
+//  for child in fixture.Children do
+//  begin
+//    LogFixture(child,level);
+//  end;
+//
+//end;
 
 
 var
@@ -164,15 +164,6 @@ var
   sTime       : string;
   //totalTests  : integer;
 begin
-
-{ first things first, rollup the namespaces.
-  So, where parent fixtures have no tests, or only one child fixture, combine into a single fixture.
-  }
-  for fixtureRes in RunResults.FixtureResults do
-  begin
-    fixtureRes.Reduce;
-//    LogFixture(fixtureRes,0);
-  end;
 
   //JUnit reports the total without the Ignored.
 //  totalTests := RunResults.TestCount - RunResults.IgnoredCount;

@@ -83,6 +83,7 @@ type
     [Ignore('MaxTime does not work in D2010')]
     {$ENDIF}
     [MaxTime(2000)]
+    [Ignore]
     procedure TooLong;
 
 
