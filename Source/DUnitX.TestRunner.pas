@@ -375,8 +375,6 @@ begin
 end;
 
 destructor TDUnitXTestRunner.Destroy;
-var
-  tId: TThreadID;
 begin
   TDUnitXTestRunner.FActiveRunner := nil;
   FLogMessages.Free;
@@ -730,7 +728,8 @@ begin
 
   fixtureCount := enabledFixtures.Count;
   {$IFDEF THREADPOOL_ENABLED}
-  if FUseThreadPool then
+  //no point if only 1 fixture
+  if FUseThreadPool and (fixtureCount > 1) then
   begin
     TParallel.For(0, fixtureCount - 1,
       procedure(i: Integer)
