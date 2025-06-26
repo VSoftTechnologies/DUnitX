@@ -1,7 +1,7 @@
 {
  "metadata": {
   "id": "VSoft.DUnitX",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Delphi Unit Testing Framework.",
   "icon": "images\\logo.png",
   "authors": "Vincent Parrett",
@@ -14,67 +14,7 @@
  },
  "targetPlatforms": [
   {
-   "compiler": "13.0",
-   "platforms": "Win32, Win64",
-   "template": "default"
-  },
-  {
-   "compiler": "12.0",
-   "platforms": "Win32, Win64",
-   "template": "default"
-  },
-  {
-   "compiler": "11.0",
-   "platforms": "Win32, Win64",
-   "template": "default"
-  },
-  {
-   "compiler": "10.4",
-   "platforms": "Win32, Win64",
-   "template": "default"
-  },
-  {
-   "compiler": "10.3",
-   "platforms": "Win32, Win64",
-   "template": "default"
-  },
-  {
-   "compiler": "10.2",
-   "platforms": "Win32, Win64",
-   "template": "default"
-  },
-  {
-   "compiler": "10.1",
-   "platforms": "Win32, Win64",
-   "template": "default"
-  },
-  {
-   "compiler": "10.0",
-   "platforms": "Win32, Win64",
-   "template": "default"
-  },
-  {
-   "compiler": "XE8",
-   "platforms": "Win32, Win64",
-   "template": "default"
-  },
-  {
-   "compiler": "XE7",
-   "platforms": "Win32, Win64",
-   "template": "default"
-  },
-  {
-   "compiler": "XE6",
-   "platforms": "Win32, Win64",
-   "template": "default"
-  },
-  {
-   "compiler": "XE5",
-   "platforms": "Win32, Win64",
-   "template": "default"
-  },
-  {
-   "compiler": "XE4",
+   "compiler": "XE2",
    "platforms": "Win32, Win64",
    "template": "default"
   },
@@ -84,7 +24,67 @@
    "template": "default"
   },
   {
-   "compiler": "XE2",
+   "compiler": "XE4",
+   "platforms": "Win32, Win64",
+   "template": "default"
+  },
+  {
+   "compiler": "XE5",
+   "platforms": "Win32, Win64",
+   "template": "default"
+  },
+  {
+   "compiler": "XE6",
+   "platforms": "Win32, Win64",
+   "template": "default"
+  },
+  {
+   "compiler": "XE7",
+   "platforms": "Win32, Win64",
+   "template": "default"
+  },
+  {
+   "compiler": "XE8",
+   "platforms": "Win32, Win64",
+   "template": "default"
+  },
+  {
+   "compiler": "10.0",
+   "platforms": "Win32, Win64",
+   "template": "default"
+  },
+  {
+   "compiler": "10.1",
+   "platforms": "Win32, Win64",
+   "template": "default"
+  },
+  {
+   "compiler": "10.2",
+   "platforms": "Win32, Win64",
+   "template": "default"
+  },
+  {
+   "compiler": "10.3",
+   "platforms": "Win32, Win64",
+   "template": "default"
+  },
+  {
+   "compiler": "10.4",
+   "platforms": "Win32, Win64",
+   "template": "default"
+  },
+  {
+   "compiler": "11.0",
+   "platforms": "Win32, Win64",
+   "template": "default"
+  },
+  {
+   "compiler": "12.0",
+   "platforms": "Win32, Win64",
+   "template": "default"
+  },
+  {
+   "compiler": "13.0",
    "platforms": "Win32, Win64",
    "template": "default"
   }
