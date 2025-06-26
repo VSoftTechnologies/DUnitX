@@ -81,6 +81,11 @@
    "compiler": "12.0",
    "platforms": "Win32, Win64",
    "template": "default"
+  },
+  {
+   "compiler": "13.0",
+   "platforms": "Win32, Win64",
+   "template": "default"
   }
  ],
  "templates": [
