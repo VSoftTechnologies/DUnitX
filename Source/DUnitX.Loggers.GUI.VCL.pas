@@ -1307,8 +1307,9 @@ end;
 
 class function PathUtils.FindBeyondCompare: string;
 const
-  BCPathList: array [0..1] of string =
+  BCPathList: array [0..2] of string =
   (
+    'Beyond Compare 5\BComp.exe',
     'Beyond Compare 4\BComp.exe',
     'Beyond Compare 3\BComp.exe'
   );
