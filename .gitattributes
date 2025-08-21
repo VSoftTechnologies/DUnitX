@@ -12,5 +12,3 @@
 *.dres binary
 *.ico binary
 
-# Enable keyword expansion
-VSoft.DUnitX.dspec filter=commitid
