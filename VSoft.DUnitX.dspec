@@ -1,7 +1,7 @@
 {
  "metadata": {
   "id": "VSoft.DUnitX",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Delphi Unit Testing Framework.",
   "icon": "images\\logo.png",
   "authors": "Vincent Parrett",
