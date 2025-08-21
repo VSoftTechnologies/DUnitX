@@ -13,4 +13,4 @@
 *.ico binary
 
 # Enable keyword expansion
-*.dspec ident
+*.dspec export-subst

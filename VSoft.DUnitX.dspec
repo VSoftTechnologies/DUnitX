@@ -7,7 +7,7 @@
   "authors": "Vincent Parrett",
   "projectUrl": "https://github.com/VSoftTechnologies/DUnitX",
   "repositoryUrl": "https://github.com/VSoftTechnologies/DUnitX",
-  "repositoryCommit": "$Id$",
+  "repositoryCommit": "$Format:%H$",
   "license": "Apache-2.0",
   "copyright": "Vincent Parrett and contributors",
   "tags": "unit testing dunitx dunit",
