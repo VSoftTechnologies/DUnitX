@@ -13,4 +13,4 @@
 *.ico binary
 
 # Enable keyword expansion
-VSoft.DUnitX.dspec export-subst
+VSoft.DUnitX.dspec filter=commitid
