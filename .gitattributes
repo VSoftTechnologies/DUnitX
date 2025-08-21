@@ -13,4 +13,4 @@
 *.ico binary
 
 # Enable keyword expansion
-*.dspec export-subst
+VSoft.DUnitX.dspec export-subst
