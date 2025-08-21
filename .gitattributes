@@ -11,3 +11,6 @@
 *.res binary
 *.dres binary
 *.ico binary
+
+# Enable keyword expansion
+*.dspec ident
