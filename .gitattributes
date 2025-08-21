@@ -12,3 +12,4 @@
 *.dres binary
 *.ico binary
 
+*.dspec filter=insert-hash
