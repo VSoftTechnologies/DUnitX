@@ -276,8 +276,9 @@ var
   testEnabled     : boolean;
   isTestMethod    : boolean;
   repeatAttrib    : RepeatTestAttribute;
+  {$IFDEF MSWINDOWS}
   maxTimeAttrib   : MaxTimeAttribute;
-
+  {$ENDIF}
   tstProviderAttribs : TArray<TestCaseProviderAttribute>;
   tstProviderAttrib: TestCaseProviderAttribute;
   iProvider: ITestDataProvider;
@@ -338,7 +339,9 @@ begin
     willRaiseAttrib := nil;
     isTestMethod := false;
     repeatCount := 1;
+    {$IFDEF MSWINDOWS}
     maxTimeAttrib := nil;
+    {$ENDIF}
     maxTime := 0;
     willRaise := nil;
     willRaiseInherit := exExact;
