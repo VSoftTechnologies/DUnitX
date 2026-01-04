@@ -751,9 +751,6 @@ begin
   end
   else
   begin
-    //no parse errors, so now build the filter. will throw if there is an error.
-    FFilter := TDUnitXFilterBuilder.BuildFilter(FOptions);
-
     //Command line options parsed ok.
     if IsConsole then
     begin
@@ -764,9 +761,14 @@ begin
       begin
         consoleWriter := TDUnitXServiceLocator.DefaultContainer.Resolve<IDUnitXConsoleWriter>;
         ShowUsage(consoleWriter);
+        consoleWriter := nil;
+        parseResult := nil;
         Halt(EXIT_OK);
       end;
-    end
+    end;
+
+    //Build the filter only if we're actually going to run tests (not just showing help)
+    FFilter := TDUnitXFilterBuilder.BuildFilter(FOptions);
   end;
 
 end;
