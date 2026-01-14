@@ -14,6 +14,7 @@ uses
   DUnitX.Loggers.Console,
   DUnitX.Loggers.Xml.NUnit,
   {$ENDIF}
+  DunitX.Init,
   DUnitX.Tests.Assert in 'DUnitX.Tests.Assert.pas',
   DUnitX.Tests.DUnitCompatibility in 'DUnitX.Tests.DUnitCompatibility.pas',
   DUnitX.Tests.Example in 'DUnitX.Tests.Example.pas',

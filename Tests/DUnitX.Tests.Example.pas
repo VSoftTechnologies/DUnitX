@@ -65,8 +65,8 @@ type
     [TestCase('Case 3','5,6')]
     procedure TestOne(param1 : integer; param2 : integer);
 
-    [TestCase('UInt64 18446744073709551615', '18446744073709551615')]
-    procedure TestUint64Argument(Value: UInt64);
+    [Test]
+    procedure TestUint64Max;
 
     [TestCase('Case 3','Blah,1')]
     procedure AnotherTestMethod(const a : string; const b : integer);
@@ -340,9 +340,14 @@ begin
   x.Free;
 end;
 
-procedure TMyExampleTests.TestUint64Argument(Value: UInt64);
+procedure TMyExampleTests.TestUint64Max;
+const
+  UInt64MaxValue: UInt64 = 18446744073709551615;
+var
+  LUInt64Value: UInt64;
 begin
-  Assert.AreEqual(18446744073709551615, Value);
+  LUInt64Value:= High(UInt64);
+  Assert.AreEqual(UInt64MaxValue, LUInt64Value);
 end;
 
 destructor TExampleFixture2.Destroy;

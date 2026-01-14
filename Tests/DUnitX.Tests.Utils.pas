@@ -79,17 +79,18 @@ type
     [Test]
     [TestCase('EN-US local format, verbose',        'EN-US,06/22/2020 06:36:00 pm')]
     [TestCase('EN-US local format short',           'EN-US,6/22/2020 6:36 pm')]
-    [TestCase('EN-US iso 8601 format',              'EN-US,2020-06-22 18:36:00')]
-    [TestCase('EN-US iso 8601 format, verbose',     'EN-US,2020-06-22T18:36:00.000Z')]
     [TestCase('EN-GB local format, 24 h, verbose',  'EN-GB,22/06/2020 18:36:00')]
     [TestCase('EN-GB local format, 12 h, verbose',  'EN-GB,22/06/2020 06:36:00 pm')]
-    [TestCase('EN-GB iso8601 format',               'EN-GB,2020-06-22 18:36')]
-    [TestCase('EN-GB iso8601 format, verbose',      'EN-GB,2020-06-22T18:36:00+00')]
     [TestCase('DE local format, verbose',           'DE,22.06.2020 18:36:00.000')]
     [TestCase('DE local format, short',             'DE,22.6.20 18:36')]
+    {$IFDEF DELPHI_X8_UP}
+    [TestCase('EN-US iso 8601 format',              'EN-US,2020-06-22 18:36:00')]
+    [TestCase('EN-US iso 8601 format, verbose',     'EN-US,2020-06-22T18:36:00.000Z')]
+    [TestCase('EN-GB iso8601 format',               'EN-GB,2020-06-22 18:36')]
+    [TestCase('EN-GB iso8601 format, verbose',      'EN-GB,2020-06-22T18:36:00+00')]
     [TestCase('DE iso8601 format',                  'DE,2020-06-22 18:36:00')]
+    {$ENDIF}
     procedure TestDateTimeConversion2(const locale: String; const text: String);
-
 
     [Test]
     [TestCase('claRed = xFFFF0000',    'claRed,xFFFF0000')]
