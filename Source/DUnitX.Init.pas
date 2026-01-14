@@ -50,7 +50,9 @@ implementation
 {$IFDEF DELPHI_XE3}
 
 uses
-  DUnitX.Exceptions;
+  DUnitX.Exceptions,
+  DUnitX.ServiceLocator,
+  DUnitX.Extensibility;
 
 procedure InitAssert;
 begin
