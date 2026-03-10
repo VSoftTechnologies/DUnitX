@@ -205,7 +205,7 @@ var
 begin
   slLines := InternalBreakupMessage(s);
   try
-    //Write out all the lines execept the last one.
+    //Write out all the lines except the last one.
     for iLineIndx  := 0 to slLines.Count - 2 do
       InternalWriteLn(slLines[iLineIndx]);
 
@@ -231,7 +231,7 @@ var
 begin
   slLines := InternalBreakupMessage(s);
   try
-    //Write out all the lines execept the last one.
+    //Write out all the lines except the last one.
     for iLineIndx  := 0 to slLines.Count - 1 do
       InternalWriteLn(slLines[iLineIndx]);
   finally

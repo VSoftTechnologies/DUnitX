@@ -93,7 +93,7 @@ type
     //Returns true if we have such a service.
     function HasService<T: IInterface> : boolean;
 
-    //Empty the Container.. usefull for testing only!
+    //Empty the Container.. useful for testing only!
     procedure Clear;
 
     property RaiseIfNotFound : boolean read FRaiseIfNotFound write FRaiseIfNotFound;
@@ -104,7 +104,7 @@ type
   EServiceLocatorResolutionException = class(EServiceLocatorException);
 
 
-  //Makes sure virtual constructors are called correctly. Just using a class reference will not call the overriden constructor!
+  //Makes sure virtual constructors are called correctly. Just using a class reference will not call the overridden constructor!
   //See http://stackoverflow.com/questions/791069/how-can-i-create-an-delphi-object-from-a-class-reference-and-ensure-constructor
 
   TClassActivator = class
@@ -204,7 +204,7 @@ begin
   end
   else
   begin
-    //cannot replace a singleton that has already been instanciated (Instance property is only used by singletons)
+    //cannot replace a singleton that has already been instantiated (Instance property is only used by singletons)
     if rego.Instance <> nil then
       raise EServiceLocatorRegistrationException.Create(Format(SImplementationAlreadyRegistered, [typeInfo.Name, name]));
     rego.Initialize(delegate, singleton);

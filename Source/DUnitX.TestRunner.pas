@@ -136,7 +136,7 @@ type
     procedure Log(const logType: TLogLevel; const msg: string); overload;
     procedure Log(const msg: string); overload;
 
-    //for backwards compatibilty with DUnit tests.
+    //for backwards compatibility with DUnit tests.
     procedure Status(const msg: string); overload;
 
     //redirects WriteLn to our loggers.

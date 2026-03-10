@@ -178,7 +178,7 @@ begin
     end
     else
     begin
-      //don't recognise the start so report it and continue.
+      //don't recognize the start so report it and continue.
       parseErrors.AddError(SUnknownOptionStart + values.Strings[i]);
       continue;
     end;

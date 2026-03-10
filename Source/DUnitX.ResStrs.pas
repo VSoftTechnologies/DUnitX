@@ -70,7 +70,7 @@ resourcestring
   SIntfNil = 'Interface is Nil when Not Nil expected. %s';
   SPointerNil = 'Pointer is Nil when Not Nil expected. %s';
   SObjNil = 'Object is Nil when Not Nil expected. %s';
-  SVariantNull = 'Variant is Null when Not Null expcted. %s';
+  SVariantNull = 'Variant is Null when Not Null expected. %s';
   SVariantNotNull = 'Variant is Not Null when Null expected. [%s]';
   SIntfNotNil = 'Interface is Not Nil when Nil expected. [%s]';
   SObjNotNil = 'Object is Not Nil when Nil expected. [%s]';
