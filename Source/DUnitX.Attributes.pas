@@ -250,7 +250,7 @@ type
   ///     GetCaseInfoArray method.    
   ///   </para>
   ///   <para>
-  ///     Note: If a method is annotated with a decendant of
+  ///     Note: If a method is annotated with a descendant of
   ///     TestCaseSourceAttribute and returns an empty TestCaseInfoArray,
   ///     then no test will be shown for the method.
   ///   </para>

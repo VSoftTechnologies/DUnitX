@@ -42,7 +42,7 @@ type
   [TestFixture('Examples.Fixture1','General Example Tests')]
   TMyExampleTests = class
   public
-    //Run the same test with mulitiple parameters.
+    //Run the same test with multiple parameters.
     //ideally we would like to implement this using
     //[TestCase('Case 1',[1,3,4])]
     //but the delphi compiler will not accept arrays of
@@ -197,13 +197,13 @@ end;
 procedure TMyExampleTests.IgnoreMePublic;
 begin
   TDUnitX.CurrentRunner.Status('IgnoreMePublic called');
-  raise Exception.Create('IgnoreMePublic was called when it has IgnoreAttibute !!!!');
+  raise Exception.Create('IgnoreMePublic was called when it has IgnoreAttribute !!!!');
 end;
 
 procedure TMyExampleTests.IgnoreMePublished;
 begin
   TDUnitX.CurrentRunner.Status('IgnoreMePublished called');
-  raise Exception.Create('IgnoreMePublished was called when it has IgnoreAttibute !!!!');
+  raise Exception.Create('IgnoreMePublished was called when it has IgnoreAttribute !!!!');
 end;
 
 procedure TMyExampleTests.LogMessageTypes;
@@ -364,7 +364,7 @@ initialization
 //TMyExampleTests.ClassName;
 //TExampleFixture2.ClassName;
 //which is enough to make the compiler link the classes into the exe, but that seems a
-//bit redundent so I guess we'll just use manual registration. If you use the
+//bit redundant so I guess we'll just use manual registration. If you use the
 //{$STRONGLINKTYPES ON} compiler directive then it will link the TestFixtures in and you
 //can use RTTI. The downside to that is the resulting exe will potentially much larger.
 //Not sure which version {$STRONGLINKTYPES ON} was introduced so we'll allow RTTI and

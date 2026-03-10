@@ -26,7 +26,7 @@
 
 unit DUnitX.DUnitCompatibility;
 
-/// This unit provides basic compatibilty with DUnit Tests (not the framework!).
+/// This unit provides basic compatibility with DUnit Tests (not the framework!).
 
 interface
 

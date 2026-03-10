@@ -31,7 +31,7 @@ interface
 {$I DUnitX.inc}
 
 
-//Note: "Register" method name is case senstive.
+//Note: "Register" method name is case sensitive.
 procedure Register;
 
 implementation
