@@ -240,7 +240,7 @@ begin
     if idx < 0  then
        idx := Length(FText) + 1;
 
-    FToken := TrimRight(Copy(FText,FNext, idx - FNext));
+    FToken := TrimRight(Copy(FText, FNext, idx - FNext));
     FNext := idx;
   end;
   {$ENDIF}

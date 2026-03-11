@@ -37,7 +37,7 @@ uses
 
 type
 
-  TNewUnit = class(TNotifierObject,IOTACreator,IOTAModuleCreator)
+  TNewUnit = class(TNotifierObject, IOTACreator, IOTAModuleCreator)
   private
     FPersonality : string;
   protected

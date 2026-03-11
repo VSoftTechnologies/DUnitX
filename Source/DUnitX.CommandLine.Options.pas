@@ -100,7 +100,7 @@ type
   private
     class var
       //used for fast lookup of option by name
-      FOptionsLookup : TDictionary<string,IOptionDefinition>;
+      FOptionsLookup : TDictionary<string, IOptionDefinition>;
       //can't put unnamed options in dictionary, so we keep a list
       FUnnamedOptions : TList<IOptionDefinition>;
       //all registered options.
@@ -115,7 +115,7 @@ type
     class function AllRegisteredOptions : TList<IOptionDefinition>;
     class function Parse: ICommandLineParseResult;overload;
     class function Parse(const values : TStrings) : ICommandLineParseResult;overload;
-    class property RegisteredOptions : TDictionary<string,IOptionDefinition> read FOptionsLookup;
+    class property RegisteredOptions : TDictionary<string, IOptionDefinition> read FOptionsLookup;
     class property RegisteredUnamedOptions : TList<IOptionDefinition> read FUnnamedOptions;
     class procedure PrintUsage(const proc : TProc<string>; const pad : integer = 30);
   end;
@@ -142,7 +142,7 @@ begin
   if FOptionsLookup.ContainsKey(LowerCase(shortName)) then
     raise Exception.Create(Format(SOptionAlreadyRegistered, [shortName]));
 
-  result := TOptionDefinition<T>.Create(longName,shortName,Action);
+  result := TOptionDefinition<T>.Create(longName, shortName, Action);
 
   FOptionsLookup.Add(LowerCase(longName),Result);
   FRegisteredOptions.Add(Result);
@@ -166,7 +166,7 @@ end;
 
 class constructor TOptionsRegistry.Create;
 begin
-  FOptionsLookup := TDictionary<string,IOptionDefinition>.Create;
+  FOptionsLookup := TDictionary<string, IOptionDefinition>.Create;
   FUnnamedOptions := TList<IOptionDefinition>.Create;
   FRegisteredOptions := TList<IOptionDefinition>.Create;
 
@@ -205,7 +205,7 @@ begin
       if option.HasValue then
         helpString := helpString + ':value';
     end;
-    helpString := TStrUtils.PadString(helpString,pad,false);
+    helpString := TStrUtils.PadString(helpString, pad, false);
 
     if option.HelpText <> '' then
       helpString := helpString + ' - ' + option.HelpText;
@@ -215,13 +215,13 @@ end;
 
 class function TOptionsRegistry.RegisterOption<T>(const longName, shortName, helpText: string; const Action: TProc<T>): IOptionDefinition;
 begin
-    result := RegisterOption<T>(longName,shortName,Action);
+    result := RegisterOption<T>(longName, shortName, Action);
   result.HelpText := helpText;
 end;
 
 class function TOptionsRegistry.RegisterUnNamedOption<T>(const helpText: string; const Action: TProc<T>): IOptionDefinition;
 begin
-  result := TOptionDefinition<T>.Create('','',helptext,Action);
+  result := TOptionDefinition<T>.Create('', '', helptext, Action);
   result.HasValue := false;
   FUnNamedOptions.Add(Result);
   FRegisteredOptions.Add(Result);

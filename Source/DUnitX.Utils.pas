@@ -796,7 +796,7 @@ var
 
 class function TAttributeUtils.ContainsAttribute(const attributes: TArray<TCustomAttribute>; const AttributeClass: TCustomAttributeClass): boolean;
 begin
-  result := FindAttribute(attributes,AttributeClass) <> nil;
+  result := FindAttribute(attributes, AttributeClass) <> nil;
 end;
 
 class function TAttributeUtils.FindAttribute(const attributes: TArray<TCustomAttribute>; const AttributeClass: TCustomAttributeClass): TCustomAttribute;
@@ -835,12 +835,12 @@ var
   attribute : TCustomAttribute;
 begin
   i := 0;
-  SetLength(result,0);
+  SetLength(result, 0);
   for attribute in attributes do
   begin
     if attribute.ClassType = AttributeClass then
     begin
-      SetLength(result,i + 1);
+      SetLength(result, i + 1);
       result[i] := attribute;
       Inc(i);
     end;
@@ -1837,7 +1837,7 @@ end;
 
 class function TArrayHelper.Create<T>(const a, b: T): TArray<T>;
 begin
-  SetLength(result,2);
+  SetLength(result, 2);
   result[0] := a;
   result[1] := b;
 end;
@@ -3092,7 +3092,7 @@ begin
 
   if ATypeInfo = System.TypeInfo(TValue) then
   begin
-    AResult:= Self;
+    AResult := Self;
     Exit(True);
   end;
 
@@ -3455,7 +3455,7 @@ class function TListStringUtils.ToArray(const values: TList<string>): TArray<str
 var
   i : integer;
 begin
-  SetLength(result,values.Count);
+  SetLength(result, values.Count);
   for i := 0 to values.Count - 1 do
     result[i] := values[i];
 end;

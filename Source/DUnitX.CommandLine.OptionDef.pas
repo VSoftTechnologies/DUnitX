@@ -55,7 +55,7 @@ type
     function GetTypeInfo : PTypeInfo;
   end;
 
-  TOptionDefinition<T> = class(TInterfacedObject,IOptionDefinition,IOptionDefInvoke)
+  TOptionDefinition<T> = class(TInterfacedObject, IOptionDefinition, IOptionDefInvoke)
   private
     FLongName : string;
     FShortName : string;
@@ -126,7 +126,7 @@ function StringToBoolean(const value: string): boolean;
 begin
   if MatchText(value, trueStrings) then
     result := true
-  else if MatchText(value,falseStrings) then
+  else if MatchText(value, falseStrings) then
     result := false
   else
     raise Exception.Create(SInvalidValueBool);
@@ -137,7 +137,7 @@ end;
 constructor TOptionDefinition<T>.Create(const longName, shortName: string; const proc: TProc<T>);
 begin
   FTypeInfo := TypeInfo(T);
-  if not (FTypeInfo.Kind in [tkInteger,tkEnumeration,tkFloat,tkString,tkSet,tkLString,tkWString,tkInt64,tkUString]) then
+  if not (FTypeInfo.Kind in [tkInteger, tkEnumeration, tkFloat, tkString, tkSet, tkLString, tkWString, tkInt64, tkUString]) then
     raise Exception.Create(SInvalidOptionType);
 
   FLongName := longName;
@@ -149,7 +149,7 @@ end;
 
 constructor TOptionDefinition<T>.Create(const longName, shortName, helpText: string; const proc: TProc<T>);
 begin
-  Self.Create(longName,shortName,proc);
+  Self.Create(longName, shortName, proc);
   FHelpText := helpText;
 end;
 
@@ -248,7 +248,7 @@ begin
           int64Val := StrToInt64(value);
           v := TValue.From<Int64>(int64Val) ;
         end;
-        tkString, tkLString,tkWString,tkUString :
+        tkString, tkLString, tkWString, tkUString :
         begin
           v := TValue.From<string>(value);
         end;
@@ -266,11 +266,11 @@ begin
           end
           else
           begin
-            intVal := GetEnumValue(FTypeInfo,value);
+            intVal := GetEnumValue(FTypeInfo, value);
             if intVal < 0 then
               raise Exception.Create(SInvalidEnum + value);
 
-            v := TValue.FromOrdinal(FTypeInfo,intVal);
+            v := TValue.FromOrdinal(FTypeInfo, intVal);
           end;
         end;
         tkFloat :

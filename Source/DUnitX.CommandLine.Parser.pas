@@ -45,7 +45,7 @@ type
     procedure AddError(const value : string);
   end;
 
-  TCommandLineParseResult = class(TInterfacedObject,ICommandLineParseResult,IParseResultAddError)
+  TCommandLineParseResult = class(TInterfacedObject, ICommandLineParseResult, IParseResultAddError)
   private
     FErrors : TStringList;
   protected
@@ -58,7 +58,7 @@ type
   end;
 
 
-  TCommandLineParser = class(TInterfacedObject,ICommandLineParser)
+  TCommandLineParser = class(TInterfacedObject, ICommandLineParser)
   private
     FUnamedIndex : integer;
   protected
@@ -67,11 +67,11 @@ type
     procedure InternalParseFile(const fileName : string; const parseErrors : IParseResultAddError);
     procedure InternalParse(const values : TStrings; const parseErrors : IParseResultAddError);
 
-    function Parse: ICommandLineParseResult;overload;
-    function Parse(const values : TStrings) : ICommandLineParseResult;overload;
+    function Parse: ICommandLineParseResult; overload;
+    function Parse(const values : TStrings) : ICommandLineParseResult; overload;
   public
     constructor Create;
-    destructor Destroy;override;
+    destructor Destroy; override;
   end;
 
 implementation
@@ -97,7 +97,7 @@ begin
   if l < 1 then
     exit;
 
-  if CharInSet(value.Chars[0],['''','"']) and CharInSet(value.Chars[l],['''','"']) then
+  if CharInSet(value.Chars[0],['''', '"']) and CharInSet(value.Chars[l], ['''', '"']) then
   begin
     value := value.Remove(l, 1);
     value := value.Remove(0, 1);
@@ -107,10 +107,10 @@ begin
   if l < 2 then
     exit;
 
-  if CharInSet(value[1],['''','"']) and CharInSet(value[l],['''','"']) then
+  if CharInSet(value[1], ['''', '"']) and CharInSet(value[l],['''', '"']) then
   begin
-    Delete(value,l,1);
-    Delete(value,1,1);
+    Delete(value, l, 1);
+    Delete(value, 1, 1);
   end;
   {$ENDIF}
 end;
@@ -161,13 +161,13 @@ begin
     if value = '' then
       continue;
     if StartsStr('--',value)  then
-      Delete(value,1,2)
+      Delete(value, 1, 2)
     else if StartsStr('-',value)  then
-      Delete(value,1,1)
+      Delete(value, 1, 1)
     else if StartsStr('/',value)  then
-      Delete(value,1,1)
+      Delete(value, 1, 1)
     else if StartsStr('@',value)  then
-      Delete(value,1,1)
+      Delete(value, 1, 1)
     {$ENDIF}
     else if FUnamedIndex < TOptionsRegistry.RegisteredUnamedOptions.Count  then
     begin
@@ -190,7 +190,7 @@ begin
     begin
       //separate out into key and value
       key := value.SubString(0, j);
-      value := value.Remove(0, j+1);
+      value := value.Remove(0, j + 1);
       //it should already come in here without quotes when parsing paramstr(x).
       //but it might have quotes if it came in from a parameter file;
       StripQuotes(value);
@@ -201,8 +201,8 @@ begin
     if j > 0 then
     begin
       //separate out into key and value
-      key := Copy(value,1,j-1);
-      Delete(value,1,j);
+      key := Copy(value, 1, j - 1);
+      Delete(value, 1, j);
       //it should already come in here without quotes when parsing paramstr(x).
       //but it might have quotes if it came in from a parameter file;
       StripQuotes(value);
@@ -237,7 +237,7 @@ begin
           continue;
         end;
         try
-          InternalParseFile(value,parseErrors);
+          InternalParseFile(value, parseErrors);
         except
           on e : Exception do
           begin
@@ -275,7 +275,7 @@ begin
   sList := TStringList.Create;
   try
     sList.LoadFromFile(fileName);
-    InternalParse(sList,parseErrors);
+    InternalParse(sList, parseErrors);
   finally
     sList.Free;
   end;
@@ -300,7 +300,7 @@ end;
 function TCommandLineParser.Parse(const values: TStrings): ICommandLineParseResult;
 begin
   result := TCommandLineParseResult.Create;
-  InternalParse(values,result as IParseResultAddError);
+  InternalParse(values, result as IParseResultAddError);
   InternalValidate(result as IParseResultAddError);
 end;
 

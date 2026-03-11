@@ -108,7 +108,7 @@ begin
     if result.IsEmpty then
       result := includeFilter
     else
-      result := TAndFilter.Create(TArray<ITestFilter>.Create(result,includeFilter));
+      result := TAndFilter.Create(TArray<ITestFilter>.Create(result, includeFilter));
   end;
 
   if Trim(options.Exclude) <> '' then
@@ -117,10 +117,10 @@ begin
     if result.IsEmpty then
       result := excludeFilter
     else
-      result := TAndFilter.Create(TArray<ITestFilter>.Create(result,excludeFilter));
+      result := TAndFilter.Create(TArray<ITestFilter>.Create(result, excludeFilter));
   end;
 
-  if Supports(result,INotFilter) then
+  if Supports(result, INotFilter) then
     (result as INotFilter).TopLevel := true;
 
 end;

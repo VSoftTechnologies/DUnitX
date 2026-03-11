@@ -57,11 +57,11 @@ type
   private class var
     FRttiContext : TRttiContext;
   public class var
-    FActiveRunners : TDictionary<TThreadID,IWeakReference<ITestRunner>>;
+    FActiveRunners : TDictionary<TThreadID, IWeakReference<ITestRunner>>;
   private
     FLoggers          : TList<ITestLogger>;
     FUseRTTI          : boolean;
-    FFixtureClasses   : TDictionary<TClass,string>;
+    FFixtureClasses   : TDictionary<TClass, string>;
 
     FFixtureList      : ITestFixtureList;
     FLogMessages      : TStringList;
@@ -190,7 +190,7 @@ uses
 
 procedure TDUnitXTestRunner.Log(const msg: string);
 begin
-  Self.Log(TLogLevel.Information,msg);
+  Self.Log(TLogLevel.Information, msg);
 end;
 
 procedure TDUnitXTestRunner.Loggers_AddError(const threadId: TThreadID; const Error: ITestError);
@@ -219,7 +219,7 @@ var
 begin
   for logger in FLoggers do
   begin
-    logger.OnTestIgnored(threadId,AIgnored);
+    logger.OnTestIgnored(threadId, AIgnored);
   end;
 end;
 
@@ -229,7 +229,7 @@ var
 begin
   for logger in FLoggers do
   begin
-    logger.OnTestMemoryLeak(threadId,Test);
+    logger.OnTestMemoryLeak(threadId, Test);
   end;
 end;
 
@@ -245,7 +245,7 @@ var
 begin
   for logger in FLoggers do
   begin
-    logger.OnTestSuccess(threadId,Test);
+    logger.OnTestSuccess(threadId, Test);
   end;
 end;
 
@@ -270,7 +270,7 @@ end;
 class constructor TDUnitXTestRunner.Create;
 begin
   FRttiContext := TRttiContext.Create;
-  FActiveRunners := TDictionary<TThreadID,IWeakReference<ITestRunner>>.Create;
+  FActiveRunners := TDictionary<TThreadID, IWeakReference<ITestRunner>>.Create;
 end;
 
 function TDUnitXTestRunner.CheckMemoryAllocations(const test: ITest; out errorResult: ITestResult; const memoryAllocationProvider: IMemoryLeakMonitor): boolean;
@@ -327,7 +327,7 @@ constructor TDUnitXTestRunner.Create;
 begin
   inherited;
   FLoggers := TList<ITestLogger>.Create;
-  FFixtureClasses := TDictionary<TClass,string>.Create;
+  FFixtureClasses := TDictionary<TClass, string>.Create;
   FUseRTTI := False;
   FLogMessages := TStringList.Create;
   MonitorEnter(TDUnitXTestRunner.FActiveRunners);
@@ -389,7 +389,7 @@ begin
   case testResult.ResultType of
     TTestResultType.Pass:
       begin
-        context.RecordResult(fixtureResult,testResult);
+        context.RecordResult(fixtureResult, testResult);
         Self.Loggers_AddSuccess(threadId, testResult);
       end;
     TTestResultType.Failure:
@@ -407,13 +407,13 @@ begin
     TTestResultType.Ignored :
       begin
         Log(TLogLevel.Error, STestIgnored + testResult.Test.Name + ' : ' + testResult.Message);
-        context.RecordResult(fixtureResult,testResult);
+        context.RecordResult(fixtureResult, testResult);
         Self.Loggers_AddIgnored(threadId, testResult);
       end;
     TTestResultType.MemoryLeak :
       begin
         Log(TLogLevel.Error, STestLeaked + testResult.Test.Name + ' : ' + testResult.Message);
-        context.RecordResult(fixtureResult,testResult);
+        context.RecordResult(fixtureResult, testResult);
         Self.Loggers_AddMemoryLeak(threadId, testResult);
       end;
 
@@ -444,7 +444,7 @@ begin
             if sName = '' then
               sName := TRttiInstanceType(rType).MetaclassType.ClassName;
             if not FFixtureClasses.ContainsKey(TRttiInstanceType(rType).MetaclassType) then
-              FFixtureClasses.Add(TRttiInstanceType(rType).MetaclassType,sName);
+              FFixtureClasses.Add(TRttiInstanceType(rType).MetaclassType, sName);
           end;
         end;
     end;
@@ -456,7 +456,7 @@ var
   logger : ITestLogger;
 begin
   for logger in FLoggers do
-     logger.OnEndSetupFixture(threadId,fixture);
+     logger.OnEndSetupFixture(threadId, fixture);
 end;
 
 procedure TDUnitXTestRunner.Loggers_EndSetupTest(const threadId: TThreadID; const Test: ITestInfo);
@@ -466,7 +466,7 @@ begin
   for logger in FLoggers do
   begin
     try
-      logger.OnEndSetupTest(threadid,Test);
+      logger.OnEndSetupTest(threadid, Test);
     except
       //Hmmmm what to do with errors here. This kinda smells.
       on e : Exception do
@@ -504,7 +504,7 @@ var
   logger : ITestLogger;
 begin
   for logger in FLoggers do
-    logger.OnEndTest(threadId,Test);
+    logger.OnEndTest(threadId, Test);
 
 end;
 
@@ -514,7 +514,7 @@ var
 begin
   for logger in FLoggers do
   begin
-    logger.OnEndTestFixture(threadId,results);
+    logger.OnEndTestFixture(threadId, results);
   end;
 end;
 
@@ -546,7 +546,7 @@ begin
       end;
     end;
     if fixture.HasChildFixtures then
-      CountAndFilterTests(fixture.children,count,active);
+      CountAndFilterTests(fixture.children, count, active);
 
 //    if not (fixture.HasTests or fixture.HasChildTests) then
 //      fixture.Enabled := false;
@@ -579,7 +579,7 @@ begin
   //TODO : Filter tests here?
 
 
-  CountAndFilterTests(fixtureList,testCount,testActiveCount);
+  CountAndFilterTests(fixtureList, testCount, testActiveCount);
 
   //TODO: Move to the fixtures class
   result := TDUnitXRunResults.Create;
@@ -589,7 +589,7 @@ begin
   threadId := TThread.CurrentThread.ThreadID;
   Self.Loggers_TestingStarts(threadId, testCount, testActiveCount);
   try
-    ExecuteFixtures(nil,context, threadId, fixtureList);
+    ExecuteFixtures(nil, context, threadId, fixtureList);
     context.RollupResults; //still need this for overall time.
   finally
     Self.Loggers_TestingEnds(result);
@@ -609,7 +609,7 @@ var
   ref : IWeakReference<ITestRunner>;
 begin
   result := nil;
-  if FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId,ref) then
+  if FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId, ref) then
     result := ref.Data;
 end;
 
@@ -814,7 +814,7 @@ begin
     try
       try
         if test.Ignored  then
-            testResult :=  ExecuteIgnoredResult(context,threadId,test,test.IgnoreReason)
+            testResult :=  ExecuteIgnoredResult(context, threadId, test, test.IgnoreReason)
        //If we haven't already failed, then run the test.
         else if testResult = nil then
            testResult := ExecuteTest(context, threadId, test, memoryAllocationProvider);
@@ -940,17 +940,17 @@ end;
 
 procedure TDUnitXTestRunner.Status(const msg: string);
 begin
-  Self.Log(TLogLevel.Information,msg);
+  Self.Log(TLogLevel.Information, msg);
 end;
 
 procedure TDUnitXTestRunner.WriteLn;
 begin
-  Self.Log(TLogLevel.Information,'');
+  Self.Log(TLogLevel.Information, '');
 end;
 
 procedure TDUnitXTestRunner.WriteLn(const msg: string);
 begin
-  Self.Log(TLogLevel.Information,msg);
+  Self.Log(TLogLevel.Information, msg);
 end;
 
 procedure TDUnitXTestRunner.Loggers_SetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
@@ -958,7 +958,7 @@ var
   logger : ITestLogger;
 begin
   for logger in FLoggers do
-    logger.OnSetupFixture(threadId,fixture);
+    logger.OnSetupFixture(threadId, fixture);
 end;
 
 procedure TDUnitXTestRunner.Loggers_SetupTest(const threadId: TThreadID; const Test: ITestInfo);
@@ -966,7 +966,7 @@ var
   logger : ITestLogger;
 begin
   for logger in FLoggers do
-    logger.OnSetupTest(threadId,Test);
+    logger.OnSetupTest(threadId, Test);
 end;
 
 procedure TDUnitXTestRunner.Loggers_BeginTest(const threadId: TThreadID; const Test: ITestInfo);

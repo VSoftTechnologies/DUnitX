@@ -171,12 +171,12 @@ begin
   FCategories := TList<string>.Create(TComparer<string>.Construct(
     function(const Left, Right : string) : integer
     begin
-      result := AnsiCompareText(Left,Right);
+      result := AnsiCompareText(Left, Right);
     end));
 
   if ACategory <> '' then
   begin
-    categories := TStrUtils.SplitString(ACategory,',');
+    categories := TStrUtils.SplitString(ACategory, ',');
     for cat in categories do
       FCategories.Add(Trim(cat));
   end;
@@ -211,7 +211,7 @@ begin
   finally
     FEndTime := Now();
 
-    FDuration := TTimeSpan.Subtract(FEndTime,FStartTime);
+    FDuration := TTimeSpan.Subtract(FEndTime, FStartTime);
   end;
 end;
 
@@ -352,7 +352,7 @@ var
   parameters : TArray<TRttiParameter>;
   tmp : TValue;
 begin
-  inherited Create(AFixture, AMethodName, AName, ACategory, nil,AEnabled);
+  inherited Create(AFixture, AMethodName, AName, ACategory, nil, AEnabled);
   FInstance := AInstance;
   FRttiMethod := AMethod;
   FCaseName := ACaseName;
@@ -386,7 +386,7 @@ begin
     FRttiMethod.Invoke(FInstance,FArgs);
   finally
     FEndTime := Now();
-    FDuration := TTimeSpan.Subtract(FEndTime,FStartTime);
+    FDuration := TTimeSpan.Subtract(FEndTime, FStartTime);
   end;
 end;
 

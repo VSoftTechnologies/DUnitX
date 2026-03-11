@@ -317,7 +317,7 @@ const
 
   cLogLevelImageMap: array[TLogLevel] of integer = (6, 7, 8);
 
-  cRootNodeStrings : array[TTestResultType] of string = (STestsPassed,STestsFailed,STestsErrored,STestsIgnored,STestsWithLeak,STestsWarning);
+  cRootNodeStrings : array[TTestResultType] of string = (STestsPassed, STestsFailed, STestsErrored, STestsIgnored, STestsWithLeak, STestsWarning);
 
   cTestSetup = 'TestSetup';
 
@@ -843,7 +843,7 @@ begin
     FTestBookmarkList.Clear;
     FTestNodes.Clear;
     FFixtureCount := 0;
-    BuildTestTreeNode(FFixtureList,nil);
+    BuildTestTreeNode(FFixtureList, nil);
 
     if tvwTests.Items.Count > 0 then
     begin
@@ -896,37 +896,37 @@ begin
   Node.ImageIndex := ImageIndex;
   Node.SelectedIndex := ImageIndex;
 
-  NewWeight:=TTestNode.ToWeight(ImageIndex);
+  NewWeight := TTestNode.ToWeight(ImageIndex);
 
   Node.IterateParents(
     procedure(const Node: TTreeNode; var Stop: boolean)
     var
       Weight: integer;
     begin
-      Weight:=TTestNode.ToWeight(Node.ImageIndex);
-      if Weight=NewWeight then
-        Stop:=true
+      Weight := TTestNode.ToWeight(Node.ImageIndex);
+      if Weight = NewWeight then
+        Stop := true
       else
       begin
-        if NewWeight<Weight then
+        if NewWeight < Weight then
         begin
           Node.IterateChilds(
             procedure(const Node: TTreeNode; var Stop: boolean)
             var
               ChildWeight: integer;
             begin
-              ChildWeight:=TTestNode.ToWeight(Node.ImageIndex);
-              if NewWeight<ChildWeight then
-                NewWeight:=ChildWeight;
+              ChildWeight := TTestNode.ToWeight(Node.ImageIndex);
+              if NewWeight < ChildWeight then
+                NewWeight := ChildWeight;
             end);
-          if Weight=NewWeight then
+          if Weight = NewWeight then
           begin
-            Stop:=true;
+            Stop := true;
             Exit;
           end;
         end;
-        Node.ImageIndex:=TTestNode.ToImageIndex(NewWeight);
-        Node.SelectedIndex:=Node.ImageIndex;
+        Node.ImageIndex := TTestNode.ToImageIndex(NewWeight);
+        Node.SelectedIndex := Node.ImageIndex;
       end;
     end);
 end;
@@ -939,12 +939,12 @@ procedure TGUIVCLTestRunner.BuildTestTreeNode(const FixtureList: ITestFixtureLis
     Test : ITest;
     Filter: String;
   begin
-    Result:=false;
-    if Fixture.Tests=nil then Exit;
-    filter:=edtFilter.Text;
+    Result := false;
+    if Fixture.Tests = nil then Exit;
+    filter := edtFilter.Text;
     for Test in Fixture.Tests do
     begin
-      if (Test.Enabled)and
+      if (Test.Enabled) and
         ((Filter = '') or ContainsText(Test.FullName, Filter)) then
         Exit(true);
     end;
@@ -954,7 +954,7 @@ procedure TGUIVCLTestRunner.BuildTestTreeNode(const FixtureList: ITestFixtureLis
   var
     Child: ITestFixture;
   begin
-    Result:=false;
+    Result := false;
     if Fixture.Children=nil then
       Exit;
     for Child in Fixture.Children do
@@ -979,18 +979,18 @@ begin
   try
     for Fixture in FixtureList do
     begin
-      HasTests:=HasFilteredTests(Fixture);
-      HasChildTests:=HasFilteredChildTests(Fixture);
+      HasTests := HasFilteredTests(Fixture);
+      HasChildTests := HasFilteredChildTests(Fixture);
       if (not HasTests) and (not HasChildTests) then
         continue;
-      FixtureNode:= tvwTests.Items.AddChild(ParentNode, Fixture.FullName);
+      FixtureNode := tvwTests.Items.AddChild(ParentNode, Fixture.FullName);
       FTestNodes.TryAdd(Fixture.FullName, FixtureNode);
-      FixtureNode.StateIndex:=cTestNodeStateUnChecked;
+      FixtureNode.StateIndex := cTestNodeStateUnChecked;
       inc(FFixtureCount);
-      TTestNode(FixtureNode).FIsFixtureNode:=true;
+      TTestNode(FixtureNode).FIsFixtureNode := true;
 
       if HasChildTests then
-        BuildTestTreeNode(Fixture.Children,FixtureNode);
+        BuildTestTreeNode(Fixture.Children, FixtureNode);
 
       for Test in Fixture.Tests do
       begin
@@ -999,7 +999,7 @@ begin
         begin
           TestNode := tvwTests.Items.AddChild(FixtureNode, Test.FullName);
           FTestNodes.TryAdd(Test.FullName, TestNode);
-          TestNode.StateIndex:=cTestNodeStateUnchecked;
+          TestNode.StateIndex := cTestNodeStateUnchecked;
           if IniFile.ReadBool(cTestSetup, Test.FullName, true) then
             TTestNode(TestNode).InvertState;
         end;
@@ -1117,11 +1117,11 @@ begin
   else if (Button=mbRight) and (THitTest.htOnItem in HitTestRes) then
   begin
     HitNode := tvwTests.GetNodeAt(X, Y);
-    if HitNode<>nil then
+    if HitNode <> nil then
     begin
-      HitNode.Selected:=true;
+      HitNode.Selected := true;
       Application.ProcessMessages;
-      PostMessage(Handle,WM_TESTPOPUP,Mouse.CursorPos.X,Mouse.CursorPos.Y);
+      PostMessage(Handle, WM_TESTPOPUP, Mouse.CursorPos.X, Mouse.CursorPos.Y);
     end
   end;
 end;
@@ -1140,8 +1140,8 @@ procedure TGUIVCLTestRunner.tvwTestsCustomDrawItem(Sender: TCustomTreeView;
   Node: TTreeNode; State: TCustomDrawState; var DefaultDraw: Boolean);
 begin
  if TTestNode(Node).IsFixtureNode then begin
-    Sender.Canvas.Font.Style:=Sender.Canvas.Font.Style + [fsBold];
-    Sender.Canvas.Font.Color:=clWindowText;
+    Sender.Canvas.Font.Style := Sender.Canvas.Font.Style + [fsBold];
+    Sender.Canvas.Font.Color := clWindowText;
   end;
 end;
 
@@ -1179,7 +1179,7 @@ begin
     if Node <> nil then
     begin
       Node.Selected := True;
-      PostMessage(handle,WM_RESULTPOPUP,Mouse.CursorPos.X, Mouse.CursorPos.Y);
+      PostMessage(handle, WM_RESULTPOPUP, Mouse.CursorPos.X, Mouse.CursorPos.Y);
     end;
   end;
 end;
@@ -1425,16 +1425,16 @@ begin
   System.Assert(Assigned(Proc));
 
   Result := False;
-  Child:=self.getFirstChild;
-  while Child<>nil do
+  Child := self.getFirstChild;
+  while Child <> nil do
   begin
-    Proc(Child,Result);
+    Proc(Child, Result);
     if Result then
       break;
-    Result:=Child.IterateAllChilds(Proc);
+    Result := Child.IterateAllChilds(Proc);
     if Result then
       break;
-    Child:=self.GetNextChild(Child);
+    Child := self.GetNextChild(Child);
   end;
 end;
 
@@ -1445,13 +1445,13 @@ begin
   System.Assert(Assigned(Proc));
 
   Result := False;
-  Child:=self.getFirstChild;
-  while Child<>nil do
+  Child := self.getFirstChild;
+  while Child <> nil do
   begin
-    Proc(Child,Result);
+    Proc(Child, Result);
     if Result then
       break;
-    Child:=self.GetNextChild(Child);
+    Child := self.GetNextChild(Child);
   end;
 end;
 
@@ -1461,13 +1461,13 @@ var
 begin
   System.Assert(Assigned(Proc));
   Result := False;
-  Parent:=self.Parent;
-  while Parent<>nil do
+  Parent := self.Parent;
+  while Parent <> nil do
   begin
-    Proc(Parent,Result);
+    Proc(Parent, Result);
     if Result then
       break;
-    Parent:=Parent.Parent;
+    Parent := Parent.Parent;
   end;
 end;
 
@@ -1484,28 +1484,28 @@ var
   Checked: boolean;
   NewStateIndex: integer;
 begin
-  Checked:=not (StateIndex=cTestNodeStateChecked);
+  Checked := not (StateIndex = cTestNodeStateChecked);
   if Checked then
-    NewStateIndex:=cTestNodeStateChecked
+    NewStateIndex := cTestNodeStateChecked
   else
-    NewStateIndex:=cTestNodeStateUnchecked;
+    NewStateIndex := cTestNodeStateUnchecked;
 
-  StateIndex:=NewStateIndex;
+  StateIndex := NewStateIndex;
 
   self.IterateAllChilds(
     procedure(const Node: TTreeNode; var Stop: boolean)
     begin
-      Node.StateIndex:=NewStateIndex;
+      Node.StateIndex := NewStateIndex;
     end);
 
   if Checked then
     self.IterateParents(
       procedure(const Node: TTreeNode; var Stop: boolean)
       begin
-        if Node.StateIndex=cTestNodeStateChecked then
-          Stop:=true
+        if Node.StateIndex = cTestNodeStateChecked then
+          Stop := true
         else
-          Node.StateIndex:=cTestNodeStateChecked;
+          Node.StateIndex := cTestNodeStateChecked;
       end)
   else
     self.IterateParents(
@@ -1514,34 +1514,34 @@ begin
         if Node.IterateChilds(
           procedure(const Node: TTreeNode; var Stop: boolean)
           begin
-            if Node.StateIndex=cTestNodeStateChecked then
-              Stop:=true;
+            if Node.StateIndex = cTestNodeStateChecked then
+              Stop := true;
           end) then
-          Stop:=true
+          Stop := true
         else
-          Node.StateIndex:=cTestNodeStateUnchecked
+          Node.StateIndex := cTestNodeStateUnchecked
       end);
 end;
 
 class function TTestNode.ToWeight(const ImageIndex: integer): integer;
 begin
   case ImageIndex of
-    0: Result:=0; // ignored
-    1: Result:=1; // pass
-    3: Result:=2; // warning
+    0: Result := 0; // ignored
+    1: Result := 1; // pass
+    3: Result := 2; // warning
   else
-    Result:=3; // Error
+    Result := 3; // Error
   end;
 end;
 
 class function TTestNode.ToImageIndex(const Weight: integer): integer;
 begin
   case Weight of
-    0: Result:=0; // ignored
-    1: Result:=1; // pass
-    2: Result:=3; // warning
+    0: Result := 0; // ignored
+    1: Result := 1; // pass
+    2: Result := 3 ; // warning
   else
-    Result:=2; // Error
+    Result := 2; // Error
   end;
 end;
 

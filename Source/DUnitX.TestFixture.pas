@@ -181,7 +181,7 @@ begin
   FCategories := TList<string>.Create(TComparer<string>.Construct(
     function(const Left, Right : string) : integer
     begin
-      result := AnsiCompareText(Left,Right);
+      result := AnsiCompareText(Left, Right);
     end));
 
   if ACategory <> '' then
@@ -198,8 +198,8 @@ begin
   i := LastDelimiter('.',AName);
   if i <> 0 then
   begin
-    FNameSpace := Copy(AName,1,i -1);
-    FName := Copy(AName,i+1,Length(AName));
+    FNameSpace := Copy(AName, 1, i -1);
+    FName := Copy(AName, i + 1, Length(AName));
   end
   else
   begin
@@ -568,7 +568,7 @@ end;
 
 function TDUnitXTestFixture.AddChildFixture(const ATestClass: TClass; const AName: string; const ACategory : string): ITestFixture;
 begin
-  result := TDUnitXTestFixture.Create(AName,ACategory, ATestClass,ATestClass.UnitName);
+  result := TDUnitXTestFixture.Create(AName, ACategory, ATestClass, ATestClass.UnitName);
   if FChildren = nil then
     FChildren := TTestFixtureList.Create;
   FChildren.Add(result);
@@ -576,7 +576,7 @@ end;
 
 function TDUnitXTestFixture.AddChildFixture(const AInstance: TObject; const AName: string; const ACategory : string): ITestFixture;
 begin
-  result := TDUnitXTestFixture.Create(AName,ACategory, AInstance,AInstance.ClassType.UnitName);
+  result := TDUnitXTestFixture.Create(AName, ACategory, AInstance, AInstance.ClassType.UnitName);
   if FChildren = nil then
     FChildren := TTestFixtureList.Create;
   FChildren.Add(result);
@@ -613,7 +613,7 @@ end;
 constructor TDUnitXTestFixture.Create(const AName: string; const ACategory : string; const AInstance: TObject; const AUnitName : string);
 begin
   FFixtureInstance := AInstance;
-  Create(AName, ACategory, AInstance.ClassType,AUnitName);
+  Create(AName, ACategory, AInstance.ClassType, AUnitName);
 end;
 
 function TDUnitXTestFixture.CreateTestFromMethod(const AMethod: TRttiMethod; const ACategory : string;  const ATestEnabled, AIgnored: Boolean; const AIgnoredReason: String): ITest;
@@ -622,7 +622,7 @@ var
 begin
   meth.Code := AMethod.CodeAddress;
   meth.Data := FFixtureInstance;
-  result  := TDUnitXTest.Create(Self, AMethod.Name, AMethod.Name, ACategory, TTestMethod(meth),ATestEnabled,AIgnored,AIgnoredReason);
+  result  := TDUnitXTest.Create(Self, AMethod.Name, AMethod.Name, ACategory, TTestMethod(meth),ATestEnabled, AIgnored, AIgnoredReason);
   result.IgnoreMemoryLeaks := GetIgnoreMemoryLeaksForMethod(AMethod);
 end;
 

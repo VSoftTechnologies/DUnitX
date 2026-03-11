@@ -127,7 +127,7 @@ type
     function Match(const test: ITest): Boolean;override;
   end;
 
-  TNameFilter = class(TTestFilter, ITestFilter,INameFilter)
+  TNameFilter = class(TTestFilter, ITestFilter, INameFilter)
   private
     FNames : TList<string>;
   protected
@@ -143,13 +143,13 @@ type
     destructor Destroy;override;
   end;
 
-  TCategoryFilter = class(TNameFilter,ITestFilter,ICategoryFilter)
+  TCategoryFilter = class(TNameFilter, ITestFilter, ICategoryFilter)
   protected
     function Match(const test: ITest): Boolean;override;
     function Categories : TList<string>;
   end;
 
-  TAndFilter = class(TTestFilter,ITestFilter,IAndFilter)
+  TAndFilter = class(TTestFilter, ITestFilter, IAndFilter)
   private
     FFilters : TList<ITestFilter>;
   protected
@@ -163,7 +163,7 @@ type
     destructor Destroy;override;
   end;
 
-  TOrFilter = class(TTestFilter, ITestFilter,IOrFilter)
+  TOrFilter = class(TTestFilter, ITestFilter, IOrFilter)
   private
     FFilters : TList<ITestFilter>;
   protected
@@ -177,7 +177,7 @@ type
     destructor Destroy;override;
   end;
 
-  TNotFilter = class(TTestFilter, ITestFilter,INotFilter)
+  TNotFilter = class(TTestFilter, ITestFilter, INotFilter)
   private
     FTopLevel : boolean;
     FBaseFilter : ITestFilter;
@@ -238,7 +238,7 @@ begin
   FNames := TList<string>.Create(TComparer<string>.Construct(
   function(const Left, Right : string) : integer
   begin
-    result := AnsiCompareText(Left,Right);
+    result := AnsiCompareText(Left, Right);
   end));
 end;
 
@@ -290,7 +290,7 @@ begin
   result := false;
   for name in FNames do
   begin
-    result := StartsText(name,test.Fixture.FullName);
+    result := StartsText(name, test.Fixture.FullName);
     if result then
       exit;
   end;
@@ -406,7 +406,7 @@ end;
 
 constructor TNotFilter.Create(const baseFilter: ITestFilter);
 begin
-  Create(baseFilter,false);
+  Create(baseFilter, false);
 end;
 
 constructor TNotFilter.Create(const baseFilter: ITestFilter; const topLevel: boolean);

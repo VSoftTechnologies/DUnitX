@@ -46,7 +46,7 @@ uses
 
 
 type
-  TDUnitXFixtureResult = class(TInterfacedObject,IFixtureResult,IFixtureResultBuilder)
+  TDUnitXFixtureResult = class(TInterfacedObject, IFixtureResult, IFixtureResultBuilder)
   private
     FChildren     : IList<IFixtureResult>;
     FTestResults  : IList<ITestResult>;
@@ -194,7 +194,7 @@ begin
 
   for test in FTestResults do
   begin
-    if Supports(test,ITestError,error) then
+    if Supports(test, ITestError, error) then
       result.Add(error);
   end;
 end;
@@ -358,12 +358,12 @@ begin
     for fixture in FChildren do
     begin
       (fixture as IFixtureResultBuilder).RollUpResults;
-      Inc(FErrorCount,fixture.ErrorCount);
-      Inc(FFailureCount,fixture.FailureCount);
-      Inc(FIgnoredCount,fixture.IgnoredCount);
-      Inc(FPassCount,fixture.PassCount);
+      Inc(FErrorCount, fixture.ErrorCount);
+      Inc(FFailureCount, fixture.FailureCount);
+      Inc(FIgnoredCount, fixture.IgnoredCount);
+      Inc(FPassCount, fixture.PassCount);
       FAllPassed := FAllPassed and (not fixture.HasFailures);
-      FFinishTime := Max(FFinishTime,fixture.FinishTime);
+      FFinishTime := Max(FFinishTime, fixture.FinishTime);
       FDuration := FDuration.Add(fixture.Duration);
     end;
   end

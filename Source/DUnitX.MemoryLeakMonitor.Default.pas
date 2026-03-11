@@ -39,7 +39,7 @@ uses
   DUnitX.TestFramework;
 
 type
-  TDUnitXDefaultMemoryLeakMonitor = class(TInterfacedObject,IMemoryLeakMonitor)
+  TDUnitXDefaultMemoryLeakMonitor = class(TInterfacedObject, IMemoryLeakMonitor)
   public
     procedure PreSetup;
     procedure PostSetUp;

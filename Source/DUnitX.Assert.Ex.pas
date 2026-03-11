@@ -68,10 +68,10 @@ begin
   DoAssert;
   if ignoreCase then
   begin
-    if not SameText(expected,actual) then
+    if not SameText(expected, actual) then
       FailStrCompare(expected, actual, compformat, message, ReturnAddress);
   end
-  else if not SameStr(expected,actual) then
+  else if not SameStr(expected, actual) then
     FailStrCompare(expected, actual, compformat, message, ReturnAddress);
 end;
 

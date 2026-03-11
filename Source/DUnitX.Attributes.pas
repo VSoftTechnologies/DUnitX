@@ -398,9 +398,9 @@ begin
   inherited Create;
   FCaseInfo.Name := ACaseName;
   FValues := AValues;
-  lValues := SplitString(AValues,ASeparator);
+  lValues := SplitString(AValues, ASeparator);
   l := Length(lValues);
-  SetLength(FCaseInfo.Values,l);
+  SetLength(FCaseInfo.Values, l);
   for i := 0 to l -1 do
   begin
     if ATrimValues then

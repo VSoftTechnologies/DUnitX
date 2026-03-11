@@ -33,7 +33,7 @@ uses
 
 type
   ///  A Base class for loggers that do not need to use every interface method.
-  TDUnitXNullLogger = class(TInterfacedObject,ITestLogger)
+  TDUnitXNullLogger = class(TInterfacedObject, ITestLogger)
   protected
     procedure OnBeginTest(const threadId: TThreadID; const Test: ITestInfo); virtual;
     procedure OnEndSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo); virtual;

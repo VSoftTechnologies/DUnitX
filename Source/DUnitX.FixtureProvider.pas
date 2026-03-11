@@ -91,7 +91,7 @@ uses
 
 constructor TDUnitXFixtureProvider.Create;
 begin
-  FFixtureClasses := TDictionary<TClass,string>.Create;
+  FFixtureClasses := TDictionary<TClass, string>.Create;
 end;
 
 class constructor TDUnitXFixtureProvider.Create;
@@ -112,7 +112,7 @@ end;
 
 procedure TDUnitXFixtureProvider.Execute(const context: IFixtureProviderContext);
 var
-  pair : TPair<TClass,string>;
+  pair : TPair<TClass, string>;
   fixture : ITestFixture;
   parentFixture : ITestFixture;
   uName : string;
@@ -122,7 +122,7 @@ var
   parentNamespace : string;
   fixtureNamespace : string;
   fixtureName : string;
-  tmpFixtures : TDictionary<string,ITestFixture>;
+  tmpFixtures : TDictionary<string, ITestFixture>;
   fixtureList : ITestFixtureList;
   rType : TRttiType;
   categoryAttrib : CategoryAttribute;
@@ -140,7 +140,7 @@ begin
 
 
   //Build up a fixture hierarchy based on unit names.
-  tmpFixtures := TDictionary<string,ITestFixture>.Create;
+  tmpFixtures := TDictionary<string, ITestFixture>.Create;
   fixtureList := TTestFixtureList.Create;
   try
     for pair in FFixtureClasses do
@@ -159,7 +159,7 @@ begin
       if length(fixtureNamespaces) > 1 then
       begin
         fixtureName := fixtureNamespaces[Length(fixtureNamespaces) -1];
-        TArrayHelper.Delete<string>(fixtureNamespaces, Length(fixtureNamespaces) -1,1);
+        TArrayHelper.Delete<string>(fixtureNamespaces, Length(fixtureNamespaces) -1, 1);
 
         namespaces := TArrayHelper.Concat<string>([namespaces, fixtureNamespaces]);
       end
@@ -185,8 +185,8 @@ begin
         begin
           if not tmpFixtures.TryGetValue(fixtureNamespace, parentFixture) then
           begin
-            parentFixture := context.CreateFixture(TObject,fixtureNamespace,''); //<< Should this not take category??
-            tmpFixtures.Add(fixtureNamespace,parentFixture);
+            parentFixture := context.CreateFixture(TObject, fixtureNamespace, ''); //<< Should this not take category??
+            tmpFixtures.Add(fixtureNamespace, parentFixture);
             fixtureList.Add(parentFixture);
           end;
           parentNamespace := fixtureNamespace;
@@ -194,17 +194,17 @@ begin
         end
         else
         begin
-          if not tmpFixtures.TryGetValue(parentNamespace,parentFixture) then
+          if not tmpFixtures.TryGetValue(parentNamespace, parentFixture) then
           begin
-            parentFixture := context.CreateFixture(TObject,parentNamespace,'');
-            tmpFixtures.Add(parentNamespace,parentFixture);
+            parentFixture := context.CreateFixture(TObject, parentNamespace, '');
+            tmpFixtures.Add(parentNamespace, parentFixture);
             fixtureList.Add(parentFixture);
           end;
 
-          if not tmpFixtures.TryGetValue(fixtureNamespace,fixture) then
+          if not tmpFixtures.TryGetValue(fixtureNamespace, fixture) then
           begin
-            fixture := parentFixture.AddChildFixture(TObject,fixtureNamespace,'');
-            tmpFixtures.Add(fixtureNamespace,fixture);
+            fixture := parentFixture.AddChildFixture(TObject, fixtureNamespace,'');
+            tmpFixtures.Add(fixtureNamespace, fixture);
           end;
           parentFixture := fixture;
           parentNamespace := fixtureNamespace;
@@ -215,11 +215,11 @@ begin
 
       //per issue #253 - looking at the code above, parentFixture should always be assigned by the time we get here.
       System.Assert(Assigned(parentFixture));
-      parentFixture.AddChildFixture(pair.Key,fixtureNamespace,category);
+      parentFixture.AddChildFixture(pair.Key, fixtureNamespace, category);
     end;
     for fixture in fixtureList do
     begin
-      GenerateTests(context,fixture);
+      GenerateTests(context, fixture);
     end;
 
   finally
@@ -231,7 +231,7 @@ end;
 function TDUnitXFixtureProvider.FormatCaseName(const AName: string;
   Nr: integer): string;
 begin
-  result := Format('%s (%.2d)',[AName,nr]);
+  result := Format('%s (%.2d)',[AName, nr]);
 end;
 
 function TDUnitXFixtureProvider.FormatTestName(const AName: string; const ATimes, ACount: Integer): string;
@@ -282,7 +282,7 @@ var
   tstProviderAttribs : TArray<TestCaseProviderAttribute>;
   tstProviderAttrib: TestCaseProviderAttribute;
   iProvider: ITestDataProvider;
-  count,x     : integer;
+  count, x    : integer;
   Params      : TValueArray;
   caseName    : string;
 
@@ -365,10 +365,10 @@ begin
       if (repeatAttrib.Count > 1) then
       begin
         repeatCount := repeatAttrib.Count;
-        currentFixture := fixture.AddChildFixture(fixture.TestClass, Format('%s.%s', [currentFixture.FullName,method.Name]),category);
+        currentFixture := fixture.AddChildFixture(fixture.TestClass, Format('%s.%s', [currentFixture.FullName, method.Name]), category);
         //setup and teardown might have already been set.. so take them from the parent fixture.
-        currentFixture.SetSetupTestMethod(fixture.SetupMethodName,fixture.SetupMethod);
-        currentFixture.SetTearDownTestMethod(fixture.TearDownMethodName,fixture.TearDownMethod);
+        currentFixture.SetSetupTestMethod(fixture.SetupMethodName, fixture.SetupMethod);
+        currentFixture.SetTearDownTestMethod(fixture.TearDownMethodName, fixture.TearDownMethod);
         //don't assign setupfixture or teardown fixture as the parent fixture's methods will still be run.
       end;
     end;
@@ -376,7 +376,7 @@ begin
     if (not Assigned(setupFixtureMethod)) and method.TryGetAttributeOfType<SetupFixtureAttribute>(setupFixtureAttrib) then
     begin
        setupFixtureMethod := TTestMethod(meth);
-       currentFixture.SetSetupFixtureMethod(method.Name,setupFixtureMethod);
+       currentFixture.SetSetupFixtureMethod(method.Name, setupFixtureMethod);
        continue;
     end;
 
@@ -386,7 +386,7 @@ begin
     if (not Assigned(tearDownFixtureMethod)) and method.IsDestructor and (Length(method.GetParameters) = 0) then
     begin
       tearDownFixtureMethod := TTestMethod(meth);
-      currentFixture.SetTearDownFixtureMethod(method.Name,TTestMethod(meth),true);
+      currentFixture.SetTearDownFixtureMethod(method.Name, TTestMethod(meth), true);
       tearDownFixtureIsDestructor := true;
       continue;
     end;
@@ -396,7 +396,7 @@ begin
     if ((not Assigned(tearDownFixtureMethod)) or tearDownFixtureIsDestructor) and method.TryGetAttributeOfType<TearDownFixtureAttribute>(tearDownFixtureAttrib) then
     begin
        tearDownFixtureMethod := TTestMethod(meth);
-       currentFixture.SetTearDownFixtureMethod(method.Name,tearDownFixtureMethod,false);
+       currentFixture.SetTearDownFixtureMethod(method.Name, tearDownFixtureMethod, false);
        tearDownFixtureIsDestructor := false;
        continue;
     end;
@@ -404,14 +404,14 @@ begin
     if (not Assigned(setupMethod)) and method.TryGetAttributeOfType<SetupAttribute>(setupAttrib) then
     begin
       setupMethod := TTestMethod(meth);
-      currentFixture.SetSetupTestMethod(method.Name,setupMethod);
+      currentFixture.SetSetupTestMethod(method.Name, setupMethod);
       continue;
     end;
 
     if (not Assigned(tearDownMethod)) and  method.TryGetAttributeOfType<TearDownAttribute>(tearDownAttrib) then
     begin
       tearDownMethod := TTestMethod(meth);
-      currentFixture.SetTearDownTestMethod(method.Name,tearDownMethod);
+      currentFixture.SetTearDownTestMethod(method.Name, tearDownMethod);
       continue;
     end;
 
@@ -476,7 +476,7 @@ begin
                 params := iProvider.GetCaseParams(method.name, x);
                 for i := 1 to repeatCount do
                 begin
-                  currentFixture.AddTestCase(method.Name, FormatCaseName(caseName,x), FormatTestName(method.Name, i, repeatCount), category, method, testEnabled, params);
+                  currentFixture.AddTestCase(method.Name, FormatCaseName(caseName, x), FormatTestName(method.Name, i, repeatCount), category, method, testEnabled, params);
                 end;
               end;
               iProvider := nil;
@@ -505,7 +505,7 @@ begin
                 begin
                   for i := 1 to repeatCount do
                   begin
-                    currentFixture.AddTestCase(method.Name, TestCaseData.Name, FormatTestName(method.Name, i, repeatCount), category, method, testEnabled,TestCaseData.Values);
+                    currentFixture.AddTestCase(method.Name, TestCaseData.Name, FormatTestName(method.Name, i, repeatCount), category, method, testEnabled, TestCaseData.Values);
                   end;
                 end;
               end;
@@ -577,13 +577,13 @@ begin
       attributes := rType.GetAttributes;
       if Length(attributes) > 0 then
       begin
-        if TryGetAttributeOfType<TestFixtureAttribute>(attributes,fixtureAttribute) then
+        if TryGetAttributeOfType<TestFixtureAttribute>(attributes, fixtureAttribute) then
         begin
           sName := fixtureattribute.Name;
           if sName = '' then
             sName := TRttiInstanceType(rType).MetaclassType.ClassName;
           if not FFixtureClasses.ContainsKey(TRttiInstanceType(rType).MetaclassType) then
-            FFixtureClasses.Add(TRttiInstanceType(rType).MetaclassType,sName);
+            FFixtureClasses.Add(TRttiInstanceType(rType).MetaclassType, sName);
         end;
       end;
     end;

@@ -183,7 +183,7 @@ type
     destructor Destroy; override;
   end;
 
-  TDUnitXIEnumerator<T> = class(TInterfacedObject,IEnumerator<T>,IEnumerator)
+  TDUnitXIEnumerator<T> = class(TInterfacedObject, IEnumerator<T>, IEnumerator)
   private
     FList : IList<T>;
     FIndex : integer;
@@ -227,12 +227,12 @@ end;
 
 function TDUnitXList<T>.BinarySearch(const Item: T; out Index: Integer; const AComparer: IComparer<T>): Boolean;
 begin
-  result := FList.BinarySearch(Item,Index,AComparer);
+  result := FList.BinarySearch(Item, Index, AComparer);
 end;
 
 function TDUnitXList<T>.BinarySearch(const Item: T; out Index: Integer): Boolean;
 begin
-  result := FList.BinarySearch(Item,Index);
+  result := FList.BinarySearch(Item, Index);
 end;
 
 procedure TDUnitXList<T>.Clear;
@@ -267,7 +267,7 @@ end;
 
 procedure TDUnitXList<T>.DeleteRange(AIndex, ACount: Integer);
 begin
-  FList.DeleteRange(AIndex,ACount);
+  FList.DeleteRange(AIndex, ACount);
 end;
 
 destructor TDUnitXList<T>.Destroy;
@@ -278,7 +278,7 @@ end;
 
 procedure TDUnitXList<T>.Exchange(Index1, Index2: Integer);
 begin
-  FList.Exchange(Index1,Index2);
+  FList.Exchange(Index1, Index2);
 end;
 
 function TDUnitXList<T>.Extract(const Value: T): T;
@@ -330,22 +330,22 @@ end;
 
 procedure TDUnitXList<T>.Insert(Index: Integer; const Value: T);
 begin
-  FList.Insert(Index,Value);
+  FList.Insert(Index, Value);
 end;
 
 procedure TDUnitXList<T>.InsertRange(Index: Integer; const Collection: TEnumerable<T>);
 begin
-  FList.InsertRange(Index,Collection);
+  FList.InsertRange(Index, Collection);
 end;
 
 procedure TDUnitXList<T>.InsertRange(Index: Integer; const Values: array of T);
 begin
-  FList.InsertRange(Index,Values);
+  FList.InsertRange(Index, Values);
 end;
 
 procedure TDUnitXList<T>.InsertRange(Index: Integer; const Collection: IEnumerable<T>);
 begin
-  FList.InsertRange(Index,Collection);
+  FList.InsertRange(Index, Collection);
 end;
 
 function TDUnitXList<T>.Last: T;
@@ -360,7 +360,7 @@ end;
 
 procedure TDUnitXList<T>.Move(CurIndex, NewIndex: Integer);
 begin
-  FList.Move(CurIndex,NewIndex);
+  FList.Move(CurIndex, NewIndex);
 end;
 
 function TDUnitXList<T>.Remove(const Value: T): Integer;

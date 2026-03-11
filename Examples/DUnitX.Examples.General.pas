@@ -225,18 +225,18 @@ end;
 
 procedure TMyExampleTests.AnotherTestMethod(const a: string; const b: integer);
 begin
-  TDUnitX.CurrentRunner.Status(Format('AnotherTestMethod called with %s %d',[a,b]));
+  TDUnitX.CurrentRunner.Status(Format('AnotherTestMethod called with %s %d',[a, b]));
 end;
 
 procedure TMyExampleTests.TestAutoName(param1, param2: integer);
 begin
-  TDUnitX.CurrentRunner.Status(Format('TestAutoName called with %d %d',[param1,param2]));
+  TDUnitX.CurrentRunner.Status(Format('TestAutoName called with %d %d',[param1, param2]));
 
 end;
 
 procedure TMyExampleTests.TestCaseWithStrings(const AInput, AResult: string);
 begin
-  TDUnitX.CurrentRunner.Status(Format('TestCaseWithStrings called with %s %s',[AInput,AResult]));
+  TDUnitX.CurrentRunner.Status(Format('TestCaseWithStrings called with %s %s',[AInput, AResult]));
 end;
 
 procedure TMyExampleTests.TestError;
@@ -251,7 +251,7 @@ end;
 
 procedure TMyExampleTests.TestOne(param1 : integer; param2 : integer);
 begin
-  TDUnitX.CurrentRunner.Status(Format('TestOnce called with %d %d',[param1,param2]));
+  TDUnitX.CurrentRunner.Status(Format('TestOnce called with %d %d',[param1, param2]));
 end;
 
 procedure TMyExampleTests.TestTwo;

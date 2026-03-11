@@ -12,7 +12,7 @@ type
     function GetCaseParams(const methodName : string; const caseNumber : integer) : TValuearray;
   end;
 
-  TTestDataProvider = class(TInterfacedObject,ITestDataProvider)
+  TTestDataProvider = class(TInterfacedObject, ITestDataProvider)
   public
     constructor Create;virtual;abstract;
     function GetCaseCount(const methodName : string) : integer;virtual;abstract;

@@ -142,7 +142,7 @@ end;
 
 class function TInterlocked.Increment(var Target: Integer): Integer;
 begin
-  result := Add(Target,1);
+  result := Add(Target, 1);
 end;
 
 class function TInterlocked.Add(var Target: Integer; Increment: Integer): Integer;
@@ -189,7 +189,7 @@ begin
 
   inherited Create;
 
-  if Supports(IInterface(data),IWeakReferenceableObject,target) then
+  if Supports(IInterface(data),IWeakReferenceableObject, target) then
   begin
     FData := IInterface(data) as TObject;
     target.AddWeakRef(@FData);
@@ -220,7 +220,7 @@ begin
     if SafeMonitorTryEnter(FData) then //FData could become nil
     begin
       //get a strong reference to the target
-      if Supports(FData,IWeakReferenceableObject,target) then
+      if Supports(FData, IWeakReferenceableObject, target) then
       begin
         target.RemoveWeakRef(@FData);
         target := nil; //release the reference asap.

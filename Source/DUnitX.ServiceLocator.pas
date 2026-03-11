@@ -64,7 +64,7 @@ type
       end;
   private
     FRaiseIfNotFound : boolean;
-    FContainerInfo : TDictionary<string,TIoCRegistration>;
+    FContainerInfo : TDictionary<string, TIoCRegistration>;
     class var FDefault : TDUnitXServiceLocator;
   protected
     function GetInterfaceKey(const typeInfo: PTypeInfo; const AName: string = ''): string;
@@ -196,7 +196,7 @@ var
 begin
   key := GetInterfaceKey(typeInfo, name);
 
-  if not FContainerInfo.TryGetValue(key,rego) then
+  if not FContainerInfo.TryGetValue(key, rego) then
   begin
     rego := TIoCRegistration.Create;
     rego.Initialize(delegate, singleton);
@@ -231,7 +231,7 @@ end;
 
 constructor TDUnitXServiceLocator.Create;
 begin
-  FContainerInfo := TObjectDictionary<string,TIoCRegistration>.Create([doOwnsValues]);
+  FContainerInfo := TObjectDictionary<string, TIoCRegistration>.Create([doOwnsValues]);
   FRaiseIfNotFound := False;
 end;
 

@@ -40,7 +40,7 @@ uses
 
 
 type
-   TDUnitXNewProjectWizard = class(TNotifierObject,IOTAWizard,IOTARepositoryWizard, IOTARepositoryWizard80, IOTAProjectWizard)
+   TDUnitXNewProjectWizard = class(TNotifierObject, IOTAWizard, IOTARepositoryWizard, IOTARepositoryWizard80, IOTAProjectWizard)
    protected
      FIcon : TIcon;
    public
@@ -121,7 +121,7 @@ begin
                        TNewTestUnit.Create(WizardForm.CreateSetupTearDownMethods,
                                            WizardForm.CreateSampleMethods,
                                            WizardForm.TestFixtureClasaName ));
-         Project.AddFile(TestUnit.FileName,true);
+         Project.AddFile(TestUnit.FileName, true);
       end;
 
 

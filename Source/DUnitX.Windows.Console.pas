@@ -149,7 +149,7 @@ var
   dummy : Cardinal;
 begin
   //Add the indenting.
-  output := TStrUtils.PadString(s, length(s)+ Self.CurrentIndentLevel, True, ' ');
+  output := TStrUtils.PadString(s, length(s) + Self.CurrentIndentLevel, True, ' ');
   if Self.RedirectedStdOut then
     System.Write(output)
   else
@@ -162,7 +162,7 @@ var
   dummy : Cardinal;
 begin
   //Add the indenting.
-  output := TStrUtils.PadString(s, length(s)+ Self.CurrentIndentLevel, True, ' ');
+  output := TStrUtils.PadString(s, length(s) + Self.CurrentIndentLevel, True, ' ');
 
   //If we are already going to wrap around to the next line. No need to add CRLF
   if Length(output) < ConsoleWidth then
@@ -216,7 +216,7 @@ end;
 
 {$IFDEF MSWINDOWS}
 initialization
-    TDUnitXServiceLocator.DefaultContainer.RegisterType<IDUnitXConsoleWriter,TDUnitXWindowsConsoleWriter>;
+    TDUnitXServiceLocator.DefaultContainer.RegisterType<IDUnitXConsoleWriter, TDUnitXWindowsConsoleWriter>;
 //    TDUnitXServiceLocator.DefaultContainer.RegisterType<IDUnitXConsoleWriter>(
 //        function : IDUnitXConsoleWriter
 //        begin

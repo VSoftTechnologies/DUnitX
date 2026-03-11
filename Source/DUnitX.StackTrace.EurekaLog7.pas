@@ -45,7 +45,7 @@ uses
   DUnitX.TestFramework;
 
 type
-  TEurekaLog7StackTraceProvider = class(TInterfacedObject,IStacktraceProvider)
+  TEurekaLog7StackTraceProvider = class(TInterfacedObject, IStacktraceProvider)
   public
     function GetStackTrace(const ex: Exception; const exAddressAddress: Pointer): string;
     function PointerToLocationInfo(const Addrs: Pointer): string;
@@ -101,7 +101,7 @@ initialization
 {$IFDEF USE_EUREKALOG7}
 
   {$IFDEF DELPHI_XE_UP}
-    TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider,TEurekaLog7StackTraceProvider>(true);
+    TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider, TEurekaLog7StackTraceProvider>(true);
   {$ELSE}
     //D2010 bug prevents using above method.
     TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider>(true,

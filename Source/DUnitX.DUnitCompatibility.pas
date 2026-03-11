@@ -139,7 +139,7 @@ begin
         Result.Remove(counter, 1);
         Result.Insert(counter, '1');
 	{$ELSE}
-	Result[counter+1] := '1';
+	Result[counter + 1] := '1';
 	{$ENDIF}
       end;
     end;
@@ -147,12 +147,12 @@ end;
 
 procedure TTestCase.Check(const condition: Boolean; const msg: string);
 begin
-  Assert.IsTrue(condition,msg);
+  Assert.IsTrue(condition, msg);
 end;
 
 procedure TTestCase.CheckTrue(const condition: Boolean; const msg: string);
 begin
-  Assert.IsTrue(condition,msg);
+  Assert.IsTrue(condition, msg);
 end;
 
 function TTestCase.GetName: string;
@@ -191,7 +191,7 @@ var
 begin
   runner := TDUnitXTestRunner.GetActiveRunner;
   if runner <> nil then
-    runner.Log(TLogLevel.Information,msg)
+    runner.Log(TLogLevel.Information, msg)
   else
     System.Writeln(msg);
 end;
@@ -203,23 +203,23 @@ end;
 
 procedure TTestCase.CheckFalse(const condition: Boolean; const msg: string);
 begin
-  Assert.IsFalse(condition,msg);
+  Assert.IsFalse(condition, msg);
 end;
 
 procedure TTestCase.CheckEquals(const expected, actual: extended; const msg: string);
 begin
-  Assert.AreEqual(expected,actual,0,msg);
+  Assert.AreEqual(expected, actual, 0, msg);
 end;
 
 procedure TTestCase.CheckEquals(const expected, actual: extended; const delta: extended; const msg: string);
 begin
-  Assert.AreEqual(expected,actual,delta,msg);
+  Assert.AreEqual(expected, actual, delta, msg);
 end;
 
 procedure TTestCase.CheckEquals(const expected, actual: integer; const msg: string);
 begin
 {$IFDEF DELPHI_XE2_UP}
-  Assert.AreEqual<integer>(expected,actual,msg);
+  Assert.AreEqual<integer>(expected, actual, msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);
 {$ENDIF}
@@ -228,7 +228,7 @@ end;
 procedure TTestCase.CheckEquals(const expected, actual: Cardinal; const msg: string);
 begin
 {$IFDEF DELPHI_XE2_UP}
-  Assert.AreEqual<Cardinal>(expected,actual,msg);
+  Assert.AreEqual<Cardinal>(expected, actual,msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);
 {$ENDIF}
@@ -237,7 +237,7 @@ end;
 procedure TTestCase.CheckEquals(const expected, actual: int64; const msg: string);
 begin
 {$IFDEF DELPHI_XE2_UP}
-  Assert.AreEqual<Int64>(expected,actual,msg);
+  Assert.AreEqual<Int64>(expected, actual,msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);
 {$ENDIF}
@@ -256,7 +256,7 @@ end;
 procedure TTestCase.CheckEquals(const expected, actual: AnsiString; const msg: string);
 begin
 {$IFDEF DELPHI_XE2_UP}
-  Assert.AreEqual<AnsiString>(expected,actual,msg);
+  Assert.AreEqual<AnsiString>(expected, actual, msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);
 {$ENDIF}
@@ -265,7 +265,7 @@ end;
 procedure TTestCase.CheckEquals(const expected, actual: ShortString; const msg: string);
 begin
 {$IFDEF DELPHI_XE2_UP}
-  Assert.AreEqual<ShortString>(expected,actual,msg);
+  Assert.AreEqual<ShortString>(expected, actual, msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);
 {$ENDIF}
@@ -274,30 +274,30 @@ end;
 
 procedure TTestCase.CheckEqualsString(const expected, actual: string; const msg: string);
 begin
-  Assert.AreEqual(expected,actual,true,msg);
+  Assert.AreEqual(expected, actual, true, msg);
 end;
 
 {$IFNDEF NEXTGEN}
 procedure TTestCase.CheckEquals(const expected, actual: WideString; const msg: string);
 begin
-  Assert.AreEqual(expected,actual,true,msg);
+  Assert.AreEqual(expected, actual, true, msg);
 end;
 
 procedure TTestCase.CheckEqualsWideString(const expected, actual: WideString; const msg: string);
 begin
-  Assert.AreEqual(expected,actual,true,msg);
+  Assert.AreEqual(expected, actual, true, msg);
 end;
 {$ENDIF}
 
 procedure TTestCase.CheckEqualsMem(const expected, actual: pointer; const size:longword; const msg : string = '');
 begin
-  Assert.AreEqualMemory(expected,actual,size,msg);
+  Assert.AreEqualMemory(expected, actual, size, msg);
 end;
 
 procedure TTestCase.CheckEquals(const expected, actual: Boolean; const msg: string);
 begin
 {$IFDEF DELPHI_XE2_UP}
-  Assert.AreEqual<Boolean>(expected,actual,msg);
+  Assert.AreEqual<Boolean>(expected, actual, msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);
 {$ENDIF}
@@ -314,13 +314,13 @@ end;
 
 procedure TTestCase.CheckEqualsHex(const expected, actual: longword; const msg: string; digits: integer);
 begin
-  Assert.AreEqual(IntToHex(expected, digits), IntToHex(actual, digits),true,msg);
+  Assert.AreEqual(IntToHex(expected, digits), IntToHex(actual, digits), true, msg);
 end;
 
 procedure TTestCase.CheckNotEquals(const expected, actual: integer; const msg: string);
 begin
 {$IFDEF DELPHI_XE2_UP}
-  Assert.AreNotEqual<integer>(expected,actual,msg);
+  Assert.AreNotEqual<integer>(expected, actual, msg);
 {$ELSE}
   Assert.IsFalse(expected = actual, msg);
 {$ENDIF}
@@ -338,7 +338,7 @@ end;
 procedure TTestCase.CheckNotEquals(const expected, actual: int64; const msg: string);
 begin
 {$IFDEF DELPHI_XE2_UP}
-  Assert.AreNotEqual<int64>(expected,actual,msg);
+  Assert.AreNotEqual<int64>(expected, actual, msg);
 {$ELSE}
   Assert.IsFalse(expected = actual, msg);
 {$ENDIF}
@@ -346,40 +346,40 @@ end;
 
 procedure TTestCase.CheckNotEquals(const expected: extended; const actual: extended; const delta: extended; const msg: string);
 begin
-  Assert.AreNotEqual(expected,actual,delta,msg);
+  Assert.AreNotEqual(expected, actual, delta, msg);
 end;
 
 procedure TTestCase.CheckNotEquals(const expected, actual: string; const msg: string);
 begin
-  Assert.AreNotEqual(expected,actual,true,msg);
+  Assert.AreNotEqual(expected, actual, true, msg);
 end;
 
 procedure TTestCase.CheckNotEqualsString(const expected, actual: string; const msg: string);
 begin
-  Assert.AreNotEqual(expected,actual,true,msg);
+  Assert.AreNotEqual(expected, actual, true, msg);
 end;
 
 {$IFNDEF NEXTGEN}
 procedure TTestCase.CheckNotEquals(const expected, actual: WideString; const msg: string);
 begin
-  Assert.AreNotEqual(expected,actual,true,msg);
+  Assert.AreNotEqual(expected, actual, true, msg);
 end;
 
 procedure TTestCase.CheckNotEqualsWideString(const expected, actual: WideString; const msg: string);
 begin
-  Assert.AreNotEqual(expected,actual,true,msg);
+  Assert.AreNotEqual(expected, actual, true, msg);
 end;
 {$ENDIF}
 
 procedure TTestCase.CheckNotEqualsMem(const expected, actual: pointer; const size:longword; const msg:string='');
 begin
-  Assert.AreNotEqualMemory(expected,actual,size,msg);
+  Assert.AreNotEqualMemory(expected, actual, size, msg);
 end;
 
 procedure TTestCase.CheckNotEquals(const expected, actual: Boolean; const msg: string);
 begin
 {$IFDEF DELPHI_XE2_UP}
-  Assert.AreNotEqual<boolean>(expected,actual,msg);
+  Assert.AreNotEqual<boolean>(expected, actual, msg);
 {$ELSE}
   Assert.IsFalse(expected = actual, msg);
 {$ENDIF}
@@ -388,7 +388,7 @@ end;
 procedure TTestCase.CheckNotEqualsBin(const expected, actual: longword; const msg: string; digits: integer);
 begin
 {$IFDEF DELPHI_XE2_UP}
-  Assert.AreNotEqual<longword>(expected,actual,msg);
+  Assert.AreNotEqual<longword>(expected, actual, msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);
 {$ENDIF}
@@ -396,23 +396,23 @@ end;
 
 procedure TTestCase.CheckNotEqualsHex(const expected, actual: longword; const msg: string; digits: integer);
 begin
-  Assert.AreNotEqual(IntToHex(expected, digits), IntToHex(actual, digits),true,msg);
+  Assert.AreNotEqual(IntToHex(expected, digits), IntToHex(actual, digits), true, msg);
 end;
 
 procedure TTestCase.CheckNotNull(const obj :IUnknown; const msg :string);
 begin
-  Assert.IsNotNull(obj,msg);
+  Assert.IsNotNull(obj, msg);
 end;
 
 procedure TTestCase.CheckNull(const obj: IUnknown; const msg: string);
 begin
-  Assert.IsNull(obj,msg);
+  Assert.IsNull(obj, msg);
 end;
 
 procedure TTestCase.CheckSame(const expected, actual: IUnknown; const msg: string);
 begin
 {$IFDEF DELPHI_XE2_UP}
-  Assert.AreEqual<IInterface>(expected,actual,msg);
+  Assert.AreEqual<IInterface>(expected, actual, msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);
 {$ENDIF}
@@ -421,7 +421,7 @@ end;
 procedure TTestCase.CheckSame(const expected, actual: TObject; const msg: string);
 begin
 {$IFDEF DELPHI_XE2_UP}
-  Assert.AreEqual<TObject>(expected,actual,msg);
+  Assert.AreEqual<TObject>(expected, actual, msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);
 {$ENDIF}
@@ -429,32 +429,32 @@ end;
 
 procedure TTestCase.CheckNotNull(const obj: TObject; const msg: string);
 begin
-  Assert.IsNotNull(obj,msg);
+  Assert.IsNotNull(obj, msg);
 end;
 
 procedure TTestCase.CheckNull(const obj: TObject; const msg: string);
 begin
-  Assert.IsNull(obj,msg);
+  Assert.IsNull(obj, msg);
 end;
 
 procedure TTestCase.CheckException(const AMethod: TTestMethod; const AExceptionClass: ExceptClass; const msg :string);
 begin
-  Assert.WillRaise(AMethod,AExceptionClass,msg);
+  Assert.WillRaise(AMethod, AExceptionClass, msg);
 end;
 
 procedure TTestCase.CheckEquals(const expected, actual: TClass; const msg: string);
 begin
-  Assert.AreEqual(expected,actual,msg);
+  Assert.AreEqual(expected, actual, msg);
 end;
 
 procedure TTestCase.CheckInherits(const expected, actual: TClass; const msg: string);
 begin
-  Assert.InheritsFrom(expected,actual,msg);
+  Assert.InheritsFrom(expected, actual, msg);
 end;
 
 procedure TTestCase.CheckIs(const AObject :TObject; const AClass: TClass; const msg: string);
 begin
-  Assert.InheritsFrom(AObject.ClassType,AClass,msg);
+  Assert.InheritsFrom(AObject.ClassType, AClass, msg);
 end;
 
 end.

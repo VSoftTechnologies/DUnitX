@@ -116,16 +116,16 @@ var
   sep : integer;
 begin
   result := '';
-  sep := GetSeparator(arg,index);
+  sep := GetSeparator(arg, index);
   {$IFNDEF NEXTGEN}  
   if sep > 0 then
   begin
-    result := Trim(Copy(arg,index, sep - index));
+    result := Trim(Copy(arg, index, sep - index));
     index := sep +1;
   end
   else
   begin
-    result := Trim(Copy(arg,index, Length(arg)));
+    result := Trim(Copy(arg, index, Length(arg)));
     index := Length(arg);
   end;
   {$ELSE}
@@ -160,7 +160,7 @@ begin
       while i < arg.Length - 1 do
       {$ENDIF}
       begin
-        sName := GetTestName(arg,i);
+        sName := GetTestName(arg, i);
         if sName <> '' then
           sList.Add(sName);
       end;

@@ -133,8 +133,8 @@ begin
 
   System.Write(AT_NO_ATTRIB);
   // If a Bright color set Bold
-  if foreground in [ccBrightRed,ccBrightBlue,ccBrightGreen,ccBrightYellow,
-                    ccBrightAqua,ccBrightAqua,ccBrightPurple,ccBrightWhite] then
+  if foreground in [ccBrightRed, ccBrightBlue, ccBrightGreen, ccBrightYellow,
+                    ccBrightAqua, ccBrightAqua, ccBrightPurple, ccBrightWhite] then
      System.Write(AT_BOLD);
 
   case foreground of
@@ -161,7 +161,7 @@ end;
 
 {$IF Defined(MACOS) or Defined(OSX32)}
  initialization
-  TDUnitXServiceLocator.DefaultContainer.RegisterType<IDUnitXConsoleWriter,TDUnitXMacOSConsoleWriter>();
+  TDUnitXServiceLocator.DefaultContainer.RegisterType<IDUnitXConsoleWriter, TDUnitXMacOSConsoleWriter>();
 {$IFEND}
 
 end.

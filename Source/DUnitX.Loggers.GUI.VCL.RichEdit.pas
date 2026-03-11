@@ -44,7 +44,7 @@ uses
   DUnitX.TestFramework;
 
 type
-  TTestBookmarkList = TDictionary<string,integer>;
+  TTestBookmarkList = TDictionary<string, integer>;
 
   TDUnitXGUIVCLRichEditLogger = class(TInterfacedObject, ITestLogger)
   private

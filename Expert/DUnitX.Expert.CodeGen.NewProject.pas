@@ -40,7 +40,7 @@ uses
   ToolsAPI;
 
 type
-   TNewProject= class abstract(TNotifierObject,IOTACreator, IOTAProjectCreator,IOTAProjectCreator80)
+   TNewProject = class abstract(TNotifierObject, IOTACreator, IOTAProjectCreator, IOTAProjectCreator80)
    protected
     //IOTACreator
     function GetCreatorType: string; virtual;

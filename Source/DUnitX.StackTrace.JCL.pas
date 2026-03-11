@@ -44,7 +44,7 @@ uses
   DUnitX.TestFramework;
 
 type
-  TJCLStackTraceProvider = class(TInterfacedObject,IStacktraceProvider)
+  TJCLStackTraceProvider = class(TInterfacedObject, IStacktraceProvider)
   protected
     function GetStackTrace(const ex: Exception; const exAddressAddress: Pointer): string;
     function PointerToLocationInfo(const Addrs: Pointer): string;
@@ -119,7 +119,7 @@ initialization
 {$IFDEF USE_JCL}
 
   {$IFDEF DELPHI_XE_UP}
-    TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider,TJCLStackTraceProvider>(true);
+    TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider, TJCLStackTraceProvider>(true);
   {$ELSE}
     //D2010 bug prevents using above method.
     TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider>(true,

@@ -11,7 +11,7 @@ uses
 type
   //Just a record for doing a List of Data
   TTestData = Record
-                Val1,Val2 : integer;
+                Val1, Val2: integer;
                 AddExpect : integer;
                 isEqual   : boolean;
   End;
@@ -37,10 +37,10 @@ type
   public
     [Test]
     [TestCaseProvider(TSampleProvider)]
-    Procedure Addtest(const v1,v2:integer;expected:integer);
+    Procedure Addtest(const v1, v2:integer; expected:integer);
     [Test]
     [TestCaseProvider(TSampleProvider)]
-    Procedure Comparetest(const v1,v2:integer;expected:boolean);
+    Procedure Comparetest(const v1, v2:integer; expected:boolean);
   end;
 
 implementation
@@ -62,7 +62,7 @@ begin
   begin
     item.Val1 := Random(100);
     item.Val2 := Random(100);
-    item.AddExpect := item.Val1+Item.Val2;
+    item.AddExpect := item.Val1 + Item.Val2;
     item.isEqual := item.Val1 = item.Val2;
     flist.Add(item);
   end;
@@ -90,10 +90,10 @@ end;
 
 function TSampleProvider.GetCaseParams(const methodName : string ; const caseNumber : integer) : TValuearray;
 begin
-  SetLength(result,0);
+  SetLength(result, 0);
   if (caseNumber >= 0) and (caseNumber < flist.Count) then
   begin
-    SetLength(result,3);
+    SetLength(result, 3);
     result[0] := flist[caseNumber].Val1;
     result[1] := flist[caseNumber].Val2;
     if (Methodname = 'Addtest') then
@@ -107,13 +107,13 @@ end;
 
 procedure TProviderExample.Addtest(const v1, v2: integer; expected: integer);
 begin
-  Assert.AreEqual(expected,(v1+v2),'Ok');
+  Assert.AreEqual(expected,(v1 + v2),'Ok');
 end;
 
 procedure TProviderExample.Comparetest(const v1, v2: integer;
   expected: boolean);
 begin
-  Assert.AreEqual(expected,(v1=v2),'Ok');
+  Assert.AreEqual(expected,(v1 = v2),'Ok');
 end;
 
 initialization

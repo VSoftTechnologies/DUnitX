@@ -47,7 +47,7 @@ uses
   DUnitX.TestFramework;
 
 type
-  TMadExcept4StackTraceProvider = class(TInterfacedObject,IStacktraceProvider)
+  TMadExcept4StackTraceProvider = class(TInterfacedObject, IStacktraceProvider)
   public
     function GetStackTrace(const ex: Exception; const exAddressAddress: Pointer): string;
     function PointerToLocationInfo(const Addrs: Pointer): string;
@@ -106,7 +106,7 @@ initialization
 {$IFDEF USE_MADEXCEPT4}
 
   {$IFDEF DELPHI_XE_UP}
-    TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider,TMadExcept4StackTraceProvider>(true);
+    TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider, TMadExcept4StackTraceProvider>(true);
   {$ELSE}
     //D2010 bug prevents using above method.
     TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider>(true,

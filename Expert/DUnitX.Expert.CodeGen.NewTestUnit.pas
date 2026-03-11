@@ -115,9 +115,9 @@ begin
    //ModuleIdent is blank for some reason.
    // http://stackoverflow.com/questions/4196412/how-do-you-retrieve-a-new-unit-name-from-delphis-open-tools-api
    // So using method mentioned by Marco Cantu.
-   (BorlandIDEServices as IOTAModuleServices).GetNewModuleAndClassName( '', lUnitIdent, lFormName, lFileName);
-   result := TSourceFile.Create(STestUnit,[lUnitIdent,FTestFixureClassName,lSetupTearDownIntf,
-                                           lSampleIntf,lSetupTearDownImpl,lSampleImpl]);
+   (BorlandIDEServices as IOTAModuleServices).GetNewModuleAndClassName('', lUnitIdent, lFormName, lFileName);
+   result := TSourceFile.Create(STestUnit,[lUnitIdent, FTestFixureClassName, lSetupTearDownIntf,
+                                           lSampleIntf, lSetupTearDownImpl, lSampleImpl]);
 
 end;
 

@@ -136,7 +136,7 @@ end;
 
 procedure TDUnitXXMLNUnitLogger.Indent;
 begin
-  Inc(FIndent,2);
+  Inc(FIndent, 2);
 end;
 
 procedure TDUnitXXMLNUnitLogger.OnTestingEnds(const RunResults: IRunResults);
@@ -148,12 +148,12 @@ var
   sLevel : string;
 begin
   sLevel := StringOfChar(' ', level * 2 );
-  System.WriteLn(sLevel + fixture.Fixture.NameSpace + ':' + fixture.Fixture.Name + Format(' [Tests: %d] [Children: %d] [Passed : %d]',[fixture.ResultCount,fixture.ChildCount,fixture.PassCount]));
+  System.WriteLn(sLevel + fixture.Fixture.NameSpace + ':' + fixture.Fixture.Name + Format(' [Tests: %d] [Children: %d] [Passed : %d]',[fixture.ResultCount, fixture.ChildCount, fixture.PassCount]));
 
   Inc(level);
   for child in fixture.Children do
   begin
-    LogFixture(child,level);
+    LogFixture(child, level);
   end;
 
 end;
@@ -187,7 +187,7 @@ begin
 
   WriteXMLLine('<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>');
   WriteXMLLine(Format('<test-results name="%s" total="%d" errors="%d" failures="%d" ignored="%d" inconclusive="0" not-run="%d" skipped="0" invalid="0" date="%s" time="%s">',
-                      [sExeName,totalTests,RunResults.ErrorCount,RunResults.FailureCount,RunResults.IgnoredCount,RunResults.IgnoredCount,sDate,sTime]));
+                      [sExeName, totalTests, RunResults.ErrorCount, RunResults.FailureCount, RunResults.IgnoredCount, RunResults.IgnoredCount, sDate, sTime]));
   sExeName := ExtractFileName(sExeName);
 
   if RunResults.AllPassed then
@@ -199,7 +199,7 @@ begin
   //TODO: Populate these properly.
 //  WriteXMLLine('<environment nunit-version="DUnitX" clr-version="2.0.0.0" os-version="6.1.0.0" platform="Windows" cwd="" machine-name="" user="" user-domain=""  />');
   WriteXMLLine('<culture-info current-culture="en" current-uiculture="en" />');
-  WriteXMLLine(Format('<test-suite type="Assembly" name="%s" executed="true" result="%s" success="%s" time="%s" asserts="0">',[sExeName,sResult,BoolToStr(RunResults.AllPassed,true),sTime]));
+  WriteXMLLine(Format('<test-suite type="Assembly" name="%s" executed="true" result="%s" success="%s" time="%s" asserts="0">',[sExeName, sResult, BoolToStr(RunResults.AllPassed, true), sTime]));
   Indent;
   WriteXMLLine('<results>');
 
@@ -217,7 +217,7 @@ end;
 
 procedure TDUnitXXMLNUnitLogger.Outdent;
 begin
-  Dec(FIndent,2);
+  Dec(FIndent, 2);
 end;
 
 procedure TDUnitXXMLNUnitLogger.WriteFixtureResult(const fixtureResult: IFixtureResult);
@@ -241,7 +241,7 @@ begin
 
     sName := EscapeForXML(fixtureResult.Fixture.Name);
     sResult := EscapeForXML(sResult);
-    sSuccess := EscapeForXML(BoolToStr(not fixtureResult.HasFailures,true));
+    sSuccess := EscapeForXML(BoolToStr(not fixtureResult.HasFailures, true));
     sTime := EscapeForXML(sTime);
 
     //its a real fixture if the class is not TObject.
@@ -250,7 +250,7 @@ begin
       //if there were no tests then just ignore this fixture.
       if fixtureResult.ResultCount = 0 then
         exit;
-      sExecuted := BoolToStr(fixtureResult.ResultCount > 0,true);
+      sExecuted := BoolToStr(fixtureResult.ResultCount > 0, true);
       sExecuted := EscapeForXML(sExecuted);
 
       WriteXMLLine(Format('<test-suite type="Fixture" name="%s" executed="%s" result="%s" success="%s" time="%s" >',[sName, sExecuted, sResult, sSuccess, sTime]));
@@ -326,7 +326,7 @@ begin
     sResult := ResultTypeToString(testResult.ResultType);
     if (testResult.ResultType = TTestResultType.Pass) and (testResult.Test.Categories.Count = 0)  then
       sLineEnd := '/';
-    sExecuted := BoolToStr(testResult.ResultType <> TTestResultType.Ignored,true);
+    sExecuted := BoolToStr(testResult.ResultType <> TTestResultType.Ignored, true);
 
     if testResult.ResultType <> TTestResultType.Ignored then
       sSuccess := Format('success="%s"',[EscapeForXML(BoolToStr(testResult.ResultType = TTestResultType.Pass, true))])
@@ -442,7 +442,7 @@ begin
   fileStream := TFileStream.Create(sXmlFilename, fmCreate);
 
   //base class will destroy the stream;
-  inherited Create(fileStream,true);
+  inherited Create(fileStream, true);
 end;
 
 end.

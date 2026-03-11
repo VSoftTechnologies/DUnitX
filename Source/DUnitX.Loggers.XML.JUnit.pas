@@ -135,7 +135,7 @@ end;
 
 procedure TDUnitXXMLJUnitLogger.Indent;
 begin
-  Inc(FIndent,2);
+  Inc(FIndent, 2);
 end;
 
 procedure TDUnitXXMLJUnitLogger.OnTestingEnds(const RunResults: IRunResults);
@@ -147,14 +147,13 @@ var
   sLevel : string;
 begin
   sLevel := StringOfChar(' ', level * 2 );
-  System.WriteLn(sLevel + fixture.Fixture.NameSpace + ':' + fixture.Fixture.Name + Format(' [Tests: %d] [Children: %d] [Passed : %d]',[fixture.ResultCount,fixture.ChildCount,fixture.PassCount]));
+  System.WriteLn(sLevel + fixture.Fixture.NameSpace + ':' + fixture.Fixture.Name + Format(' [Tests: %d] [Children: %d] [Passed : %d]',[fixture.ResultCount, fixture.ChildCount, fixture.PassCount]));
 
   Inc(level);
   for child in fixture.Children do
   begin
-    LogFixture(child,level);
+    LogFixture(child, level);
   end;
-
 end;
 
 
@@ -199,7 +198,7 @@ end;
 
 procedure TDUnitXXMLJUnitLogger.Outdent;
 begin
-  Dec(FIndent,2);
+  Dec(FIndent, 2);
 end;
 
 procedure TDUnitXXMLJUnitLogger.WriteFixtureResult(const fixtureResult: IFixtureResult);
@@ -217,7 +216,7 @@ begin
     //if there were no tests then just ignore this fixture.
     if fixtureResult.ResultCount = 0 then
       exit;
-    sExecuted := BoolToStr(fixtureResult.ResultCount > 0,true);
+    sExecuted := BoolToStr(fixtureResult.ResultCount > 0, true);
     sExecuted := EscapeForXML(sExecuted);
 
     sName := StringReplace(fixtureResult.Fixture.FullName, '.' + fixtureResult.Fixture.Name, '' , []);
@@ -366,7 +365,7 @@ begin
   fileStream := TFileStream.Create(sXmlFilename, fmCreate);
 
   //base class will destroy the stream;
-  inherited Create(fileStream,true);
+  inherited Create(fileStream, true);
 end;
 
 end.

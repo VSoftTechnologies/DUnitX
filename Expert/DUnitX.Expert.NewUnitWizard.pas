@@ -105,7 +105,7 @@ begin
                        TNewTestUnit.Create(WizardForm.CreateSetupTearDownMethods,
                                            WizardForm.CreateSampleMethods,
                                            WizardForm.TestFixtureClasaName ));
-      Project.AddFile(TestUnit.FileName,true);
+      Project.AddFile(TestUnit.FileName, true);
     end;
   finally
     WizardForm.Free;

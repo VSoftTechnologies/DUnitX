@@ -98,7 +98,7 @@ end;
 class procedure TestDataProviderManager.RegisterProvider(const name: string; const AClass: TTestDataProviderClass);
 begin
   if (not FList.ContainsKey(name)) then
-    FList.add(name,AClass);
+    FList.add(name, AClass);
 end;
 
 class procedure TestDataProviderManager.UnregisterProvider(const name: string);

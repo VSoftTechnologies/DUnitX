@@ -240,7 +240,7 @@ type
 
 
   {$SCOPEDENUMS ON}
-  TTestResultType = (Pass,Failure,Error,Ignored,MemoryLeak,Warning);
+  TTestResultType = (Pass, Failure, Error, Ignored, MemoryLeak, Warning);
   {$M+}
   ITestResult = interface(IResult)
   ['{EFD44ABA-4F3E-435C-B8FC-1F8EB4B35A3B}']
@@ -572,13 +572,13 @@ type
     class var
       FOptions : TDUnitXOptions;
       FFilter : ITestFilter;
-      FAssertCounters : TDictionary<TThreadID,Cardinal>;
+      FAssertCounters : TDictionary<TThreadID, Cardinal>;
       FLock : TCriticalSection;
   protected
     class constructor Create;
     class destructor Destroy;
   public class var
-    RegisteredFixtures : TDictionary<TClass,string>;
+    RegisteredFixtures : TDictionary<TClass, string>;
   public
     class function CreateRunner : ITestRunner;overload;
     class function CreateRunner(const ALogger : ITestLogger) : ITestRunner;overload;
@@ -704,11 +704,11 @@ end;
 procedure ShowUsage(consoleWriter : IDUnitXConsoleWriter);
 begin
   if consoleWriter <> nil then
-    consoleWriter.SetColour(ccBrightYellow,ccDefault);
-  Writeline(consoleWriter, Format(SUsage, [ExtractFileName(ParamStr(0))])+#13#10);
+    consoleWriter.SetColour(ccBrightYellow, ccDefault);
+  Writeline(consoleWriter, Format(SUsage, [ExtractFileName(ParamStr(0))]) + #13#10);
   Writeline(consoleWriter, SOptions);
   if consoleWriter <> nil then
-    consoleWriter.SetColour(ccBrightWhite,ccDefault);
+    consoleWriter.SetColour(ccBrightWhite, ccDefault);
 
   TOptionsRegistry.PrintUsage(procedure(value : string)
                             begin
@@ -735,14 +735,14 @@ begin
 
       consoleWriter := TDUnitXServiceLocator.DefaultContainer.Resolve<IDUnitXConsoleWriter>;
       if consoleWriter <> nil then
-        consoleWriter.SetColour(ccBrightRed,ccDefault);
+        consoleWriter.SetColour(ccBrightRed, ccDefault);
       Writeline(consoleWriter, parseResult.ErrorText);
       //if the user said hidebanner then don't print the usage either
       if not FOptions.HideBanner then
         ShowUsage(consoleWriter);
       if consoleWriter <> nil then
         consoleWriter.SetColour(ccDefault,ccDefault);
-      System.ExitCode :=EXIT_OPTIONS_ERROR;
+      System.ExitCode := EXIT_OPTIONS_ERROR;
       raise ECommandLineError.Create(parseResult.ErrorText);
     end
     else
@@ -776,9 +776,9 @@ end;
 class constructor TDUnitX.Create;
 begin
   FOptions := TDUnitXOptions.Create;
-  FAssertCounters := TDictionary<TThreadID,Cardinal>.Create(8);
+  FAssertCounters := TDictionary<TThreadID, Cardinal>.Create(8);
   FLock := TCriticalSection.Create;
-  RegisteredFixtures := TDictionary<TClass,string>.Create;
+  RegisteredFixtures := TDictionary<TClass, string>.Create;
   //Make sure we have at least a dummy memory leak monitor registered.
   if not TDUnitXServiceLocator.DefaultContainer.HasService<IMemoryLeakMonitor> then
     DUnitX.MemoryLeakMonitor.Default.RegisterDefaultProvider;
@@ -791,13 +791,13 @@ begin
                       threadId := TThread.CurrentThread.ThreadID;
                       FLock.Enter;
                       try
-                        if FAssertCounters.TryGetValue(threadId,value) then
+                        if FAssertCounters.TryGetValue(threadId, value) then
                         begin
                           Inc(value);
-                          FAssertCounters.AddOrSetValue(threadId,value);
+                          FAssertCounters.AddOrSetValue(threadId, value);
                         end
                         else
-                          FAssertCounters.Add(threadId,1)
+                          FAssertCounters.Add(threadId, 1)
                       finally
                         FLock.Leave;
                       end;
@@ -808,7 +808,7 @@ class function TDUnitX.CurrentRunner: ITestRunner;
 var
   ref : IWeakReference<ITestRunner>;
 begin
-  if not TDUnitXTestRunner.FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId,ref) then
+  if not TDUnitXTestRunner.FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId, ref) then
     raise Exception.Create(SNoRunner);
   result := ref.Data;
 
@@ -827,7 +827,7 @@ begin
   result := 0;
   FLock.Enter;
   try
-    FAssertCounters.TryGetValue(AThreadId,result);
+    FAssertCounters.TryGetValue(AThreadId, result);
   finally
     FLock.Leave;
   end;
@@ -861,7 +861,7 @@ begin
   end;
 
   if not RegisteredFixtures.ContainsKey(AClass) then
-      RegisteredFixtures.Add(AClass,sName );
+      RegisteredFixtures.Add(AClass, sName);
 end;
 
 {$IFDEF DELPHI_XE2_UP}
@@ -870,7 +870,7 @@ end;
 
 procedure TTestFixtureHelper.Log(const msg: string);
 begin
-  Self.Log(TLogLevel.Information,msg);
+  Self.Log(TLogLevel.Information, msg);
 end;
 
 procedure TTestFixtureHelper.Log(const logType : TLogLevel; const msg: string);
@@ -878,11 +878,11 @@ var
   runner : ITestRunner;
   ref : IWeakReference<ITestRunner>;
 begin
-  if TDUnitXTestRunner.FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId,ref) then
+  if TDUnitXTestRunner.FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId, ref) then
   begin
     runner := ref.Data;
     if runner <> nil then
-      runner.Log(logType,msg)
+      runner.Log(logType, msg)
     else
       System.Writeln(msg);
   end
@@ -892,17 +892,17 @@ end;
 
 procedure TTestFixtureHelper.Status(const msg: string);
 begin
-  Self.Log(TLogLevel.Information,msg);
+  Self.Log(TLogLevel.Information, msg);
 end;
 
 procedure TTestFixtureHelper.WriteLn;
 begin
-  Self.Log(TLogLevel.Information,'');
+  Self.Log(TLogLevel.Information, '');
 end;
 
 procedure TTestFixtureHelper.WriteLn(const msg: string);
 begin
-  Self.Log(TLogLevel.Information,msg);
+  Self.Log(TLogLevel.Information, msg);
 end;
 {$ENDIF}
 
@@ -916,7 +916,7 @@ end;
 
 initialization
   InitAssert;
-  TDUnitXServiceLocator.DefaultContainer.RegisterType<IFixtureProvider,TDUnitXFixtureProvider>();
+  TDUnitXServiceLocator.DefaultContainer.RegisterType<IFixtureProvider, TDUnitXFixtureProvider>();
 
 finalization
 

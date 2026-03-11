@@ -226,7 +226,7 @@ begin
     LItem.Text := Test.Test.Name;
     LItem.Detail := Test.Test.FullName;
   end;
-  TestProgress.Value := TestProgress.Value + 100/FChecked.Count;
+  TestProgress.Value := TestProgress.Value + 100 / FChecked.Count;
 end;
 
 procedure TMobileGUITestRunner.OnEndTestFixture(const threadId: TThreadID;

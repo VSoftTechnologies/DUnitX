@@ -112,7 +112,7 @@ begin
                                                WizardForm.TestFixtureClasaName,
                                                APersonality));
              if Project <> nil then
-               Project.AddFile(TestUnit.FileName,true);
+               Project.AddFile(TestUnit.FileName, true);
           end;
         end;
       finally

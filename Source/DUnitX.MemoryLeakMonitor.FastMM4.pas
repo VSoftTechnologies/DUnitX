@@ -46,7 +46,7 @@ uses
   DUnitX.ServiceLocator;
 
 type
-  TDUnitXFastMM4MemoryLeakMonitor = class(TInterfacedObject,IMemoryLeakMonitor)
+  TDUnitXFastMM4MemoryLeakMonitor = class(TInterfacedObject, IMemoryLeakMonitor)
   private
     FPreSetupAllocation : Int64;
     FPostSetupAllocation : Int64;

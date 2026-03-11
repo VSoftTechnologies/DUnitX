@@ -62,7 +62,7 @@ end;
 
 initialization
   InitAssert;
-  TDUnitXServiceLocator.DefaultContainer.RegisterType<IFixtureProvider,TDUnitXFixtureProvider>();
+  TDUnitXServiceLocator.DefaultContainer.RegisterType<IFixtureProvider, TDUnitXFixtureProvider>();
 
 {$ENDIF}
 

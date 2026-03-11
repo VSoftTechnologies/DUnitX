@@ -209,7 +209,7 @@ begin
   stackTraceProvider := TDUnitXServiceLocator.DefaultContainer.Resolve<IStacktraceProvider>();
 
   if stackTraceProvider <> nil then
-    FStackTrace := stackTraceProvider.GetStackTrace(AThrownException,Addrs);
+    FStackTrace := stackTraceProvider.GetStackTrace(AThrownException, Addrs);
   {$ENDIF}
 end;
 
