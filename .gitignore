@@ -54,3 +54,5 @@ Examples/OSX32/
 
 
 *.lnk
+/Source/Packages/Android
+/Source/Packages/Linux64

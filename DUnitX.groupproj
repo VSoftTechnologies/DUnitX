@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{FD2B2356-90B5-43EF-93E6-1881F2A6022A}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="Source\Packages\DUnitX_VLC.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Source\Packages\DUnitX_FMX.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="DUnitX_VLC">
+        <MSBuild Projects="Source\Packages\DUnitX_VLC.dproj"/>
+    </Target>
+    <Target Name="DUnitX_VLC:Clean">
+        <MSBuild Projects="Source\Packages\DUnitX_VLC.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="DUnitX_VLC:Make">
+        <MSBuild Projects="Source\Packages\DUnitX_VLC.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="DUnitX_FMX">
+        <MSBuild Projects="Source\Packages\DUnitX_FMX.dproj"/>
+    </Target>
+    <Target Name="DUnitX_FMX:Clean">
+        <MSBuild Projects="Source\Packages\DUnitX_FMX.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="DUnitX_FMX:Make">
+        <MSBuild Projects="Source\Packages\DUnitX_FMX.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="DUnitX_VLC;DUnitX_FMX"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="DUnitX_VLC:Clean;DUnitX_FMX:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="DUnitX_VLC:Make;DUnitX_FMX:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>
