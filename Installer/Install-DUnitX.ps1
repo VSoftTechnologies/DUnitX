@@ -1,3 +1,28 @@
+#***************************************************************************#
+#                                                                           #
+#           DUnitX Installer                                                #
+#                                                                           #
+#           Copyright © 2026 Jim McKeeth                                    #
+#                                                                           #
+#           Included with DUnitX - Delphi Unit Test Framework               #
+#           https://github.com/VSoftTechnologies/DUnitX                     #
+#                                                                           #
+#***************************************************************************#
+#                                                                           #
+#  Licensed under the Apache License, Version 2.0 (the "License");          #
+#  you may not use this file except in compliance with the License.         #
+#  You may obtain a copy of the License at                                  #
+#                                                                           #
+#      http://www.apache.org/licenses/LICENSE-2.0                           #
+#                                                                           #
+#  Unless required by applicable law or agreed to in writing, software      #
+#  distributed under the License is distributed on an "AS IS" BASIS,        #
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. #
+#  See the License for the specific language governing permissions and      #
+#  limitations under the License.                                           #
+#                                                                           #
+#***************************************************************************#
+
 #Requires -Version 5.1
 <#
 .SYNOPSIS
@@ -67,6 +92,31 @@ function Write-Step   { param([string]$Msg) Write-Host "  --> $Msg" -ForegroundC
 function Write-OK     { param([string]$Msg) Write-Host "  [OK] $Msg" -ForegroundColor Green }
 function Write-Warn   { param([string]$Msg) Write-Host "  [WARN] $Msg" -ForegroundColor Yellow }
 function Write-Fail   { param([string]$Msg) Write-Host "  [FAIL] $Msg" -ForegroundColor Red }
+
+# ---------------------------------------------------------------------------
+# Helper: append a value to a semicolon-separated registry string if absent
+# ---------------------------------------------------------------------------
+function Add-LibraryValue {
+    param([string]$RegPath, [string]$ValueName, [string]$ToAdd, [string]$Label)
+    $props   = Get-ItemProperty $RegPath -ErrorAction SilentlyContinue
+    $hasProp = $props -and (Get-Member -InputObject $props -Name $ValueName -MemberType NoteProperty)
+    $current = if ($hasProp) { $props.$ValueName } else { '' }
+    if ($current -like "*$ToAdd*") {
+        Write-OK "  ${Label}: '$ValueName' already up to date."
+    } else {
+        $newVal = if ([string]::IsNullOrEmpty($current)) { $ToAdd } else { "$current;$ToAdd" }
+        Set-ItemProperty $RegPath $ValueName $newVal
+        Write-OK "  ${Label}: '$ValueName' updated."
+    }
+}
+
+# ---------------------------------------------------------------------------
+# Helper: remove one entry from a semicolon-separated string
+# ---------------------------------------------------------------------------
+function Remove-LibraryEntry {
+    param([string]$Current, [string]$Entry)
+    ($Current -split ';' | Where-Object { $_ -ne $Entry }) -join ';'
+}
 
 # ---------------------------------------------------------------------------
 # Helper: run a command via a temp batch file (avoids && parsing issues in PS5)
@@ -228,6 +278,9 @@ if ($SelectedVersions.Count -eq 0) {
 $ScriptDir  = $PSScriptRoot
 $ExpertDir  = Join-Path $ScriptDir '..\Expert'
 $ExpertDir  = (Resolve-Path $ExpertDir).Path
+$RepoRoot   = (Resolve-Path (Join-Path $ScriptDir '..')).Path
+$SourceDir  = Join-Path $RepoRoot 'source'
+$PkgDir     = Join-Path $SourceDir 'packages'
 
 # ---------------------------------------------------------------------------
 # Process each selected version
@@ -337,39 +390,82 @@ foreach ($ver in $SelectedVersions) {
     Write-OK "Registered: $bplPath"
 
     # -----------------------------------------------------------------------
-    # Step 6: Update Browsing Path for every platform subkey
+    # Step 5b: Set DUNITX environment variable in IDE
     # -----------------------------------------------------------------------
-    Write-Step "Updating Library Browsing Path..."
+    Write-Step "Setting DUNITX environment variable..."
+    $envVarsKey = "HKCU:\Software\Embarcadero\BDS\$($ver.Version)\Environment Variables"
+    if (-not (Test-Path $envVarsKey)) { New-Item $envVarsKey -Force | Out-Null }
+    Set-ItemProperty $envVarsKey -Name 'DUNITX' -Value $SourceDir
+    Write-OK "DUNITX = $SourceDir"
+
+    # -----------------------------------------------------------------------
+    # Step 5c: Build DUnitX_VCL (Win32 + Win64, Debug + Release)
+    # -----------------------------------------------------------------------
+    $vclDproj = Join-Path $PkgDir 'DUnitX_VCL.dproj'
+    if (-not (Test-Path $vclDproj)) {
+        Write-Warn "DUnitX_VCL.dproj not found - skipping VCL package build."
+    } else {
+        Write-Step "Building DUnitX_VCL packages..."
+        foreach ($platform in @('Win32', 'Win64')) {
+            foreach ($config in @('Release', 'Debug')) {
+                $cmd = "msbuild `"$vclDproj`" /p:Config=$config /p:Platform=$platform /nologo /v:minimal"
+                $r   = Invoke-BatchCommand -RsvarsBat $rsvarsBat -Command $cmd
+                if ($r.ExitCode -eq 0) { Write-OK "  VCL $platform/$config" }
+                else                   { Write-Warn "  VCL $platform/$config failed (exit $($r.ExitCode))" }
+            }
+        }
+    }
+
+    # -----------------------------------------------------------------------
+    # Step 5d: Build DUnitX_FMX (all enabled platforms, Debug + Release)
+    # -----------------------------------------------------------------------
+    $fmxDproj     = Join-Path $PkgDir 'DUnitX_FMX.dproj'
+    $fmxPlatforms = @('Win32','Win64','Win64x','Android','Android64','OSX64','OSXARM64','iOSDevice64','iOSSimARM64','Linux64')
+    if (-not (Test-Path $fmxDproj)) {
+        Write-Warn "DUnitX_FMX.dproj not found - skipping FMX package build."
+    } else {
+        Write-Step "Building DUnitX_FMX packages..."
+        foreach ($platform in $fmxPlatforms) {
+            foreach ($config in @('Release', 'Debug')) {
+                $cmd = "msbuild `"$fmxDproj`" /p:Config=$config /p:Platform=$platform /nologo /v:minimal"
+                $r   = Invoke-BatchCommand -RsvarsBat $rsvarsBat -Command $cmd
+                if ($r.ExitCode -eq 0) { Write-OK "  FMX $platform/$config" }
+                else                   { Write-Warn "  FMX $platform/$config failed (exit $($r.ExitCode)) - skipped" }
+            }
+        }
+    }
+
+    # -----------------------------------------------------------------------
+    # Step 6: Update library paths for every platform subkey
+    # -----------------------------------------------------------------------
+    Write-Step "Updating Library paths..."
 
     $libraryKey = "HKCU:\Software\Embarcadero\BDS\$($ver.Version)\Library"
-    $toAdd = '$(BDS)\source\DUnitX'
 
     if (-not (Test-Path $libraryKey)) {
-        Write-Warn "Library key not found  - skipping Browsing Path update."
+        Write-Warn "Library key not found  - skipping library path update."
     } else {
         $platformSubkeys = Get-ChildItem $libraryKey -ErrorAction SilentlyContinue
         if ($null -eq $platformSubkeys -or @($platformSubkeys).Count -eq 0) {
-            Write-Warn "No platform subkeys found under Library  - skipping Browsing Path update."
+            Write-Warn "No platform subkeys found under Library  - skipping library path update."
         } else {
             foreach ($platform in $platformSubkeys) {
-                $props   = Get-ItemProperty $platform.PSPath -ErrorAction SilentlyContinue
-                if (-not ($props -and (Get-Member -InputObject $props -Name 'Browsing Path' -MemberType NoteProperty))) {
-                    Write-Warn "  $($platform.PSChildName): no 'Browsing Path' value - skipped."
-                    continue
-                }
-                $current = $props.'Browsing Path'
+                $pname = $platform.PSChildName
+                $ppath = $platform.PSPath
 
-                if ($current -like "*$toAdd*") {
-                    Write-OK "  $($platform.PSChildName): already contains entry  - skipped."
-                } else {
-                    if ([string]::IsNullOrEmpty($current)) {
-                        $newValue = $toAdd
-                    } else {
-                        $newValue = "$current;$toAdd"
-                    }
-                    Set-ItemProperty $platform.PSPath 'Browsing Path' $newValue
-                    Write-OK "  $($platform.PSChildName): added '$toAdd'."
+                # Clean legacy $(BDS)\source\DUnitX from Browsing Path then add $(DUNITX)
+                $props   = Get-ItemProperty $ppath -ErrorAction SilentlyContinue
+                $hasProp = $props -and (Get-Member -InputObject $props -Name 'Browsing Path' -MemberType NoteProperty)
+                $current = if ($hasProp) { $props.'Browsing Path' } else { '' }
+                $cleaned = Remove-LibraryEntry $current '$(BDS)\source\DUnitX'
+                if ($cleaned -ne $current) {
+                    Set-ItemProperty $ppath 'Browsing Path' $cleaned
+                    Write-Step "  ${pname}: removed legacy '`$(BDS)\source\DUnitX' from Browsing Path."
                 }
+
+                Add-LibraryValue $ppath 'Search Path'    '$(DUNITX)\packages\$(Platform)\Release' $pname
+                Add-LibraryValue $ppath 'Browsing Path'  '$(DUNITX)'                              $pname
+                Add-LibraryValue $ppath 'Debug DCU Path' '$(DUNITX)\packages\$(Platform)\Debug'   $pname
             }
         }
     }
