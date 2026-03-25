@@ -1,39 +1,99 @@
 # DUnitX IDE Expert Installer
 
-`Install-DUnitX.ps1` automates the installation of [DUnitX](https://github.com/VSoftTechnologies/DUnitX/) into one or more versions of Delphi/RAD Studio. It replicates the manual steps described in the [wiki](https://github.com/VSoftTechnologies/DUnitX/wiki/Wizard-Installation): build the Expert BPL and the VCL/FMX runtime packages, register the Expert under Known Packages, set the `$(DUNITX)` IDE environment variable, and update the IDE's Library paths so projects can reference DUnitX packages directly.
+`DUnitX-Setup.iss` is an [Inno Setup 6](https://jrsoftware.org/isinfo.php) project that automates the installation of [DUnitX](https://github.com/VSoftTechnologies/DUnitX/) into one or more versions of Delphi/RAD Studio.
+
+The installer is based on the [manual steps described in the wiki](https://github.com/VSoftTechnologies/DUnitX/wiki/Wizard-Installation).
+
+1. Detects installed Delphi versions, allows user selection
+2. Copies the DUnitX source tree to the chosen installation directory
+3. _(Optional)_ backup the registry settings for the selected Delphi version
+4. Removes the old Embarcadero version of the DUnitX package if it exists
+5. Removes `$(BDS)\source\DUnitX` from the IDE Browsing path
+6. Builds the Expert BPL for the selected Delphi versions using the command-line compiler
+7. Uses VCL and FMX packages to build debug and release versions of the units for all appropriate compilers
+8. Sets the `$(DUNITX)` IDE environment variable
+9. Updates the IDE's Search paths to the precompiled release units for each platform `$(DUNITX)\packages\$(Platform)\Release`
+10. Updates the IDE's Debug DCU paths to the precompiled debug units for each platform `$(DUNITX)\packages\$(Platform)\Debug`
+11. Adds the source to the IDE's Browsing path to the DUnitX source code `$(DUNITX)\source`
+12. _(Optional)_ download and install TestInsight if it isn't already installed
+13. _(Optional)_ launch the newest version of Delphi
+
+---
 
 ## Requirements
 
-- PowerShell 5.1 or later
+- [Inno Setup 6.x](https://jrsoftware.org/isdl.php) (to compile the installer)
 - One or more supported Delphi versions installed (but _not running_)
 - No elevated privileges required — all registry writes go to `HKCU`
 
-## Usage
+---
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\Install\Install-DUnitX.ps1 [-Versions <spec>] [-InstallTestInsight]
+## Building the Installer EXE
+
+Compile `DUnitX-Setup.iss` from the `Installer\` sub-folder:
+
+```cmd
+iscc DUnitX-Setup.iss
 ```
 
-The script can be run from any working directory; it locates the `Expert\` and `source\` folders relative to its own location using `$PSScriptRoot`.
+This produces `Installer\DUnitX-Setup.exe`.
+The script references source files via relative paths (`..\..\Expert\`, `..\source\`, etc.) so it **must** be compiled from within the repository.
 
-### Parameters
+---
 
-| Parameter             | Type   | Description                                                                                                                                                                                                                                                                                        |
-| --------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `-Versions`           | String | Skip the interactive prompt and select versions non-interactively. Use `All` to install into every detected version, or supply one or more Delphi generation numbers separated by commas (e.g. `13` for Florence, `12,13` for Athens and Florence). When omitted the script prompts interactively. |
-| `-InstallTestInsight` | Switch | Automatically download and run the TestInsight installer for any selected version that does not already have it registered, without prompting.                                                                                                                                                     |
+## Running the Installer
+
+### Interactive (GUI)
+
+Double-click `DUnitX-Setup.exe`. The wizard guides you through:
+
+1. Accepting the license
+2. Choosing an installation directory
+3. Selecting which detected Delphi versions to install into
+4. Installation (file copy + build + registry configuration)
+5. Optional TestInsight download
+
+### Unattended / Command-line
+
+```cmd
+DUnitX-Setup.exe [/DIR=<path>] [/VERSIONS=<spec>] [/SKIPTS] [/SKIPBACKUP] [/SILENT | /VERYSILENT]
+```
+
+| Parameter          | Description                                                                    |
+| ------------------ | ------------------------------------------------------------------------------ |
+| `/DIR=<path>`      | Override the default installation directory.                                   |
+| `/VERSIONS=<spec>` | Non-interactive version selection (see below). Skips the selection page.       |
+| `/SKIPTS`          | Skip the TestInsight check entirely.                                           |
+| `/SKIPBACKUP`      | Skip the per-version registry backup.                                          |
+| `/SILENT`          | Run with a progress window but no wizard pages; selects all detected versions. |
+| `/VERYSILENT`      | Run completely silently; selects all detected versions.                        |
+
+### `/VERSIONS` values
+
+| Value   | Meaning                                                                      |
+| ------- | ---------------------------------------------------------------------------- |
+| `all`   | Install into every detected Delphi version.                                  |
+| `13`    | Install into the version whose name contains `13` (e.g. Delphi 13 Florence). |
+| `12,13` | Install into Delphi 12 Athens and Delphi 13 Florence.                        |
+| `37.0`  | Match by registry version string exactly.                                    |
 
 ### Examples
 
-```powershell
-# Interactive — prompts for version selection and TestInsight
-powershell -ExecutionPolicy Bypass -File .\Install\Install-DUnitX.ps1
+```cmd
+REM Interactive — wizard prompts for everything
+DUnitX-Setup.exe
 
-# Install into every detected Delphi version, no prompts
-powershell -ExecutionPolicy Bypass -File .\Install\Install-DUnitX.ps1 -Versions All -InstallTestInsight
+REM All detected versions, no prompts, no TestInsight
+DUnitX-Setup.exe /VERSIONS=all /SKIPTS /VERYSILENT
 
-# Install into Delphi 13 Florence only
-powershell -ExecutionPolicy Bypass -File .\Install\Install-DUnitX.ps1 -Versions 13
+REM Delphi 13 Florence only, interactive TestInsight prompt
+DUnitX-Setup.exe /VERSIONS=13
+
+REM Custom install location, Athens + Florence, skip TestInsight
+DUnitX-Setup.exe /DIR=C:\Libraries\DUnitX /VERSIONS=12,13 /SKIPTS
+
+REM Skip registry backup (faster CI installs)
+DUnitX-Setup.exe /VERSIONS=all /SKIPBACKUP /VERYSILENT
 ```
 
 ---
@@ -42,160 +102,188 @@ powershell -ExecutionPolicy Bypass -File .\Install\Install-DUnitX.ps1 -Versions 
 
 ### 1. Detect Installed Versions
 
-The script scans `HKCU:\Software\Embarcadero\BDS\` for subkeys. For each subkey it:
+On startup the installer scans `HKCU:\Software\Embarcadero\BDS\` for subkeys matching the known version table. For each subkey it:
 
 - Reads the `RootDir` registry value
 - Verifies that the directory exists on disk
-- Matches the version number against the known version table (see below)
 - Skips with a warning if the version is unrecognised or the directory is missing
 
-### 2. Interactive Selection
+If no recognised Delphi installation is found, setup aborts immediately with an error message.
 
-A numbered list of detected installs is displayed. The user enters:
+### 2. Version Selection
 
-- A comma-separated list of numbers (e.g. `1,3`)
-- Or `all` to install into every detected version
+When running interactively, a wizard page lists every detected installation as a checked checkbox (all ticked by default). The user can untick versions to skip.
 
-Pressing **Enter** without typing anything defaults to `all`.
+When `/VERSIONS=<spec>` is supplied or `/SILENT`/`/VERYSILENT` is used, this page is skipped and the selection is resolved programmatically.
 
-### 3. Registry Backup
+### 3. File Installation
 
-Before making any changes for a given Delphi version, the script exports its entire BDS registry key to a timestamped `.reg` file in `%TEMP%`:
+All necessary source files are extracted from the installer to the chosen `{app}` directory:
+
+```text
+{app}\
+├── Expert\           ← .dproj/.dpk/.pas/.dfm/resources for every version
+└── source\
+    ├── *.pas / *.inc ← DUnitX core source
+    └── Packages\
+        ├── DUnitX_VLC.dproj   ← VCL runtime package
+        └── DUnitX_FMX.dproj   ← FMX runtime package
+```
+
+### 4. Registry Backup (optional)
+
+Before making any changes for a given Delphi version the installer exports its entire BDS registry key to a timestamped `.reg` file in `%TEMP%`. Pass `/SKIPBACKUP` to suppress this step.
 
 ```cmd
 %TEMP%\DUnitX_BDS_23_0_20250101_120000.reg
 ```
 
-The backup path is printed to the console. To restore, double-click the `.reg` file or run:
+To restore, double-click the `.reg` file or run:
 
 ```cmd
 reg import %TEMP%\DUnitX_BDS_23_0_20250101_120000.reg
 ```
 
-### 4. Build the Expert BPL
+### 5. Remove Old Known Package Entry
+
+The Embarcadero-shipped stub package is removed before registering the new one:
+
+```text
+HKCU\Software\Embarcadero\BDS\{ver}\Known Packages
+  → delete value: $(BDS)\bin\DUnitXIDEExpert{OldSuffix}.bpl
+```
+
+### 6. Remove Legacy Browsing Path Entry
+
+The old source path that Embarcadero's installer added is removed from every platform's Browsing Path:
+
+```text
+HKCU\Software\Embarcadero\BDS\{ver}\Library\{platform}\Browsing Path
+  → remove: $(BDS)\source\DUnitX
+```
+
+### 7. Build the Expert BPL
 
 For each selected version:
 
 ```text
-Expert\{DprojFile}   →   msbuild /p:Config=Release /p:Platform=Win32
+{app}\Expert\{DprojFile}   →   msbuild /p:Config=Release /p:Platform=Win32
 ```
 
-The build is driven by `rsvars.bat` (found at `{RootDir}\bin\rsvars.bat`), which sets up the Delphi build environment including the `BDSCOMMONDIR` variable. The script captures those environment variables and uses `BDSCOMMONDIR` to locate the built BPL:
+The build is driven by `rsvars.bat` (found at `{RootDir}\bin\rsvars.bat`), which sets up the Delphi build environment including `BDSCOMMONDIR`. The installer captures `BDSCOMMONDIR` and uses it to locate the built BPL:
 
 ```cmd
 {BDSCOMMONDIR}\dcp\Win32\Release\{PackageName}.bpl
 ```
 
-### 5. Register the BPL (Known Packages)
+The new BPL path is then registered as a Known Package:
 
-```registry
+```text
 HKCU\Software\Embarcadero\BDS\{ver}\Known Packages
+  {full path to built .bpl}  =  "DUnitX - IDE Expert"
 ```
 
-| Value name                    | Value data            |
-| ----------------------------- | --------------------- |
-| Full path to the built `.bpl` | `DUnitX - IDE Expert` |
+If the BPL is not found after a successful build, the version is skipped and the failure is logged.
 
-If found, it removes the existing BPL matching
+### 8. Build VCL and FMX Runtime Packages
 
-```cmd
-$(BDS)\bin\DUnitXIDEExpert{OldBplSuffix}.bpl
+```text
+{app}\source\Packages\DUnitX_VLC.dproj  →  Win32 + Win64  ×  Release + Debug
+{app}\source\Packages\DUnitX_FMX.dproj  →  all enabled platforms  ×  Release + Debug
 ```
 
-### 5b. Set the `DUNITX` Environment Variable
+> **Note:** the VCL package filename in the repository is `DUnitX_VLC.dproj` (not `VCL`) — that is the actual name on disk.
 
-```registry
+FMX platforms attempted: `Win32`, `Win64`, `Win64x`, `Android`, `Android64`, `OSX64`, `OSXARM64`, `iOSDevice64`, `iOSSimARM64`, `Linux64`.
+
+Build failures (e.g. missing mobile SDK) are reported as warnings and do not abort the overall installation.
+
+### 9. Set the `DUNITX` Environment Variable
+
+```text
 HKCU\Software\Embarcadero\BDS\{ver}\Environment Variables
-  DUNITX = {repo}\source
+  DUNITX = {app}\source
 ```
 
-This makes `$(DUNITX)` available as an IDE macro in all project and library path settings, resolving to the `source\` folder of the DUnitX repository.
+This makes `$(DUNITX)` available as an IDE macro in all project and library path settings, resolving to the `source\` folder of the installed DUnitX tree.
 
-### 5c. Build VCL Runtime Packages
+### 10. Update Search Paths
+
+For every platform subkey under `HKCU\Software\Embarcadero\BDS\{ver}\Library\{platform}\`:
 
 ```text
-source\packages\DUnitX_VCL.dproj   →   Win32 + Win64  ×  Release + Debug
+Search Path  +=  $(DUNITX)\Packages\$(Platform)\Release
 ```
 
-Output goes to `source\packages\{Platform}\{Config}\` as determined by the dproj. Build failures are reported as warnings and do not abort the overall installation.
+This gives the IDE (and MSBuild) the compiled `.dcp` files for each target platform.
 
-If `DUnitX_VCL.dproj` is not found the step is skipped with a warning.
-
-### 5d. Build FMX Runtime Packages
+### 11. Update Debug DCU Paths
 
 ```text
-source\packages\DUnitX_FMX.dproj   →   all enabled platforms  ×  Release + Debug
+Debug DCU Path  +=  $(DUNITX)\Packages\$(Platform)\Debug
 ```
 
-Platforms attempted: `Win32`, `Win64`, `Win64x`, `Android`, `Android64`, `OSX64`, `OSXARM64`, `iOSDevice64`, `iOSSimARM64`, `Linux64`.
+Allows the debugger to step into DUnitX source code using the debug-configuration DCUs.
 
-Each platform/config combination is built independently. Failures (e.g. missing mobile SDK) are reported as warnings and skipped without aborting the remaining builds.
+### 12. Update Browsing Paths
 
-If `DUnitX_FMX.dproj` is not found the step is skipped with a warning.
-
-### 6. Update Library Paths
-
-The script enumerates every platform subkey under
-
-```registry
-HKCU\Software\Embarcadero\BDS\{ver}\Library\{platform}\
+```text
+Browsing Path  +=  $(DUNITX)
 ```
 
-and updates three values per platform:
+`$(DUNITX)` and `$(Platform)` are IDE macros written literally to the registry and expanded by the IDE at runtime. Each entry is only appended if not already present.
 
-| Registry value   | Entry added                              | Notes                                                |
-| ---------------- | ---------------------------------------- | ---------------------------------------------------- |
-| `Search Path`    | `$(DUNITX)\packages\$(Platform)\Release` | Release DCPs for compilation                         |
-| `Browsing Path`  | `$(DUNITX)`                              | Legacy `$(BDS)\source\DUnitX` entry is removed first |
-| `Debug DCU Path` | `$(DUNITX)\packages\$(Platform)\Debug`   | Debug DCUs for stepping into DUnitX code             |
+### 13. TestInsight Check (optional)
 
-The `$(DUNITX)` and `$(Platform)` tokens are IDE macros written literally to the registry and expanded by the IDE at runtime. Each entry is only appended if it is not already present.
+After all selected versions are processed the installer checks whether [TestInsight](https://bitbucket.org/sglienke/testinsight/wiki/Home) is registered in the `Experts` key for each successfully installed version:
 
-### 7. TestInsight Check
-
-After all selected versions are processed, the script checks whether [TestInsight](https://bitbucket.org/sglienke/testinsight/wiki/Home) is registered in the `Experts` key for each successfully installed version:
-
-```registry
+```reg
 HKCU\Software\Embarcadero\BDS\{ver}\Experts
 ```
 
-If any value whose name contains `TestInsight` is absent, the script:
+If any version is missing a value whose name contains `TestInsight`, the installer:
 
-1. Lists the affected Delphi versions
-2. Prompts `[Y/n]` to download and run the installer (defaults to **Y**)
+1. Lists the affected versions
+2. Prompts `[Yes / No]` to download and run the installer (interactive mode), or installs automatically (silent mode)
 3. Downloads `TestInsightSetup.zip` from `https://files.spring4d.com/TestInsight/latest/`
 4. Extracts it to `%TEMP%\TestInsightSetup\`
 5. Runs `TestInsightSetup.exe` and waits for it to finish
 
-TestInsight integrates with DUnitX to show real-time test results inside the IDE.
+Pass `/SKIPTS` to skip this step entirely.
+
+### 14. Launch Delphi (optional)
+
+After installation the Finish page shows a **"Launch Delphi after installation"** checkbox (ticked by default). If left ticked, clicking **Finish** launches `bds.exe` for the newest Delphi version that was successfully installed.
+
+- The checkbox only appears when at least one `bds.exe` was found on disk.
+- The IDE is launched without waiting for it to close (`nowait`).
+- In `/SILENT` or `/VERYSILENT` mode the checkbox is suppressed (`skipifsilent`).
 
 ---
 
 ## Version Table
 
-List of Delphi versions checked
+| Delphi name          | Reg ver | BPL suffix | Expert `.dproj`                         |
+| -------------------- | ------- | ---------- | --------------------------------------- |
+| Delphi 2010          | 7.0     | 210        | `DUnitX_IDE_Expert_2010.dproj`          |
+| Delphi XE            | 8.0     | 220        | `DUnitX_IDE_Expert_XE.dproj`            |
+| Delphi XE2           | 9.0     | 230        | `DUnitX_IDE_Expert_XE2.dproj`           |
+| Delphi XE3           | 10.0    | 240        | `DUnitX_IDE_Expert_XE3.dproj`           |
+| Delphi XE4           | 11.0    | 250        | `DUnitX_IDE_Expert_XE4.dproj`           |
+| Delphi XE5           | 12.0    | 260        | `DUnitX_IDE_Expert_XE5.dproj`           |
+| Delphi XE6           | 13.0    | 270        | `DUnitX_IDE_Expert_XE6.dproj`           |
+| Delphi XE7           | 14.0    | 280        | `DUnitX_IDE_Expert_XE7.dproj`           |
+| Delphi XE8           | 15.0    | 290        | `DUnitX_IDE_Expert_XE8.dproj`           |
+| Delphi 10 Seattle    | 17.0    | 300        | `DUnitX_IDE_Expert_D10Seattle.dproj`    |
+| Delphi 10.1 Berlin   | 18.0    | 310        | `DUnitX_IDE_Expert_D10Berlin.dproj`     |
+| Delphi 10.2 Tokyo    | 19.0    | 320        | `DUnitX_IDE_Expert_D10Tokyo.dproj`      |
+| Delphi 10.3 Rio      | 20.0    | 330        | `DUnitX_IDE_Expert_D10Rio.dproj`        |
+| Delphi 10.4 Sydney   | 21.0    | 340        | `DUnitX_IDE_Expert_Sydney.dproj`        |
+| Delphi 11 Alexandria | 22.0    | 350        | `DUnitX_IDE_Expert_D11Alexandria.dproj` |
+| Delphi 12 Athens     | 23.0    | 360        | `DUnitX_IDE_Expert_D12Athens.dproj`     |
+| Delphi 13 Florence   | 37.0    | 370        | `DUnitX_IDE_Expert_D13Florence.dproj`   |
 
-| Delphi name          | Reg ver | Compiler ver | BPL suffix | Expert `.dproj`                         |
-| -------------------- | ------- | ------------ | ---------  | --------------------------------------- |
-| Delphi 2010          | 7.0     | 21.0         | 210        | `DUnitX_IDE_Expert_2010.dproj`          |
-| Delphi XE            | 8.0     | 22.0         | 220        | `DUnitX_IDE_Expert_XE.dproj`            |
-| Delphi XE2           | 9.0     | 23.0         | 230        | `DUnitX_IDE_Expert_XE2.dproj`           |
-| Delphi XE3           | 10.0    | 24.0         | 240        | `DUnitX_IDE_Expert_XE3.dproj`           |
-| Delphi XE4           | 11.0    | 25.0         | 250        | `DUnitX_IDE_Expert_XE4.dproj`           |
-| Delphi XE5           | 12.0    | 26.0         | 260        | `DUnitX_IDE_Expert_XE5.dproj`           |
-| Delphi XE6           | 13.0    | 27.0         | 270        | `DUnitX_IDE_Expert_XE6.dproj`           |
-| Delphi XE7           | 14.0    | 28.0         | 280        | `DUnitX_IDE_Expert_XE7.dproj`           |
-| Delphi XE8           | 15.0    | 29.0         | 290        | `DUnitX_IDE_Expert_XE8.dproj`           |
-| Delphi 10 Seattle    | 17.0    | 30.0         | 300        | `DUnitX_IDE_Expert_D10Seattle.dproj`    |
-| Delphi 10.1 Berlin   | 18.0    | 31.0         | 310        | `DUnitX_IDE_Expert_D10Berlin.dproj`     |
-| Delphi 10.2 Tokyo    | 19.0    | 32.0         | 320        | `DUnitX_IDE_Expert_D10Tokyo.dproj`      |
-| Delphi 10.3 Rio      | 20.0    | 33.0         | 330        | `DUnitX_IDE_Expert_D10Rio.dproj`        |
-| Delphi 10.4 Sydney   | 21.0    | 34.0         | 340        | `DUnitX_IDE_Expert_Sydney.dproj`        |
-| Delphi 11 Alexandria | 22.0    | 35.0         | 350        | `DUnitX_IDE_Expert_D11Alexandria.dproj` |
-| Delphi 12 Athens     | 23.0    | 36.0         | 360        | `DUnitX_IDE_Expert_D12Athens.dproj`     |
-| Delphi 13 Florence   | 37.0    | 37.0         | 370        | `DUnitX_IDE_Expert_D13Florence.dproj`   |
-
-Any detected registry version not in this table is skipped with a warning.
+Any detected registry version not in this table is skipped with a warning in the Inno Setup log.
 
 ---
 
@@ -203,61 +291,42 @@ Any detected registry version not in this table is skipped with a warning.
 
 After running the installer:
 
-1. Open **Registry Editor** and check:
-   - `HKCU\Software\Embarcadero\BDS\{ver}\Known Packages` — new value whose name is the full BPL path and whose data is `DUnitX - IDE Expert`
-   - `HKCU\Software\Embarcadero\BDS\{ver}\Environment Variables` — `DUNITX` = `{repo}\source`
-   - `HKCU\Software\Embarcadero\BDS\{ver}\Library\Win32\Search Path` — contains `$(DUNITX)\packages\$(Platform)\Release`
-   - `HKCU\Software\Embarcadero\BDS\{ver}\Library\Win32\Browsing Path` — contains `$(DUNITX)` and does **not** contain `$(BDS)\source\DUnitX`
-   - `HKCU\Software\Embarcadero\BDS\{ver}\Library\Win32\Debug DCU Path` — contains `$(DUNITX)\packages\$(Platform)\Debug`
+1. Open **Registry Editor** and confirm:
+   - `HKCU\...\Known Packages` — new value whose name is the full BPL path and whose data is `DUnitX - IDE Expert`
+   - `HKCU\...\Environment Variables` — `DUNITX` = `{app}\source`
+   - `HKCU\...\Library\Win32\Search Path` — contains `$(DUNITX)\Packages\$(Platform)\Release`
+   - `HKCU\...\Library\Win32\Browsing Path` — contains `$(DUNITX)`, does **not** contain `$(BDS)\source\DUnitX`
+   - `HKCU\...\Library\Win32\Debug DCU Path` — contains `$(DUNITX)\Packages\$(Platform)\Debug`
 2. Launch RAD Studio and confirm the DUnitX wizard appears under **File > New**.
 
-## Folder Layout
+---
+
+## Installed Folder Layout
 
 ```text
-DUnitX\
+{app}\                           ← chosen installation directory
 ├── Expert\
 │   ├── DUnitX_IDE_Expert_2010.dproj
-│   ├── DUnitX_IDE_Expert_XE.dproj
-│   │   ... (one per supported version)
+│   │   ... (one .dproj/.dpk per supported version)
 │   └── DUnitX_IDE_Expert_D13Florence.dproj
-├── source\                   ← $(DUnitX) for Browsing Path and Environment Variables
-│   └── packages\
-│       ├── DUnitX_VCL.dproj
-│       ├── DUnitX_FMX.dproj
-│       ├── Win32\
-│       │   ├── Release\     ← VCL/FMX DCUs for Search Path
-│       │   └── Debug\       ← VCL/FMX DCUs for Debug DCU Path
-│       └── [Other platforms]
-│           ├── Release\
-│           └── Debug\
-└── Installer\
-    ├── Install-DUnitX.ps1   ← the installer script
-    └── Installer.md         ← this file
+└── source\                      ← $(DUNITX) points here
+    ├── DUnitX.TestFramework.pas
+    ├── ...
+    └── Packages\
+        ├── DUnitX_VLC.dproj
+        ├── DUnitX_FMX.dproj
+        ├── Win32\
+        │   ├── Release\         ← VCL/FMX DCUs/BPLs (Search Path)
+        │   └── Debug\           ← VCL/FMX DCUs (Debug DCU Path)
+        └── [other platforms]\
 ```
+
+---
 
 ## License
 
-```text
-{***************************************************************************}
-{                                                                           }
-{           DUnitX Installer                                                }
-{                                                                           }
-{           Copyright © 2026 Jim McKeeth                                    }
-{                                                                           }
-{                                                                           }
-{***************************************************************************}
-{                                                                           }
-{  Licensed under the Apache License, Version 2.0 (the "License");          }
-{  you may not use this file except in compliance with the License.         }
-{  You may obtain a copy of the License at                                  }
-{                                                                           }
-{      http://www.apache.org/licenses/LICENSE-2.0                           }
-{                                                                           }
-{  Unless required by applicable law or agreed to in writing, software      }
-{  distributed under the License is distributed on an "AS IS" BASIS,        }
-{  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. }
-{  See the License for the specific language governing permissions and      }
-{  limitations under the License.                                           }
-{                                                                           }
-{***************************************************************************}
-```
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://www.apache.org/licenses/LICENSE-2.0
