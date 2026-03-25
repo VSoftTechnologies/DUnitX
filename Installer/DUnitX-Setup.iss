@@ -18,6 +18,12 @@
 ;                                       "Delphi 13 Florence")
 ;    /SKIPTS            Skip the TestInsight check entirely
 ;    /SKIPBACKUP        Skip the per-version registry backup
+;    /PLATFORMS=<spec>  Non-interactive platform selection:
+;                         all            - every platform (default)
+;                         Win32,Win64    - comma-separated platform names
+;                       Valid names: Win32 Win64 Win64x Android Android64
+;                                    OSX64 OSXARM64 iOSDevice64
+;                                    iOSSimARM64 Linux64
 ;
 ;  A log is always written to %TEMP%\Setup Log *.txt
 ;    /SILENT            Unattended install; selects all detected versions
@@ -26,7 +32,7 @@
 ; ***************************************************************************
 
 #define AppName      "DUnitX"
-#define AppVersion   "1.0"
+#define AppVersion   "v0.4.2"
 #define AppPublisher "VSoftTechnologies"
 #define AppURL       "https://github.com/VSoftTechnologies/DUnitX"
 
@@ -78,10 +84,10 @@ Source: "..\source\*.vlb";   DestDir: "{app}\source"; Flags: ignoreversion
 ; Runtime package project files
 ; Note: the VCL package filename is DUnitX_VLC (not VCL) - that is the
 ; actual name in the repository.
-Source: "..\source\Packages\DUnitX_VLC.dpk";   DestDir: "{app}\source\Packages"; Flags: ignoreversion
+Source: "..\source\Packages\DUnitX_VLC.dpk";    DestDir: "{app}\source\Packages"; Flags: ignoreversion
 Source: "..\source\Packages\DUnitX_VLC.dproj";  DestDir: "{app}\source\Packages"; Flags: ignoreversion
 Source: "..\source\Packages\DUnitX_VLC.res";    DestDir: "{app}\source\Packages"; Flags: ignoreversion
-Source: "..\source\Packages\DUnitX_FMX.dpk";   DestDir: "{app}\source\Packages"; Flags: ignoreversion
+Source: "..\source\Packages\DUnitX_FMX.dpk";    DestDir: "{app}\source\Packages"; Flags: ignoreversion
 Source: "..\source\Packages\DUnitX_FMX.dproj";  DestDir: "{app}\source\Packages"; Flags: ignoreversion
 Source: "..\source\Packages\DUnitX_FMX.res";    DestDir: "{app}\source\Packages"; Flags: ignoreversion
 
@@ -123,6 +129,8 @@ var
   VersionPage:          TWizardPage;
   VersionCheckList:     TNewCheckListBox;
   BackupCheckBox:       TNewCheckBox;
+  PlatformPage:         TWizardPage;
+  PlatformCheckList:    TNewCheckListBox;
   NewestInstalledBdsExe: String;  // set during ssPostInstall; used by [Run]
 
 const
@@ -198,7 +206,7 @@ begin
   SetArrayLength(VersionTable, 17);
   i := 0;
   VersionTable[i].RegVer:='7.0';  VersionTable[i].Name:='Delphi 2010';
-    VersionTable[i].OldBplSuffix:='210'; VersionTable[i].DprojFile:='DUnitX_IDE_Expert_2010.dproj';        Inc(i);
+    VersionTable[i].OldBplSuffix:='210'; VersionTable[i].DprojFile:='DUnitX_IDE_Expert_2010.dproj';         Inc(i);
   VersionTable[i].RegVer:='8.0';  VersionTable[i].Name:='Delphi XE';
     VersionTable[i].OldBplSuffix:='220'; VersionTable[i].DprojFile:='DUnitX_IDE_Expert_XE.dproj';           Inc(i);
   VersionTable[i].RegVer:='9.0';  VersionTable[i].Name:='Delphi XE2';
@@ -311,7 +319,7 @@ begin
     '@echo off'                                          + #13#10 +
     'call "' + RsvarsBat + '"'                           + #13#10 +
     'msbuild "' + DprojPath + '"'                        +
-      ' /p:Config=' + Config + ' /p:Platform=' + Plat   +
+      ' /p:Config=' + Config + ' /p:Platform=' + Plat    +
       ' /nologo /v:minimal'                              + #13#10,
     False);
 
@@ -342,6 +350,56 @@ begin
 end;
 
 // --------------------------------------------------------------------------
+// Platform selection resolution
+// --------------------------------------------------------------------------
+
+function GetSelectedPlatforms: array of String;
+var PlatformsParam: String;
+    n, i, p: Integer;
+    Token, Src: String;
+begin
+  SetArrayLength(Result, 0);
+  n := 0;
+  PlatformsParam := Trim(ExpandConstant('{param:PLATFORMS|}'));
+
+  // Silent without /PLATFORMS, or /PLATFORMS=all → every platform
+  if (WizardSilent and (PlatformsParam = '')) or SameText(PlatformsParam, 'all') then begin
+    SetArrayLength(Result, FMX_PLAT_COUNT);
+    for i := 0 to FMX_PLAT_COUNT - 1 do
+      Result[i] := FmxPlatform(i);
+    Exit;
+  end;
+
+  // /PLATFORMS=Win32,Win64 → parse comma-separated list
+  if PlatformsParam <> '' then begin
+    Src := PlatformsParam;
+    while Src <> '' do begin
+      p := Pos(',', Src);
+      if p = 0 then begin Token := Trim(Src); Src := ''; end
+      else           begin Token := Trim(Copy(Src, 1, p-1));
+                           Src   := Trim(Copy(Src, p+1, MaxInt)); end;
+      for i := 0 to FMX_PLAT_COUNT - 1 do
+        if SameText(FmxPlatform(i), Token) then begin
+          SetArrayLength(Result, n + 1);
+          Result[n] := FmxPlatform(i);
+          Inc(n);
+          Break;
+        end;
+    end;
+    Exit;
+  end;
+
+  // Interactive: read checklist
+  if Assigned(PlatformCheckList) then
+    for i := 0 to FMX_PLAT_COUNT - 1 do
+      if PlatformCheckList.Checked[i] then begin
+        SetArrayLength(Result, n + 1);
+        Result[n] := FmxPlatform(i);
+        Inc(n);
+      end;
+end;
+
+// --------------------------------------------------------------------------
 // Per-version installation
 // --------------------------------------------------------------------------
 
@@ -363,6 +421,7 @@ var
   BackupFile: String;
   SubkeyNames: TArrayOfString;
   VclDproj, FmxDproj: String;
+  Platforms: array of String;
   ResultCode, i: Integer;
 begin
   Ver        := VersionTable[VerIdx];
@@ -428,6 +487,8 @@ begin
   KnownPkgsKey := BDS_KEY + '\' + Ver.RegVer + '\Known Packages';
   OldBplName   := '$(BDS)\bin\DUnitXIDEExpert' + Ver.OldBplSuffix + '.bpl';
   RegDeleteValue(HKCU, KnownPkgsKey, OldBplName);
+  RegDeleteValue(HKCU, KnownPkgsKey,
+    '$(BDSBIN)\DUnitXIDEExpert' + Ver.OldBplSuffix + '.bpl');
   RegWriteStringValue(HKCU, KnownPkgsKey, BplPath, 'DUnitX - IDE Expert');
   Log(Ver.Name + ': Known Package registered');
 
@@ -436,33 +497,34 @@ begin
   RegWriteStringValue(HKCU, EnvVarsKey, 'DUNITX', SourceDir);
   Log(Ver.Name + ': DUNITX = ' + SourceDir);
 
+  Platforms := GetSelectedPlatforms;
+
   // ---- Build VCL package ------------------------------------------------
   // The repository file is named DUnitX_VLC.dproj (not VCL — that is the
-  // actual filename in the repo).
+  // actual filename in the repo).  VCL only supports Win32 and Win64.
   VclDproj := PkgDir + '\DUnitX_VLC.dproj';
   if FileExists(VclDproj) then begin
     WizardForm.StatusLabel.Caption :=
       'Building DUnitX VCL packages for ' + Ver.Name + '...';
-    if not BuildDproj(RsvarsBat, VclDproj, 'Release', 'Win32') then
-      Log('WARN ' + Ver.Name + ': VCL Win32/Release failed');
-    if not BuildDproj(RsvarsBat, VclDproj, 'Debug',   'Win32') then
-      Log('WARN ' + Ver.Name + ': VCL Win32/Debug failed');
-    if not BuildDproj(RsvarsBat, VclDproj, 'Release', 'Win64') then
-      Log('WARN ' + Ver.Name + ': VCL Win64/Release failed');
-    if not BuildDproj(RsvarsBat, VclDproj, 'Debug',   'Win64') then
-      Log('WARN ' + Ver.Name + ': VCL Win64/Debug failed');
+    for i := 0 to GetArrayLength(Platforms) - 1 do
+      if SameText(Platforms[i], 'Win32') or SameText(Platforms[i], 'Win64') then begin
+        if not BuildDproj(RsvarsBat, VclDproj, 'Release', Platforms[i]) then
+          Log('WARN ' + Ver.Name + ': VCL ' + Platforms[i] + '/Release failed');
+        if not BuildDproj(RsvarsBat, VclDproj, 'Debug',   Platforms[i]) then
+          Log('WARN ' + Ver.Name + ': VCL ' + Platforms[i] + '/Debug failed');
+      end;
   end else
     Log(Ver.Name + ': DUnitX_VLC.dproj not found, skipping VCL build');
 
   // ---- Build FMX packages -----------------------------------------------
   FmxDproj := PkgDir + '\DUnitX_FMX.dproj';
   if FileExists(FmxDproj) then begin
-    for i := 0 to FMX_PLAT_COUNT - 1 do begin
+    for i := 0 to GetArrayLength(Platforms) - 1 do begin
       WizardForm.StatusLabel.Caption :=
-        'Building DUnitX FMX/' + FmxPlatform(i) + ' for ' + Ver.Name + '...';
+        'Building DUnitX FMX/' + Platforms[i] + ' for ' + Ver.Name + '...';
       // Failures on non-Windows platforms are expected if SDKs are absent
-      BuildDproj(RsvarsBat, FmxDproj, 'Release', FmxPlatform(i));
-      BuildDproj(RsvarsBat, FmxDproj, 'Debug',   FmxPlatform(i));
+      BuildDproj(RsvarsBat, FmxDproj, 'Release', Platforms[i]);
+      BuildDproj(RsvarsBat, FmxDproj, 'Debug',   Platforms[i]);
     end;
   end else
     Log(Ver.Name + ': DUnitX_FMX.dproj not found, skipping FMX build');
@@ -480,7 +542,7 @@ begin
       RegAddToSemiList(LibKey + '\' + SubkeyNames[i],
                        'Search Path',    '$(DUNITX)\Packages\$(Platform)\Release');
       RegAddToSemiList(LibKey + '\' + SubkeyNames[i],
-                       'Browsing Path',  '$(DUNITX)');
+                       'Browsing Path',  '$(DUNITX)\Source');
       RegAddToSemiList(LibKey + '\' + SubkeyNames[i],
                        'Debug DCU Path', '$(DUNITX)\Packages\$(Platform)\Debug');
     end;
@@ -685,15 +747,34 @@ begin
   BackupCheckBox.Caption := 'Back up registry settings before making changes';
   // Default: checked, unless /SKIPBACKUP was already passed on the command line
   BackupCheckBox.Checked := Trim(ExpandConstant('{param:SKIPBACKUP|}')) = '';
+
+  // ---- Platform selection page ------------------------------------------
+  PlatformPage := CreateCustomPage(
+    VersionPage.ID,
+    'Select Target Platforms',
+    'Choose the platforms to compile DUnitX units for:');
+
+  PlatformCheckList        := TNewCheckListBox.Create(PlatformPage);
+  PlatformCheckList.Parent := PlatformPage.Surface;
+  PlatformCheckList.Left   := 0;
+  PlatformCheckList.Top    := 0;
+  PlatformCheckList.Width  := PlatformPage.SurfaceWidth;
+  PlatformCheckList.Height := PlatformPage.SurfaceHeight;
+
+  for i := 0 to FMX_PLAT_COUNT - 1 do
+    PlatformCheckList.AddCheckBox(FmxPlatform(i), '', 0, True, True, False, True, nil);
 end;
 
-// Skip the version-selection page when /VERSIONS is supplied or in silent mode.
+// Skip custom pages when their CLI equivalent is supplied or in silent mode.
 function ShouldSkipPage(PageID: Integer): Boolean;
 begin
   Result := False;
   if PageID = VersionPage.ID then
     Result := WizardSilent or
               (Trim(ExpandConstant('{param:VERSIONS|}')) <> '');
+  if PageID = PlatformPage.ID then
+    Result := WizardSilent or
+              (Trim(ExpandConstant('{param:PLATFORMS|}')) <> '');
 end;
 
 // Require at least one version to be ticked before proceeding.
