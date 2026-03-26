@@ -16,9 +16,21 @@
 ;                                      (matched against registry version or
 ;                                       name substring, e.g. "13" matches
 ;                                       "Delphi 13 Florence")
-;    /SKIPTS            Skip the TestInsight check entirely
-;    /SKIPBACKUP        Skip the per-version registry backup
-;    /PLATFORMS=<spec>  Non-interactive platform selection:
+;    /TASKS=<list>      Comma-separated list of tasks to perform:
+;                         expert       - build and register the IDE Expert BPL
+;                         updatepaths  - update IDE library/search/DCU paths
+;                         buildvcl     - build VCL runtime packages and units
+;                         buildfmx     - build FMX runtime packages and units
+;                         backup       - back up Delphi registry before changes
+;                         testinsight  - check/offer to install TestInsight
+;                       Default (no /TASKS): all six tasks are performed.
+;                       Example: /TASKS="expert,updatepaths,buildvcl"
+;    /SKIPBACKUP        Backward-compat: equivalent to omitting 'backup' from
+;                       /TASKS; overrides /TASKS even if backup is listed.
+;    /SKIPTS            Backward-compat: equivalent to omitting 'testinsight'
+;                       from /TASKS; overrides /TASKS even if listed.
+;    /PLATFORMS=<spec>  Non-interactive platform selection (ignored when
+;                       neither buildvcl nor buildfmx task is selected):
 ;                         all            - every platform (default)
 ;                         Win32,Win64    - comma-separated platform names
 ;                       Valid names: Win32 Win64 Win64x Android Android64
@@ -98,7 +110,19 @@ Source: "..\source\Packages\DUnitX_FMX.dproj";  DestDir: "{app}\source\Packages"
 ; postinstall  - adds a labelled checkbox to the Finish page (ticked by default)
 ; nowait       - don't hold up Setup waiting for the IDE to close
 ; skipifsilent - suppressed in /SILENT and /VERYSILENT mode
-Filename: "{code:GetBdsExe}"; Description: "Launch Delphi after installation"; Flags: postinstall nowait skipifsilent; Check: ShouldOfferLaunch
+Filename: "{code:GetBdsExe}"; Description: "Launch Delphi after installation";   Flags: postinstall nowait skipifsilent; Check: ShouldOfferLaunch
+Filename: "notepad.exe";          Parameters: """{code:GetLogFile}"""; Description: "View installation log"; Flags: postinstall nowait skipifsilent
+
+; ---------------------------------------------------------------------------
+[Tasks]
+; ---------------------------------------------------------------------------
+
+Name: backup;      Description: "Back up Delphi registry settings before making changes";   GroupDescription: "Options:";    Flags: checkedonce
+Name: expert;      Description: "Build and register the DUnitX IDE Expert BPL";             GroupDescription: "Components:";
+Name: updatepaths; Description: "Update IDE library, search, and debug DCU paths";          GroupDescription: "Components:";
+Name: buildvcl;    Description: "Build VCL runtime packages (Win32 and Win64) and units";   GroupDescription: "Components:";
+Name: buildfmx;    Description: "Build FireMonkey (FMX) runtime packages and units";        GroupDescription: "Components:";
+Name: testinsight; Description: "Check for TestInsight and offer to install it if missing"; GroupDescription: "Options:";    Flags: checkedonce
 
 ; ---------------------------------------------------------------------------
 [Code]
@@ -126,10 +150,10 @@ var
   DetectedIndices:      array of Integer;   // indices into VersionTable
   VersionPage:          TWizardPage;
   VersionCheckList:     TNewCheckListBox;
-  BackupCheckBox:       TNewCheckBox;
   PlatformPage:         TWizardPage;
   PlatformCheckList:    TNewCheckListBox;
   NewestInstalledBdsExe: String;  // set during ssPostInstall; used by [Run]
+  SetupInitDir:          String;  // working directory at startup; used to resolve relative /log= paths
 
 const
   BDS_KEY          = 'Software\Embarcadero\BDS';
@@ -305,13 +329,35 @@ begin
   DeleteFile(TempOut);
 end;
 
+// Log each non-empty line from a multi-line string with an optional prefix.
+procedure LogLines(const Prefix, S: String);
+var Rest, Line: String;
+    p: Integer;
+begin
+  Rest := S;
+  while Rest <> '' do begin
+    p := Pos(#10, Rest);
+    if p = 0 then begin Line := Rest; Rest := ''; end
+    else           begin Line := Copy(Rest, 1, p - 1);
+                         Rest := Copy(Rest, p + 1, MaxInt); end;
+    // Strip trailing CR
+    if (Length(Line) > 0) and (Line[Length(Line)] = #13) then
+      Line := Copy(Line, 1, Length(Line) - 1);
+    if Trim(Line) <> '' then
+      Log(Prefix + Line);
+  end;
+end;
+
 // Build a .dproj via msbuild, loading the Delphi environment from rsvars.bat.
-// Returns True on success (msbuild exit code 0).
+// Returns True on success (msbuild exit code 0).  Output is captured to the
+// Setup log file.
 function BuildDproj(const RsvarsBat, DprojPath, Config, Plat: String): Boolean;
-var TempBat: String;
+var TempBat, TempOut: String;
+    Content: AnsiString;
     ResultCode: Integer;
 begin
   TempBat := ExpandConstant('{tmp}\dunitx_build.bat');
+  TempOut := ExpandConstant('{tmp}\dunitx_build_out.txt');
 
   SaveStringToFile(TempBat,
     '@echo off'                                          + #13#10 +
@@ -321,10 +367,15 @@ begin
       ' /nologo /v:minimal'                              + #13#10,
     False);
 
-  Exec(ExpandConstant('{cmd}'), '/c "' + TempBat + '"',
+  Exec(ExpandConstant('{cmd}'),
+       '/c ""' + TempBat + '" > "' + TempOut + '" 2>&1"',
        '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
 
+  if LoadStringFromFile(TempOut, Content) then
+    LogLines('  [msbuild] ', String(Content));
+
   DeleteFile(TempBat);
+  DeleteFile(TempOut);
   Result := (ResultCode = 0);
 end;
 
@@ -403,10 +454,10 @@ end;
 
 function ShouldDoBackup: Boolean;
 begin
-  if WizardSilent or not Assigned(BackupCheckBox) then
-    Result := Trim(ExpandConstant('{param:SKIPBACKUP|}')) = ''
+  if Trim(ExpandConstant('{param:SKIPBACKUP|}')) <> '' then
+    Result := False
   else
-    Result := BackupCheckBox.Checked;
+    Result := WizardIsTaskSelected('backup');
 end;
 
 procedure InstallForVersion(const VerIdx: Integer; const AppDir: String);
@@ -451,98 +502,111 @@ begin
   end else
     Log(Ver.Name + ': registry backup skipped');
 
-  // ---- Validate prerequisites -------------------------------------------
-  if not FileExists(ExpertDproj) then begin
-    Log('SKIP ' + Ver.Name + ': .dproj not found: ' + ExpertDproj); Exit;
-  end;
-  if not FileExists(RsvarsBat) then begin
-    Log('SKIP ' + Ver.Name + ': rsvars.bat not found: ' + RsvarsBat); Exit;
-  end;
-
-  // ---- Determine BDSCOMMONDIR -------------------------------------------
-  if not GetBDSCommonDir(RsvarsBat, BDSCommonDir) then begin
-    Log('SKIP ' + Ver.Name + ': could not read BDSCOMMONDIR from rsvars.bat');
-    Exit;
+  // ---- Validate rsvars.bat (needed for any BPL build) ------------------
+  if WizardIsTaskSelected('expert') or WizardIsTaskSelected('buildvcl') or
+     WizardIsTaskSelected('buildfmx') then begin
+    if not FileExists(RsvarsBat) then begin
+      Log('SKIP ' + Ver.Name + ': rsvars.bat not found: ' + RsvarsBat); Exit;
+    end;
   end;
 
-  // ---- Build Expert BPL -------------------------------------------------
-  WizardForm.StatusLabel.Caption :=
-    'Building Expert BPL for ' + Ver.Name + '...';
+  // ---- Expert BPL build + Known Package + DUNITX env var ---------------
+  if WizardIsTaskSelected('expert') then begin
+    if not FileExists(ExpertDproj) then begin
+      Log('SKIP ' + Ver.Name + ': .dproj not found: ' + ExpertDproj); Exit;
+    end;
 
-  BplName := ChangeFileExt(Ver.DprojFile, '.bpl');
-  BplPath := AddBackslash(BDSCommonDir) + 'dcp\Win32\Release\' + BplName;
+    if not GetBDSCommonDir(RsvarsBat, BDSCommonDir) then begin
+      Log('SKIP ' + Ver.Name + ': could not read BDSCOMMONDIR from rsvars.bat');
+      Exit;
+    end;
 
-  if not BuildDproj(RsvarsBat, ExpertDproj, 'Release', 'Win32') then
-    Log('WARN ' + Ver.Name + ': Expert BPL msbuild returned non-zero');
+    WizardForm.StatusLabel.Caption :=
+      'Building Expert BPL for ' + Ver.Name + '...';
 
-  if not FileExists(BplPath) then begin
-    Log('FAIL ' + Ver.Name + ': BPL not found at expected path: ' + BplPath);
-    Exit;
+    BplName := ChangeFileExt(Ver.DprojFile, '.bpl');
+    BplPath := AddBackslash(BDSCommonDir) + 'dcp\Win32\Release\' + BplName;
+
+    if not BuildDproj(RsvarsBat, ExpertDproj, 'Release', 'Win32') then
+      Log('WARN ' + Ver.Name + ': Expert BPL msbuild returned non-zero');
+
+    if not FileExists(BplPath) then begin
+      Log('FAIL ' + Ver.Name + ': BPL not found at expected path: ' + BplPath);
+      Exit;
+    end;
+    Log(Ver.Name + ': Expert BPL built: ' + BplPath);
+
+    // ---- Register Known Package -----------------------------------------
+    KnownPkgsKey := BDS_KEY + '\' + Ver.RegVer + '\Known Packages';
+    OldBplName   := '$(BDS)\bin\DUnitXIDEExpert' + Ver.OldBplSuffix + '.bpl';
+    RegDeleteValue(HKCU, KnownPkgsKey, OldBplName);
+    RegDeleteValue(HKCU, KnownPkgsKey,
+      '$(BDSBIN)\DUnitXIDEExpert' + Ver.OldBplSuffix + '.bpl');
+    RegWriteStringValue(HKCU, KnownPkgsKey, BplPath, 'DUnitX - IDE Expert');
+    Log(Ver.Name + ': Known Package registered');
+
+    // ---- Set DUNITX IDE environment variable ----------------------------
+    EnvVarsKey := BDS_KEY + '\' + Ver.RegVer + '\Environment Variables';
+    RegWriteStringValue(HKCU, EnvVarsKey, 'DUNITX', SourceDir);
+    Log(Ver.Name + ': DUNITX = ' + SourceDir);
   end;
-  Log(Ver.Name + ': Expert BPL built: ' + BplPath);
-
-  // ---- Register Known Package -------------------------------------------
-  KnownPkgsKey := BDS_KEY + '\' + Ver.RegVer + '\Known Packages';
-  OldBplName   := '$(BDS)\bin\DUnitXIDEExpert' + Ver.OldBplSuffix + '.bpl';
-  RegDeleteValue(HKCU, KnownPkgsKey, OldBplName);
-  RegDeleteValue(HKCU, KnownPkgsKey,
-    '$(BDSBIN)\DUnitXIDEExpert' + Ver.OldBplSuffix + '.bpl');
-  RegWriteStringValue(HKCU, KnownPkgsKey, BplPath, 'DUnitX - IDE Expert');
-  Log(Ver.Name + ': Known Package registered');
-
-  // ---- Set DUNITX IDE environment variable ------------------------------
-  EnvVarsKey := BDS_KEY + '\' + Ver.RegVer + '\Environment Variables';
-  RegWriteStringValue(HKCU, EnvVarsKey, 'DUNITX', SourceDir);
-  Log(Ver.Name + ': DUNITX = ' + SourceDir);
 
   Platforms := GetSelectedPlatforms;
 
   // ---- Build VCL package ------------------------------------------------
   // The repository file is named DUnitX_VLC.dproj (not VCL — that is the
   // actual filename in the repo).  VCL only supports Win32 and Win64.
-  VclDproj := PkgDir + '\DUnitX_VLC.dproj';
-  if FileExists(VclDproj) then begin
-    WizardForm.StatusLabel.Caption :=
-      'Building DUnitX VCL packages for ' + Ver.Name + '...';
-    for i := 0 to GetArrayLength(Platforms) - 1 do
-      if SameText(Platforms[i], 'Win32') or SameText(Platforms[i], 'Win64') then begin
-        if not BuildDproj(RsvarsBat, VclDproj, 'Release', Platforms[i]) then
-          Log('WARN ' + Ver.Name + ': VCL ' + Platforms[i] + '/Release failed');
-        if not BuildDproj(RsvarsBat, VclDproj, 'Debug',   Platforms[i]) then
-          Log('WARN ' + Ver.Name + ': VCL ' + Platforms[i] + '/Debug failed');
-      end;
+  if WizardIsTaskSelected('buildvcl') then begin
+    VclDproj := PkgDir + '\DUnitX_VLC.dproj';
+    if FileExists(VclDproj) then begin
+      WizardForm.StatusLabel.Caption :=
+        'Building DUnitX VCL packages for ' + Ver.Name + '...';
+      for i := 0 to GetArrayLength(Platforms) - 1 do
+        if SameText(Platforms[i], 'Win32') or SameText(Platforms[i], 'Win64') then begin
+          if not BuildDproj(RsvarsBat, VclDproj, 'Release', Platforms[i]) then
+            Log('WARN ' + Ver.Name + ': VCL ' + Platforms[i] + '/Release failed');
+          if not BuildDproj(RsvarsBat, VclDproj, 'Debug',   Platforms[i]) then
+            Log('WARN ' + Ver.Name + ': VCL ' + Platforms[i] + '/Debug failed');
+        end;
+    end else
+      Log(Ver.Name + ': DUnitX_VLC.dproj not found, skipping VCL build');
   end else
-    Log(Ver.Name + ': DUnitX_VLC.dproj not found, skipping VCL build');
+    Log(Ver.Name + ': VCL build skipped (task not selected)');
 
   // ---- Build FMX packages -----------------------------------------------
-  FmxDproj := PkgDir + '\DUnitX_FMX.dproj';
-  if FileExists(FmxDproj) then begin
-    for i := 0 to GetArrayLength(Platforms) - 1 do begin
-      WizardForm.StatusLabel.Caption :=
-        'Building DUnitX FMX/' + Platforms[i] + ' for ' + Ver.Name + '...';
-      // Failures on non-Windows platforms are expected if SDKs are absent
-      BuildDproj(RsvarsBat, FmxDproj, 'Release', Platforms[i]);
-      BuildDproj(RsvarsBat, FmxDproj, 'Debug',   Platforms[i]);
-    end;
+  if WizardIsTaskSelected('buildfmx') then begin
+    FmxDproj := PkgDir + '\DUnitX_FMX.dproj';
+    if FileExists(FmxDproj) then begin
+      for i := 0 to GetArrayLength(Platforms) - 1 do begin
+        WizardForm.StatusLabel.Caption :=
+          'Building DUnitX FMX/' + Platforms[i] + ' for ' + Ver.Name + '...';
+        // Failures on non-Windows platforms are expected if SDKs are absent
+        BuildDproj(RsvarsBat, FmxDproj, 'Release', Platforms[i]);
+        BuildDproj(RsvarsBat, FmxDproj, 'Debug',   Platforms[i]);
+      end;
+    end else
+      Log(Ver.Name + ': DUnitX_FMX.dproj not found, skipping FMX build');
   end else
-    Log(Ver.Name + ': DUnitX_FMX.dproj not found, skipping FMX build');
+    Log(Ver.Name + ': FMX build skipped (task not selected)');
 
   // ---- Update library paths for every platform subkey -------------------
-  WizardForm.StatusLabel.Caption :=
-    'Updating library paths for ' + Ver.Name + '...';
+  if WizardIsTaskSelected('updatepaths') then begin
+    WizardForm.StatusLabel.Caption :=
+      'Updating library paths for ' + Ver.Name + '...';
 
-  LibKey := BDS_KEY + '\' + Ver.RegVer + '\Library';
-  if RegGetSubkeyNames(HKCU, LibKey, SubkeyNames) then begin
-    for i := 0 to GetArrayLength(SubkeyNames) - 1 do begin
-      // Remove the legacy $(BDS)\source\DUnitX browsing path entry
-      RegRemoveFromSemiList(LibKey + '\' + SubkeyNames[i],
-                            'Browsing Path', '$(BDS)\source\DUnitX');
-      RegAddToSemiList(LibKey + '\' + SubkeyNames[i],
-                       'Search Path',    '$(DUNITX)\Packages\$(Platform)\Release');
-      RegAddToSemiList(LibKey + '\' + SubkeyNames[i],
-                       'Browsing Path',  '$(DUNITX)\Source');
-      RegAddToSemiList(LibKey + '\' + SubkeyNames[i],
-                       'Debug DCU Path', '$(DUNITX)\Packages\$(Platform)\Debug');
+    LibKey := BDS_KEY + '\' + Ver.RegVer + '\Library';
+    if RegGetSubkeyNames(HKCU, LibKey, SubkeyNames) then begin
+      for i := 0 to GetArrayLength(SubkeyNames) - 1 do begin
+        // Remove the legacy $(BDS)\source\DUnitX browsing path entry
+        RegRemoveFromSemiList(LibKey + '\' + SubkeyNames[i],
+                              'Browsing Path', '$(BDS)\source\DUnitX');
+        RegAddToSemiList(LibKey + '\' + SubkeyNames[i],
+                         'Search Path',    '$(DUNITX)\Packages\$(Platform)\Release');
+        RegAddToSemiList(LibKey + '\' + SubkeyNames[i],
+                         'Browsing Path',  '$(DUNITX)\Source');
+        RegAddToSemiList(LibKey + '\' + SubkeyNames[i],
+                         'Debug DCU Path', '$(DUNITX)\Packages\$(Platform)\Debug');
+      end;
     end;
   end;
 
@@ -698,6 +762,24 @@ begin
   Result := NewestInstalledBdsExe <> '';
 end;
 
+// Return an absolute path to the Setup log file for the [Run] "View log" entry.
+// {log} expands to the path as given on /log=, which may be a bare filename.
+// Notepad resolves relative paths against its own working directory (System32),
+// so we pre-resolve any relative path using the directory captured at startup.
+function GetLogFile(Param: String): String;
+var Path: String;
+begin
+  Path := ExpandConstant('{log}');
+  if (Length(Path) >= 2) and (Path[2] = ':') then
+    Result := Path                              // already absolute: C:\...
+  else if (Length(Path) >= 2) and (Path[1] = '\') and (Path[2] = '\') then
+    Result := Path                              // UNC path
+  else if (Length(Path) >= 1) and (Path[1] = '\') then
+    Result := Copy(SetupInitDir, 1, 2) + Path  // drive-rooted: \foo -> C:\foo
+  else
+    Result := SetupInitDir + '\' + Path;        // bare filename -> absolute
+end;
+
 // --------------------------------------------------------------------------
 // Process helpers
 // --------------------------------------------------------------------------
@@ -726,6 +808,7 @@ end;
 function InitializeSetup: Boolean;
 begin
   Result := True;
+  SetupInitDir := GetCurrentDir;
 
   // Require the Delphi IDE to be closed before installation proceeds.
   // In silent mode the check runs once; on failure the installer aborts.
@@ -754,7 +837,7 @@ procedure InitializeWizard;
 var i: Integer;
 begin
   VersionPage := CreateCustomPage(
-    wpSelectDir,
+    wpSelectTasks,
     'Select Delphi Versions',
     'Choose the Delphi versions to install DUnitX into.');
 
@@ -763,24 +846,13 @@ begin
   VersionCheckList.Left         := 0;
   VersionCheckList.Top          := 0;
   VersionCheckList.Width        := VersionPage.SurfaceWidth;
-  // Leave room for the backup checkbox at the bottom of the page
-  VersionCheckList.Height       := VersionPage.SurfaceHeight - ScaleY(32);
+  VersionCheckList.Height       := VersionPage.SurfaceHeight;
 
   for i := 0 to GetArrayLength(DetectedIndices) - 1 do
     VersionCheckList.AddCheckBox(
       VersionTable[DetectedIndices[i]].Name +
         '  (' + VersionTable[DetectedIndices[i]].RootDir + ')',
       '', 0, True, True, False, True, nil);
-
-  BackupCheckBox         := TNewCheckBox.Create(VersionPage);
-  BackupCheckBox.Parent  := VersionPage.Surface;
-  BackupCheckBox.Left    := 0;
-  BackupCheckBox.Top     := VersionCheckList.Top + VersionCheckList.Height + ScaleY(8);
-  BackupCheckBox.Width   := VersionPage.SurfaceWidth;
-  BackupCheckBox.Height  := ScaleY(17);
-  BackupCheckBox.Caption := 'Back up registry settings before making changes';
-  // Default: checked, unless /SKIPBACKUP was already passed on the command line
-  BackupCheckBox.Checked := Trim(ExpandConstant('{param:SKIPBACKUP|}')) = '';
 
   // ---- Platform selection page ------------------------------------------
   PlatformPage := CreateCustomPage(
@@ -808,7 +880,8 @@ begin
               (Trim(ExpandConstant('{param:VERSIONS|}')) <> '');
   if PageID = PlatformPage.ID then
     Result := WizardSilent or
-              (Trim(ExpandConstant('{param:PLATFORMS|}')) <> '');
+              (Trim(ExpandConstant('{param:PLATFORMS|}')) <> '') or
+              (not WizardIsTaskSelected('buildvcl') and not WizardIsTaskSelected('buildfmx'));
 end;
 
 // Require at least one version to be ticked before proceeding.
@@ -863,8 +936,9 @@ begin
   end;
 
   // --- TestInsight check -------------------------------------------------
-  // /SKIPTS suppresses the check entirely.
-  SkipTS := Trim(ExpandConstant('{param:SKIPTS|}')) <> '';
+  // /SKIPTS or the testinsight task being unselected suppresses the check.
+  SkipTS := (Trim(ExpandConstant('{param:SKIPTS|}')) <> '')
+            or not WizardIsTaskSelected('testinsight');
 
   if not SkipTS then begin
     MissingTS := '';
