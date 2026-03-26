@@ -86,10 +86,8 @@ Source: "..\source\*.vlb";   DestDir: "{app}\source"; Flags: ignoreversion
 ; actual name in the repository.
 Source: "..\source\Packages\DUnitX_VLC.dpk";    DestDir: "{app}\source\Packages"; Flags: ignoreversion
 Source: "..\source\Packages\DUnitX_VLC.dproj";  DestDir: "{app}\source\Packages"; Flags: ignoreversion
-Source: "..\source\Packages\DUnitX_VLC.res";    DestDir: "{app}\source\Packages"; Flags: ignoreversion
 Source: "..\source\Packages\DUnitX_FMX.dpk";    DestDir: "{app}\source\Packages"; Flags: ignoreversion
 Source: "..\source\Packages\DUnitX_FMX.dproj";  DestDir: "{app}\source\Packages"; Flags: ignoreversion
-Source: "..\source\Packages\DUnitX_FMX.res";    DestDir: "{app}\source\Packages"; Flags: ignoreversion
 
 ; ---------------------------------------------------------------------------
 [Run]
@@ -701,12 +699,48 @@ begin
 end;
 
 // --------------------------------------------------------------------------
+// Process helpers
+// --------------------------------------------------------------------------
+
+// Returns True if bds.exe is currently running.
+function IsBdsRunning: Boolean;
+var
+  TempFile: String;
+  Content:  AnsiString;
+  ResultCode: Integer;
+begin
+  TempFile := ExpandConstant('{tmp}\dunitx_bds_check.txt');
+  Exec(ExpandConstant('{sys}\cmd.exe'),
+       '/c tasklist /FI "IMAGENAME eq bds.exe" /NH > "' + TempFile + '" 2>&1',
+       '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+  Result := False;
+  if LoadStringFromFile(TempFile, Content) then
+    Result := Pos('bds.exe', String(Content)) > 0;
+  DeleteFile(TempFile);
+end;
+
+// --------------------------------------------------------------------------
 // Wizard event handlers
 // --------------------------------------------------------------------------
 
 function InitializeSetup: Boolean;
 begin
   Result := True;
+
+  // Require the Delphi IDE to be closed before installation proceeds.
+  // In silent mode the check runs once; on failure the installer aborts.
+  while IsBdsRunning do begin
+    if WizardSilent or
+       (MsgBox(
+          'The Delphi IDE (bds.exe) is currently running.' + #13#10#13#10 +
+          'Please close Delphi before installing DUnitX, then click Retry.' + #13#10 +
+          'Click Cancel to abort the installation.',
+          mbError, MB_RETRYCANCEL) = IDCANCEL) then begin
+      Result := False;
+      Exit;
+    end;
+  end;
+
   if DetectVersions = 0 then begin
     MsgBox(
       'No supported Delphi installation was found in the registry.' + #13#10 +
