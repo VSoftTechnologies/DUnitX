@@ -36,6 +36,9 @@ resourcestring
 
  STestDPR = 'program %0:s;'#13#10 +
  #13#10 +
+ '{$IFDEF CI}'#13#10 +
+ '{$UNDEF TESTINSIGHT}'#13#10 +
+ '{$ENDIF}'#13#10 +
  '{$IFNDEF TESTINSIGHT}'#13#10 +
  '{$APPTYPE CONSOLE}'#13#10 +
  '{$ENDIF}'#13#10 +
