@@ -36,7 +36,8 @@ uses
   {$ELSE}
   SysUtils,
   {$ENDIF}
-  DUnitX.ComparableFormat;
+
+  DUnitX.ComparableFormat;
 
 type
   ETestFrameworkException = class(Exception);
