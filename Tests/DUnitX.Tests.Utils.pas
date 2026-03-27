@@ -20,7 +20,7 @@ type
   TValueHelperTests = class
   private var
     {$IFDEF DELPHI_XE_UP}
-  	originalFormatSettings: TFormatSettings;
+    originalFormatSettings: TFormatSettings;
     {$ELSE}
     originalLCID: Integer;
     {$ENDIF}
@@ -130,15 +130,15 @@ constructor TValueHelperTests.Create;
 procedure TValueHelperTests.AfterConstruction;
 {$ENDIF}
 begin
- 	inherited;
+  inherited;
   {$IFDEF DELPHI_XE_UP}
-	originalFormatSettings := {$IFDEF USE_NS}System.{$ENDIF}SysUtils.FormatSettings;
+  originalFormatSettings := {$IFDEF USE_NS}System.{$ENDIF}SysUtils.FormatSettings;
   {$ELSE}
   originalLCID := GetThreadLocale;
   {$ENDIF}
 
-	expectedDate := EncodeDate(2020, 06, 22);
-	expectedTime := EncodeTime(18, 36, 00, 000);
+  expectedDate := EncodeDate(2020, 06, 22);
+  expectedTime := EncodeTime(18, 36, 00, 000);
 end;
 
 destructor TValueHelperTests.Destroy;
@@ -150,10 +150,10 @@ end;
 procedure TValueHelperTests.revertFormatSettings();
 begin
   {$IFDEF DELPHI_XE_UP}
-	{$IFDEF USE_NS}System.{$ENDIF}SysUtils.FormatSettings := originalFormatSettings;
+  {$IFDEF USE_NS}System.{$ENDIF}SysUtils.FormatSettings := originalFormatSettings;
   {$ELSE}
   SetThreadLocale(originalLCID);
-	GetFormatSettings;
+  GetFormatSettings;
   {$ENDIF}
 end;
 
@@ -176,21 +176,21 @@ end;
 procedure TValueHelperTests.setFormatSettings(const locale: String);
 {$IFNDEF DELPHI_XE3_UP}
 var
-	_lcid: LCID;
+  _lcid: LCID;
 {$ENDIF}
 begin
-	{$IFNDEF DELPHI_XE3_UP}
+  {$IFNDEF DELPHI_XE3_UP}
     {$IFDEF DELPHI_2010}
     _lcid := GetLCIDFromLocale(locale);
     SetThreadLocale(_lcid);
-  	GetFormatSettings;
+    GetFormatSettings;
     {$ELSE}
     _lcid := LocaleNameToLCID(PChar(locale), 0);
-  	GetLocaleFormatSettings(_lcid, FormatSettings);
+    GetLocaleFormatSettings(_lcid, FormatSettings);
     {$ENDIF}
-	{$ELSE}
-	FormatSettings := TFormatSettings.Create(locale);
-	{$ENDIF}
+  {$ELSE}
+  FormatSettings := TFormatSettings.Create(locale);
+  {$ENDIF}
 end;
 
 procedure TValueHelperTests.TestAlphaColorTestCase(const AColor: TAlphaColor;
@@ -207,56 +207,57 @@ end;
 
 procedure TValueHelperTests.TestDateConversion(const locale, text: String);
 var
-	asTValue: TValue;
-	actual: TDate;
+  asTValue: TValue;
+  actual: TDate;
 begin
-	setFormatSettings(locale);
-	Assert.IsTrue( TValue.From(text).TryConvert<TDate>(asTValue), 'TryConvert<TDate>' );
-	Assert.IsTrue( asTValue.IsType<TDate>(), 'IsType TDate' );
+  setFormatSettings(locale);
+  Assert.IsTrue( TValue.From(text).TryConvert<TDate>(asTValue), 'TryConvert<TDate>' );
+  Assert.IsTrue( asTValue.IsType<TDate>(), 'IsType TDate' );
 
-	actual := asTValue.AsType<TDate>();
-	Assert.IsTrue( SameDate(expectedDate, actual), 'SameDate(..)' );
+  actual := asTValue.AsType<TDate>();
+  Assert.IsSameDate(expectedDate, actual, 'SameDate(..)');
 end;
 
 procedure TValueHelperTests.TestDateTimeConversion(const locale, text: String);
 var
-	asTValue: TValue;
-	expected, actual: TDateTime;
+  asTValue: TValue;
+  expected, actual: TDateTime;
 begin
-	setFormatSettings(locale);
-	Assert.IsTrue( TValue.From(text).TryConvert<TDateTime>(asTValue), 'TryConvert<TDateTime>' );
-	Assert.IsTrue( asTvalue.IsType<TDateTime>(), 'IsType TDateTime' );
+  setFormatSettings(locale);
+  Assert.IsTrue( TValue.From(text).TryConvert<TDateTime>(asTValue), 'TryConvert<TDateTime>' );
+  Assert.IsTrue( asTvalue.IsType<TDateTime>(), 'IsType TDateTime' );
 
-	expected := (expectedDate + expectedTime);
-	actual := asTValue.AsType<TDateTime>();
-	Assert.IsTrue( SameDateTime(expected, actual), 'SameDateTime(..)' );
+  expected := (expectedDate + expectedTime);
+  actual := asTValue.AsType<TDateTime>();
+  Assert.IsSameDateTime(expected, actual, 'SameDateTime(..)');
 end;
 
 procedure TValueHelperTests.TestDateTimeConversion2(const locale, text: String);
 var
-	expected, actual: TDateTime;
+  expected, actual: TDateTime;
 begin
-	setFormatSettings(locale);
+  setFormatSettings(locale);
 
-	expected := (expectedDate + expectedTime);
-	actual := StrToDateTime(text);
-	Assert.IsTrue( SameDateTime(expected, actual), 'SameDateTime(..)' );
+  expected := (expectedDate + expectedTime);
+  actual := StrToDateTime(text);
+  Assert.IsSameDateTime(expected, actual, 'SameDateTime(..)');
 end;
 
 procedure TValueHelperTests.TestTimeConversion(const locale, text: String);
 var
-	asTValue: TValue;
-	actual: TTime;
+  asTValue: TValue;
+  actual: TTime;
 begin
-	setFormatSettings(locale);
-	Assert.IsTrue( TValue.From(text).TryConvert<TTime>(asTValue), 'TryConvert<TTime>' );
-	Assert.IsTrue( asTvalue.IsType<TTime>(), 'IsType TTime' );
+  setFormatSettings(locale);
+  Assert.IsTrue( TValue.From(text).TryConvert<TTime>(asTValue), 'TryConvert<TTime>' );
+  Assert.IsTrue( asTvalue.IsType<TTime>(), 'IsType TTime' );
 
-	actual := asTValue.AsType<TTime>();
-	Assert.IsTrue( SameTime(expectedTime, actual), 'SameTime(..)' );
+  actual := asTValue.AsType<TTime>();
+  Assert.IsSameTime(expectedTime, actual, 'SameTime(..)');
 end;
 
 initialization
   TDUnitX.RegisterTestFixture(TValueHelperTests);
 
 end.
+

@@ -164,6 +164,10 @@ type
     class procedure IsNotEmpty<T>(const value : IEnumerable<T>; const message : string = '');overload;
 {$ENDIF}
 
+    class procedure IsSameDate(const expected, actual: TDateTime; const message : string = '');
+    class procedure IsSameTime(const expected, actual: TDateTime; const message : string = '');
+    class procedure IsSameDateTime(const expected, actual: TDateTime; const message : string = '');
+
     /// <summary>
     ///   Checks that an exception exactly matching ExceptClass will be raised.
     /// </summary>
@@ -305,6 +309,7 @@ uses
     {$ENDIF}
   {$ENDIF}
   {$IFDEF USE_NS}
+  System.DateUtils,
   System.Generics.Collections,
   System.Generics.Defaults,
   System.Math,
@@ -991,6 +996,30 @@ begin
     FailFmt(SPointerNotNil,[message], ReturnAddress);
 end;
 
+class procedure Assert.IsSameDate(const expected, actual: TDateTime;
+  const message: string);
+begin
+  DoAssert;
+  if not SameDate(expected, actual) then
+    FailFmt(SUnexpectedErrorStr, [expected.ToString, actual.ToString, message], ReturnAddress);
+end;
+
+class procedure Assert.IsSameDateTime(const expected, actual: TDateTime;
+  const message: string);
+begin
+  DoAssert;
+  if not SameDateTime(expected, actual) then
+    FailFmt(SUnexpectedErrorStr, [expected.ToString, actual.ToString, message], ReturnAddress);
+end;
+
+class procedure Assert.IsSameTime(const expected, actual: TDateTime;
+  const message: string);
+begin
+  DoAssert;
+  if not SameTime(expected, actual) then
+    FailFmt(SUnexpectedErrorStr, [expected.ToString, actual.ToString, message], ReturnAddress);
+end;
+
 class procedure Assert.IsTrue(const condition: boolean;const message : string);
 begin
   DoAssert;
@@ -1533,3 +1562,4 @@ begin
 end;
 
 end.
+
