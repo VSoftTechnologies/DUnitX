@@ -41,10 +41,12 @@ uses
 type
   Assert = class(DUnitX.Assert.Assert)
   private
-    class procedure FailStrCompare(const expected, actual: string; const compformat: TDUnitXComparableFormatClass = nil; const message : string = ''; const errorAddrs : pointer = nil);
+    class procedure FailStrCompare(const expected, actual : string; const compformat : TDUnitXComparableFormatClass = nil; const message : string = ''; const
+      errorAddrs : pointer = nil);
   public
-    class procedure AreEqual(const expected, actual : string; const compformat: TDUnitXComparableFormatClass; const ignoreCase : boolean; const message : string = ''); overload;
-    class procedure AreEqual(const expected, actual : string; const compformat: TDUnitXComparableFormatClass; const message : string = ''); overload;
+    class procedure AreEqual(const expected, actual : string; const compformat : TDUnitXComparableFormatClass; const ignoreCase : boolean; const message :
+      string = ''); overload;
+    class procedure AreEqual(const expected, actual : string; const compformat : TDUnitXComparableFormatClass; const message : string = ''); overload;
 
     //Reintroduced from Assert to throw ETestFailureStrCompare
     class procedure AreEqual(const expected : string; const actual : string; const ignoreCase : boolean; const message : string = ''); reintroduce; overload;
@@ -55,32 +57,33 @@ type
 implementation
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.SysUtils,
-  {$ELSE}
+{$ELSE}
   SysUtils,
-  {$ENDIF}
+{$ENDIF}
   DUnitX.ResStrs,
   DUnitX.Exceptions;
 
-class procedure Assert.AreEqual(const expected, actual: string; const compformat: TDUnitXComparableFormatClass; const ignoreCase: boolean; const message: string);
+class procedure Assert.AreEqual(const expected, actual : string; const compformat : TDUnitXComparableFormatClass; const ignoreCase : boolean; const message :
+  string);
 begin
   DoAssert;
   if ignoreCase then
   begin
-    if not SameText(expected,actual) then
+    if not SameText(expected, actual) then
       FailStrCompare(expected, actual, compformat, message, ReturnAddress);
   end
-  else if not SameStr(expected,actual) then
+  else if not SameStr(expected, actual) then
     FailStrCompare(expected, actual, compformat, message, ReturnAddress);
 end;
 
-class procedure Assert.AreEqual(const expected, actual: string; const compformat: TDUnitXComparableFormatClass; const message: string);
+class procedure Assert.AreEqual(const expected, actual : string; const compformat : TDUnitXComparableFormatClass; const message : string);
 begin
   AreEqual(expected, actual, compformat, IgnoreCaseDefault, message);
 end;
 
-class procedure Assert.AreEqual(const expected, actual : string; const ignoreCase : boolean; const message: string);
+class procedure Assert.AreEqual(const expected, actual : string; const ignoreCase : boolean; const message : string);
 begin
   AreEqual(expected, actual, nil, ignoreCase, message);
 end;
@@ -90,7 +93,8 @@ begin
   Assert.AreEqual(expected, actual, IgnoreCaseDefault, message);
 end;
 
-class procedure Assert.FailStrCompare(const expected, actual: string; const compformat : TDUnitXComparableFormatClass; const message: string; const errorAddrs: pointer);
+class procedure Assert.FailStrCompare(const expected, actual : string; const compformat : TDUnitXComparableFormatClass; const message : string; const errorAddrs
+  : pointer);
 begin
   //If we have been given a return then use it. (makes the exception appear on level above in the stack)
   if errorAddrs <> nil then
@@ -101,3 +105,4 @@ begin
 end;
 
 end.
+

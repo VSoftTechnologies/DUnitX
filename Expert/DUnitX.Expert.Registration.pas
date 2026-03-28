@@ -30,38 +30,39 @@ interface
 
 {$I DUnitX.inc}
 
-
 //Note: "Register" method name is case sensitive.
 procedure Register;
 
 implementation
+
 uses
   ToolsApi,
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   Vcl.Dialogs,
-  {$ELSE}
+{$ELSE}
   Dialogs,
-  {$ENDIF}
-  {$IFDEF DELPHIX_SEATTLE_UP}
+{$ENDIF}
+{$IFDEF DELPHIX_SEATTLE_UP}
   DUnitX.Expert.ProjectWizardEx,
   DUnitX.Expert.NewUnitWizardEx;
-  {$ELSE}
+{$ELSE}
   DUnitX.Expert.ProjectWizard,
   DUnitX.Expert.NewUnitWizard;
-  {$ENDIF}
+{$ENDIF}
 
 procedure Register;
 begin
-  {$IFDEF DELPHIX_SEATTLE_UP}
+{$IFDEF DELPHIX_SEATTLE_UP}
   TDUnitXNewProjectWizard.RegisterDUnitXProjectWizard(sDelphiPersonality);
   TDUnitXNewProjectWizard.RegisterDUnitXProjectWizard(sCBuilderPersonality);
 
   TDUnitXNewUnitWizard.RegisterDUnitXNewUnitWizard(sDelphiPersonality);
   TDUnitXNewUnitWizard.RegisterDUnitXNewUnitWizard(sCBuilderPersonality);
-  {$ELSE}
+{$ELSE}
   RegisterPackageWizard(TDUnitXNewProjectWizard.Create);
   RegisterPackageWizard(TDUnitXNewUnitWizard.Create);
-  {$ENDIF}
+{$ENDIF}
 end;
 
 end.
+

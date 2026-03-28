@@ -31,11 +31,11 @@ interface
 {$I DUnitX.inc}
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.Classes;
-  {$ELSE}
+{$ELSE}
   Classes;
-  {$ENDIF}
+{$ENDIF}
 
 //TODO : This is currently only supported on Windows, need to investigate osx etc.
 
@@ -45,20 +45,20 @@ type
     procedure Stop;
   end;
 
-  function InitialiseTimeout(const ATime: cardinal): ITimeout;
+function InitialiseTimeout(const ATime : cardinal) : ITimeout;
 
 implementation
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   WinAPI.Windows,
   System.Diagnostics,
   System.SysUtils,
-  {$ELSE}
+{$ELSE}
   Windows,
   Diagnostics,
   SysUtils,
-  {$ENDIF}
+{$ENDIF}
   DUnitX.ResStrs,
   DUnitX.TestFramework,
   DUnitX.Exceptions;
@@ -73,24 +73,24 @@ type
   private
     procedure TimeoutThread;
   public
-    ThreadHandle: Cardinal;
-    Timeout: Cardinal;
+    ThreadHandle : Cardinal;
+    Timeout : Cardinal;
     procedure Execute; override;
   end;
 
   TTimeout = class(TInterfacedObject, ITimeout)
   private
-    FTimeoutThread: TTimeoutThread;
+    FTimeoutThread : TTimeoutThread;
   public
-    constructor Create(const ATimeout: Cardinal; AThreadHandle: THandle);
+    constructor Create(const ATimeout : Cardinal; AThreadHandle : THandle);
     destructor Destroy; override;
 
     procedure Stop;
   end;
 
-function InitialiseTimeout(const ATime: cardinal): ITimeout;
+function InitialiseTimeout(const ATime : cardinal) : ITimeout;
 var
-  ThisThreadHandle: THandle;
+  ThisThreadHandle : THandle;
 begin
   DuplicateHandle(GetCurrentProcess, GetCurrentThread, GetCurrentProcess, @ThisThreadHandle, 0, True, DUPLICATE_SAME_ACCESS);
   Result := TTimeout.Create(ATime, ThisThreadHandle);
@@ -103,17 +103,17 @@ end;
 
 procedure TTimeoutThread.TimeoutThread;
 var
-  Ctx: _CONTEXT;
+  Ctx : _CONTEXT;
 begin
   SuspendThread(ThreadHandle);
   Ctx.ContextFlags := CONTEXT_FULL;
   GetThreadContext(ThreadHandle, Ctx);
 
-  {$IFDEF CPUX64}
+{$IFDEF CPUX64}
   Ctx.Rip := Cardinal(@RaiseTimeOutException);
-  {$ELSE}
+{$ELSE}
   Ctx.Eip := Cardinal(@RaiseTimeOutException);
-  {$ENDIF}
+{$ENDIF}
   SetThreadContext(ThreadHandle, Ctx);
   ResumeThread(ThreadHandle);
 end;
@@ -125,7 +125,7 @@ begin
   FTimeoutThread.Terminate;
 end;
 
-constructor TTimeout.Create(const ATimeout: Cardinal; AThreadHandle: THandle);
+constructor TTimeout.Create(const ATimeout : Cardinal; AThreadHandle : THandle);
 begin
   FTimeoutThread := TTimeoutThread.Create(true);
   FTimeoutThread.FreeOnTerminate := false;
@@ -155,12 +155,12 @@ begin
   stopwatch.Reset;
   stopwatch.Start;
 
-  {$IFNDEF DELPHI_XE101_UP} // <- H2077 Value assigned to 'elapsedTime' never used 10.1 Berlin and up
+{$IFNDEF DELPHI_XE101_UP}               // <- H2077 Value assigned to 'elapsedTime' never used 10.1 Berlin and up
   elapsedTime := 0;
-  {$ENDIF}
+{$ENDIF}
 
   if Terminated then
-     exit;
+    exit;
   repeat
     //Give some time back to the system to process the test.
     Sleep(20);
@@ -168,7 +168,7 @@ begin
     if Terminated then
       Break;
 
-    elapsedTime :=  stopwatch.ElapsedMilliseconds;
+    elapsedTime := stopwatch.ElapsedMilliseconds;
   until (elapsedTime >= Timeout);
 
   //If we haven't been terminated then we have timed out.
@@ -177,5 +177,5 @@ begin
   CloseHandle(ThreadHandle);
 end;
 
-
 end.
+

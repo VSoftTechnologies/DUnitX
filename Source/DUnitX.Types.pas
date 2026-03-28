@@ -23,7 +23,7 @@
 {  limitations under the License.                                           }
 {                                                                           }
 { This unit is contains ideas borrowed largely from NUnit                   }
-{ Copyright © 2012-2014 Charlie Poole                                       }
+{ Copyright ï¿½ 2012-2014 Charlie Poole                                       }
 { License  : http://nunit.org/index.php?p=vsTestAdapterLicense&r=2.6.3      }
 {                                                                           }
 {***************************************************************************}
@@ -42,14 +42,18 @@ uses
 {$ENDIF}
 
 type
-  {$IFDEF SUPPORTS_TARRAY}
+{$IFDEF SUPPORTS_TARRAY}
   TValueArray = TArray<TValue>;
-  {$ELSE}
+{$ELSE}
   TValueArray = array of TValue;
-  {$ENDIF}
+{$ENDIF}
 
-  TExceptionInheritance = (exExact, exDescendant);
+  TExceptionInheritance = (
+    exExact,
+    exDescendant
+  );
 
 implementation
 
 end.
+

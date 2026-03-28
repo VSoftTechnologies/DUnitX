@@ -31,13 +31,13 @@ interface
 {$I DUnitX.inc}
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.SysUtils,
   System.Timespan,
-  {$ELSE}
+{$ELSE}
   SysUtils,
   Timespan,
-  {$ENDIF}
+{$ENDIF}
   DUnitX.TestFramework,
   DUnitX.WeakReference,
   DUnitX.InternalInterfaces,
@@ -49,24 +49,24 @@ type
   private
     //Keeping message as the user passed message. Not used for internal functionality like exception messages.
     FMessage : string;
-    FLogMessages: TLogMessageArray;
+    FLogMessages : TLogMessageArray;
     FResultType : TTestResultType;
     FTest : IWeakReference<ITestInfo>;
     FStackTrace : string;
   protected
-    function GetMessage: string;
-    function GetLogMessages: TLogMessageArray;
-    function GetResult: Boolean;
-    function GetResultType: TTestResultType;
-    function GetTest: ITestInfo;
+    function GetMessage : string;
+    function GetLogMessages : TLogMessageArray;
+    function GetResult : Boolean;
+    function GetResultType : TTestResultType;
+    function GetTest : ITestInfo;
     function GetStartTime : TDateTime;
     function GetFinishTime : TDateTime;
     function GetDuration : TTimeSpan;
     function GetStackTrace : string;
   public
-    constructor Create(const ATestInfo : ITestInfo; const AType : TTestResultType; const AMessage: string; const ALogMessages : TLogMessageArray); overload;
-    constructor Create(const ATestInfo : ITestInfo; const AType : TTestResultType; const AMessage: string = ''); overload;
-    destructor Destroy;override;
+    constructor Create(const ATestInfo : ITestInfo; const AType : TTestResultType; const AMessage : string; const ALogMessages : TLogMessageArray); overload;
+    constructor Create(const ATestInfo : ITestInfo; const AType : TTestResultType; const AMessage : string = ''); overload;
+    destructor Destroy; override;
   end;
 
   TDUnitXTestError = class(TDUnitXTestResult, ITestError)
@@ -74,22 +74,23 @@ type
     FExceptionClass : ExceptClass;
     FExceptionMessage : string;
     FExceptionAddress : Pointer;
-    FIsComparable: boolean;
-    FExpected: string;
-    FActual: string;
-    FFormat: TDUnitXComparableFormatClass;
+    FIsComparable : boolean;
+    FExpected : string;
+    FActual : string;
+    FFormat : TDUnitXComparableFormatClass;
   protected
     function GetExceptionClass : ExceptClass;
     function GetExceptionLocationInfo : string;
     function GetExceptionAddressInfo : string;
     function GetExceptionMessage : string;
     function GetExceptionAddress : Pointer;
-    function GetIsComparable: boolean;
-    function GetExpected: string;
-    function GetActual: string;
-    function GetFormat: TDUnitXComparableFormatClass;
+    function GetIsComparable : boolean;
+    function GetExpected : string;
+    function GetActual : string;
+    function GetFormat : TDUnitXComparableFormatClass;
   public
-    constructor Create(const ATestInfo : ITestInfo; const AType: TTestResultType; const AThrownException: Exception; const Addrs: Pointer; const AMessage: string; const AMessageExList : TLogMessageArray); reintroduce;
+    constructor Create(const ATestInfo : ITestInfo; const AType : TTestResultType; const AThrownException : Exception; const Addrs : Pointer;
+                       const AMessage : string; const AMessageExList : TLogMessageArray); reintroduce;
   end;
 
 implementation
@@ -97,7 +98,8 @@ implementation
 uses
   DUnitX.ServiceLocator;
 
-constructor TDUnitXTestResult.Create(const ATestInfo : ITestInfo; const AType : TTestResultType; const AMessage: string; const ALogMessages : TLogMessageArray);
+constructor TDUnitXTestResult.Create(const ATestInfo : ITestInfo; const AType : TTestResultType; const AMessage : string; const ALogMessages :
+  TLogMessageArray);
 begin
   FTest := TWeakReference<ITestInfo>.Create(ATestInfo);
   FResultType := AType;
@@ -105,27 +107,27 @@ begin
   FLogMessages := ALogMessages;
 end;
 
-function TDUnitXTestResult.GetMessage: string;
+function TDUnitXTestResult.GetMessage : string;
 begin
   result := FMessage;
 end;
 
-function TDUnitXTestResult.GetLogMessages: TLogMessageArray;
+function TDUnitXTestResult.GetLogMessages : TLogMessageArray;
 begin
   result := FLogMessages;
 end;
 
-function TDUnitXTestResult.GetResult: Boolean;
+function TDUnitXTestResult.GetResult : Boolean;
 begin
   result := GetResultType = TTestResultType.Pass;
 end;
 
-function TDUnitXTestResult.GetResultType: TTestResultType;
+function TDUnitXTestResult.GetResultType : TTestResultType;
 begin
   result := FResultType;
 end;
 
-function TDUnitXTestResult.GetTest: ITestInfo;
+function TDUnitXTestResult.GetTest : ITestInfo;
 begin
   if FTest.IsAlive then
     result := FTest.Data
@@ -133,9 +135,9 @@ begin
     result := nil;
 end;
 
-constructor TDUnitXTestResult.Create(const ATestInfo: ITestInfo; const AType: TTestResultType; const AMessage: string);
+constructor TDUnitXTestResult.Create(const ATestInfo : ITestInfo; const AType : TTestResultType; const AMessage : string);
 var
-  LogMessages: TLogMessageArray;
+  LogMessages : TLogMessageArray;
 begin
   SetLength(LogMessages, 0);
   Create(ATestInfo, AType, AMessage, LogMessages);
@@ -143,11 +145,11 @@ end;
 
 destructor TDUnitXTestResult.Destroy;
 begin
-  FTest := nil; //trying to track down memory leak.
+  FTest := nil;                         //trying to track down memory leak.
   inherited;
 end;
 
-function TDUnitXTestResult.GetDuration: TTimeSpan;
+function TDUnitXTestResult.GetDuration : TTimeSpan;
 begin
   if FTest.IsAlive then
     Result := FTest.Data.GetTestDuration
@@ -155,7 +157,7 @@ begin
     Result := TTimeSpan.Zero;
 end;
 
-function TDUnitXTestResult.GetFinishTime: TDateTime;
+function TDUnitXTestResult.GetFinishTime : TDateTime;
 begin
   if FTest.IsAlive then
     Result := FTest.Data.GetTestEndTime
@@ -163,12 +165,12 @@ begin
     Result := 0;
 end;
 
-function TDUnitXTestResult.GetStackTrace: string;
+function TDUnitXTestResult.GetStackTrace : string;
 begin
   result := FStackTrace;
 end;
 
-function TDUnitXTestResult.GetStartTime: TDateTime;
+function TDUnitXTestResult.GetStartTime : TDateTime;
 begin
   if FTest.IsAlive then
     Result := FTest.Data.GetTestStartTime
@@ -178,13 +180,14 @@ end;
 
 { TDUnitXTestError }
 
-constructor TDUnitXTestError.Create(const ATestInfo : ITestInfo; const AType: TTestResultType; const AThrownException: Exception; const Addrs: Pointer;  const AMessage: string; const AMessageExList : TLogMessageArray);
+constructor TDUnitXTestError.Create(const ATestInfo : ITestInfo; const AType : TTestResultType; const AThrownException : Exception; const Addrs : Pointer; const
+  AMessage : string; const AMessageExList : TLogMessageArray);
 {$IFDEF DELPHI_XE_UP}
 var
   stackTraceProvider : IStacktraceProvider;
 {$ENDIF}
 var
-  StrCompareEx: ETestFailureStrCompare;
+  StrCompareEx : ETestFailureStrCompare;
 begin
   inherited Create(ATestInfo, AType, AMessage, AMessageExList);
 
@@ -203,79 +206,81 @@ begin
     FActual := StrCompareEx.Actual;
     FFormat := StrCompareEx.Format;
   end
-  else FIsComparable := False;
+  else
+    FIsComparable := False;
 
-  {$IFDEF DELPHI_XE_UP}
+{$IFDEF DELPHI_XE_UP}
   stackTraceProvider := TDUnitXServiceLocator.DefaultContainer.Resolve<IStacktraceProvider>();
 
   if stackTraceProvider <> nil then
-    FStackTrace := stackTraceProvider.GetStackTrace(AThrownException,Addrs);
-  {$ENDIF}
+    FStackTrace := stackTraceProvider.GetStackTrace(AThrownException, Addrs);
+{$ENDIF}
 end;
 
-function TDUnitXTestError.GetActual: string;
+function TDUnitXTestError.GetActual : string;
 begin
   Result := FActual;
 end;
 
-function TDUnitXTestError.GetExceptionAddress: Pointer;
+function TDUnitXTestError.GetExceptionAddress : Pointer;
 begin
   Result := FExceptionAddress;
 end;
 
-function TDUnitXTestError.GetExceptionAddressInfo: string;
+function TDUnitXTestError.GetExceptionAddressInfo : string;
 {$IFDEF DELPHI_XE_UP}
 var
   stackTraceProvider : IStacktraceProvider;
 {$ENDIF}
 begin
-  {$IFDEF DELPHI_XE_UP}
+{$IFDEF DELPHI_XE_UP}
   stackTraceProvider := TDUnitXServiceLocator.DefaultContainer.Resolve<IStacktraceProvider>();
   if stackTraceProvider <> nil then
     Result := stackTraceProvider.PointerToAddressInfo(FExceptionAddress)
   else
-  {$ENDIF}
+{$ENDIF}
     Result := '';
 end;
 
-function TDUnitXTestError.GetExceptionClass: ExceptClass;
+function TDUnitXTestError.GetExceptionClass : ExceptClass;
 begin
   result := FExceptionClass;
 end;
 
-function TDUnitXTestError.GetExceptionLocationInfo: string;
+function TDUnitXTestError.GetExceptionLocationInfo : string;
 {$IFDEF DELPHI_XE_UP}
 var
   stackTraceProvider : IStacktraceProvider;
 {$ENDIF}
 begin
-  {$IFDEF DELPHI_XE_UP}
+{$IFDEF DELPHI_XE_UP}
   stackTraceProvider := TDUnitXServiceLocator.DefaultContainer.Resolve<IStacktraceProvider>();
   if stackTraceProvider <> nil then
     Result := stackTraceProvider.PointerToLocationInfo(FExceptionAddress)
   else
-  {$ENDIF}
+{$ENDIF}
     Result := '';
 end;
 
-function TDUnitXTestError.GetExceptionMessage: string;
+function TDUnitXTestError.GetExceptionMessage : string;
 begin
   Result := FExceptionMessage;
 end;
 
-function TDUnitXTestError.GetExpected: string;
+function TDUnitXTestError.GetExpected : string;
 begin
   Result := FExpected;
 end;
 
-function TDUnitXTestError.GetFormat: TDUnitXComparableFormatClass;
+function TDUnitXTestError.GetFormat : TDUnitXComparableFormatClass;
 begin
   Result := FFormat;
 end;
 
-function TDUnitXTestError.GetIsComparable: boolean;
+function TDUnitXTestError.GetIsComparable : boolean;
 begin
   Result := FIsComparable;
 end;
 
 end.
+

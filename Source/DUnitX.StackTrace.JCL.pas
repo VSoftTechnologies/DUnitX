@@ -31,27 +31,25 @@ interface
 {$I DUnitX.inc}
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.SysUtils,
   System.Classes,
-  {$ELSE}
+{$ELSE}
   SysUtils,
   Classes,
-  {$ENDIF}
+{$ENDIF}
 {$IFDEF USE_JCL}
   JclDebug,
 {$ENDIF}
   DUnitX.TestFramework;
 
 type
-  TJCLStackTraceProvider = class(TInterfacedObject,IStacktraceProvider)
+  TJCLStackTraceProvider = class(TInterfacedObject, IStacktraceProvider)
   protected
-    function GetStackTrace(const ex: Exception; const exAddressAddress: Pointer): string;
-    function PointerToLocationInfo(const Addrs: Pointer): string;
-    function PointerToAddressInfo(Addrs: Pointer): string;
+    function GetStackTrace(const ex : Exception; const exAddressAddress : Pointer) : string;
+    function PointerToLocationInfo(const Addrs : Pointer) : string;
+    function PointerToAddressInfo(Addrs : Pointer) : string;
   end;
-
-
 
 implementation
 
@@ -60,14 +58,14 @@ uses
 
 { TJCLStackTraceProvider }
 
-function TJCLStackTraceProvider.GetStackTrace(const ex: Exception; const exAddressAddress: Pointer): string;
+function TJCLStackTraceProvider.GetStackTrace(const ex : Exception; const exAddressAddress : Pointer) : string;
 {$IFDEF USE_JCL}
 var
-  traceList: TStrings;
+  traceList : TStrings;
 {$ENDIF}
 begin
   result := '';
-  {$IFDEF USE_JCL}
+{$IFDEF USE_JCL}
   traceList := TStringList.Create;
   try
     JclDebug.JclLastExceptStackListToStrings(traceList, true);
@@ -75,16 +73,16 @@ begin
   finally
     traceList.Free;
   end;
-  {$ENDIF}
+{$ENDIF}
 end;
 
-function TJCLStackTraceProvider.PointerToAddressInfo(Addrs: Pointer): string;
+function TJCLStackTraceProvider.PointerToAddressInfo(Addrs : Pointer) : string;
 {$IFDEF USE_JCL}
 var
   _file,
-  _module,
-  _proc: string;
-  _line: integer;
+    _module,
+    _proc : string;
+  _line : integer;
 {$ENDIF}
 begin
   Result := '';
@@ -95,13 +93,13 @@ begin
 end;
 
 //Borrowed from DUnit.
-function TJCLStackTraceProvider.PointerToLocationInfo(const Addrs: Pointer): string;
+function TJCLStackTraceProvider.PointerToLocationInfo(const Addrs : Pointer) : string;
 {$IFDEF USE_JCL}
 var
   _file,
-  _module,
-  _proc: string;
-  _line: integer;
+    _module,
+    _proc : string;
+  _line : integer;
 {$ENDIF}
 begin
   Result := '';
@@ -109,26 +107,27 @@ begin
   JclDebug.MapOfAddr(Addrs, _file, _module, _proc, _line);
 
   if _file <> '' then
-    Result   := Format('%s:%d', [_file, _line])
+    Result := Format('%s:%d', [_file, _line])
   else
-    Result   := _module;
+    Result := _module;
 {$ENDIF}
 end;
 
 initialization
 {$IFDEF USE_JCL}
 
-  {$IFDEF DELPHI_XE_UP}
-    TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider,TJCLStackTraceProvider>(true);
-  {$ELSE}
-    //D2010 bug prevents using above method.
-    TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider>(true,
-     function : IStacktraceProvider
-        begin
-          result := TJCLStackTraceProvider.Create;
-        end
-     );
-  {$ENDIF}
+{$IFDEF DELPHI_XE_UP}
+  TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider, TJCLStackTraceProvider>(true);
+{$ELSE}
+  //D2010 bug prevents using above method.
+  TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider>(true,
+    function : IStacktraceProvider
+    begin
+      result := TJCLStackTraceProvider.Create;
+    end
+    );
+{$ENDIF}
 {$ENDIF}
 
 end.
+

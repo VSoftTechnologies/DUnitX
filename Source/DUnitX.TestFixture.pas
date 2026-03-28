@@ -31,15 +31,15 @@ interface
 {$I DUnitX.inc}
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.Generics.Collections,
   System.Rtti,
   System.SysUtils,
-  {$ELSE}
+{$ELSE}
   Generics.Collections,
   Rtti,
   SysUtils,
-  {$ENDIF}
+{$ENDIF}
   DUnitX.Types,
   DUnitX.Attributes,
   DUnitX.TestFramework,
@@ -50,29 +50,30 @@ uses
 
 type
   TDUnitXTestFixture = class(TWeakReferencedObject, ITestFixture, ITestFixtureInfo)
-  private class var
-    FRttiContext  : TRttiContext;
   private
-    FFixtureType  : TRttiType;
-    FTestClass    : TClass;
-    FUnitName     : string;
-    FName         : string;
-    FNameSpace    : string;
-    FDescription  : string;
-    FCategories   : TList<string>;
-    FEnabled      : boolean;
-    FTests        : ITestList;
-    FTestInfos              : IList<ITestInfo>;
-    FSetupMethod            : TTestMethod;
-    FSetupFixtureMethod     : TTestMethod;
-    FTearDownMethod         : TTestMethod;
-    FTearDownFixtureMethod  : TTestMethod;
-    FFixtureInstance        : TObject;
-    FTestInOwnThread        : boolean;
+    class var
+      FRttiContext : TRttiContext;
+  private
+    FFixtureType : TRttiType;
+    FTestClass : TClass;
+    FUnitName : string;
+    FName : string;
+    FNameSpace : string;
+    FDescription : string;
+    FCategories : TList<string>;
+    FEnabled : boolean;
+    FTests : ITestList;
+    FTestInfos : IList<ITestInfo>;
+    FSetupMethod : TTestMethod;
+    FSetupFixtureMethod : TTestMethod;
+    FTearDownMethod : TTestMethod;
+    FTearDownFixtureMethod : TTestMethod;
+    FFixtureInstance : TObject;
+    FTestInOwnThread : boolean;
     FSetupFixtureMethodName : string;
-    FSetupMethodName        : string;
-    FTearDownMethodName     : string;
-    FTearDownFixtureMethodName  : string;
+    FSetupMethodName : string;
+    FTearDownMethodName : string;
+    FTearDownFixtureMethodName : string;
     FChildren : ITestFixtureList;
     FTearDownFixtureIsDestructor : boolean;
     FIgnoreMemoryLeaks : Boolean;
@@ -82,24 +83,24 @@ type
     FIgnoredReason : string;
   protected
     //used by GenerateFixtureFromClass to be tests from TestCaseInfo
-    function CreateTestFromTestCase(const ACaseInfo : TestCaseInfo; const ACategory : string; const AMethod : TRttiMethod; const ATestEnabled : Boolean) : ITest;
+    function CreateTestFromTestCase(const ACaseInfo : TestCaseInfo; const ACategory : string; const AMethod : TRttiMethod; const ATestEnabled : Boolean) :
+      ITest;
     //used by GenerateFixtureFromClass to be tests from a method with out test cases
-    function CreateTestFromMethod(const AMethod : TRttiMethod; const ACategory : string; const ATestEnabled : Boolean;const AIgnored : Boolean;const AIgnoredReason: String) : ITest;
+    function CreateTestFromMethod(const AMethod : TRttiMethod; const ACategory : string; const ATestEnabled : Boolean; const AIgnored : Boolean; const
+      AIgnoredReason : string) : ITest;
     // Check overriding attribute, other wise uses returns fixture value
     function GetIgnoreMemoryLeaksForMethod(AMethod : TRttiMethod) : Boolean;
 
+    function GetEnabled : Boolean;
+    procedure SetEnabled(const value : Boolean);
 
-    function GetEnabled: Boolean;
-    procedure SetEnabled(const value: Boolean);
-
-
-    function GetName: string;
+    function GetName : string;
     function GetNameSpace : string;
     function GetFullName : string;
     function GetUnitName : string;
     function GetDescription : string;
     function GetCategories : TList<string>;
-    function GetTests: ITestList;
+    function GetTests : ITestList;
     function ITestFixtureInfo.GetTests = ITestFixtureInfo_GetTests;
     function ITestFixtureInfo_GetTests : IList<ITestInfo>;
     function GetTestClass : TClass;
@@ -108,21 +109,21 @@ type
     function GetTearDownMethod : TTestMethod;
     function GetTearDownFixtureMethod : TTestMethod;
     function GetTestInOwnThread : boolean;
-    function GetSetupFixtureMethodName: string;
-    function GetSetupMethodName: string;
-    function GetTearDownMethodName: string;
-    function GetTearDownFixtureMethodName: string;
+    function GetSetupFixtureMethodName : string;
+    function GetSetupMethodName : string;
+    function GetTearDownMethodName : string;
+    function GetTearDownFixtureMethodName : string;
     function GetFixtureInstance : TObject;
     function GetTestCount : cardinal;
     function GetActiveTestCount : cardinal;
     function GetIgnored : boolean;
     function GetIgnoreReason : string;
 
-    function GetChildren: ITestFixtureList;
+    function GetChildren : ITestFixtureList;
     function GetHasChildren : boolean;
     function GetHasTests : boolean;
     function GetHasActiveTests : boolean;
-    function GetHasChildTests: Boolean;
+    function GetHasChildTests : Boolean;
     function IsNameSpaceOnly : boolean;
     procedure OnMethodExecuted(const AMethod : TTestMethod);
 
@@ -130,36 +131,39 @@ type
     procedure InitFixtureInstance;
     procedure InternalInitFixtureInstance(const isConstructing : boolean);
 
-    function AddTest(const AMethodName : string; const AMethod : TTestMethod; const AName : string; const ACategory  : string; const ARttiMethod : TRttiMethod; const AEnabled : boolean = true;const AIgnored : boolean = false; const AIgnoreReason : string = ''; const AMaxTime :cardinal = 0; const AExpectedException: ExceptClass = nil; const AExceptionInheritance: TExceptionInheritance = exExact) : ITest;
-    function AddTestCase(const AMethodName : string; const ACaseName : string; const AName : string; const ACategory  : string; const AMethod : TRttiMethod; const AEnabled : boolean; const AArgs : TValueArray) : ITest;
+    function AddTest(const AMethodName : string; const AMethod : TTestMethod; const AName : string; const ACategory : string; const ARttiMethod : TRttiMethod;
+      const AEnabled : boolean = true; const AIgnored : boolean = false; const AIgnoreReason : string = ''; const AMaxTime : cardinal = 0; const
+      AExpectedException : ExceptClass = nil; const AExceptionInheritance : TExceptionInheritance = exExact) : ITest;
+    function AddTestCase(const AMethodName : string; const ACaseName : string; const AName : string; const ACategory : string; const AMethod : TRttiMethod;
+      const AEnabled : boolean; const AArgs : TValueArray) : ITest;
 
-    function AddChildFixture(const ATestClass : TClass; const AName : string; const ACategory : string) : ITestFixture;overload;
-    function AddChildFixture(const AInstance : TObject; const AName : string; const ACategory : string) : ITestFixture;overload;
+    function AddChildFixture(const ATestClass : TClass; const AName : string; const ACategory : string) : ITestFixture; overload;
+    function AddChildFixture(const AInstance : TObject; const AName : string; const ACategory : string) : ITestFixture; overload;
 
     procedure SetSetupTestMethod(const AMethodName : string; const AMethod : TTestMethod);
     procedure SetSetupFixtureMethod(const AMethodName : string; const AMethod : TTestMethod);
     procedure SetTearDownTestMethod(const AMethodName : string; const AMethod : TTestMethod);
     procedure SetTearDownFixtureMethod(const AMethodName : string; const AMethod : TTestMethod; const AIsDestructor : boolean);
-    procedure SetTestInOwnThread(const value: Boolean);
+    procedure SetTestInOwnThread(const value : Boolean);
     class constructor Create;
     class destructor Destroy;
   public
-    constructor Create(const AName : string; const ACategory : string; const AInstance : TObject; const AUnitName : string);overload;
-    constructor Create(const AName : string; const ACategory : string; const AClass : TClass; const AUnitName : string);overload;
-    destructor Destroy;override;
+    constructor Create(const AName : string; const ACategory : string; const AInstance : TObject; const AUnitName : string); overload;
+    constructor Create(const AName : string; const ACategory : string; const AClass : TClass; const AUnitName : string); overload;
+    destructor Destroy; override;
 
   end;
 
 implementation
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.TypInfo,
   System.Generics.Defaults,
-  {$ELSE}
+{$ELSE}
   TypInfo,
   Generics.Defaults,
-  {$ENDIF}
+{$ENDIF}
   DUnitX.Test,
   DUnitX.Utils;
 
@@ -167,9 +171,9 @@ uses
 
 constructor TDUnitXTestFixture.Create(const AName : string; const ACategory : string; const AClass : TClass; const AUnitName : string);
 var
-  fixtureAttrib   : TestFixtureAttribute;
-  IgnoreMemoryLeakAttrib: IgnoreMemoryLeaks;
-  IgnoredAttrib: IgnoreAttribute;
+  fixtureAttrib : TestFixtureAttribute;
+  IgnoreMemoryLeakAttrib : IgnoreMemoryLeaks;
+  IgnoredAttrib : IgnoreAttribute;
   i : integer;
   categories : TArray<string>;
   cat : string;
@@ -179,27 +183,25 @@ begin
   FUnitName := AUnitName;
   FTests := TTestList.Create;
   FCategories := TList<string>.Create(TComparer<string>.Construct(
-    function(const Left, Right : string) : integer
-    begin
-      result := AnsiCompareText(Left,Right);
-    end));
+      function(const Left, Right : string) : integer
+      begin
+        result := AnsiCompareText(Left, Right);
+      end));
 
   if ACategory <> '' then
   begin
-    categories := TStrUtils.SplitString(ACategory,',');
+    categories := TStrUtils.SplitString(ACategory, ',');
     for cat in categories do
     begin
       FCategories.Add(Trim(cat));
     end;
   end;
 
-
-
-  i := LastDelimiter('.',AName);
+  i := LastDelimiter('.', AName);
   if i <> 0 then
   begin
-    FNameSpace := Copy(AName,1,i -1);
-    FName := Copy(AName,i+1,Length(AName));
+    FNameSpace := Copy(AName, 1, i - 1);
+    FName := Copy(AName, i + 1, Length(AName));
   end
   else
   begin
@@ -242,9 +244,6 @@ begin
   inherited;
 end;
 
-
-
-
 procedure TDUnitXTestFixture.ExecuteFixtureTearDown;
 begin
   if Assigned(FTearDownFixtureMethod) then
@@ -259,7 +258,7 @@ begin
   end;
 end;
 
-function TDUnitXTestFixture.GetActiveTestCount: cardinal;
+function TDUnitXTestFixture.GetActiveTestCount : cardinal;
 begin
   //TODO: Return the active count, currently fudged to be the count.
   Result := GetTestCount;
@@ -270,29 +269,29 @@ begin
   result := FCategories;
 end;
 
-function TDUnitXTestFixture.GetChildren: ITestFixtureList;
+function TDUnitXTestFixture.GetChildren : ITestFixtureList;
 begin
   if FChildren = nil then
     FChildren := TTestFixtureList.Create;
   result := FChildren;
 end;
 
-function TDUnitXTestFixture.GetDescription: string;
+function TDUnitXTestFixture.GetDescription : string;
 begin
   result := FDescription;
 end;
 
-function TDUnitXTestFixture.GetEnabled: Boolean;
+function TDUnitXTestFixture.GetEnabled : Boolean;
 begin
   result := FEnabled;
 end;
 
-function TDUnitXTestFixture.GetFixtureInstance: TObject;
+function TDUnitXTestFixture.GetFixtureInstance : TObject;
 begin
   result := FFixtureInstance;
 end;
 
-function TDUnitXTestFixture.GetFullName: string;
+function TDUnitXTestFixture.GetFullName : string;
 begin
   if FName <> FNameSpace then
     result := FNameSpace + '.' + FName
@@ -300,9 +299,9 @@ begin
     Result := FName;
 end;
 
-function TDUnitXTestFixture.GetHasActiveTests: boolean;
+function TDUnitXTestFixture.GetHasActiveTests : boolean;
 var
-  lTest: ITest;
+  lTest : ITest;
 begin
   Result := False;
 
@@ -316,15 +315,14 @@ begin
   end;
 end;
 
-function TDUnitXTestFixture.GetHasChildren: boolean;
+function TDUnitXTestFixture.GetHasChildren : boolean;
 begin
   result := (FChildren <> nil) and (FChildren.Count > 0);
 end;
 
-
-function TDUnitXTestFixture.GetHasChildTests: Boolean;
+function TDUnitXTestFixture.GetHasChildTests : Boolean;
 var
-  fixture: ITestFixture;
+  fixture : ITestFixture;
 begin
   result := GetHasChildren;
   if result then
@@ -342,7 +340,7 @@ begin
   end;
 end;
 
-function TDUnitXTestFixture.GetHasTests: boolean;
+function TDUnitXTestFixture.GetHasTests : boolean;
 var
   test : ITest;
 begin
@@ -355,15 +353,15 @@ begin
     end;
 end;
 
-function TDUnitXTestFixture.GetIgnored: boolean;
+function TDUnitXTestFixture.GetIgnored : boolean;
 begin
   Result := FIgnoredFixture;
 end;
 
 function TDUnitXTestFixture.GetIgnoreMemoryLeaksForMethod(
-  AMethod: TRttiMethod): Boolean;
+  AMethod : TRttiMethod) : Boolean;
 var
- IgnoreMemoryLeak: IgnoreMemoryLeaks;
+  IgnoreMemoryLeak : IgnoreMemoryLeaks;
 begin
   if AMethod.TryGetAttributeOfType<IgnoreMemoryLeaks>(IgnoreMemoryLeak) then
     result := IgnoreMemoryLeak.IgnoreLeaks
@@ -371,82 +369,82 @@ begin
     result := FIgnoreMemoryLeaks;
 end;
 
-function TDUnitXTestFixture.GetIgnoreReason: string;
+function TDUnitXTestFixture.GetIgnoreReason : string;
 begin
   Result := FIgnoredReason;
 end;
 
-function TDUnitXTestFixture.GetName: string;
+function TDUnitXTestFixture.GetName : string;
 begin
   result := FName;
 end;
 
-function TDUnitXTestFixture.GetNameSpace: string;
+function TDUnitXTestFixture.GetNameSpace : string;
 begin
   result := FNameSpace;
 end;
 
-function TDUnitXTestFixture.GetSetupFixtureMethod: TTestMethod;
+function TDUnitXTestFixture.GetSetupFixtureMethod : TTestMethod;
 begin
   result := FSetupFixtureMethod;
 end;
 
-function TDUnitXTestFixture.GetSetupFixtureMethodName: string;
+function TDUnitXTestFixture.GetSetupFixtureMethodName : string;
 begin
   result := FSetupFixtureMethodName;
 end;
 
-function TDUnitXTestFixture.GetSetupMethod: TTestMethod;
+function TDUnitXTestFixture.GetSetupMethod : TTestMethod;
 begin
   result := FSetupMethod;
 end;
 
-function TDUnitXTestFixture.GetSetupMethodName: string;
+function TDUnitXTestFixture.GetSetupMethodName : string;
 begin
   result := FSetupMethodName;
 end;
 
-function TDUnitXTestFixture.GetTearDownFixtureMethod: TTestMethod;
+function TDUnitXTestFixture.GetTearDownFixtureMethod : TTestMethod;
 begin
   result := FTearDownFixtureMethod;
 end;
 
-function TDUnitXTestFixture.GetTearDownFixtureMethodName: string;
+function TDUnitXTestFixture.GetTearDownFixtureMethodName : string;
 begin
   result := FTearDownFixtureMethodName;
 end;
 
-function TDUnitXTestFixture.GetTearDownMethod: TTestMethod;
+function TDUnitXTestFixture.GetTearDownMethod : TTestMethod;
 begin
-  result  := FTearDownMethod;
+  result := FTearDownMethod;
 end;
 
-function TDUnitXTestFixture.GetTearDownMethodName: string;
+function TDUnitXTestFixture.GetTearDownMethodName : string;
 begin
   result := FTearDownMethodName;
 end;
 
-function TDUnitXTestFixture.GetTestClass: TClass;
+function TDUnitXTestFixture.GetTestClass : TClass;
 begin
   result := FTestClass;
 end;
 
-function TDUnitXTestFixture.GetTestCount: cardinal;
+function TDUnitXTestFixture.GetTestCount : cardinal;
 begin
   Result := FTests.Count;
 end;
 
-function TDUnitXTestFixture.GetTestInOwnThread: boolean;
+function TDUnitXTestFixture.GetTestInOwnThread : boolean;
 begin
   result := FTestInOwnThread;
 end;
 
-function TDUnitXTestFixture.GetTests: ITestList;
+function TDUnitXTestFixture.GetTests : ITestList;
 begin
   result := FTests;
 end;
 
-function TDUnitXTestFixture.GetUnitName: string;
+function TDUnitXTestFixture.GetUnitName : string;
 begin
   result := FUnitName;
 end;
@@ -456,11 +454,11 @@ begin
   InternalInitFixtureInstance(false);
 end;
 
-procedure TDUnitXTestFixture.InternalInitFixtureInstance(const isConstructing: boolean);
+procedure TDUnitXTestFixture.InternalInitFixtureInstance(const isConstructing : boolean);
 var
   test : ITest;
 {$IFDEF DELPHI_XE_UP}
-   method : TRttiMethod;
+  method : TRttiMethod;
 {$ENDIF}
 
 begin
@@ -473,9 +471,8 @@ begin
       exit;
     end;
 
-
     FIgnoreFixtureSetup := false;
-    {$IFDEF DELPHI_XE_UP}
+{$IFDEF DELPHI_XE_UP}
     //NOTE: Causes Delphi 2010 to be inconsistent with produced exe. Will sometimes crash with AV when generating fixtures.
     //If there is a parameterless constructor declared then we will use that as the
     //fixture Setup method.
@@ -485,7 +482,7 @@ begin
       FFixtureInstance := method.Invoke(TRttiInstanceType(FFixtureType).MetaclassType, []).AsObject;
     end
     else
-    {$ENDIF}
+{$ENDIF}
       FFixtureInstance := FTestClass.Create;
 
     //Don't do this if we are called from the constructor as it's not needed.
@@ -498,12 +495,12 @@ begin
   end;
 end;
 
-function TDUnitXTestFixture.IsNameSpaceOnly: boolean;
+function TDUnitXTestFixture.IsNameSpaceOnly : boolean;
 begin
   result := FTestClass = TObject;
 end;
 
-function TDUnitXTestFixture.ITestFixtureInfo_GetTests: IList<ITestInfo>;
+function TDUnitXTestFixture.ITestFixtureInfo_GetTests : IList<ITestInfo>;
 var
   test : ITest;
   testInfo : ITestInfo;
@@ -521,19 +518,18 @@ begin
   result := FTestInfos;
 end;
 
-
-procedure TDUnitXTestFixture.OnMethodExecuted(const AMethod: TTestMethod);
+procedure TDUnitXTestFixture.OnMethodExecuted(const AMethod : TTestMethod);
 begin
   if FTearDownFixtureIsDestructor and (TMethod(AMethod).Code = TMethod(FTearDownFixtureMethod).Code) then
-      FFixtureInstance := nil;
+    FFixtureInstance := nil;
 end;
 
-procedure TDUnitXTestFixture.SetEnabled(const value: Boolean);
+procedure TDUnitXTestFixture.SetEnabled(const value : Boolean);
 begin
   FEnabled := value;
 end;
 
-procedure TDUnitXTestFixture.SetSetupFixtureMethod(const AMethodName: string; const AMethod: TTestMethod);
+procedure TDUnitXTestFixture.SetSetupFixtureMethod(const AMethodName : string; const AMethod : TTestMethod);
 begin
   if not FIgnoreFixtureSetup then
   begin
@@ -542,57 +538,61 @@ begin
   end;
 end;
 
-procedure TDUnitXTestFixture.SetSetupTestMethod(const AMethodName: string; const AMethod: TTestMethod);
+procedure TDUnitXTestFixture.SetSetupTestMethod(const AMethodName : string; const AMethod : TTestMethod);
 begin
   FSetupMethodName := AMethodName;
   FSetupMethod := AMethod;
 end;
 
-procedure TDUnitXTestFixture.SetTearDownFixtureMethod(const AMethodName: string; const AMethod: TTestMethod; const AIsDestructor : boolean);
+procedure TDUnitXTestFixture.SetTearDownFixtureMethod(const AMethodName : string; const AMethod : TTestMethod; const AIsDestructor : boolean);
 begin
   FTearDownFixtureMethodName := AMethodName;
   FTearDownFixtureMethod := AMethod;
   FTearDownFixtureIsDestructor := AIsDestructor;
 end;
 
-procedure TDUnitXTestFixture.SetTearDownTestMethod(const AMethodName: string; const AMethod: TTestMethod);
+procedure TDUnitXTestFixture.SetTearDownTestMethod(const AMethodName : string; const AMethod : TTestMethod);
 begin
   FTearDownMethodName := AMethodName;
   FTearDownMethod := AMethod;
 end;
 
-procedure TDUnitXTestFixture.SetTestInOwnThread(const value: Boolean);
+procedure TDUnitXTestFixture.SetTestInOwnThread(const value : Boolean);
 begin
   FTestInOwnThread := value;
 end;
 
-function TDUnitXTestFixture.AddChildFixture(const ATestClass: TClass; const AName: string; const ACategory : string): ITestFixture;
+function TDUnitXTestFixture.AddChildFixture(const ATestClass : TClass; const AName : string; const ACategory : string) : ITestFixture;
 begin
-  result := TDUnitXTestFixture.Create(AName,ACategory, ATestClass,ATestClass.UnitName);
+  result := TDUnitXTestFixture.Create(AName, ACategory, ATestClass, ATestClass.UnitName);
   if FChildren = nil then
     FChildren := TTestFixtureList.Create;
   FChildren.Add(result);
 end;
 
-function TDUnitXTestFixture.AddChildFixture(const AInstance: TObject; const AName: string; const ACategory : string): ITestFixture;
+function TDUnitXTestFixture.AddChildFixture(const AInstance : TObject; const AName : string; const ACategory : string) : ITestFixture;
 begin
-  result := TDUnitXTestFixture.Create(AName,ACategory, AInstance,AInstance.ClassType.UnitName);
+  result := TDUnitXTestFixture.Create(AName, ACategory, AInstance, AInstance.ClassType.UnitName);
   if FChildren = nil then
     FChildren := TTestFixtureList.Create;
   FChildren.Add(result);
 end;
 
-function TDUnitXTestFixture.AddTest(const AMethodName : string; const AMethod : TTestMethod; const AName : string; const ACategory  : string; const ARttiMethod : TRttiMethod; const AEnabled : boolean;const AIgnored : boolean; const AIgnoreReason : string; const AMaxTime :cardinal; const AExpectedException: ExceptClass; const AExceptionInheritance: TExceptionInheritance): ITest;
+function TDUnitXTestFixture.AddTest(const AMethodName : string; const AMethod : TTestMethod; const AName : string; const ACategory : string; const ARttiMethod
+  : TRttiMethod; const AEnabled : boolean; const AIgnored : boolean; const AIgnoreReason : string; const AMaxTime : cardinal; const AExpectedException :
+  ExceptClass; const AExceptionInheritance : TExceptionInheritance) : ITest;
 begin
   if AExpectedException = nil then
-    result  := TDUnitXTest.Create(Self, AMethodName, AName, ACategory, AMethod, AEnabled, AIgnored, AIgnoreReason, AMaxTime)
+    result := TDUnitXTest.Create(Self, AMethodName, AName, ACategory, AMethod, AEnabled, AIgnored, AIgnoreReason, AMaxTime)
   else
-    result  := TDUnitXExceptionTest.Create(Self, AMethodName, AName, ACategory, AMethod, AEnabled, AIgnored, AIgnoreReason, AMaxTime, AExpectedException, AExceptionInheritance);
+    result := TDUnitXExceptionTest.Create(Self, AMethodName, AName, ACategory, AMethod, AEnabled, AIgnored, AIgnoreReason, AMaxTime, AExpectedException,
+      AExceptionInheritance);
   result.IgnoreMemoryLeaks := GetIgnoreMemoryLeaksForMethod(ARttiMethod);
   FTests.Add(Result);
 end;
 
-function TDUnitXTestFixture.AddTestCase(const AMethodName : string; const ACaseName, AName: string; const ACategory  : string;const AMethod: TRttiMethod; const AEnabled: boolean; const AArgs: TValueArray): ITest;
+function TDUnitXTestFixture.AddTestCase(const AMethodName : string; const ACaseName, AName : string; const ACategory : string; const AMethod : TRttiMethod;
+  const AEnabled : boolean; const AArgs : TValueArray) : ITest;
 begin
   result := TDUnitXTestCase.Create(FFixtureInstance, Self, AMethodName, ACaseName, AName, ACategory, AMethod, AEnabled, AArgs);
   result.IgnoreMemoryLeaks := GetIgnoreMemoryLeaksForMethod(AMethod);
@@ -609,29 +609,29 @@ begin
   FRttiContext.Free;
 end;
 
-
-constructor TDUnitXTestFixture.Create(const AName: string; const ACategory : string; const AInstance: TObject; const AUnitName : string);
+constructor TDUnitXTestFixture.Create(const AName : string; const ACategory : string; const AInstance : TObject; const AUnitName : string);
 begin
   FFixtureInstance := AInstance;
-  Create(AName, ACategory, AInstance.ClassType,AUnitName);
+  Create(AName, ACategory, AInstance.ClassType, AUnitName);
 end;
 
-function TDUnitXTestFixture.CreateTestFromMethod(const AMethod: TRttiMethod; const ACategory : string;  const ATestEnabled, AIgnored: Boolean; const AIgnoredReason: String): ITest;
+function TDUnitXTestFixture.CreateTestFromMethod(const AMethod : TRttiMethod; const ACategory : string; const ATestEnabled, AIgnored : Boolean; const
+  AIgnoredReason : string) : ITest;
 var
   Meth : TMethod;
 begin
   meth.Code := AMethod.CodeAddress;
   meth.Data := FFixtureInstance;
-  result  := TDUnitXTest.Create(Self, AMethod.Name, AMethod.Name, ACategory, TTestMethod(meth),ATestEnabled,AIgnored,AIgnoredReason);
+  result := TDUnitXTest.Create(Self, AMethod.Name, AMethod.Name, ACategory, TTestMethod(meth), ATestEnabled, AIgnored, AIgnoredReason);
   result.IgnoreMemoryLeaks := GetIgnoreMemoryLeaksForMethod(AMethod);
 end;
 
-function TDUnitXTestFixture.CreateTestFromTestCase(const ACaseInfo : TestCaseInfo; const ACategory : string;  const AMethod : TRttiMethod; const ATestEnabled : Boolean) : ITest;
+function TDUnitXTestFixture.CreateTestFromTestCase(const ACaseInfo : TestCaseInfo; const ACategory : string; const AMethod : TRttiMethod; const ATestEnabled :
+  Boolean) : ITest;
 begin
-  result := TDUnitXTestCase.Create(FFixtureInstance, Self, AMethod.Name, ACaseInfo.Name,  AMethod.Name, ACategory, AMethod, ATestEnabled, ACaseInfo.Values);
+  result := TDUnitXTestCase.Create(FFixtureInstance, Self, AMethod.Name, ACaseInfo.Name, AMethod.Name, ACategory, AMethod, ATestEnabled, ACaseInfo.Values);
   result.IgnoreMemoryLeaks := getIgnoreMemoryLeaksForMethod(AMethod);
 end;
-
 
 end.
 

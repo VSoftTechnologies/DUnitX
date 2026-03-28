@@ -38,33 +38,32 @@ uses
   DUnitX.Extensibility,
   DUnitX.Filters;
 
-
 type
   /// <summary>
-	/// CategoryExpression parses strings representing boolean
-	/// combinations of categories according to the following
-	/// grammar:
-	///   CategoryName ::= string not containing any of ',', '&', '+', '-'
-	///   CategoryFilter ::= CategoryName | CategoryFilter ',' CategoryName
-	///   CategoryPrimitive ::= CategoryFilter | '-' CategoryPrimitive
-	///   CategoryTerm ::= CategoryPrimitive | CategoryTerm '&' CategoryPrimitive
-	/// </summary>
+  /// CategoryExpression parses strings representing boolean
+  /// combinations of categories according to the following
+  /// grammar:
+  ///   CategoryName ::= string not containing any of ',', '&', '+', '-'
+  ///   CategoryFilter ::= CategoryName | CategoryFilter ',' CategoryName
+  ///   CategoryPrimitive ::= CategoryFilter | '-' CategoryPrimitive
+  ///   CategoryTerm ::= CategoryPrimitive | CategoryTerm '&' CategoryPrimitive
+  /// </summary>
   TCategoryExpression = class
   private
     FText : string;
-    FNext  : integer;
+    FNext : integer;
     FToken : string;
     FFilter : ITestFilter;
   protected
-    function GetTerm: ITestFilter;
-    function GetExpression: ITestFilter;
-    function GetCategoryFilter: ICategoryFilter;
-    function GetPrimitive: ITestFilter;
-    function GetToken: string;
-    function NextIsOperator: boolean;
+    function GetTerm : ITestFilter;
+    function GetExpression : ITestFilter;
+    function GetCategoryFilter : ICategoryFilter;
+    function GetPrimitive : ITestFilter;
+    function GetToken : string;
+    function NextIsOperator : boolean;
     procedure SkipWhiteSpace;
     function EndOfText : boolean;
-    function GetFilter: ITestFilter;
+    function GetFilter : ITestFilter;
     constructor Create(const text : string);
   public
     class function CreateFilter(const text : string) : ITestFilter;
@@ -74,30 +73,30 @@ implementation
 
 uses
   DUnitX.Constants,
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.Character,
   System.SysUtils,
   System.StrUtils;
-  {$ELSE}
+{$ELSE}
   Character,
   SysUtils,
   StrUtils;
-  {$ENDIF}
+{$ENDIF}
 
 const
-  Operators : array[1..7] of Char = (',', ';', '-', '|', '+', '(', ')') ;
-{ TCategoryExpression }
+  Operators         : array[1..7] of Char = (',', ';', '-', '|', '+', '(', ')');
+  { TCategoryExpression }
 
-constructor TCategoryExpression.Create(const text: string);
+constructor TCategoryExpression.Create(const text : string);
 begin
   FText := text;
-  if FText <> ''then
+  if FText <> '' then
     FNext := MinStringOffset
   else
-    FNext := MaxInt - MaxStringOffset; //force end of text
+    FNext := MaxInt - MaxStringOffset;  //force end of text
 end;
 
-class function TCategoryExpression.CreateFilter(const text : string): ITestFilter;
+class function TCategoryExpression.CreateFilter(const text : string) : ITestFilter;
 var
   expr : TCategoryExpression;
 begin
@@ -110,17 +109,17 @@ begin
 end;
 
 {$IFNDEF NEXTGEN}
-function IndexOfAny(const value : string; const AnyOf: array of Char; StartIndex : Integer): Integer;
+function IndexOfAny(const value : string; const AnyOf : array of Char; StartIndex : Integer) : Integer;
 var
   i, j : Integer;
-  c: Char;
-  Max: Integer;
+  c : Char;
+  Max : Integer;
 begin
   Max := Length(value);
   i := StartIndex;
   while i < Max do
   begin
-    for j := 0 to Length(AnyOf) -1 do
+    for j := 0 to Length(AnyOf) - 1 do
     begin
       c := AnyOf[j];
       if value[i] = c then
@@ -139,8 +138,8 @@ begin
   result := GetTerm;
   if FToken <> '|' then
     exit;
-	orFilter := TOrFilter.Create(result);
-  while FToken = '|'  do
+  orFilter := TOrFilter.Create(result);
+  while FToken = '|' do
   begin
     GetToken();
     orFilter.Add(GetTerm());
@@ -155,12 +154,12 @@ var
   tok : string;
 begin
   prim := GetPrimitive;
-  if ( FToken <> '+') and (FToken <> '-' ) then
+  if (FToken <> '+') and (FToken <> '-') then
     exit(prim);
 
   filter := TAndFilter.Create(prim);
 
-  while ( FToken = '+') or (FToken = '-' ) do
+  while (FToken = '+') or (FToken = '-') do
   begin
     tok := FToken;
     GetToken();
@@ -174,7 +173,6 @@ begin
   result := filter;
 end;
 
-
 function TCategoryExpression.GetPrimitive : ITestFilter;
 begin
   if FToken = '-' then
@@ -185,31 +183,28 @@ begin
   end
   else if FToken = '(' then
   begin
-    GetToken; // Skip (
+    GetToken;                           // Skip (
     result := GetExpression;
-    GetToken(); // Skip ')'
+    GetToken();                         // Skip ')'
     exit;
   end;
 
   result := GetCategoryFilter;
 end;
 
-
-
-function  TCategoryExpression.GetCategoryFilter : ICategoryFilter;
+function TCategoryExpression.GetCategoryFilter : ICategoryFilter;
 begin
   result := TCategoryFilter.Create(FToken);
-  while( (GetToken = ',') or (FToken = ';' )) do
+  while ((GetToken = ',') or (FToken = ';')) do
     result.Add(GetToken);
 end;
 
-
 function TCategoryExpression.GetToken : string;
 var
-  idx   : integer;
+  idx : integer;
 begin
   SkipWhiteSpace;
-  {$IFDEF NEXTGEN}
+{$IFDEF NEXTGEN}
   if EndOfText then
     FToken := string.Empty
   else if NextIsOperator then
@@ -226,7 +221,7 @@ begin
     FToken := FText.Substring(FNext, idx - FNext).TrimRight;
     FNext := idx;
   end;
-  {$ELSE}
+{$ELSE}
   if EndOfText then
     FToken := ''
   else if NextIsOperator then
@@ -237,30 +232,30 @@ begin
   else
   begin
     idx := IndexOfAny(FText, Operators, FNext);
-    if idx < 0  then
-       idx := Length(FText) + 1;
+    if idx < 0 then
+      idx := Length(FText) + 1;
 
-    FToken := TrimRight(Copy(FText,FNext, idx - FNext));
+    FToken := TrimRight(Copy(FText, FNext, idx - FNext));
     FNext := idx;
   end;
-  {$ENDIF}
+{$ENDIF}
   result := FToken;
 end;
 
 function TCategoryExpression.EndOfText : boolean;
 begin
-	 result :=  FNext > Length(FText) - MaxStringOffset;
+  result := FNext > Length(FText) - MaxStringOffset;
 end;
 
 procedure TCategoryExpression.SkipWhiteSpace;
 begin
-  {$IFDEF NEXTGEN}
-  while( (FNext < (FText.Length - 1)) and FText.Chars[FNext].IsWhiteSpace ) do
+{$IFDEF NEXTGEN}
+  while ((FNext < (FText.Length - 1)) and FText.Chars[FNext].IsWhiteSpace) do
     Inc(FNext);
-  {$ELSE}
-  while( (FNext < Length(Ftext)) and {$IFDEF DELPHI_XE4_UP}FText[FNext].IsWhiteSpace{$ELSE}TCharacter.IsWhiteSpace(FText[FNext]){$ENDIF} ) do
+{$ELSE}
+  while ((FNext < Length(Ftext)) and {$IFDEF DELPHI_XE4_UP}FText[FNext].IsWhiteSpace{$ELSE}TCharacter.IsWhiteSpace(FText[FNext]){$ENDIF}) do
     Inc(FNext);
-  {$ENDIF}
+{$ENDIF}
 end;
 
 function TCategoryExpression.NextIsOperator : boolean;
@@ -272,17 +267,17 @@ begin
   begin
     for op in Operators do
     begin
-      {$IFDEF NEXTGEN}
+{$IFDEF NEXTGEN}
       if FText.Chars[FNext] = op then
-      {$ELSE}
+{$ELSE}
       if FText[FNext] = op then
-      {$ENDIF}
+{$ENDIF}
         Exit(true);
     end;
   end;
 end;
 
-function TCategoryExpression.GetFilter: ITestFilter;
+function TCategoryExpression.GetFilter : ITestFilter;
 begin
   if FFilter <> nil then
     exit(FFilter);
@@ -295,3 +290,4 @@ begin
 end;
 
 end.
+

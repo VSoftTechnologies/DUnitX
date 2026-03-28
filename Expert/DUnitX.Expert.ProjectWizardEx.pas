@@ -32,39 +32,39 @@ interface
 
 uses
   ToolsApi,
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   VCL.Graphics,
-  {$ELSE}
+{$ELSE}
   Graphics,
-  {$ENDIF}
-  {$IFDEF DELPHI_XE103_UP}
+{$ENDIF}
+{$IFDEF DELPHI_XE103_UP}
   PlatformConst
-  {$ELSE}
+{$ELSE}
   PlatformAPI
-  {$ENDIF}
+{$ENDIF}
   ;
 
 type
   TDUnitXNewProjectWizard = class
   public
-    class procedure RegisterDUnitXProjectWizard(const APersonality: string);
+    class procedure RegisterDUnitXProjectWizard(const APersonality : string);
   end;
 
 implementation
 
 uses
   DccStrs,
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   Vcl.Controls,
   Vcl.Forms,
   WinApi.Windows,
   System.SysUtils,
-  {$ELSE}
+{$ELSE}
   Controls,
   Forms,
   Windows,
   SysUtils,
-  {$ENDIF}
+{$ENDIF}
   DUnitX.Expert.Forms.NewProjectWizard,
   DUnitX.Expert.CodeGen.NewTestProject,
   DUnitX.Expert.CodeGen.NewTestUnit,
@@ -74,61 +74,63 @@ resourcestring
   sNewTestProjectCaption = 'DUnitX Project';
   sNewTestProjectHint = 'Create New DUnitX Test Project';
 
-{ TDUnitXNewProjectWizard }
+  { TDUnitXNewProjectWizard }
 
-class procedure TDUnitXNewProjectWizard.RegisterDUnitXProjectWizard(const APersonality: string);
+class procedure TDUnitXNewProjectWizard.RegisterDUnitXProjectWizard(const APersonality : string);
 begin
   RegisterPackageWizard(TExpertsRepositoryProjectWizardWithProc.Create(APersonality,
-    sNewTestProjectHint, sNewTestProjectCaption, 'DunitX.Wizard.NewProjectWizard',  // do not localize
-    'DUnitX', 'DUnitX Team - https://github.com/VSoftTechnologies/DUnitX', // do not localize
-    procedure
-    var
-      WizardForm     : TfrmDunitXNewProject;
-      ModuleServices : IOTAModuleServices;
-      Project        : IOTAProject;
-      Config         : IOTABuildConfiguration;
-      TestUnit       : IOTAModule;
-    begin
-      WizardForm := TfrmDunitXNewProject.Create(Application);
-      try
-        if WizardForm.ShowModal = mrOk then
-        begin
-          if not WizardForm.AddToProjectGroup then
+      sNewTestProjectHint, sNewTestProjectCaption, 'DunitX.Wizard.NewProjectWizard', // do not localize
+      'DUnitX', 'DUnitX Team - https://github.com/VSoftTechnologies/DUnitX', // do not localize
+      procedure
+      var
+        WizardForm : TfrmDunitXNewProject;
+        ModuleServices : IOTAModuleServices;
+        Project : IOTAProject;
+        Config : IOTABuildConfiguration;
+        TestUnit : IOTAModule;
+      begin
+        WizardForm := TfrmDunitXNewProject.Create(Application);
+        try
+          if WizardForm.ShowModal = mrOk then
           begin
-            (BorlandIDEServices as IOTAModuleServices).CloseAll;
+            if not WizardForm.AddToProjectGroup then
+            begin
+              (BorlandIDEServices as IOTAModuleServices).CloseAll;
+            end;
+            ModuleServices := (BorlandIDEServices as IOTAModuleServices);
+            // Create Project Source
+            ModuleServices.CreateModule(TTestProjectFile.Create(APersonality, WizardForm.ReportLeakOption));
+            Project := GetActiveProject;
+            Config := (Project.ProjectOptions as IOTAProjectOptionsConfigurations).BaseConfiguration;
+            Config.SetValue(sUnitSearchPath, '$(DUnitX)');
+            // Create Test Unit
+            if WizardForm.CreateTestUnit then
+            begin
+              TestUnit := ModuleServices.CreateModule(
+                TNewTestUnit.Create(WizardForm.CreateSetupTearDownMethods,
+                  WizardForm.CreateSampleMethods,
+                  WizardForm.TestFixtureClasaName,
+                  APersonality));
+              if Project <> nil then
+                Project.AddFile(TestUnit.FileName, true);
+            end;
           end;
-          ModuleServices := (BorlandIDEServices as IOTAModuleServices);
-          // Create Project Source
-          ModuleServices.CreateModule(TTestProjectFile.Create(APersonality, WizardForm.ReportLeakOption));
-          Project :=  GetActiveProject;
-          Config := (Project.ProjectOptions as IOTAProjectOptionsConfigurations).BaseConfiguration;
-          Config.SetValue(sUnitSearchPath,'$(DUnitX)');
-          // Create Test Unit
-          if WizardForm.CreateTestUnit then
-          begin
-             TestUnit := ModuleServices.CreateModule(
-                           TNewTestUnit.Create(WizardForm.CreateSetupTearDownMethods,
-                                               WizardForm.CreateSampleMethods,
-                                               WizardForm.TestFixtureClasaName,
-                                               APersonality));
-             if Project <> nil then
-               Project.AddFile(TestUnit.FileName,true);
-          end;
+        finally
+          WizardForm.Free;
         end;
-      finally
-        WizardForm.Free;
-      end;
-    end,
-    function: Cardinal
-    begin
-      Result := LoadIcon(HInstance,'DUnitXNewProjectIcon');
-    end,
-    {$IFDEF DELPHI_XE103_UP}
-    GetAllPlatforms,
-    {$ELSE}
-    TArray<string>.Create(cWin32Platform, cWin64Platform, cOSX32Platform, cAndroidPlatform, ciOSSimulatorPlatform, ciOSDevice32Platform, ciOSDevice64Platform),
-    {$ENDIF}
-    nil));
+      end,
+      function : Cardinal
+      begin
+        Result := LoadIcon(HInstance, 'DUnitXNewProjectIcon');
+      end,
+{$IFDEF DELPHI_XE103_UP}
+      GetAllPlatforms,
+{$ELSE}
+      TArray<string>.Create(cWin32Platform, cWin64Platform, cOSX32Platform, cAndroidPlatform, ciOSSimulatorPlatform, ciOSDevice32Platform,
+        ciOSDevice64Platform),
+{$ENDIF}
+      nil));
 end;
 
 end.
+

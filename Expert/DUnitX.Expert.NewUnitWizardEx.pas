@@ -32,26 +32,25 @@ interface
 
 uses
   ToolsApi,
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   VCL.Graphics,
-  {$ELSE}
+{$ELSE}
   Graphics,
-  {$ENDIF}
-  {$IFDEF DELPHI_XE103_UP}
+{$ENDIF}
+{$IFDEF DELPHI_XE103_UP}
   PlatformConst
-  {$ELSE}
+{$ELSE}
   PlatformAPI
-  {$ENDIF}
+{$ENDIF}
   ;
 
 type
   TDUnitXNewUnitWizard = class
   public
-    class procedure RegisterDUnitXNewUnitWizard(const APersonality: string);
+    class procedure RegisterDUnitXNewUnitWizard(const APersonality : string);
   end;
 
 implementation
-
 
 uses
   DUnitX.Expert.Forms.NewUnitWizard,
@@ -62,51 +61,53 @@ uses
   ExpertsRepository;
 
 resourcestring
- sNewTestUnitCaption = 'DUnitX Unit';
- sNewTestProjectHint = 'Create New DUnitX Test Unit';
+  sNewTestUnitCaption = 'DUnitX Unit';
+  sNewTestProjectHint = 'Create New DUnitX Test Unit';
 
-{ TDUnitXNewUnitWizard }
+  { TDUnitXNewUnitWizard }
 
-class procedure TDUnitXNewUnitWizard.RegisterDUnitXNewUnitWizard(const APersonality: string);
+class procedure TDUnitXNewUnitWizard.RegisterDUnitXNewUnitWizard(const APersonality : string);
 begin
   RegisterPackageWizard(TExpertsRepositoryProjectWizardWithProc.Create(APersonality,
-    sNewTestProjectHint, sNewTestUnitCaption, 'DunitX.Wizard.NewUnitWizard',  // do not localize
-    'DUnitX', 'DUnitX Team - https://github.com/VSoftTechnologies/DUnitX', // do not localize
-    procedure
-    var
-      WizardForm     : TfrmDunitXNewUnit;
-      ModuleServices : IOTAModuleServices;
-      Project        : IOTAProject;
-      TestUnit       : IOTAModule;
-    begin
-      WizardForm := TfrmDunitXNewUnit.Create(Application);
-      try
-        if WizardForm.ShowModal = mrOk then
-        begin
-          ModuleServices := (BorlandIDEServices as IOTAModuleServices);
-          Project :=  GetActiveProject;
-          TestUnit := ModuleServices.CreateModule(
-                           TNewTestUnit.Create(WizardForm.CreateSetupTearDownMethods,
-                                               WizardForm.CreateSampleMethods,
-                                               WizardForm.TestFixtureClasaName,
-                                               APersonality));
-          if Project <> nil then
-            Project.AddFile(TestUnit.FileName,true);
+      sNewTestProjectHint, sNewTestUnitCaption, 'DunitX.Wizard.NewUnitWizard', // do not localize
+      'DUnitX', 'DUnitX Team - https://github.com/VSoftTechnologies/DUnitX', // do not localize
+      procedure
+      var
+        WizardForm : TfrmDunitXNewUnit;
+        ModuleServices : IOTAModuleServices;
+        Project : IOTAProject;
+        TestUnit : IOTAModule;
+      begin
+        WizardForm := TfrmDunitXNewUnit.Create(Application);
+        try
+          if WizardForm.ShowModal = mrOk then
+          begin
+            ModuleServices := (BorlandIDEServices as IOTAModuleServices);
+            Project := GetActiveProject;
+            TestUnit := ModuleServices.CreateModule(
+              TNewTestUnit.Create(WizardForm.CreateSetupTearDownMethods,
+                WizardForm.CreateSampleMethods,
+                WizardForm.TestFixtureClasaName,
+                APersonality));
+            if Project <> nil then
+              Project.AddFile(TestUnit.FileName, true);
+          end;
+        finally
+          WizardForm.Free;
         end;
-      finally
-        WizardForm.Free;
-      end;
-    end,
-    function: Cardinal
-    begin
-      Result := LoadIcon(HInstance,'DUnitXNewUnitIcon');
-    end,
-    {$IFDEF DELPHI_XE103_UP}
-    GetAllPlatforms,
-    {$ELSE}
-    TArray<string>.Create(cWin32Platform, cWin64Platform, cOSX32Platform, cAndroidPlatform, ciOSSimulatorPlatform, ciOSDevice32Platform, ciOSDevice64Platform),
-    {$ENDIF}
-    nil));
- end;
+      end,
+      function : Cardinal
+      begin
+        Result := LoadIcon(HInstance, 'DUnitXNewUnitIcon');
+      end,
+{$IFDEF DELPHI_XE103_UP}
+      GetAllPlatforms,
+{$ELSE}
+      TArray<string>.Create(cWin32Platform, cWin64Platform, cOSX32Platform, cAndroidPlatform, ciOSSimulatorPlatform, ciOSDevice32Platform,
+        ciOSDevice64Platform),
+{$ENDIF}
+      nil));
+end;
 
 end.
+

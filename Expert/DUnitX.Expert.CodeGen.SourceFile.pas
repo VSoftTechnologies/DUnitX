@@ -31,43 +31,41 @@ interface
 {$I DUnitX.inc}
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.SysUtils,
   System.Classes,
   ToolsAPI;
-  {$ELSE}
+{$ELSE}
   SysUtils,
   Classes,
   ToolsAPI;
-  {$ENDIF}
-
+{$ENDIF}
 
 type
   TSourceFile = class(TInterfacedObject, IOTAFile)
   private
-    FSource: string;
+    FSource : string;
   public
-    function GetSource: string;
-    function GetAge: TDateTime;
-    constructor Create(const Source: string; const Args: array of const );
+    function GetSource : string;
+    function GetAge : TDateTime;
+    constructor Create(const Source : string; const Args : array of const);
   end;
 
 implementation
 
 { TSourceFile }
 
-constructor TSourceFile.Create(const Source: string;
-  const Args: array of const );
+constructor TSourceFile.Create(const Source : string; const Args : array of const);
 begin
   FSource := Format(Source, Args);
 end;
 
-function TSourceFile.GetAge: TDateTime;
+function TSourceFile.GetAge : TDateTime;
 begin
   result := now;
 end;
 
-function TSourceFile.GetSource: string;
+function TSourceFile.GetSource : string;
 begin
   result := FSource;
 end;

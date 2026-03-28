@@ -44,14 +44,12 @@ uses
   DUnitX.TestFramework;
 
 type
-  TMadExcept5StackTraceProvider = class(TInterfacedObject,IStacktraceProvider)
+  TMadExcept5StackTraceProvider = class(TInterfacedObject, IStacktraceProvider)
   public
-    function GetStackTrace(const ex: Exception; const exAddressAddress: Pointer): string;
-    function PointerToLocationInfo(const Addrs: Pointer): string;
-    function PointerToAddressInfo(Addrs: Pointer): string;
+    function GetStackTrace(const ex : Exception; const exAddressAddress : Pointer) : string;
+    function PointerToLocationInfo(const Addrs : Pointer) : string;
+    function PointerToAddressInfo(Addrs : Pointer) : string;
   end;
-
-
 
 implementation
 
@@ -60,47 +58,48 @@ uses
 
 { TMadExcept5StackTraceProvider }
 
-function TMadExcept5StackTraceProvider.GetStackTrace(const ex: Exception; const exAddressAddress: Pointer): string;
+function TMadExcept5StackTraceProvider.GetStackTrace(const ex : Exception; const exAddressAddress : Pointer) : string;
 begin
   result := '';
-  {$IFDEF USE_MADEXCEPT5}
-  Result := madStackTrace.StackTrace( false, false, false, nil, nil,
-                                           exAddressAddress, false,
-                                           false, 0, 0, nil,
-                                           @exAddressAddress);
-  {$ENDIF}
+{$IFDEF USE_MADEXCEPT5}
+  Result := madStackTrace.StackTrace(false, false, false, nil, nil,
+    exAddressAddress, false,
+    false, 0, 0, nil,
+    @exAddressAddress);
+{$ENDIF}
 end;
 
-function TMadExcept5StackTraceProvider.PointerToAddressInfo(Addrs: Pointer): string;
+function TMadExcept5StackTraceProvider.PointerToAddressInfo(Addrs : Pointer) : string;
 begin
   Result := '';
-  {$IFDEF USE_MADEXCEPT5}
-  Result := String(StackAddrToStr(Addrs));
-  {$ENDIF}
+{$IFDEF USE_MADEXCEPT5}
+  Result := string(StackAddrToStr(Addrs));
+{$ENDIF}
 end;
 
-function TMadExcept5StackTraceProvider.PointerToLocationInfo(const Addrs: Pointer): string;
+function TMadExcept5StackTraceProvider.PointerToLocationInfo(const Addrs : Pointer) : string;
 begin
-   Result := '';
-  {$IFDEF USE_MADEXCEPT5}
-  Result := String(StackAddrToStr(Addrs));
-  {$ENDIF}
+  Result := '';
+{$IFDEF USE_MADEXCEPT5}
+  Result := string(StackAddrToStr(Addrs));
+{$ENDIF}
 end;
 
 initialization
 {$IFDEF USE_MADEXCEPT5}
 
-  {$IFDEF DELPHI_XE_UP}
-    TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider,TMadExcept5StackTraceProvider>(true);
-  {$ELSE}
-    //D2010 bug prevents using above method.
-    TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider>(true,
-     function : IStacktraceProvider
-        begin
-          result := TMadExcept5StackTraceProvider.Create;
-        end
-     );
-  {$ENDIF}
+{$IFDEF DELPHI_XE_UP}
+  TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider, TMadExcept5StackTraceProvider>(true);
+{$ELSE}
+  //D2010 bug prevents using above method.
+  TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider>(true,
+    function : IStacktraceProvider
+    begin
+      result := TMadExcept5StackTraceProvider.Create;
+    end
+    );
+{$ENDIF}
 {$ENDIF}
 
 end.
+

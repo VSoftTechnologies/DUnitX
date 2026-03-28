@@ -35,7 +35,7 @@ uses
   System.Actions, FMX.ActnList, FMX.Layouts, FMX.TreeView, FMX.Edit,
   DUnitX.TestFramework, DUnitX.Extensibility, DUnitX.InternalInterfaces, FMX.ListView.Types, FMX.ListView.Appearances,
   FMX.ListView, FMX.ListBox, System.Generics.Collections, FMX.Memo, FMX.ScrollBox, FMX.Controls.Presentation, System.IniFiles,
-  FMX.ListView.Adapters.Base;
+  FMX.ListView.Adapters.Base, FMX.Memo.Types;
 
 {$HPPEMIT '#if defined(USEPACKAGES)'}
 {$HPPEMIT '# pragma comment(lib, "Fmx.bpi")'}
@@ -47,124 +47,122 @@ uses
 
 type
   TGUIXTestRunner = class(TForm, ITestLogger)
-    TopPanel: TPanel;
-    TestActions: TActionList;
-    Run: TAction;
-    ToolBar1: TToolBar;
-    Button1: TButton;
-    Panel1: TPanel;
-    TestTree: TTreeView;
-    GridPanelLayout1: TGridPanelLayout;
-    FailList: TListView;
-    Panel2: TPanel;
-    Label1: TLabel;
-    Label2: TLabel;
-    SuccessTests: TLabel;
-    TotalRuns: TLabel;
-    Label5: TLabel;
-    FailTests: TLabel;
-    MemoryLeakedLabel: TLabel;
-    MemoryLeaked: TLabel;
-    TestRunnerProgress: TProgressBar;
-    Splitter1: TSplitter;
-    FailTestDetailPanel: TPanel;
-    StackTrace: TMemo;
-    Label3: TLabel;
-    Label4: TLabel;
-    FailTestName: TLabel;
-    FailTestStartTime: TLabel;
-    Label7: TLabel;
-    FailTestFinishTime: TLabel;
-    Label6: TLabel;
-    FailTestMessage: TMemo;
-    Label8: TLabel;
-    SelectFailedButton: TButton;
-    procedure FormCreate(Sender: TObject);
-    procedure FormShow(Sender: TObject);
-    procedure RunExecute(Sender: TObject);
-    procedure FormDestroy(Sender: TObject);
-    procedure FailListItemClick(const Sender: TObject;
-      const AItem: TListViewItem);
-    procedure TestTreeChangeCheck(Sender: TObject);
-    procedure SelectFailedButtonClick(Sender: TObject);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    TopPanel : TPanel;
+    TestActions : TActionList;
+    Run : TAction;
+    ToolBar1 : TToolBar;
+    Button1 : TButton;
+    Panel1 : TPanel;
+    TestTree : TTreeView;
+    GridPanelLayout1 : TGridPanelLayout;
+    FailList : TListView;
+    Panel2 : TPanel;
+    Label1 : TLabel;
+    Label2 : TLabel;
+    SuccessTests : TLabel;
+    TotalRuns : TLabel;
+    Label5 : TLabel;
+    FailTests : TLabel;
+    MemoryLeakedLabel : TLabel;
+    MemoryLeaked : TLabel;
+    TestRunnerProgress : TProgressBar;
+    Splitter1 : TSplitter;
+    FailTestDetailPanel : TPanel;
+    StackTrace : TMemo;
+    Label3 : TLabel;
+    Label4 : TLabel;
+    FailTestName : TLabel;
+    FailTestStartTime : TLabel;
+    Label7 : TLabel;
+    FailTestFinishTime : TLabel;
+    Label6 : TLabel;
+    FailTestMessage : TMemo;
+    Label8 : TLabel;
+    SelectFailedButton : TButton;
+    procedure FormCreate(Sender : TObject);
+    procedure FormShow(Sender : TObject);
+    procedure RunExecute(Sender : TObject);
+    procedure FormDestroy(Sender : TObject);
+    procedure FailListItemClick(const Sender : TObject;
+      const AItem : TListViewItem);
+    procedure TestTreeChangeCheck(Sender : TObject);
+    procedure SelectFailedButtonClick(Sender : TObject);
+    procedure FormClose(Sender : TObject; var Action : TCloseAction);
   private
     { Private declarations }
-    FTestRunner: ITestRunner;
-    FFixtureList: ITestFixtureList;
-    FLastResult: IRunResults;
-    FFailedTests: TDictionary<String, ITestResult>;
-    function CreateNode(Owner: TComponent; Test: ITest): TTreeViewItem; overload;
-    function CreateNode(Owner: TComponent; Text: String; TestFullName: String): TTreeViewItem; overload;
-    function GetNode(FullName: String): TTreeViewItem;
-    procedure BuildTree(parentNode: TTreeViewItem; const fixtureList: ITestFixtureList);
+    FTestRunner : ITestRunner;
+    FFixtureList : ITestFixtureList;
+    FLastResult : IRunResults;
+    FFailedTests : TDictionary<string, ITestResult>;
+    function CreateNode(Owner : TComponent; Test : ITest) : TTreeViewItem; overload;
+    function CreateNode(Owner : TComponent; Text : string; TestFullName : string) : TTreeViewItem; overload;
+    function GetNode(FullName : string) : TTreeViewItem;
+    procedure BuildTree(parentNode : TTreeViewItem; const fixtureList : ITestFixtureList);
     procedure BuildEnabledTestList;
-    procedure SaveConfiguration(AIniFile: TCustomIniFile);
+    procedure SaveConfiguration(AIniFile : TCustomIniFile);
   protected
-    procedure OnBeginTest(const threadId: TThreadID; const Test: ITestInfo);
-    procedure OnEndSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
-    procedure OnEndSetupTest(const threadId: TThreadID; const Test: ITestInfo);
-    procedure OnEndTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
-    procedure OnEndTeardownTest(const threadId: TThreadID; const Test: ITestInfo);
-    procedure OnEndTest(const threadId: TThreadID; const Test: ITestResult);
-    procedure OnEndTestFixture(const threadId: TThreadID; const results: IFixtureResult);
-    procedure OnExecuteTest(const threadId: TThreadID; const Test: ITestInfo);
-    procedure OnLog(const logType: TLogLevel; const msg: string);
-    procedure OnSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
-    procedure OnSetupTest(const threadId: TThreadID; const Test: ITestInfo);
-    procedure OnStartTestFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
-    procedure OnTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
-    procedure OnTeardownTest(const threadId: TThreadID; const Test: ITestInfo);
-    procedure OnTestError(const threadId: TThreadID; const Error: ITestError);
-    procedure OnTestFailure(const threadId: TThreadID; const Failure: ITestError);
-    procedure OnTestSuccess(const threadId: TThreadID; const Test: ITestResult);
-    procedure OnTestMemoryLeak(const threadId: TThreadID; const AIgnored: ITestResult);
-    procedure OnTestIgnored(const threadId: TThreadID; const Ignored: ITestResult);
-    procedure OnTestingEnds(const RunResults: IRunResults);
-    procedure OnTestingStarts(const threadId: TThreadID; testCount, testActiveCount: Cardinal);
+    procedure OnBeginTest(const threadId : TThreadID; const Test : ITestInfo);
+    procedure OnEndSetupFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
+    procedure OnEndSetupTest(const threadId : TThreadID; const Test : ITestInfo);
+    procedure OnEndTearDownFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
+    procedure OnEndTeardownTest(const threadId : TThreadID; const Test : ITestInfo);
+    procedure OnEndTest(const threadId : TThreadID; const Test : ITestResult);
+    procedure OnEndTestFixture(const threadId : TThreadID; const results : IFixtureResult);
+    procedure OnExecuteTest(const threadId : TThreadID; const Test : ITestInfo);
+    procedure OnLog(const logType : TLogLevel; const msg : string);
+    procedure OnSetupFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
+    procedure OnSetupTest(const threadId : TThreadID; const Test : ITestInfo);
+    procedure OnStartTestFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
+    procedure OnTearDownFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
+    procedure OnTeardownTest(const threadId : TThreadID; const Test : ITestInfo);
+    procedure OnTestError(const threadId : TThreadID; const Error : ITestError);
+    procedure OnTestFailure(const threadId : TThreadID; const Failure : ITestError);
+    procedure OnTestSuccess(const threadId : TThreadID; const Test : ITestResult);
+    procedure OnTestMemoryLeak(const threadId : TThreadID; const AIgnored : ITestResult);
+    procedure OnTestIgnored(const threadId : TThreadID; const Ignored : ITestResult);
+    procedure OnTestingEnds(const RunResults : IRunResults);
+    procedure OnTestingStarts(const threadId : TThreadID; testCount, testActiveCount : Cardinal);
   public
     { Public declarations }
   end;
 
 var
-  GUIXTestRunner: TGUIXTestRunner;
+  GUIXTestRunner : TGUIXTestRunner;
 
 implementation
 
 uses
   FMX.Objects;
 
-
 type
   TTestNode = class(TTreeViewItem)
   strict private
-    FFullName: String;
-    FImage: TImage;
-    FTest: ITest;
-    FResultType: TTestResultType;
+    FFullName : string;
+    FImage : TImage;
+    FTest : ITest;
+    FResultType : TTestResultType;
   public
-    constructor Create(Owner: TComponent; Test: ITest; Text: String; TestFullName: String); reintroduce;
+    constructor Create(Owner : TComponent; Test : ITest; Text : string; TestFullName : string); reintroduce;
     destructor Destroy; override;
-    property FullName: String read FFullName;
-    property Test: ITest read FTest;
-    property ResultType: TTestResultTYpe read FResultType write FResultType;
-    procedure SetResultType(resultType: TTestResultType);
+    property FullName : string read FFullName;
+    property Test : ITest read FTest;
+    property ResultType : TTestResultTYpe read FResultType write FResultType;
+    procedure SetResultType(resultType : TTestResultType);
     procedure Reload;
   end;
-
-
 
 {$R *.fmx}
 
 const
-  TEST_INI_FILE = 'dunitx.ini';
+  TEST_INI_FILE     = 'dunitx.ini';
 
-{ TGUIXTestRunner }
+  { TGUIXTestRunner }
 
 procedure TGUIXTestRunner.BuildEnabledTestList;
-  procedure SetEnabled(Item: TTreeViewItem);
+
+  procedure SetEnabled(Item : TTreeViewItem);
   var
-    J: Integer;
+    J : Integer;
   begin
     if Assigned(TTestNode(Item).Test) then
       TTestNode(Item).Test.Enabled := Item.IsChecked;
@@ -172,16 +170,16 @@ procedure TGUIXTestRunner.BuildEnabledTestList;
       SetEnabled(Item.Items[J]);
   end;
 var
-  I: Integer;
+  I : Integer;
 begin
   for I := 0 to TestTree.Count - 1 do
     SetEnabled(TestTree.Items[I]);
 end;
 
-procedure TGUIXTestRunner.BuildTree(parentNode: TTreeViewItem;
-  const fixtureList: ITestFixtureList);
+procedure TGUIXTestRunner.BuildTree(parentNode : TTreeViewItem;
+  const fixtureList : ITestFixtureList);
 const
-  DisabledTests = 'DisabledTests';
+  DisabledTests     = 'DisabledTests';
 var
   fixture : ITestFixture;
   test : ITest;
@@ -195,10 +193,12 @@ begin
     begin
       fixtureNode := CreateNode(TestTree, fixture.Name, fixture.FullName);
 
-      if Assigned(parentNode) then begin
+      if Assigned(parentNode) then
+      begin
         fixtureNode.Parent := parentNode;
       end
-      else begin
+      else
+      begin
         fixtureNode.Parent := TestTree;
       end;
 
@@ -217,14 +217,13 @@ begin
   end;
 end;
 
-
-procedure TGUIXTestRunner.SaveConfiguration(AIniFile: TCustomIniFile);
+procedure TGUIXTestRunner.SaveConfiguration(AIniFile : TCustomIniFile);
 const
-  DisabledTests = 'DisabledTests';
+  DisabledTests     = 'DisabledTests';
 
-  procedure WriteValues(Item: TTreeViewItem);
+  procedure WriteValues(Item : TTreeViewItem);
   var
-    J: Integer;
+    J : Integer;
   begin
     if Assigned(TTestNode(Item).Test) and not Item.IsChecked then
       AIniFile.WriteBool(DisabledTests, TTestNode(Item).FullName, False);
@@ -233,7 +232,7 @@ const
   end;
 
 var
-  I: Integer;
+  I : Integer;
 begin
   if AIniFile.SectionExists(DisabledTests) then
     AIniFile.EraseSection(DisabledTests);
@@ -242,39 +241,40 @@ begin
     WriteValues(TestTree.Items[I]);
 end;
 
-procedure TGUIXTestRunner.SelectFailedButtonClick(Sender: TObject);
-  procedure SetChecked(Item: TTreeViewItem);
+procedure TGUIXTestRunner.SelectFailedButtonClick(Sender : TObject);
+
+  procedure SetChecked(Item : TTreeViewItem);
   var
-    J: Integer;
+    J : Integer;
   begin
     if Assigned(TTestNode(Item).Test) then
       Item.IsChecked := (TTestNode(Item).ResultType = TTestResultType.Failure)
-                        or (TTestNode(Item).ResultType = TTestResultType.Error)
-                        or (TTestNode(Item).ResultType = TTestResultType.MemoryLeak);
+        or (TTestNode(Item).ResultType = TTestResultType.Error)
+        or (TTestNode(Item).ResultType = TTestResultType.MemoryLeak);
     for J := 0 to Item.Count - 1 do
       SetChecked(Item.Items[J]);
   end;
 var
-  I: Integer;
+  I : Integer;
 begin
   for I := 0 to TestTree.Count - 1 do
     SetChecked(TestTree.Items[I]);
 end;
 
-function TGUIXTestRunner.CreateNode(Owner: TComponent; Test: ITest): TTreeViewItem;
+function TGUIXTestRunner.CreateNode(Owner : TComponent; Test : ITest) : TTreeViewItem;
 begin
   Result := TTestNode.Create(Owner, Test, Test.Name, Test.Fixture.FullName + '.' + Test.Name);
 end;
 
-function TGUIXTestRunner.CreateNode(Owner: TComponent; Text: String; TestFullName: String): TTreeViewItem;
+function TGUIXTestRunner.CreateNode(Owner : TComponent; Text : string; TestFullName : string) : TTreeViewItem;
 begin
   Result := TTestNode.Create(Owner, nil, Text, TestFullName);
 end;
 
-procedure TGUIXTestRunner.FailListItemClick(const Sender: TObject;
-  const AItem: TListViewItem);
+procedure TGUIXTestRunner.FailListItemClick(const Sender : TObject;
+  const AItem : TListViewItem);
 var
-  testResult: ITestResult;
+  testResult : ITestResult;
 begin
   testResult := FFailedTests[AItem.Detail];
   FailTestName.Text := testResult.Test.FullName;
@@ -284,9 +284,9 @@ begin
   StackTrace.Text := testResult.StackTrace;
 end;
 
-procedure TGUIXTestRunner.FormClose(Sender: TObject; var Action: TCloseAction);
+procedure TGUIXTestRunner.FormClose(Sender : TObject; var Action : TCloseAction);
 var
-  LIniFile: TCustomIniFile;
+  LIniFile : TCustomIniFile;
 begin
   LIniFile := TMemIniFile.Create(ExtractFilePath(ParamStr(0)) + TEST_INI_FILE);
   try
@@ -297,9 +297,9 @@ begin
   end;
 end;
 
-procedure TGUIXTestRunner.FormCreate(Sender: TObject);
+procedure TGUIXTestRunner.FormCreate(Sender : TObject);
 begin
-  FFailedTests := TDictionary<String, ITestResult>.Create;
+  FFailedTests := TDictionary<string, ITestResult>.Create;
   FTestRunner := TDUnitX.CreateRunner;
   FTestRunner.AddLogger(Self);
   FailTestName.Text := '';
@@ -313,7 +313,7 @@ begin
   MemoryLeaked.Text := '';
 end;
 
-procedure TGUIXTestRunner.FormDestroy(Sender: TObject);
+procedure TGUIXTestRunner.FormDestroy(Sender : TObject);
 begin
   FFailedTests.Free;
   FLastResult := nil;
@@ -321,66 +321,68 @@ begin
   FTestRunner := nil;
 end;
 
-procedure TGUIXTestRunner.FormShow(Sender: TObject);
+procedure TGUIXTestRunner.FormShow(Sender : TObject);
 begin
   FFixtureList := FTestRunner.BuildFixtures as ITestFixtureList;
   BuildTree(nil, FFixtureList);
   TestRunnerProgress.Max := FFixtureList.Count;
 end;
 
-function TGUIXTestRunner.GetNode(FullName: String): TTreeViewItem;
+function TGUIXTestRunner.GetNode(FullName : string) : TTreeViewItem;
 var
-  i: Integer;
+  i : Integer;
 begin
   Result := nil;
   i := 0;
-  repeat begin
-    if (TestTree.ItemByGlobalIndex(i) as TTestNode).FullName = FullName then
-      Result := TestTree.ItemByGlobalIndex(i);
-    Inc(i);
-  end
+  repeat
+    begin
+      if (TestTree.ItemByGlobalIndex(i) as TTestNode).FullName = FullName then
+        Result := TestTree.ItemByGlobalIndex(i);
+      Inc(i);
+    end
   until Assigned(Result) or (i >= TestTree.GlobalCount);
 end;
 
-procedure TGUIXTestRunner.OnBeginTest(const threadId: TThreadID;
-  const Test: ITestInfo);
+procedure TGUIXTestRunner.OnBeginTest(const threadId : TThreadID;
+  const Test : ITestInfo);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnEndSetupFixture(const threadId: TThreadID;
-  const fixture: ITestFixtureInfo);
+procedure TGUIXTestRunner.OnEndSetupFixture(const threadId : TThreadID;
+  const fixture : ITestFixtureInfo);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnEndSetupTest(const threadId: TThreadID;
-  const Test: ITestInfo);
+procedure TGUIXTestRunner.OnEndSetupTest(const threadId : TThreadID;
+  const Test : ITestInfo);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnEndTearDownFixture(const threadId: TThreadID;
-  const fixture: ITestFixtureInfo);
+procedure TGUIXTestRunner.OnEndTearDownFixture(const threadId : TThreadID;
+  const fixture : ITestFixtureInfo);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnEndTeardownTest(const threadId: TThreadID;
-  const Test: ITestInfo);
+procedure TGUIXTestRunner.OnEndTeardownTest(const threadId : TThreadID;
+  const Test : ITestInfo);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnEndTest(const threadId: TThreadID;
-  const Test: ITestResult);
+procedure TGUIXTestRunner.OnEndTest(const threadId : TThreadID;
+  const Test : ITestResult);
 var
-  failItem: TListViewItem;
-  testNode: TTestNode;
+  failItem : TListViewItem;
+  testNode : TTestNode;
 begin
   if (Test.ResultType = TTestResultType.Failure)
     or (Test.ResultType = TTestResultType.Error)
-    or (Test.ResultType = TTestResultType.MemoryLeak) then begin
+    or (Test.ResultType = TTestResultType.MemoryLeak) then
+  begin
     FFailedTests.Add(Test.Test.FullName, Test);
     failItem := FailList.Items.Add;
     failItem.Text := Test.Test.Name;
@@ -389,119 +391,123 @@ begin
 
   testNode := GetNode(Test.Test.FullName) as TTestNode;
 
-  if Assigned(testNode) then begin
+  if Assigned(testNode) then
+  begin
     testNode.SetResultType(Test.ResultType);
   end;
 end;
 
-procedure TGUIXTestRunner.OnEndTestFixture(const threadId: TThreadID;
-  const results: IFixtureResult);
+procedure TGUIXTestRunner.OnEndTestFixture(const threadId : TThreadID;
+  const results : IFixtureResult);
 var
-  fixtureNode: TTestNode;
+  fixtureNode : TTestNode;
 begin
   TestRunnerProgress.Value := TestRunnerProgress.Value + 1;
   fixtureNode := GetNode(results.Fixture.FullName) as TTestNode;
   // I shouldn't call this here !!!
   (results as IFixtureResultBuilder).RollUpResults;
 
-  if Assigned(fixtureNode) then begin
-    if results.HasFailures then begin
+  if Assigned(fixtureNode) then
+  begin
+    if results.HasFailures then
+    begin
       fixtureNode.SetResultType(TTestResultType.Failure);
     end
-    else if results.Errors.Count > 0 then begin
+    else if results.Errors.Count > 0 then
+    begin
       fixtureNode.SetResultType(TTestResultType.Error);
     end
-    else begin
+    else
+    begin
       fixtureNode.SetResultType(TTestResultType.Pass);
     end;
   end;
 
-
 end;
 
-procedure TGUIXTestRunner.OnExecuteTest(const threadId: TThreadID;
-  const Test: ITestInfo);
+procedure TGUIXTestRunner.OnExecuteTest(const threadId : TThreadID;
+  const Test : ITestInfo);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnLog(const logType: TLogLevel; const msg: string);
+procedure TGUIXTestRunner.OnLog(const logType : TLogLevel; const msg : string);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnSetupFixture(const threadId: TThreadID;
-  const fixture: ITestFixtureInfo);
+procedure TGUIXTestRunner.OnSetupFixture(const threadId : TThreadID;
+  const fixture : ITestFixtureInfo);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnSetupTest(const threadId: TThreadID;
-  const Test: ITestInfo);
+procedure TGUIXTestRunner.OnSetupTest(const threadId : TThreadID;
+  const Test : ITestInfo);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnStartTestFixture(const threadId: TThreadID;
-  const fixture: ITestFixtureInfo);
+procedure TGUIXTestRunner.OnStartTestFixture(const threadId : TThreadID;
+  const fixture : ITestFixtureInfo);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnTearDownFixture(const threadId: TThreadID;
-  const fixture: ITestFixtureInfo);
+procedure TGUIXTestRunner.OnTearDownFixture(const threadId : TThreadID;
+  const fixture : ITestFixtureInfo);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnTeardownTest(const threadId: TThreadID;
-  const Test: ITestInfo);
+procedure TGUIXTestRunner.OnTeardownTest(const threadId : TThreadID;
+  const Test : ITestInfo);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnTestError(const threadId: TThreadID;
-  const Error: ITestError);
+procedure TGUIXTestRunner.OnTestError(const threadId : TThreadID;
+  const Error : ITestError);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnTestFailure(const threadId: TThreadID;
-  const Failure: ITestError);
+procedure TGUIXTestRunner.OnTestFailure(const threadId : TThreadID;
+  const Failure : ITestError);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnTestIgnored(const threadId: TThreadID;
-  const Ignored: ITestResult);
+procedure TGUIXTestRunner.OnTestIgnored(const threadId : TThreadID;
+  const Ignored : ITestResult);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnTestingEnds(const RunResults: IRunResults);
+procedure TGUIXTestRunner.OnTestingEnds(const RunResults : IRunResults);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnTestingStarts(const threadId: TThreadID; testCount,
-  testActiveCount: Cardinal);
+procedure TGUIXTestRunner.OnTestingStarts(const threadId : TThreadID; testCount,
+  testActiveCount : Cardinal);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnTestMemoryLeak(const threadId: TThreadID;
-  const AIgnored: ITestResult);
+procedure TGUIXTestRunner.OnTestMemoryLeak(const threadId : TThreadID;
+  const AIgnored : ITestResult);
 begin
 
 end;
 
-procedure TGUIXTestRunner.OnTestSuccess(const threadId: TThreadID;
-  const Test: ITestResult);
+procedure TGUIXTestRunner.OnTestSuccess(const threadId : TThreadID;
+  const Test : ITestResult);
 begin
 
 end;
 
-procedure TGUIXTestRunner.RunExecute(Sender: TObject);
+procedure TGUIXTestRunner.RunExecute(Sender : TObject);
 begin
   TestRunnerProgress.Value := 0;
   FailTestName.Text := '';
@@ -524,10 +530,9 @@ begin
   MemoryLeaked.Text := IntToStr(FLastResult.MemoryLeakCount);
 end;
 
-
-procedure TGUIXTestRunner.TestTreeChangeCheck(Sender: TObject);
+procedure TGUIXTestRunner.TestTreeChangeCheck(Sender : TObject);
 var
-  I: Integer;
+  I : Integer;
 begin
   for I := 0 to TTreeViewItem(Sender).Count - 1 do
     TTreeViewItem(Sender).Items[I].IsChecked := TTreeViewItem(Sender).IsChecked;
@@ -535,7 +540,7 @@ end;
 
 { TTestNode }
 
-constructor TTestNode.Create(Owner: TComponent; Test: ITest; Text, TestFullName: String);
+constructor TTestNode.Create(Owner : TComponent; Test : ITest; Text, TestFullName : string);
 begin
   inherited Create(Owner);
   Self.Text := Text;
@@ -561,26 +566,31 @@ begin
   FImage.Bitmap.Clear(TAlphaColorRec.Gray);
 end;
 
-procedure TTestNode.SetResultType(resultType: TTestResultType);
+procedure TTestNode.SetResultType(resultType : TTestResultType);
 begin
- FResultType := resultType;
- case resultType of
-   TTestResultType.Pass: begin
-     FImage.Bitmap.Clear(TAlphaColorRec.Green);
-   end;
-   TTestResultType.Failure: begin
-     FImage.Bitmap.Clear(TAlphaColorRec.DarkRed);
-   end;
-   TTestResultType.Error: begin
-     FImage.Bitmap.Clear(TAlphaColorRec.Red);
-   end;
-   TTestResultType.Ignored: begin
-     FImage.Bitmap.Clear(TAlphaColorRec.Lightgray);
-   end;
-   TTestResultType.MemoryLeak: begin
-     FImage.Bitmap.Clear(TAlphaColorRec.Yellow);
-   end;
- end;
+  FResultType := resultType;
+  case resultType of
+    TTestResultType.Pass :
+      begin
+        FImage.Bitmap.Clear(TAlphaColorRec.Green);
+      end;
+    TTestResultType.Failure :
+      begin
+        FImage.Bitmap.Clear(TAlphaColorRec.DarkRed);
+      end;
+    TTestResultType.Error :
+      begin
+        FImage.Bitmap.Clear(TAlphaColorRec.Red);
+      end;
+    TTestResultType.Ignored :
+      begin
+        FImage.Bitmap.Clear(TAlphaColorRec.Lightgray);
+      end;
+    TTestResultType.MemoryLeak :
+      begin
+        FImage.Bitmap.Clear(TAlphaColorRec.Yellow);
+      end;
+  end;
 end;
 
 end.

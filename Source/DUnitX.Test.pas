@@ -31,18 +31,18 @@ interface
 {$I DUnitX.inc}
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.Generics.Collections,
   System.TimeSpan,
   System.Rtti,
   System.SysUtils,
   System.TypInfo,
-  {$ELSE}
+{$ELSE}
   Generics.Collections,
   TimeSpan,
   Rtti,
   SysUtils,
-  {$ENDIF}
+{$ENDIF}
   DUnitX.Types,
   DUnitX.Extensibility,
   DUnitX.InternalInterfaces,
@@ -52,59 +52,58 @@ uses
 type
   TDUnitXTest = class(TWeakReferencedObject, ITest, ITestInfo, ISetTestResult, ITestExecute)
   private
-    FName         : string;
-    FMethodName   : string;
-    FCategories   : TList<string>;
-    FMethod       : TTestMethod;
-    FFixture      : IWeakReference<ITestFixture>;
-    FStartTime    : TDateTime;
-    FEndTime      : TDateTime;
-    FDuration     : TTimeSpan;
-    FEnabled      : boolean;
-    FIgnored      : boolean;
+    FName : string;
+    FMethodName : string;
+    FCategories : TList<string>;
+    FMethod : TTestMethod;
+    FFixture : IWeakReference<ITestFixture>;
+    FStartTime : TDateTime;
+    FEndTime : TDateTime;
+    FDuration : TTimeSpan;
+    FEnabled : boolean;
+    FIgnored : boolean;
     FIgnoreReason : string;
     FIgnoreMemoryLeaks : Boolean;
-    FMaxTime      : cardinal; // milliseconds for timeout
-    FTimedOut     : Boolean;
+    FMaxTime : cardinal;                // milliseconds for timeout
+    FTimedOut : Boolean;
   protected
     //ITest
-    function GetName: string; virtual;
+    function GetName : string; virtual;
     function GetMethodName : string;
     function GetCategories : TList<string>;
-    function GetFullName : string;virtual;
-    function GetTestFixture: ITestFixture;
-    function GetTestMethod: TTestMethod;
+    function GetFullName : string; virtual;
+    function GetTestFixture : ITestFixture;
+    function GetTestMethod : TTestMethod;
     function GetTestStartTime : TDateTime;
     function GetTestEndTime : TDateTime;
-    function GetTestDuration: TTimeSpan;
+    function GetTestDuration : TTimeSpan;
     function GetIgnoreMemoryLeaks() : Boolean;
     procedure SetIgnoreMemoryLeaks(const AValue : Boolean);
-    function GetMaxTime: cardinal;
-    procedure SetMaxTime(const AValue: cardinal);
-    function GetTimedOut: Boolean;
-    procedure SetTimedOut(const AValue: Boolean);
-    function GetIsTestCase : boolean;virtual;
-
+    function GetMaxTime : cardinal;
+    procedure SetMaxTime(const AValue : cardinal);
+    function GetTimedOut : Boolean;
+    procedure SetTimedOut(const AValue : Boolean);
+    function GetIsTestCase : boolean; virtual;
 
     //ITestInfo
     function GetActive : boolean;
     function ITestInfo.GetTestFixture = ITestInfo_GetTestFixture;
-    function ITestInfo_GetTestFixture: ITestFixtureInfo;
-    function GetEnabled: Boolean;
-    procedure SetEnabled(const value: Boolean);
+    function ITestInfo_GetTestFixture : ITestFixtureInfo;
+    function GetEnabled : Boolean;
+    procedure SetEnabled(const value : Boolean);
     function GetIgnored : boolean;
     function GetIgnoreReason : string;
 
     //ISetTestResult
-    procedure SetResult(const value: ITestResult);
+    procedure SetResult(const value : ITestResult);
 
     //ITestExecute
-    procedure Execute(const context : ITestExecuteContext);virtual;
-    procedure UpdateInstance(const fixtureInstance : TObject);virtual;
+    procedure Execute(const context : ITestExecuteContext); virtual;
+    procedure UpdateInstance(const fixtureInstance : TObject); virtual;
   public
-    constructor Create(const AFixture : ITestFixture; const AMethodName : string; const AName : string; const ACategory  : string; const AMethod : TTestMethod; const AEnabled : boolean;
-                       const AIgnored : boolean = false; const AIgnoreReason : string = ''; const AMaxTime : Cardinal = 0);
-    destructor Destroy;override;
+    constructor Create(const AFixture : ITestFixture; const AMethodName : string; const AName : string; const ACategory : string; const AMethod : TTestMethod;
+      const AEnabled : boolean; const AIgnored : boolean = false; const AIgnoreReason : string = ''; const AMaxTime : Cardinal = 0);
+    destructor Destroy; override;
   end;
 
   TDUnitXExceptionTest = class(TDUnitXTest, ITestExecute)
@@ -116,11 +115,11 @@ type
     procedure RaiseMethod;
     procedure Execute(const context : ITestExecuteContext); override;
   public
-    constructor Create(const AFixture : ITestFixture; const AMethodName : string; const AName : string; const ACategory  : string;
-                       const AMethod : TTestMethod; const AEnabled : boolean; const AIgnored : boolean = false;
-                       const AIgnoreReason : string = ''; const AMaxTime : Cardinal = 0;
-                       const AExpectedException : ExceptClass = nil; const AExceptionInheritance : TExceptionInheritance = exExact);
-    destructor Destroy;override;
+    constructor Create(const AFixture : ITestFixture; const AMethodName : string; const AName : string; const ACategory : string;
+      const AMethod : TTestMethod; const AEnabled : boolean; const AIgnored : boolean = false;
+      const AIgnoreReason : string = ''; const AMaxTime : Cardinal = 0;
+      const AExpectedException : ExceptClass = nil; const AExceptionInheritance : TExceptionInheritance = exExact);
+    destructor Destroy; override;
   end;
 
   TDUnitXTestCase = class(TDUnitXTest, ITestExecute)
@@ -130,38 +129,39 @@ type
     FRttiMethod : TRttiMethod;
     FInstance : TObject;
   protected
-    function GetIsTestCase : boolean;override;
-    function GetName: string; override;
+    function GetIsTestCase : boolean; override;
+    function GetName : string; override;
     procedure Execute(const context : ITestExecuteContext); override;
-    procedure UpdateInstance(const fixtureInstance : TObject);override;
+    procedure UpdateInstance(const fixtureInstance : TObject); override;
   public
-    constructor Create(const AInstance : TObject; const AFixture : ITestFixture; const AMethodName : string; const ACaseName : string; const AName : string; const ACategory  : string; const AMethod : TRttiMethod;
-                       const AEnabled : boolean; const AArgs : TValueArray);reintroduce;
-    destructor Destroy;override;
+    constructor Create(const AInstance : TObject; const AFixture : ITestFixture; const AMethodName : string; const ACaseName : string; const AName : string;
+      const ACategory : string; const AMethod : TRttiMethod;
+      const AEnabled : boolean; const AArgs : TValueArray); reintroduce;
+    destructor Destroy; override;
   end;
-
 
 implementation
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.Generics.Defaults,
   System.StrUtils,
-  {$ELSE}
+{$ELSE}
   Generics.Defaults,
   StrUtils,
-  {$ENDIF}
-  {$IFDEF MSWINDOWS}
+{$ENDIF}
+{$IFDEF MSWINDOWS}
   DUnitX.Timeout,
-  {$ENDIF}
+{$ENDIF}
   DUnitX.Utils;
 
 { TDUnitXTest }
 
-constructor TDUnitXTest.Create(const AFixture: ITestFixture; const AMethodName : string; const AName: string; const ACategory  : string; const AMethod: TTestMethod; const AEnabled : boolean; const AIgnored : boolean; const AIgnoreReason : string; const AMaxTime : Cardinal);
+constructor TDUnitXTest.Create(const AFixture : ITestFixture; const AMethodName : string; const AName : string; const ACategory : string; const AMethod :
+  TTestMethod; const AEnabled : boolean; const AIgnored : boolean; const AIgnoreReason : string; const AMaxTime : Cardinal);
 var
   categories : TArray<string>;
-  cat        : string;
+  cat : string;
 begin
   inherited Create;
   FFixture := TWeakReference<ITestFixture>.Create(AFixture);
@@ -169,14 +169,14 @@ begin
   FName := AName;
 
   FCategories := TList<string>.Create(TComparer<string>.Construct(
-    function(const Left, Right : string) : integer
-    begin
-      result := AnsiCompareText(Left,Right);
-    end));
+      function(const Left, Right : string) : integer
+      begin
+        result := AnsiCompareText(Left, Right);
+      end));
 
   if ACategory <> '' then
   begin
-    categories := TStrUtils.SplitString(ACategory,',');
+    categories := TStrUtils.SplitString(ACategory, ',');
     for cat in categories do
       FCategories.Add(Trim(cat));
   end;
@@ -203,80 +203,80 @@ var
 begin
   FStartTime := Now();
   try
-    {$IFDEF MSWINDOWS}
+{$IFDEF MSWINDOWS}
     if FMaxTime > 0 then
-      timeout := InitialiseTimeOut( FMaxTime );
-    {$ENDIF}
+      timeout := InitialiseTimeOut(FMaxTime);
+{$ENDIF}
     FMethod();
   finally
     FEndTime := Now();
 
-    FDuration := TTimeSpan.Subtract(FEndTime,FStartTime);
+    FDuration := TTimeSpan.Subtract(FEndTime, FStartTime);
   end;
 end;
 
-function TDUnitXTest.GetActive: boolean;
+function TDUnitXTest.GetActive : boolean;
 begin
   //TODO: Need to set the internal active state
   result := True;
 end;
 
-function TDUnitXTest.GetCategories: TList<string>;
+function TDUnitXTest.GetCategories : TList<string>;
 begin
   result := FCategories;
 end;
 
-function TDUnitXTest.GetEnabled: Boolean;
+function TDUnitXTest.GetEnabled : Boolean;
 begin
   result := FEnabled;
 end;
 
-function TDUnitXTest.GetFullName: string;
+function TDUnitXTest.GetFullName : string;
 begin
   result := FFixture.Data.FullName + '.' + Self.GetName;
 end;
 
-function TDUnitXTest.GetIgnored: boolean;
+function TDUnitXTest.GetIgnored : boolean;
 begin
   result := FIgnored;
 end;
 
-function TDUnitXTest.GetIgnoreMemoryLeaks: Boolean;
+function TDUnitXTest.GetIgnoreMemoryLeaks : Boolean;
 begin
   Result := FIgnoreMemoryLeaks;
 end;
 
-function TDUnitXTest.GetIgnoreReason: string;
+function TDUnitXTest.GetIgnoreReason : string;
 begin
   result := FIgnoreReason;
 end;
 
-function TDUnitXTest.GetIsTestCase: boolean;
+function TDUnitXTest.GetIsTestCase : boolean;
 begin
   result := false;
 end;
 
-function TDUnitXTest.GetMethodName: string;
+function TDUnitXTest.GetMethodName : string;
 begin
   result := FMethodName;
 end;
 
-function TDUnitXTest.GetName: string;
+function TDUnitXTest.GetName : string;
 begin
   result := FName;
 end;
 
-function TDUnitXTest.GetTestDuration: TTimeSpan;
+function TDUnitXTest.GetTestDuration : TTimeSpan;
 begin
   result := FDuration;
 end;
 
-function TDUnitXTest.GetTestEndTime: TDateTime;
+function TDUnitXTest.GetTestEndTime : TDateTime;
 begin
   result := FEndTime;
 end;
 
-function TDUnitXTest.GetTestFixture: ITestFixture;
+function TDUnitXTest.GetTestFixture : ITestFixture;
 begin
   if FFixture.IsAlive then
     result := FFixture.Data
@@ -284,17 +284,17 @@ begin
     result := nil;
 end;
 
-function TDUnitXTest.GetTestMethod: TTestMethod;
+function TDUnitXTest.GetTestMethod : TTestMethod;
 begin
   result := FMethod;
 end;
 
-function TDUnitXTest.GetTestStartTime: TDateTime;
+function TDUnitXTest.GetTestStartTime : TDateTime;
 begin
   result := FStartTime;
 end;
 
-function TDUnitXTest.ITestInfo_GetTestFixture: ITestFixtureInfo;
+function TDUnitXTest.ITestInfo_GetTestFixture : ITestFixtureInfo;
 begin
   if FFixture.IsAlive then
     result := FFixture.Data as ITestFixtureInfo
@@ -303,56 +303,58 @@ begin
 
 end;
 
-procedure TDUnitXTest.SetEnabled(const value: Boolean);
+procedure TDUnitXTest.SetEnabled(const value : Boolean);
 begin
   FEnabled := value;
 end;
 
-procedure TDUnitXTest.SetIgnoreMemoryLeaks(const AValue: Boolean);
+procedure TDUnitXTest.SetIgnoreMemoryLeaks(const AValue : Boolean);
 begin
   FIgnoreMemoryLeaks := AValue;
 end;
 
-function TDUnitXTest.GetMaxTime: cardinal;
+function TDUnitXTest.GetMaxTime : cardinal;
 begin
   Result := FMaxTime;
 end;
-procedure TDUnitXTest.SetMaxTime(const AValue: cardinal);
+
+procedure TDUnitXTest.SetMaxTime(const AValue : cardinal);
 begin
   FMaxTime := AValue;
 end;
 
-function TDUnitXTest.GetTimedOut: Boolean;
+function TDUnitXTest.GetTimedOut : Boolean;
 begin
   Result := FTimedOut;
 end;
-procedure TDUnitXTest.SetTimedOut(const AValue: Boolean);
+
+procedure TDUnitXTest.SetTimedOut(const AValue : Boolean);
 begin
   FTimedOut := AValue;
 end;
 
-procedure TDUnitXTest.UpdateInstance(const fixtureInstance: TObject);
+procedure TDUnitXTest.UpdateInstance(const fixtureInstance : TObject);
 begin
   TMethod(FMethod).Data := fixtureInstance;
 end;
 
-procedure TDUnitXTest.SetResult(const value: ITestResult);
+procedure TDUnitXTest.SetResult(const value : ITestResult);
 begin
-    //TODO : what was meant to happen here?? Is this called?
+  //TODO : what was meant to happen here?? Is this called?
 end;
 
 { TDUnitXTestCase }
 
 constructor TDUnitXTestCase.Create(const AInstance : TObject; const AFixture : ITestFixture; const AMethodName : string; const ACaseName : string;
-                                   const AName : string; const ACategory  : string; const AMethod : TRttiMethod; const AEnabled : boolean;
-                                   const AArgs : TValueArray);
+  const AName : string; const ACategory : string; const AMethod : TRttiMethod; const AEnabled : boolean;
+  const AArgs : TValueArray);
 var
   len : integer;
-  index   : integer;
+  index : integer;
   parameters : TArray<TRttiParameter>;
   tmp : TValue;
 begin
-  inherited Create(AFixture, AMethodName, AName, ACategory, nil,AEnabled);
+  inherited Create(AFixture, AMethodName, AName, ACategory, nil, AEnabled);
   FInstance := AInstance;
   FRttiMethod := AMethod;
   FCaseName := ACaseName;
@@ -372,7 +374,6 @@ begin
   end;
 end;
 
-
 destructor TDUnitXTestCase.Destroy;
 begin
 
@@ -383,19 +384,19 @@ procedure TDUnitXTestCase.Execute(const context : ITestExecuteContext);
 begin
   FStartTime := Now();
   try
-    FRttiMethod.Invoke(FInstance,FArgs);
+    FRttiMethod.Invoke(FInstance, FArgs);
   finally
     FEndTime := Now();
-    FDuration := TTimeSpan.Subtract(FEndTime,FStartTime);
+    FDuration := TTimeSpan.Subtract(FEndTime, FStartTime);
   end;
 end;
 
-function TDUnitXTestCase.GetIsTestCase: boolean;
+function TDUnitXTestCase.GetIsTestCase : boolean;
 begin
   result := true;
 end;
 
-function TDUnitXTestCase.GetName: string;
+function TDUnitXTestCase.GetName : string;
 begin
   if FCaseName <> '' then
   begin
@@ -409,7 +410,7 @@ begin
 
 end;
 
-procedure TDUnitXTestCase.UpdateInstance(const fixtureInstance: TObject);
+procedure TDUnitXTestCase.UpdateInstance(const fixtureInstance : TObject);
 begin
   inherited;
   FInstance := fixtureInstance;
@@ -417,10 +418,10 @@ end;
 
 { TDUnitXExceptionTest }
 
-constructor TDUnitXExceptionTest.Create(const AFixture: ITestFixture;
-  const AMethodName, AName, ACategory: string; const AMethod: TTestMethod;
-  const AEnabled, AIgnored: boolean; const AIgnoreReason: string;
-  const AMaxTime: Cardinal; const AExpectedException: ExceptClass; const AExceptionInheritance: TExceptionInheritance);
+constructor TDUnitXExceptionTest.Create(const AFixture : ITestFixture;
+  const AMethodName, AName, ACategory : string; const AMethod : TTestMethod;
+  const AEnabled, AIgnored : boolean; const AIgnoreReason : string;
+  const AMaxTime : Cardinal; const AExpectedException : ExceptClass; const AExceptionInheritance : TExceptionInheritance);
 begin
   inherited Create(AFixture, AMethodName, AName, ACategory, AMethod, AEnabled, AIgnored, AIgnoreReason, AMaxTime);
   FExpectedException := AExpectedException;
@@ -433,7 +434,7 @@ begin
   inherited;
 end;
 
-procedure TDUnitXExceptionTest.Execute(const context: ITestExecuteContext);
+procedure TDUnitXExceptionTest.Execute(const context : ITestExecuteContext);
 begin
   FRaiseContext := context;
   if FExceptionInheritance = exDescendant then
@@ -448,3 +449,4 @@ begin
 end;
 
 end.
+

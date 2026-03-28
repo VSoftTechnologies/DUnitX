@@ -31,15 +31,15 @@ interface
 {$I DUnitX.inc}
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.Classes,
   System.SysUtils,
   System.Generics.Collections,
-  {$ELSE}
+{$ELSE}
   Classes,
   SysUtils,
   Generics.Collections,
-  {$ENDIF}
+{$ENDIF}
   DUnitX.TestFramework,
   DUnitX.Loggers.Null;
 
@@ -47,77 +47,75 @@ type
   TDUnitXXMLJUnitLogger = class(TDUnitXNullLogger)
   private
     FOutputStream : TStream;
-    FOwnsStream   : boolean;
-    FIndent       : integer;
+    FOwnsStream : boolean;
+    FIndent : integer;
     FFormatSettings : TFormatSettings;
   protected
     procedure Indent;
     procedure Outdent;
     procedure WriteXMLLine(const value : string);
 
+    procedure OnTestingEnds(const RunResults : IRunResults); override;
 
-    procedure OnTestingEnds(const RunResults: IRunResults); override;
-
-    procedure WriteCategoryNodes(const ACategoryList: TList<string>);
+    procedure WriteCategoryNodes(const ACategoryList : TList<string>);
     procedure WriteFixtureResult(const fixtureResult : IFixtureResult);
     procedure WriteTestResult(const testResult : ITestResult);
 
-    function Format(const Format: string; const Args: array of const): String;
+    function Format(const Format : string; const Args : array of const) : string;
   public
     constructor Create(const AOutputStream : TStream; const AOwnsStream : boolean = false);
-    destructor Destroy;override;
+    destructor Destroy; override;
   end;
 
   TDUnitXXMLJUnitFileLogger = class(TDUnitXXMLJUnitLogger)
   public
-    constructor Create(const AFilename: string = '');
+    constructor Create(const AFilename : string = '');
   end;
-
 
 implementation
 
 uses
   DUnitX.Utils.XML,
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.TypInfo;
-  {$ELSE}
+{$ELSE}
   TypInfo;
-  {$ENDIF}
+{$ENDIF}
 
 { TDUnitXXMLJUnitLogger }
 
-constructor TDUnitXXMLJUnitLogger.Create(const AOutputStream: TStream; const AOwnsStream : boolean = false);
+constructor TDUnitXXMLJUnitLogger.Create(const AOutputStream : TStream; const AOwnsStream : boolean = false);
 var
-  preamble: TBytes;
-  {$IFNDEF DELPHI_XE_UP}
-  oldThousandSeparator: Char;
-  oldDecimalSeparator: Char;
-  {$ENDIF}
+  preamble : TBytes;
+{$IFNDEF DELPHI_XE_UP}
+  oldThousandSeparator : Char;
+  oldDecimalSeparator : Char;
+{$ENDIF}
 begin
   inherited Create;
-  {$IFDEF DELPHI_XE_UP }
+{$IFDEF DELPHI_XE_UP }
   FFormatSettings := TFormatSettings.Create;
-  {$ENDIF}
+{$ENDIF}
   FFormatSettings.ThousandSeparator := ',';
   FFormatSettings.DecimalSeparator := '.';
-  {$IFNDEF DELPHI_XE_UP}
-  oldThousandSeparator        := {$IFDEF USE_NS}System.{$ENDIF}SysUtils.ThousandSeparator;
-  oldDecimalSeparator         := {$IFDEF USE_NS}System.{$ENDIF}DecimalSeparator;
+{$IFNDEF DELPHI_XE_UP}
+  oldThousandSeparator := {$IFDEF USE_NS}System.{$ENDIF}SysUtils.ThousandSeparator;
+  oldDecimalSeparator := {$IFDEF USE_NS}System.{$ENDIF}DecimalSeparator;
   try
     SysUtils.ThousandSeparator := ',';
     SysUtils.DecimalSeparator := '.';
-  {$ENDIF}
-  FOutputStream := AOutputStream;
-  FOwnsStream   := AOwnsStream;
+{$ENDIF}
+    FOutputStream := AOutputStream;
+    FOwnsStream := AOwnsStream;
 
-  Preamble := TEncoding.UTF8.GetPreamble;
-  FOutputStream.WriteBuffer(preamble[0], Length(preamble));
-  {$IFNDEF DELPHI_XE_UP}
+    Preamble := TEncoding.UTF8.GetPreamble;
+    FOutputStream.WriteBuffer(preamble[0], Length(preamble));
+{$IFNDEF DELPHI_XE_UP}
   finally
-    {$IFDEF USE_NS}System.{$ENDIF}SysUtils.ThousandSeparator := oldThousandSeparator;
-    {$IFDEF USE_NS}System.{$ENDIF}SysUtils.DecimalSeparator  := oldDecimalSeparator;
+{$IFDEF USE_NS}System.{$ENDIF}SysUtils.ThousandSeparator := oldThousandSeparator;
+{$IFDEF USE_NS}System.{$ENDIF}SysUtils.DecimalSeparator := oldDecimalSeparator;
   end;
-  {$ENDIF}
+{$ENDIF}
 
 end;
 
@@ -128,50 +126,49 @@ begin
   inherited;
 end;
 
-function TDUnitXXMLJUnitLogger.Format(const Format: string; const Args: array of const): String;
+function TDUnitXXMLJUnitLogger.Format(const Format : string; const Args : array of const) : string;
 begin
   Result := {$IFDEF USE_NS}System.{$ENDIF}SysUtils.Format(Format, Args, FFormatSettings);
 end;
 
 procedure TDUnitXXMLJUnitLogger.Indent;
 begin
-  Inc(FIndent,2);
+  Inc(FIndent, 2);
 end;
 
-procedure TDUnitXXMLJUnitLogger.OnTestingEnds(const RunResults: IRunResults);
+procedure TDUnitXXMLJUnitLogger.OnTestingEnds(const RunResults : IRunResults);
 
-
-procedure LogFixture(const fixture : IFixtureResult; level : integer);
-var
-  child : IFixtureResult;
-  sLevel : string;
-begin
-  sLevel := StringOfChar(' ', level * 2 );
-  System.WriteLn(sLevel + fixture.Fixture.NameSpace + ':' + fixture.Fixture.Name + Format(' [Tests: %d] [Children: %d] [Passed : %d]',[fixture.ResultCount,fixture.ChildCount,fixture.PassCount]));
-
-  Inc(level);
-  for child in fixture.Children do
+  procedure LogFixture(const fixture : IFixtureResult; level : integer);
+  var
+    child : IFixtureResult;
+    sLevel : string;
   begin
-    LogFixture(child,level);
+    sLevel := StringOfChar(' ', level * 2);
+    System.WriteLn(sLevel + fixture.Fixture.NameSpace + ':' + fixture.Fixture.Name + Format(' [Tests: %d] [Children: %d] [Passed : %d]', [fixture.ResultCount,
+      fixture.ChildCount, fixture.PassCount]));
+
+    Inc(level);
+    for child in fixture.Children do
+    begin
+      LogFixture(child, level);
+    end;
+
   end;
 
-end;
-
-
 var
-  fixtureRes  : IFixtureResult;
-  sExeName    : string;
-  sTime       : string;
+  fixtureRes : IFixtureResult;
+  sExeName : string;
+  sTime : string;
   //totalTests  : integer;
 begin
 
-{ first things first, rollup the namespaces.
-  So, where parent fixtures have no tests, or only one child fixture, combine into a single fixture.
-  }
+  { first things first, rollup the namespaces.
+    So, where parent fixtures have no tests, or only one child fixture, combine into a single fixture.
+    }
   for fixtureRes in RunResults.FixtureResults do
   begin
     fixtureRes.Reduce;
-//    LogFixture(fixtureRes,0);
+    //    LogFixture(fixtureRes,0);
   end;
 
   //JUnit reports the total without the Ignored.
@@ -179,14 +176,14 @@ begin
 
   sExeName := ParamStr(0);
   FIndent := 0;
-  sTime := Format('%.3f',[RunResults.Duration.TotalSeconds]);
+  sTime := Format('%.3f', [RunResults.Duration.TotalSeconds]);
 
   WriteXMLLine('<?xml version="1.0" encoding="UTF-8"?>');
 
   // Global overview
   // There is only a "disabled" attribute on the top level, but "disabled" and "skipped" on fixture level. Return ignored tests as "disabled"
   WriteXMLLine(Format('<testsuites name="%s" tests="%d" disabled="%d" errors="%d" failures="%d" time="%s">',
-    [sExeName,RunResults.TestCount, RunResults.IgnoredCount, RunResults.ErrorCount, RunResults.FailureCount, sTime]));
+      [sExeName, RunResults.TestCount, RunResults.IgnoredCount, RunResults.ErrorCount, RunResults.FailureCount, sTime]));
 
   Indent;
 
@@ -199,29 +196,29 @@ end;
 
 procedure TDUnitXXMLJUnitLogger.Outdent;
 begin
-  Dec(FIndent,2);
+  Dec(FIndent, 2);
 end;
 
-procedure TDUnitXXMLJUnitLogger.WriteFixtureResult(const fixtureResult: IFixtureResult);
+procedure TDUnitXXMLJUnitLogger.WriteFixtureResult(const fixtureResult : IFixtureResult);
 var
-  sTime   : string;
-  sDate   : string;
+  sTime : string;
+  sDate : string;
   child : IFixtureResult;
   testResult : ITestResult;
   sExecuted : string;
-  sName: string;
+  sName : string;
 begin
   //its a real fixture if the class is not TObject.
-  if (not fixtureResult.Fixture.TestClass.ClassNameIs('TObject'))  then
+  if (not fixtureResult.Fixture.TestClass.ClassNameIs('TObject')) then
   begin
     //if there were no tests then just ignore this fixture.
     if fixtureResult.ResultCount = 0 then
       exit;
-    sExecuted := BoolToStr(fixtureResult.ResultCount > 0,true);
+    sExecuted := BoolToStr(fixtureResult.ResultCount > 0, true);
     sExecuted := EscapeForXML(sExecuted);
 
-    sName := StringReplace(fixtureResult.Fixture.FullName, '.' + fixtureResult.Fixture.Name, '' , []);
-    sTime := Format('%.3f',[fixtureResult.Duration.TotalSeconds]);
+    sName := StringReplace(fixtureResult.Fixture.FullName, '.' + fixtureResult.Fixture.Name, '', []);
+    sTime := Format('%.3f', [fixtureResult.Duration.TotalSeconds]);
 
     sName := EscapeForXML(sName);
     sTime := EscapeForXML(sTime);
@@ -229,7 +226,7 @@ begin
 
     // There is only a "disabled" attribute on the top level, but "disabled" and "skipped" on fixture level. Return ignored tests as "disabled"
     WriteXMLLine(Format('<testsuite name="%s" tests="%d" disabled="%d" errors="%d" failures="%d" time="%s" timestamp="%s">',
-      [sName, fixtureResult.TestResults.Count, fixtureResult.IgnoredCount, fixtureResult.ErrorCount, fixtureResult.FailureCount, sTime, sDate]));
+        [sName, fixtureResult.TestResults.Count, fixtureResult.IgnoredCount, fixtureResult.ErrorCount, fixtureResult.FailureCount, sTime, sDate]));
     //WriteCategoryNodes(fixtureResult.Fixture.Categories);
 
     for testResult in fixtureResult.TestResults do
@@ -251,21 +248,21 @@ begin
     begin
       for child in fixtureResult.Children do
       begin
-          WriteFixtureResult(child);
+        WriteFixtureResult(child);
       end;
     end;
   end;
 end;
 
-procedure TDUnitXXMLJUnitLogger.WriteTestResult(const testResult: ITestResult);
+procedure TDUnitXXMLJUnitLogger.WriteTestResult(const testResult : ITestResult);
 var
   sTime : string;
   sName : string;
-  sClassName: string;
+  sClassName : string;
 begin
   Indent;
   try
-    sTime := Format('%.3f',[testResult.Duration.TotalSeconds]);
+    sTime := Format('%.3f', [testResult.Duration.TotalSeconds]);
 
     sName := EscapeForXML(testResult.Test.Name);
     sClassName := EscapeForXML(testResult.Test.Fixture.Name);
@@ -274,41 +271,41 @@ begin
     WriteXMLLine(Format('<testcase classname="%s" name="%s" time="%s">', [sClassName, sName, sTime]));
     //WriteCategoryNodes(testResult.Test.Categories);
     case testResult.ResultType of
-      TTestResultType.Failure:
-      begin
-        Indent;
-        WriteXMLLine(Format('<failure message="%s">', [EscapeForXML(testResult.Message)]));
-        Indent;
+      TTestResultType.Failure :
+        begin
+          Indent;
+          WriteXMLLine(Format('<failure message="%s">', [EscapeForXML(testResult.Message)]));
+          Indent;
           WriteXMLLine(Format('<![CDATA[ %s ]]>', [EscapeForXML(testResult.Message, False, True)]));
-        Outdent;
-        WriteXMLLine('</failure>');
-        Outdent;
-      end;
+          Outdent;
+          WriteXMLLine('</failure>');
+          Outdent;
+        end;
       TTestResultType.MemoryLeak,
-      TTestResultType.Error:
-      begin
-        Indent;
-        WriteXMLLine(Format('<error message="%s">', [EscapeForXML(testResult.Message)]));
-        Indent;
+        TTestResultType.Error :
+        begin
+          Indent;
+          WriteXMLLine(Format('<error message="%s">', [EscapeForXML(testResult.Message)]));
+          Indent;
           WriteXMLLine(Format('<![CDATA[ %s ]]>', [EscapeForXML(testResult.StackTrace, False, True)]));
-        Outdent;
-        WriteXMLLine('</error>');
-        Outdent;
-      end;
-      TTestResultType.Ignored:
-      begin
-        Indent;
-        WriteXMLLine('<skipped/>');
-        Outdent;
-      end;
+          Outdent;
+          WriteXMLLine('</error>');
+          Outdent;
+        end;
+      TTestResultType.Ignored :
+        begin
+          Indent;
+          WriteXMLLine('<skipped/>');
+          Outdent;
+        end;
       TTestResultType.Pass :
-      begin
-//        if testResult.Test.Categories.Count = 0 then
-//        begin
-//          exit;
-//        end;
-//        Indent;
-      end;
+        begin
+          //        if testResult.Test.Categories.Count = 0 then
+          //        begin
+          //          exit;
+          //        end;
+          //        Indent;
+        end;
     end;
     WriteXMLLine('</testcase>');
 
@@ -317,9 +314,9 @@ begin
   end;
 end;
 
-procedure TDUnitXXMLJUnitLogger.WriteCategoryNodes(const ACategoryList: TList<string>);
+procedure TDUnitXXMLJUnitLogger.WriteCategoryNodes(const ACategoryList : TList<string>);
 var
-  sCategory: string;
+  sCategory : string;
 begin
   if ACategoryList.Count > 0 then
   begin
@@ -334,24 +331,23 @@ begin
   end;
 end;
 
-
-procedure TDUnitXXMLJUnitLogger.WriteXMLLine(const value: string);
+procedure TDUnitXXMLJUnitLogger.WriteXMLLine(const value : string);
 var
   bytes : TBytes;
   s : string;
 begin
-  s := StringOfChar(' ',FIndent) + value + #13#10;
+  s := StringOfChar(' ', FIndent) + value + #13#10;
   bytes := TEncoding.UTF8.GetBytes(s);
-  FOutputStream.Write(bytes[0],Length(bytes));
+  FOutputStream.Write(bytes[0], Length(bytes));
 end;
 
 { TDUnitXXMLJUnitFileLogger }
 
-constructor TDUnitXXMLJUnitFileLogger.Create(const AFilename: string);
+constructor TDUnitXXMLJUnitFileLogger.Create(const AFilename : string);
 var
-  sXmlFilename  : string;
-  fileStream    : TFileStream;
-  lXmlDirectory: string;
+  sXmlFilename : string;
+  fileStream : TFileStream;
+  lXmlDirectory : string;
 const
   DEFAULT_JUNIT_FILE_NAME = 'dunitx-results.xml';
 begin
@@ -366,7 +362,8 @@ begin
   fileStream := TFileStream.Create(sXmlFilename, fmCreate);
 
   //base class will destroy the stream;
-  inherited Create(fileStream,true);
+  inherited Create(fileStream, true);
 end;
 
 end.
+

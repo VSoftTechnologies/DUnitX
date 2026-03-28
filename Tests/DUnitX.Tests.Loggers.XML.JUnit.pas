@@ -26,30 +26,28 @@
 
 unit DUnitX.Tests.Loggers.XML.JUnit;
 
-
 interface
 
 {$I DUnitX.inc}
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.Classes,
-  {$ELSE}
+{$ELSE}
   Classes,
-  {$ENDIF}
+{$ENDIF}
   DUnitX.TestFramework,
   DUnitX.Loggers.XML.JUnit;
 
-
 type
-  {$M+}
+{$M+}
   [TestFixture]
   TDUnitX_LoggerXMLJUnitTests = class
   public
     [Test(false)]
     procedure OnTestingStarts_Fills_The_Start_Of_The_Stream_With_Header_Info;
-  //  [Test(false)]
-//    procedure OnTestingEnds_Fills_The_End_Of_The_Stream_With_Testing_Result_Info;
+    //  [Test(false)]
+  //    procedure OnTestingEnds_Fills_The_End_Of_The_Stream_With_Testing_Result_Info;
 {$IFDEF DELPHI_XE2_UP}
     [Test(false)]
     procedure OnTestWarning_Adds_Warnings_To_Be_Written_Out_On_Next_Error;
@@ -60,17 +58,17 @@ type
 implementation
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.Rtti,
   System.SysUtils,
   System.TimeSpan,
   System.DateUtils,
-  {$ELSE}
+{$ELSE}
   Rtti,
   SysUtils,
   TimeSpan,
   DateUtils,
-  {$ENDIF}
+{$ENDIF}
 {$IFDEF DELPHI_XE2_UP}
   Delphi.Mocks,
 {$ENDIF}
@@ -78,76 +76,75 @@ uses
   DUnitX.RunResults;
 
 const
-  CRLF = #13#10;
+  CRLF              = #13#10;
 
-{ TDUnitX_LoggerXMLNUnit }
+  { TDUnitX_LoggerXMLNUnit }
 
-{
-procedure TDUnitX_LoggerXMLJUnitTests.OnTestingEnds_Fills_The_End_Of_The_Stream_With_Testing_Result_Info;
-var
-  logger : ITestLogger;
-  mockStream : TStringStream;
-  mockResults : TMock<ITestResults>;
+  {
+  procedure TDUnitX_LoggerXMLJUnitTests.OnTestingEnds_Fills_The_End_Of_The_Stream_With_Testing_Result_Info;
+  var
+    logger : ITestLogger;
+    mockStream : TStringStream;
+    mockResults : TMock<ITestResults>;
 
-  sExpectedEnding : string;
+    sExpectedEnding : string;
 
-  TempStartTime: TDateTime;
-  TempFinishTime: TDateTime;
-  StartTimeStr: string;
-  FinishTimeStr: string;
+    TempStartTime: TDateTime;
+    TempFinishTime: TDateTime;
+    StartTimeStr: string;
+    FinishTimeStr: string;
 
-begin
-  mockStream := TStringStream.Create('', TEncoding.UTF8);
+  begin
+    mockStream := TStringStream.Create('', TEncoding.UTF8);
 
-  mockResults := TMock<ITestResults>.Create;
-  mockResults.Setup.WillReturn(6).When.Count;
-  mockResults.Setup.WillReturn(3).When.FailureCount;
-  mockResults.Setup.WillReturn(1).When.ErrorCount;
-  mockResults.Setup.WillReturn(50).When.SuccessRate;
-    mockResults.Setup.WillReturn(3).When.IgnoredCount;
+    mockResults := TMock<ITestResults>.Create;
+    mockResults.Setup.WillReturn(6).When.Count;
+    mockResults.Setup.WillReturn(3).When.FailureCount;
+    mockResults.Setup.WillReturn(1).When.ErrorCount;
+    mockResults.Setup.WillReturn(50).When.SuccessRate;
+      mockResults.Setup.WillReturn(3).When.IgnoredCount;
 
-  TempStartTime := EncodeDateTime(2000, 2, 1, 11, 32, 50, 0);
-  TempFinishTime := EncodeDateTime(2000, 2, 28, 12, 34, 56, 0);
-  StartTimeStr := DateTimeToStr(TempStartTime);
-  FinishTimeStr := DateTimeToSTr(TempFinishTime);
+    TempStartTime := EncodeDateTime(2000, 2, 1, 11, 32, 50, 0);
+    TempFinishTime := EncodeDateTime(2000, 2, 28, 12, 34, 56, 0);
+    StartTimeStr := DateTimeToStr(TempStartTime);
+    FinishTimeStr := DateTimeToSTr(TempFinishTime);
 
+    mockResults.Setup.WillReturn(TempStartTime).When.StartTime;
+    mockResults.Setup.WillReturn(TempFinishTime).When.FinishTime;
+    mockResults.Setup.WillReturn(TValue.From<TTimeSpan>(TTimeSpan.FromMilliseconds(80129120))).When.TestDuration;
 
-  mockResults.Setup.WillReturn(TempStartTime).When.StartTime;
-  mockResults.Setup.WillReturn(TempFinishTime).When.FinishTime;
-  mockResults.Setup.WillReturn(TValue.From<TTimeSpan>(TTimeSpan.FromMilliseconds(80129120))).When.TestDuration;
+    logger := TDUnitXXMLNUnitLogger.Create(mockStream);
+    logger.OnTestingEnds(mockResults);
 
-  logger := TDUnitXXMLNUnitLogger.Create(mockStream);
-  logger.OnTestingEnds(mockResults);
+    sExpectedEnding :=  '<statistics>' + CRLF +
+                    Format('<stat name="tests" value="%d" />', [6]) + CRLF +
+                    Format('<stat name="failures" value="%d" />', [3]) + CRLF +
+                    Format('<stat name="errors" value="%d" />', [1]) + CRLF +
+                    Format('<stat name="ignored" value="%d" />', [3]) + CRLF +
+                    Format('<stat name="success-rate" value="%d%%" />', [50]) + CRLF +
+                    Format('<stat name="started-at" value="%s" />', [StartTimeStr]) + CRLF +
+                    Format('<stat name="finished-at" value="%s" />', [FinishTimeStr]) + CRLF +
+                    Format('<stat name="runtime" value="%1.3f"/>', [80129.120]) + CRLF +
+                    '</statistics>' + CRLF +
+                '</test-results>';
 
-  sExpectedEnding :=  '<statistics>' + CRLF +
-                  Format('<stat name="tests" value="%d" />', [6]) + CRLF +
-                  Format('<stat name="failures" value="%d" />', [3]) + CRLF +
-                  Format('<stat name="errors" value="%d" />', [1]) + CRLF +
-                  Format('<stat name="ignored" value="%d" />', [3]) + CRLF +
-                  Format('<stat name="success-rate" value="%d%%" />', [50]) + CRLF +
-                  Format('<stat name="started-at" value="%s" />', [StartTimeStr]) + CRLF +
-                  Format('<stat name="finished-at" value="%s" />', [FinishTimeStr]) + CRLF +
-                  Format('<stat name="runtime" value="%1.3f"/>', [80129.120]) + CRLF +
-                  '</statistics>' + CRLF +
-              '</test-results>';
-
-  Assert.AreEqual<string>(mockStream.DataString, sExpectedEnding);
-end;
- }
+    Assert.AreEqual<string>(mockStream.DataString, sExpectedEnding);
+  end;
+   }
 procedure TDUnitX_LoggerXMLJUnitTests.OnTestingStarts_Fills_The_Start_Of_The_Stream_With_Header_Info;
 var
-  sUnicodePreamble: string;
+  sUnicodePreamble : string;
   logger : ITestLogger;
   mockStream : TStringStream;
   sOnTestingStartsText : string;
-  sHeader: string;
-  sResults: string;
-  sAppName: string;
+  sHeader : string;
+  sResults : string;
+  sAppName : string;
   sExpectedResults : string;
   sExpectedAppName : string;
-  iPrevLastChar: Integer;
+  iPrevLastChar : Integer;
 const
-  EXPECTED_HEADER = '<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>';
+  EXPECTED_HEADER   = '<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>';
   EXPECTED_RESULTS_FORMAT_STR = '<test-results total="%d" notrun="%d" date="%s" time="%s" >';
   EXPECTED_APP_NAME_FORMAT_STR = '<application name="%s" />';
 begin
@@ -161,10 +158,10 @@ begin
   //Expected results
   //TODO: Fix this dangerous tests around "NOW"
   sExpectedResults := Format(EXPECTED_RESULTS_FORMAT_STR,
-                         [40, 40 - 30, DateToStr(Now), TimeToStr(Now)]);
+    [40, 40 - 30, DateToStr(Now), TimeToStr(Now)]);
 
   sExpectedAppName := Format(EXPECTED_APP_NAME_FORMAT_STR,
-                         [ExtractFileName(ParamStr(0))]);
+    [ExtractFileName(ParamStr(0))]);
 
   iPrevLastChar := 0;
   //Check the preamble
@@ -197,10 +194,10 @@ var
   mockWarning : TMock<ITestResult>;
   mockFixture : TMock<ITestFixtureInfo>;
   mockTest : TMock<ITestInfo>;
-  mockError: TMock<ITestError>;
+  mockError : TMock<ITestError>;
 
   sExceptedWarning : string;
-  iPositionOfWarning: Integer;
+  iPositionOfWarning : Integer;
 begin
   //Mocks
   mockStream := TStringStream.Create('', TEncoding.UTF8);
@@ -243,10 +240,10 @@ var
   mockStream : TStringStream;
   mockWarning : TMock<ITestResult>;
   mockTest : TMock<ITestInfo>;
-  mockSuccess: TMock<ITestError>;
+  mockSuccess : TMock<ITestError>;
 
   sExceptedWarning : string;
-  iPositionOfWarning: Integer;
+  iPositionOfWarning : Integer;
 begin
   //Mocks
   mockStream := TStringStream.Create('', TEncoding.UTF8);

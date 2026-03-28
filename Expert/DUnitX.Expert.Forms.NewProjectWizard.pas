@@ -31,7 +31,7 @@ interface
 {$I DUnitX.inc}
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   WinAPI.Windows,
   WinAPI.Messages,
   System.SysUtils,
@@ -43,7 +43,7 @@ uses
   VCL.Dialogs,
   VCL.StdCtrls,
   Vcl.ExtCtrls,
-  {$ELSE}
+{$ELSE}
   Windows,
   Messages,
   SysUtils,
@@ -55,31 +55,31 @@ uses
   Dialogs,
   StdCtrls,
   ExtCtrls,
-  {$ENDIF}
+{$ENDIF}
   DUnitX.Expert.CodeGen.NewTestProject;
 
 type
   TfrmDunitXNewProject = class(TForm)
-    gbTestUnitOpt: TGroupBox;
-    btnOK: TButton;
-    btnCancel: TButton;
-    chkCreateSetupTearDown: TCheckBox;
-    chkCreateSampleMethods: TCheckBox;
-    chkCreateTestUnit: TCheckBox;
-    chkAddToProjectGroup: TCheckBox;
-    edtClassName: TEdit;
-    lblClassName: TLabel;
-    rgReportLeakOptions: TRadioGroup;
-    procedure chkCreateTestUnitClick(Sender: TObject);
-    procedure FormCreate(Sender: TObject);
+    gbTestUnitOpt : TGroupBox;
+    btnOK : TButton;
+    btnCancel : TButton;
+    chkCreateSetupTearDown : TCheckBox;
+    chkCreateSampleMethods : TCheckBox;
+    chkCreateTestUnit : TCheckBox;
+    chkAddToProjectGroup : TCheckBox;
+    edtClassName : TEdit;
+    lblClassName : TLabel;
+    rgReportLeakOptions : TRadioGroup;
+    procedure chkCreateTestUnitClick(Sender : TObject);
+    procedure FormCreate(Sender : TObject);
   private
     { Private declarations }
-    function GetAddToProjectGroup: boolean;
-    function GetCreateSampleMethods: boolean;
-    function GetCreateSetupTearDownMethods: boolean;
-    function GetCreateTestUnit: boolean;
-    function GetTestFixtureClassName: string;
-    function GetReportLeakOption: TReportLeakOptions;
+    function GetAddToProjectGroup : boolean;
+    function GetCreateSampleMethods : boolean;
+    function GetCreateSetupTearDownMethods : boolean;
+    function GetCreateTestUnit : boolean;
+    function GetTestFixtureClassName : string;
+    function GetReportLeakOption : TReportLeakOptions;
   public
     { Public declarations }
     // Read Only Properties to extract values without having to know control values.
@@ -88,11 +88,11 @@ type
     property CreateSampleMethods : boolean read GetCreateSampleMethods;
     property CreateTestUnit : boolean read GetCreateTestUnit;
     property AddToProjectGroup : boolean read GetAddToProjectGroup;
-    property ReportLeakOption: TReportLeakOptions read GetReportLeakOption;
+    property ReportLeakOption : TReportLeakOptions read GetReportLeakOption;
   end;
 
 var
-  frmDunitXNewProject: TfrmDunitXNewProject;
+  frmDunitXNewProject : TfrmDunitXNewProject;
 
 implementation
 
@@ -101,7 +101,7 @@ uses
 
 {$R *.dfm}
 
-procedure TfrmDunitXNewProject.chkCreateTestUnitClick(Sender: TObject);
+procedure TfrmDunitXNewProject.chkCreateTestUnitClick(Sender : TObject);
 begin
   gbTestUnitOpt.Enabled := chkCreateTestUnit.Checked;
   chkCreateSetupTearDown.Enabled := chkCreateTestUnit.Checked;
@@ -109,37 +109,37 @@ begin
   edtClassName.Enabled := chkCreateTestUnit.Checked;
 end;
 
-procedure TfrmDunitXNewProject.FormCreate(Sender: TObject);
+procedure TfrmDunitXNewProject.FormCreate(Sender : TObject);
 begin
   edtClassName.TextHint := SDefaultClassName;
 end;
 
-function TfrmDunitXNewProject.GetAddToProjectGroup: boolean;
+function TfrmDunitXNewProject.GetAddToProjectGroup : boolean;
 begin
   result := chkAddToProjectGroup.Checked;
 end;
 
-function TfrmDunitXNewProject.GetCreateSampleMethods: boolean;
+function TfrmDunitXNewProject.GetCreateSampleMethods : boolean;
 begin
   result := chkCreateSampleMethods.Checked;
 end;
 
-function TfrmDunitXNewProject.GetCreateSetupTearDownMethods: boolean;
+function TfrmDunitXNewProject.GetCreateSetupTearDownMethods : boolean;
 begin
   result := chkCreateSetupTearDown.Checked;
 end;
 
-function TfrmDunitXNewProject.GetCreateTestUnit: boolean;
+function TfrmDunitXNewProject.GetCreateTestUnit : boolean;
 begin
   result := chkCreateTestUnit.Checked;
 end;
 
-function TfrmDunitXNewProject.GetReportLeakOption: TReportLeakOptions;
+function TfrmDunitXNewProject.GetReportLeakOption : TReportLeakOptions;
 begin
   Result := TReportLeakOptions(rgReportLeakOptions.ItemIndex);
 end;
 
-function TfrmDunitXNewProject.GetTestFixtureClassName: string;
+function TfrmDunitXNewProject.GetTestFixtureClassName : string;
 begin
   if Trim(edtClassName.Text) = '' then
     result := SDefaultClassName
@@ -148,3 +148,4 @@ begin
 end;
 
 end.
+

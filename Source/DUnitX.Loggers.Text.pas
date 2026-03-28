@@ -31,13 +31,12 @@ interface
 {$I DUnitX.inc}
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.Classes,
-  {$ELSE}
+{$ELSE}
   Classes,
-  {$ENDIF}
+{$ENDIF}
   DUnitX.TestFramework;
-
 
 type
   // Simple text file logger.
@@ -45,57 +44,54 @@ type
   private
     //FFileName : string;
   protected
-    procedure OnTestingStarts(const threadId: TThreadID; testCount, testActiveCount: Cardinal);
+    procedure OnTestingStarts(const threadId : TThreadID; testCount, testActiveCount : Cardinal);
 
-    procedure OnStartTestFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
+    procedure OnStartTestFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
 
-    procedure OnSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
-    procedure OnEndSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
+    procedure OnSetupFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
+    procedure OnEndSetupFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
 
-    procedure OnBeginTest(const threadId: TThreadID; const Test: ITestInfo);
+    procedure OnBeginTest(const threadId : TThreadID; const Test : ITestInfo);
 
-    procedure OnSetupTest(const threadId: TThreadID; const Test: ITestInfo);
-    procedure OnEndSetupTest(const threadId: TThreadID; const Test: ITestInfo);
+    procedure OnSetupTest(const threadId : TThreadID; const Test : ITestInfo);
+    procedure OnEndSetupTest(const threadId : TThreadID; const Test : ITestInfo);
 
-    procedure OnExecuteTest(const threadId: TThreadID; const Test: ITestInfo);
+    procedure OnExecuteTest(const threadId : TThreadID; const Test : ITestInfo);
 
+    procedure OnTestSuccess(const threadId : TThreadID; const Test : ITestResult);
+    procedure OnTestError(const threadId : TThreadID; const Error : ITestError);
+    procedure OnTestFailure(const threadId : TThreadID; const Failure : ITestError);
+    procedure OnTestIgnored(const threadId : TThreadID; const AIgnored : ITestResult);
+    procedure OnTestMemoryLeak(const threadId : TThreadID; const Test : ITestResult);
 
-    procedure OnTestSuccess(const threadId: TThreadID; const Test: ITestResult);
-    procedure OnTestError(const threadId: TThreadID; const Error: ITestError);
-    procedure OnTestFailure(const threadId: TThreadID; const Failure: ITestError);
-    procedure OnTestIgnored(const threadId: TThreadID; const AIgnored: ITestResult);
-    procedure OnTestMemoryLeak(const threadId: TThreadID; const Test: ITestResult);
+    procedure OnLog(const logType : TLogLevel; const msg : string);
 
-    procedure OnLog(const logType: TLogLevel; const msg : string);
+    procedure OnTeardownTest(const threadId : TThreadID; const Test : ITestInfo);
+    procedure OnEndTeardownTest(const threadId : TThreadID; const Test : ITestInfo);
 
-    procedure OnTeardownTest(const threadId: TThreadID; const Test: ITestInfo);
-    procedure OnEndTeardownTest(const threadId: TThreadID; const Test: ITestInfo);
+    procedure OnEndTest(const threadId : TThreadID; const Test : ITestResult);
 
-    procedure OnEndTest(const threadId: TThreadID; const Test: ITestResult);
+    procedure OnTearDownFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
+    procedure OnEndTearDownFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
 
+    procedure OnEndTestFixture(const threadId : TThreadID; const results : IFixtureResult);
 
-    procedure OnTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
-    procedure OnEndTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
-
-    procedure OnEndTestFixture(const threadId: TThreadID; const results: IFixtureResult);
-
-    procedure OnTestingEnds(const RunResults: IRunResults);
+    procedure OnTestingEnds(const RunResults : IRunResults);
   public
-    constructor Create(const AFileName: string; const overwrite : boolean = true);
+    constructor Create(const AFileName : string; const overwrite : boolean = true);
   end;
 
 implementation
 
 uses
-  {$IFDEF DELPHI_2010}
-  DUnitX.Exceptions, //ENotImplemented is not in SysUtils in D2010
-  {$ENDIF}
-  {$IFDEF USE_NS}
+{$IFDEF DELPHI_2010}
+  DUnitX.Exceptions,                    //ENotImplemented is not in SysUtils in D2010
+{$ENDIF}
+{$IFDEF USE_NS}
   System.SysUtils;
-  {$ELSE}
+{$ELSE}
   SysUtils;
-  {$ENDIF}
-
+{$ENDIF}
 
 { TDUnitXTextFileLogger }
 
@@ -104,111 +100,110 @@ begin
   raise ENotImplemented.Create('Not Implemented');
 end;
 
-procedure TDUnitXTextFileLogger.OnEndSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
+procedure TDUnitXTextFileLogger.OnEndSetupFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
 begin
   raise ENotImplemented.Create('Not Implemented');
 end;
 
-procedure TDUnitXTextFileLogger.OnEndSetupTest(const threadId: TThreadID; const Test: ITestInfo);
+procedure TDUnitXTextFileLogger.OnEndSetupTest(const threadId : TThreadID; const Test : ITestInfo);
 begin
   raise ENotImplemented.Create('Not Implemented');
 end;
 
-procedure TDUnitXTextFileLogger.OnEndTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
+procedure TDUnitXTextFileLogger.OnEndTearDownFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
 begin
   raise ENotImplemented.Create('Not Implemented');
 end;
 
-procedure TDUnitXTextFileLogger.OnEndTeardownTest(const threadId: TThreadID; const Test: ITestInfo);
+procedure TDUnitXTextFileLogger.OnEndTeardownTest(const threadId : TThreadID; const Test : ITestInfo);
 begin
   raise ENotImplemented.Create('Not Implemented');
 end;
 
-procedure TDUnitXTextFileLogger.OnEndTest(const threadId: TThreadID; const Test: ITestResult);
+procedure TDUnitXTextFileLogger.OnEndTest(const threadId : TThreadID; const Test : ITestResult);
 begin
   raise ENotImplemented.Create('Not Implemented');
 end;
 
-procedure TDUnitXTextFileLogger.OnEndTestFixture(const threadId: TThreadID; const results: IFixtureResult);
+procedure TDUnitXTextFileLogger.OnEndTestFixture(const threadId : TThreadID; const results : IFixtureResult);
 begin
   raise ENotImplemented.Create('Not Implemented');
 end;
 
-procedure TDUnitXTextFileLogger.OnExecuteTest(const threadId: TThreadID; const Test: ITestInfo);
+procedure TDUnitXTextFileLogger.OnExecuteTest(const threadId : TThreadID; const Test : ITestInfo);
 begin
   raise ENotImplemented.Create('Not Implemented');
 end;
 
-procedure TDUnitXTextFileLogger.OnTestError(const threadId: TThreadID; const Error: ITestError);
+procedure TDUnitXTextFileLogger.OnTestError(const threadId : TThreadID; const Error : ITestError);
 begin
   raise ENotImplemented.Create('Not Implemented');
 end;
 
-procedure TDUnitXTextFileLogger.OnTestFailure(const threadId: TThreadID; const Failure: ITestError);
+procedure TDUnitXTextFileLogger.OnTestFailure(const threadId : TThreadID; const Failure : ITestError);
 begin
   raise ENotImplemented.Create('Not Implemented');
 end;
 
-procedure TDUnitXTextFileLogger.OnTestIgnored(const threadId: TThreadID; const AIgnored: ITestResult);
+procedure TDUnitXTextFileLogger.OnTestIgnored(const threadId : TThreadID; const AIgnored : ITestResult);
 begin
   raise ENotImplemented.Create('Not Implemented');
 end;
 
-procedure TDUnitXTextFileLogger.OnLog(const logType : TLogLevel; const msg: string);
+procedure TDUnitXTextFileLogger.OnLog(const logType : TLogLevel; const msg : string);
 begin
   raise ENotImplemented.Create('Not Implemented');
 end;
 
-procedure TDUnitXTextFileLogger.OnSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
+procedure TDUnitXTextFileLogger.OnSetupFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
 begin
   raise ENotImplemented.Create('Not Implemented');
 end;
 
-procedure TDUnitXTextFileLogger.OnSetupTest(const threadId: TThreadID; const Test: ITestInfo);
+procedure TDUnitXTextFileLogger.OnSetupTest(const threadId : TThreadID; const Test : ITestInfo);
 begin
   raise ENotImplemented.Create('Not Implemented');
 end;
 
-procedure TDUnitXTextFileLogger.OnBeginTest(const threadId: TThreadID; const Test: ITestInfo);
+procedure TDUnitXTextFileLogger.OnBeginTest(const threadId : TThreadID; const Test : ITestInfo);
 begin
   raise ENotImplemented.Create('Not Implemented');
 end;
 
-procedure TDUnitXTextFileLogger.OnStartTestFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
+procedure TDUnitXTextFileLogger.OnStartTestFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
 begin
   raise ENotImplemented.Create('Not Implemented');
 end;
 
-
-procedure TDUnitXTextFileLogger.OnTestSuccess(const threadId: TThreadID; const Test: ITestResult);
+procedure TDUnitXTextFileLogger.OnTestSuccess(const threadId : TThreadID; const Test : ITestResult);
 begin
   raise ENotImplemented.Create('Not Implemented');
 end;
 
-procedure TDUnitXTextFileLogger.OnTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
+procedure TDUnitXTextFileLogger.OnTearDownFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
 begin
   raise ENotImplemented.Create('Not Implemented');
 end;
 
-procedure TDUnitXTextFileLogger.OnTeardownTest(const threadId: TThreadID; const Test: ITestInfo);
+procedure TDUnitXTextFileLogger.OnTeardownTest(const threadId : TThreadID; const Test : ITestInfo);
 begin
   raise ENotImplemented.Create('Not Implemented');
 end;
 
-procedure TDUnitXTextFileLogger.OnTestingEnds(const RunResults: IRunResults);
+procedure TDUnitXTextFileLogger.OnTestingEnds(const RunResults : IRunResults);
 begin
   raise ENotImplemented.Create('Not Implemented');
 end;
 
-procedure TDUnitXTextFileLogger.OnTestingStarts(const threadId: TThreadID; testCount, testActiveCount : Cardinal);
+procedure TDUnitXTextFileLogger.OnTestingStarts(const threadId : TThreadID; testCount, testActiveCount : Cardinal);
 begin
   raise ENotImplemented.Create('Not Implemented');
 end;
 
-
-procedure TDUnitXTextFileLogger.OnTestMemoryLeak(const threadId: TThreadID; const Test: ITestResult);
+procedure TDUnitXTextFileLogger.OnTestMemoryLeak(const threadId : TThreadID; const Test : ITestResult);
 begin
   raise ENotImplemented.Create('Not Implemented');
 end;
 
 end.
+

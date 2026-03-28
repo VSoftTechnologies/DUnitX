@@ -31,21 +31,20 @@ interface
 {$I DUnitX.inc}
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.Classes,
   System.TimeSpan,
   System.Diagnostics,
   System.Generics.Collections,
-  {$ELSE}
+{$ELSE}
   Classes,
   TimeSpan,
   Diagnostics,
   Generics.Collections,
-  {$ENDIF}
+{$ENDIF}
   DUnitX.TestFramework,
   DUnitX.InternalInterfaces,
   DUnitX.Generics;
-
 
 type
   TDUnitXRunResults = class(TInterfacedObject, IRunResults, ITestExecuteContext)
@@ -59,30 +58,30 @@ type
     FMemoryLeakCount : Integer;
     FTotalCount : integer;
 
-    FStopWatch: TStopwatch;
-    FStartTime: TDateTime;
-    FFinishTime: TDateTime;
-    FDuration: TTimeSpan;
+    FStopWatch : TStopwatch;
+    FStartTime : TDateTime;
+    FFinishTime : TDateTime;
+    FDuration : TTimeSpan;
     FFixtureResults : IList<IFixtureResult>;
     FAllTestResults : IList<ITestResult>;
   protected
-    function GetFixtureCount: Integer;
-    function GetAllPassed: Boolean;
-    function GetTestCount: Integer;
-    function GetErrorCount: Integer;
-    function GetFailureCount: Integer;
+    function GetFixtureCount : Integer;
+    function GetAllPassed : Boolean;
+    function GetTestCount : Integer;
+    function GetErrorCount : Integer;
+    function GetFailureCount : Integer;
     function GetMemoryLeakCount : Integer;
-    function GetFixtures: IEnumerable<ITestFixtureInfo>;
-    function GetFixtureResults: IEnumerable<IFixtureResult>;
+    function GetFixtures : IEnumerable<ITestFixtureInfo>;
+    function GetFixtureResults : IEnumerable<IFixtureResult>;
     function GetAllTestResults : IEnumerable<ITestResult>;
 
-    function GetPassCount: Integer;
-    function GetIgnoredCount: Integer;
+    function GetPassCount : Integer;
+    function GetIgnoredCount : Integer;
 
     function GetSuccessRate : integer;
-    function GetStartTime: TDateTime;
-    function GetFinishTime: TDateTime;
-    function GetDuration: TTimeSpan;
+    function GetStartTime : TDateTime;
+    function GetFinishTime : TDateTime;
+    function GetDuration : TTimeSpan;
 
     //ITestExecuteContext
     procedure RecordFixture(const fixtureResult : IFixtureResult);
@@ -91,22 +90,21 @@ type
     procedure RollupResults;
   public
     constructor Create;
-    destructor Destroy;override;
-    function ToString : string;override;
+    destructor Destroy; override;
+    function ToString : string; override;
   end;
-
 
 implementation
 
 uses
   DUnitX.ResStrs,
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.DateUtils,
   System.SysUtils;
-  {$ELSE}
+{$ELSE}
   DateUtils,
   SysUtils;
-  {$ENDIF}
+{$ENDIF}
 
 { TDUnitXTestResults }
 
@@ -132,90 +130,89 @@ begin
   inherited;
 end;
 
-function TDUnitXRunResults.GetAllPassed: Boolean;
+function TDUnitXRunResults.GetAllPassed : Boolean;
 begin
   result := FAllPassed;
 end;
 
-function TDUnitXRunResults.GetAllTestResults: IEnumerable<ITestResult>;
+function TDUnitXRunResults.GetAllTestResults : IEnumerable<ITestResult>;
 begin
   result := FAllTestResults;
 end;
 
-function TDUnitXRunResults.GetTestCount: Integer;
+function TDUnitXRunResults.GetTestCount : Integer;
 begin
   result := FTotalCount;
 end;
 
-function TDUnitXRunResults.GetErrorCount: Integer;
+function TDUnitXRunResults.GetErrorCount : Integer;
 begin
   result := FErrorCount;
 end;
 
-function TDUnitXRunResults.GetFailureCount: Integer;
+function TDUnitXRunResults.GetFailureCount : Integer;
 begin
   result := FFailureCount;
 end;
 
-function TDUnitXRunResults.GetFinishTime: TDateTime;
+function TDUnitXRunResults.GetFinishTime : TDateTime;
 begin
   result := FFinishTime;
 end;
 
-function TDUnitXRunResults.GetFixtures: IEnumerable<ITestFixtureInfo>;
+function TDUnitXRunResults.GetFixtures : IEnumerable<ITestFixtureInfo>;
 begin
   result := FFixtures;
 end;
 
-function TDUnitXRunResults.GetIgnoredCount: Integer;
+function TDUnitXRunResults.GetIgnoredCount : Integer;
 begin
   result := FIgnoredCount;
 end;
 
-function TDUnitXRunResults.GetMemoryLeakCount: Integer;
+function TDUnitXRunResults.GetMemoryLeakCount : Integer;
 begin
   Result := FMemoryLeakCount;
 end;
 
-function TDUnitXRunResults.GetFixtureCount: Integer;
+function TDUnitXRunResults.GetFixtureCount : Integer;
 begin
   result := FFixtureResults.Count;
 end;
 
-function TDUnitXRunResults.GetFixtureResults: IEnumerable<IFixtureResult>;
+function TDUnitXRunResults.GetFixtureResults : IEnumerable<IFixtureResult>;
 begin
   result := FFixtureResults;
 end;
 
-function TDUnitXRunResults.GetDuration: TTimeSpan;
+function TDUnitXRunResults.GetDuration : TTimeSpan;
 begin
   result := FDuration;
 end;
 
-function TDUnitXRunResults.GetStartTime: TDateTime;
+function TDUnitXRunResults.GetStartTime : TDateTime;
 begin
   result := FStartTime;
 end;
 
-function TDUnitXRunResults.GetPassCount: Integer;
+function TDUnitXRunResults.GetPassCount : Integer;
 begin
   result := FPassCount;
 end;
 
-function TDUnitXRunResults.GetSuccessRate: integer;
+function TDUnitXRunResults.GetSuccessRate : integer;
 var
   successRate : integer;
 begin
   if FTotalCount <> 0 then
-    successRate :=  Trunc((FTotalCount - FFailureCount - FErrorCount) / FTotalCount) * 100
+    successRate := Trunc((FTotalCount - FFailureCount - FErrorCount) / FTotalCount) * 100
   else
     successRate := 100;
 
   Result := successRate;
 end;
 
-
-procedure TDUnitXRunResults.RecordFixture(const fixtureResult: IFixtureResult);
+procedure TDUnitXRunResults.RecordFixture(const fixtureResult : IFixtureResult);
 begin
   FFixtureResults.Add(fixtureResult);
 end;
@@ -224,9 +221,9 @@ procedure TDUnitXRunResults.RecordResult(const fixtureResult : IFixtureResult; c
 begin
   Inc(FTotalCount);
   case testResult.ResultType of
-    TTestResultType.Pass    : Inc(FPassCount);
+    TTestResultType.Pass : Inc(FPassCount);
     TTestResultType.Failure : Inc(FFailureCount);
-    TTestResultType.Error   : Inc(FErrorCount);
+    TTestResultType.Error : Inc(FErrorCount);
     TTestResultType.Ignored : Inc(FIgnoredCount);
     TTestResultType.MemoryLeak : Inc(FMemoryLeakCount);
   end;
@@ -253,9 +250,10 @@ begin
   //TODO: Make sure the fixture results are unique.
 end;
 
-function TDUnitXRunResults.ToString: string;
+function TDUnitXRunResults.ToString : string;
 begin
-  result := Format(STestsPassed +#13#10,[FPassCount]);
+  result := Format(STestsPassed + #13#10, [FPassCount]);
 end;
 
 end.
+

@@ -47,14 +47,12 @@ uses
   DUnitX.TestFramework;
 
 type
-  TMadExcept4StackTraceProvider = class(TInterfacedObject,IStacktraceProvider)
+  TMadExcept4StackTraceProvider = class(TInterfacedObject, IStacktraceProvider)
   public
-    function GetStackTrace(const ex: Exception; const exAddressAddress: Pointer): string;
-    function PointerToLocationInfo(const Addrs: Pointer): string;
-    function PointerToAddressInfo(Addrs: Pointer): string;
+    function GetStackTrace(const ex : Exception; const exAddressAddress : Pointer) : string;
+    function PointerToLocationInfo(const Addrs : Pointer) : string;
+    function PointerToAddressInfo(Addrs : Pointer) : string;
   end;
-
-
 
 implementation
 
@@ -63,59 +61,60 @@ uses
 
 { TMadExcept4StackTraceProvider }
 
-function TMadExcept4StackTraceProvider.GetStackTrace(const ex: Exception; const exAddressAddress: Pointer): string;
+function TMadExcept4StackTraceProvider.GetStackTrace(const ex : Exception; const exAddressAddress : Pointer) : string;
 {$IFDEF USE_MADEXCEPT4}
 {$IFDEF CPUx64}
 var
-  stackTrace: TStackTrace;
+  stackTrace : TStackTrace;
 {$ENDIF}
 {$ENDIF}
 begin
   result := '';
-  {$IFDEF USE_MADEXCEPT4}
-  {$IFDEF CPUx64}
-    Result := madExcept.GetCrashStackTrace(false, true, true, @stackTrace); 
-  {$ELSE}
-    Result := madStackTrace.StackTrace( false, false, false, nil, nil,
-                                             exAddressAddress, false,
-                                             false, 0, 0, nil,
-                                             @exAddressAddress);
-  {$ENDIF}
-  {$ENDIF}
+{$IFDEF USE_MADEXCEPT4}
+{$IFDEF CPUx64}
+  Result := madExcept.GetCrashStackTrace(false, true, true, @stackTrace);
+{$ELSE}
+  Result := madStackTrace.StackTrace(false, false, false, nil, nil,
+    exAddressAddress, false,
+    false, 0, 0, nil,
+    @exAddressAddress);
+{$ENDIF}
+{$ENDIF}
 end;
 
-function TMadExcept4StackTraceProvider.PointerToAddressInfo(Addrs: Pointer): string;
+function TMadExcept4StackTraceProvider.PointerToAddressInfo(Addrs : Pointer) : string;
 begin
-  {$IFDEF USE_MADEXCEPT4}
-  Result := String(StackAddrToStr(Addrs));
-  {$ELSE}
+{$IFDEF USE_MADEXCEPT4}
+  Result := string(StackAddrToStr(Addrs));
+{$ELSE}
   Result := '';
-  {$ENDIF}
+{$ENDIF}
 end;
 
-function TMadExcept4StackTraceProvider.PointerToLocationInfo(const Addrs: Pointer): string;
+function TMadExcept4StackTraceProvider.PointerToLocationInfo(const Addrs : Pointer) : string;
 begin
-  {$IFDEF USE_MADEXCEPT4}
-  Result := String(StackAddrToStr(Addrs));
-  {$ELSE}
+{$IFDEF USE_MADEXCEPT4}
+  Result := string(StackAddrToStr(Addrs));
+{$ELSE}
   Result := '';
-  {$ENDIF}
+{$ENDIF}
 end;
 
 initialization
 {$IFDEF USE_MADEXCEPT4}
 
-  {$IFDEF DELPHI_XE_UP}
-    TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider,TMadExcept4StackTraceProvider>(true);
-  {$ELSE}
-    //D2010 bug prevents using above method.
-    TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider>(true,
-     function : IStacktraceProvider
-        begin
-          result := TMadExcept4StackTraceProvider.Create;
-        end
-     );
-  {$ENDIF}
+{$IFDEF DELPHI_XE_UP}
+  TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider, TMadExcept4StackTraceProvider>(true);
+{$ELSE}
+  //D2010 bug prevents using above method.
+  TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider>(true,
+    function : IStacktraceProvider
+    begin
+      result := TMadExcept4StackTraceProvider.Create;
+    end
+    );
+{$ENDIF}
 {$ENDIF}
 
 end.
+

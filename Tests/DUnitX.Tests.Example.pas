@@ -32,17 +32,21 @@ interface
 
 uses
   DUnitX.TestFramework,
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.SysUtils;
-  {$ELSE}
+{$ELSE}
   SysUtils;
-  {$ENDIF}
+{$ENDIF}
 
 type
-  TTestEnum = (teOne, teTwo, teThree);
+  TTestEnum = (
+    teOne,
+    teTwo,
+    teThree
+  );
   TTestEnums = set of TTestEnum;
 
-  {$M+}
+{$M+}
   [TestFixture('ExampleFixture1')]
   [Category('examples')]
   TMyExampleTests = class
@@ -60,15 +64,15 @@ type
     //TODO: Add TestCase where the params are over and under the actually name to pass.
     //TODO: Make sure that each test case is passed and run only once, currently run multiple times. Actually its X*X times where X is the number of test cases in the fixture.
     [Test]
-    [TestCase('Case 1','1,2')]
-    [TestCase('Case 2','3,4')]
-    [TestCase('Case 3','5,6')]
+    [TestCase('Case 1', '1,2')]
+    [TestCase('Case 2', '3,4')]
+    [TestCase('Case 3', '5,6')]
     procedure TestOne(param1 : integer; param2 : integer);
 
     [Test]
     procedure TestUint64Max;
 
-    [TestCase('Case 3','Blah,1')]
+    [TestCase('Case 3', 'Blah,1')]
     procedure AnotherTestMethod(const a : string; const b : integer);
 
     [Test]
@@ -77,16 +81,16 @@ type
     [TestCase('Date, T, time, Z', '1988-10-21T17:44:23.456Z')]
     [TestCase('Date, T, time, offset (1)', '1988-10-21T17:44:23.456+02:30')]
     [TestCase('Date, T, time, offset (2)', '1988-10-21T17:44:23.456+0230')]
-    procedure TestDateTimeArgument(dateTime: TDateTime);
+    procedure TestDateTimeArgument(dateTime : TDateTime);
 
     [Test]
     [TestCase('Just date', '1988-10-21')]
-    procedure TestDateArgument(const date: TDate);
+    procedure TestDateArgument(const date : TDate);
 
     [Test]
     [TestCase('time with ms', '17:44:23.456')]
     [TestCase('time without ms', '17:44:23')]
-    procedure TestTimeArgument(time: TTime);
+    procedure TestTimeArgument(time : TTime);
 
     [Test]
     [TestCase('Set []', '[]|0', '|')]
@@ -97,7 +101,7 @@ type
     [TestCase('Set [teOne,teThree]', '[teOne,teThree]|5', '|')]
     [TestCase('Set [teOne,teTwo,teThree]', '[teOne,teTwo,teThree]|7', '|')]
     [TestCase('Set [teThree,teTwo,teOne]', '[teThree,teTwo,teOne]|7', '|')]
-    procedure TestSetArgument(aset: TTestEnums; ExpectedAsInteger: UInt8);
+    procedure TestSetArgument(aset : TTestEnums; ExpectedAsInteger : UInt8);
 
     [Test]
     [Category('Bar,foo')]
@@ -156,7 +160,7 @@ type
     procedure SetupFixture;
     [Teardown]
     procedure TearDownFixture;
-    destructor Destroy;override;
+    destructor Destroy; override;
   published
     procedure Published_Procedures_Are_Included_As_Tests;
   end;
@@ -168,12 +172,12 @@ type
   public
     // Testing constructor/destructor as fixture setup/teardown
     // Delphi 2010 does support calling of constructor
-    {$IFDEF DELPHI_XE_UP}
+{$IFDEF DELPHI_XE_UP}
     constructor Create;
-    {$ELSE}
+{$ELSE}
     procedure AfterConstruction; override;
-    {$ENDIF}
-    destructor Destroy;override;
+{$ENDIF}
+    destructor Destroy; override;
 
     [SetupFixture]
     procedure SetupFixture;
@@ -187,13 +191,12 @@ uses
   DUnitX.DUnitCompatibility,
   DUnitX.Exceptions,
   System.Diagnostics,
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.DateUtils;
-  {$ELSE}
+{$ELSE}
   Diagnostics,
   DateUtils;
-  {$ENDIF}
-
+{$ENDIF}
 
 procedure TMyExampleTests.DontCallMe;
 begin
@@ -218,12 +221,12 @@ end;
 
 procedure TMyExampleTests.IgnoreMe;
 begin
-  Assert.IsTrue(false,'I should not have been called!');
+  Assert.IsTrue(false, 'I should not have been called!');
 end;
 
 procedure TMyExampleTests.IgnoreMeAnyway;
 begin
-  Assert.IsTrue(false,'I should not have been called!');
+  Assert.IsTrue(false, 'I should not have been called!');
 end;
 
 procedure TMyExampleTests.IgnoreMeCauseImWrong;
@@ -241,27 +244,27 @@ begin
   TDUnitX.CurrentRunner.Status('TearDown called');
 end;
 
-procedure TMyExampleTests.AnotherTestMethod(const a: string; const b: integer);
+procedure TMyExampleTests.AnotherTestMethod(const a : string; const b : integer);
 begin
-  TDUnitX.CurrentRunner.Status(Format('TestCaseBlah called with %s %d',[a,b]));
+  TDUnitX.CurrentRunner.Status(Format('TestCaseBlah called with %s %d', [a, b]));
   Assert.Pass;
 end;
 
-procedure TMyExampleTests.TestDateArgument(const date: TDate);
+procedure TMyExampleTests.TestDateArgument(const date : TDate);
 var
-  expected: TDate;
+  expected : TDate;
 begin
   expected := EncodeDate(1988, 10, 21);
-  Assert.IsTrue( SameDate(expected, date) );
+  Assert.IsTrue(SameDate(expected, date));
 end;
 
-procedure TMyExampleTests.TestDateTimeArgument(dateTime: TDateTime);
+procedure TMyExampleTests.TestDateTimeArgument(dateTime : TDateTime);
 var
-  expected: TDateTime;
+  expected : TDateTime;
 begin
   dateTime := RecodeMilliSecond(dateTime, 000);
   expected := EncodeDateTime(1988, 10, 21, 17, 44, 23, 000);
-  Assert.IsTrue( SameDateTime(expected, dateTime) );
+  Assert.IsTrue(SameDateTime(expected, dateTime));
 end;
 
 procedure TMyExampleTests.TestMaxTime;
@@ -277,7 +280,7 @@ begin
       //Give some time back to the system to process the test.
       Sleep(20);
 
-      elapsedTime :=  stopwatch.ElapsedMilliseconds;
+      elapsedTime := stopwatch.ElapsedMilliseconds;
     until (elapsedTime >= 2000);
     Assert.Fail('Timeout did not work');
   except
@@ -297,23 +300,23 @@ end;
 
 procedure TMyExampleTests.TestOne(param1 : integer; param2 : integer);
 begin
-  TDUnitX.CurrentRunner.Status(Format('TestOnce called with %d %d',[param1,param2]));
+  TDUnitX.CurrentRunner.Status(Format('TestOnce called with %d %d', [param1, param2]));
   Assert.Pass;
 end;
 
-procedure TMyExampleTests.TestSetArgument(aset: TTestEnums;
-  ExpectedAsInteger: UInt8);
+procedure TMyExampleTests.TestSetArgument(aset : TTestEnums;
+  ExpectedAsInteger : UInt8);
 begin
   Assert.AreEqual(ExpectedAsInteger, UInt8(aset));
 end;
 
-procedure TMyExampleTests.TestTimeArgument(time: TTime);
+procedure TMyExampleTests.TestTimeArgument(time : TTime);
 var
-  expected: TTime;
+  expected : TTime;
 begin
   time := RecodeMilliSecond(time, 0);
   expected := EncodeTime(17, 44, 23, 000);
-  Assert.IsTrue( SameTime(expected, time) );
+  Assert.IsTrue(SameTime(expected, time));
 end;
 
 procedure TMyExampleTests.TestTwo;
@@ -324,7 +327,7 @@ begin
   x := TMyExampleTests.Create;
   //CheckIs(x,TObject); //DUnit compatibility.
   TDUnitX.CurrentRunner.Status('hello world');
-  Assert.IsTrue(x is TObject); /// a bit pointless since it's strongly typed.
+  Assert.IsTrue(x is TObject);          /// a bit pointless since it's strongly typed.
   x.Free;
 end;
 
@@ -336,17 +339,17 @@ begin
   x := TMyExampleTests.Create;
   //CheckIs(x,TObject); //DUnit compatibility.
   TDUnitX.CurrentRunner.Status('hello world');
-  Assert.IsTrue(x is TObject); /// a bit pointless since it's strongly typed.
+  Assert.IsTrue(x is TObject);          /// a bit pointless since it's strongly typed.
   x.Free;
 end;
 
 procedure TMyExampleTests.TestUint64Max;
 const
-  UInt64MaxValue: UInt64 = 18446744073709551615;
+  UInt64MaxValue    : UInt64 = 18446744073709551615;
 var
-  LUInt64Value: UInt64;
+  LUInt64Value : UInt64;
 begin
-  LUInt64Value:= High(UInt64);
+  LUInt64Value := High(UInt64);
   Assert.AreEqual(UInt64MaxValue, LUInt64Value);
 end;
 
@@ -381,6 +384,7 @@ end;
 
 {$IFDEF DELPHI_XE_UP}
 constructor TExampleFixture3.Create;
+
 {$ELSE}
 procedure TExampleFixture3.AfterConstruction;
 {$ENDIF}
@@ -396,27 +400,28 @@ end;
 
 procedure TExampleFixture3.SetupFixture;
 begin
-  Assert.IsTrue(False,'I should not be called!');
+  Assert.IsTrue(False, 'I should not be called!');
 end;
 
 initialization
 
-//I was hoping to use RTTI to discover the TestFixture classes, however unlike .NET
-//if we don't touch the class somehow then the linker will remove
-//the class from the resulting exe.
-//We could just do this:
-//TMyExampleTests.ClassName;
-//TExampleFixture2.ClassName;
-//which is enough to make the compiler link the classes into the exe, but that seems a
-//bit redundent so I guess we'll just use manual registration. If you use the
-//{$STRONGLINKTYPES ON} compiler directive then it will link the TestFixtures in and you
-//can use RTTI. The downside to that is the resulting exe will potentially much larger.
-//Not sure which version {$STRONGLINKTYPES ON} was introduced so we'll allow RTTI and
-//manual registration for now.
+  //I was hoping to use RTTI to discover the TestFixture classes, however unlike .NET
+  //if we don't touch the class somehow then the linker will remove
+  //the class from the resulting exe.
+  //We could just do this:
+  //TMyExampleTests.ClassName;
+  //TExampleFixture2.ClassName;
+  //which is enough to make the compiler link the classes into the exe, but that seems a
+  //bit redundent so I guess we'll just use manual registration. If you use the
+  //{$STRONGLINKTYPES ON} compiler directive then it will link the TestFixtures in and you
+  //can use RTTI. The downside to that is the resulting exe will potentially much larger.
+  //Not sure which version {$STRONGLINKTYPES ON} was introduced so we'll allow RTTI and
+  //manual registration for now.
 
-//Register the test fixtures
+  //Register the test fixtures
   TDUnitX.RegisterTestFixture(TMyExampleTests);
   TDUnitX.RegisterTestFixture(TExampleFixture2);
   TDUnitX.RegisterTestFixture(TExampleFixture3);
 
 end.
+

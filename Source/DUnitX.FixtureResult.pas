@@ -31,47 +31,45 @@ interface
 {$I DUnitX.inc}
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.Classes,
   System.TimeSpan,
   System.Diagnostics,
-  {$ELSE}
+{$ELSE}
   Classes,
   TimeSpan,
   Diagnostics,
-  {$ENDIF}
+{$ENDIF}
   DUnitX.Generics,
   DUnitX.TestFramework,
   DUnitX.InternalInterfaces;
 
-
 type
-  TDUnitXFixtureResult = class(TInterfacedObject,IFixtureResult,IFixtureResultBuilder)
+  TDUnitXFixtureResult = class(TInterfacedObject, IFixtureResult, IFixtureResultBuilder)
   private
-    FChildren     : IList<IFixtureResult>;
-    FTestResults  : IList<ITestResult>;
-    FFixture      : ITestFixtureInfo;
+    FChildren : IList<IFixtureResult>;
+    FTestResults : IList<ITestResult>;
+    FFixture : ITestFixtureInfo;
 
-    FAllPassed    : boolean;
-    FErrorCount   : integer;
+    FAllPassed : boolean;
+    FErrorCount : integer;
     FFailureCount : integer;
-    FPassCount    : integer;
+    FPassCount : integer;
     FIgnoredCount : integer;
-    FMemoryLeakCount   : Integer;
-    FTotalCount   : integer;
+    FMemoryLeakCount : Integer;
+    FTotalCount : integer;
 
-    FStopWatch    : TStopwatch;
-    FStartTime    : TDateTime;
-    FFinishTime   : TDateTime;
-    FDuration     : TTimeSpan;
+    FStopWatch : TStopwatch;
+    FStartTime : TDateTime;
+    FFinishTime : TDateTime;
+    FDuration : TTimeSpan;
 
-    FName         : string;
-    FNameSpace    : string;
-    FCanReduce    : boolean;
+    FName : string;
+    FNameSpace : string;
+    FCanReduce : boolean;
 
   protected
     procedure Reduce;
-
 
     function GetChildCount : Integer;
     function GetChildren : IList<IFixtureResult>;
@@ -87,15 +85,14 @@ type
     function GetTestResults : IList<ITestResult>;
     function GetIgnoredCount : Integer;
 
-    function GetStartTime: TDateTime;
-    function GetFinishTime: TDateTime;
-    function GetDuration: TTimeSpan;
+    function GetStartTime : TDateTime;
+    function GetFinishTime : TDateTime;
+    function GetDuration : TTimeSpan;
     function GetName : string;
     function GetNamespace : string;
 
-
-    procedure AddChild(const AFixtureResult: IFixtureResult);
-    procedure AddTestResult(const AResult: ITestResult);
+    procedure AddChild(const AFixtureResult : IFixtureResult);
+    procedure AddTestResult(const AResult : ITestResult);
     procedure RecordTestResult(const AResult : ITestResult);
     procedure RollUpResults;
   public
@@ -105,27 +102,27 @@ type
 implementation
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.DateUtils,
   System.SysUtils;
-  {$ELSE}
+{$ELSE}
   DateUtils,
   SysUtils;
-  {$ENDIF}
+{$ENDIF}
 
 const
   UNDEFINED_DATETIME = 0;
 
-{ TDUnitXFixtureResult }
+  { TDUnitXFixtureResult }
 
-procedure TDUnitXFixtureResult.AddChild(const AFixtureResult: IFixtureResult);
+procedure TDUnitXFixtureResult.AddChild(const AFixtureResult : IFixtureResult);
 begin
   if FChildren = nil then
     FChildren := TDUnitXList<IFixtureResult>.Create;
   FChildren.Add(AFixtureResult);
 end;
 
-procedure TDUnitXFixtureResult.AddTestResult(const AResult: ITestResult);
+procedure TDUnitXFixtureResult.AddTestResult(const AResult : ITestResult);
 begin
   if FTestResults = nil then
     FTestResults := TDUnitXList<ITestResult>.Create;
@@ -133,7 +130,7 @@ begin
   RecordTestResult(AResult);
 end;
 
-constructor TDUnitXFixtureResult.Create(const AParentResult : IFixtureResult;const AFixture: ITestFixtureInfo);
+constructor TDUnitXFixtureResult.Create(const AParentResult : IFixtureResult; const AFixture : ITestFixtureInfo);
 begin
   FFixture := AFixture;
   FStartTime := Now;
@@ -146,7 +143,6 @@ begin
   FName := AFixture.Name;
   FNameSpace := AFixture.NameSpace;
 
-
   if AParentResult <> nil then
   begin
     (AParentResult as IFixtureResultBuilder).AddChild(Self);
@@ -155,8 +151,7 @@ begin
 
 end;
 
-
-function TDUnitXFixtureResult.GetChildCount: Integer;
+function TDUnitXFixtureResult.GetChildCount : Integer;
 begin
   if FChildren <> nil then
     result := FChildren.Count
@@ -164,7 +159,7 @@ begin
     result := 0;
 end;
 
-function TDUnitXFixtureResult.GetChildren: IList<IFixtureResult>;
+function TDUnitXFixtureResult.GetChildren : IList<IFixtureResult>;
 begin
   //Don't pass nill back???
   if FChildren = nil then
@@ -172,18 +167,17 @@ begin
   result := FChildren;
 end;
 
-function TDUnitXFixtureResult.GetDuration: TTimeSpan;
+function TDUnitXFixtureResult.GetDuration : TTimeSpan;
 begin
   result := FDuration;
 end;
 
-function TDUnitXFixtureResult.GetErrorCount: Integer;
+function TDUnitXFixtureResult.GetErrorCount : Integer;
 begin
   result := FErrorCount;
 end;
 
-
-function TDUnitXFixtureResult.GetErrors: IList<ITestError>;
+function TDUnitXFixtureResult.GetErrors : IList<ITestError>;
 var
   test : ITestResult;
   error : ITestError;
@@ -194,17 +188,17 @@ begin
 
   for test in FTestResults do
   begin
-    if Supports(test,ITestError,error) then
+    if Supports(test, ITestError, error) then
       result.Add(error);
   end;
 end;
 
-function TDUnitXFixtureResult.GetFailureCount: Integer;
+function TDUnitXFixtureResult.GetFailureCount : Integer;
 begin
   result := FFailureCount;
 end;
 
-function TDUnitXFixtureResult.GetFailures: IList<ITestResult>;
+function TDUnitXFixtureResult.GetFailures : IList<ITestResult>;
 var
   test : ITestResult;
 begin
@@ -219,42 +213,42 @@ begin
   end;
 end;
 
-function TDUnitXFixtureResult.GetFinishTime: TDateTime;
+function TDUnitXFixtureResult.GetFinishTime : TDateTime;
 begin
   result := FFinishTime;
 end;
 
-function TDUnitXFixtureResult.GetFixture: ITestFixtureInfo;
+function TDUnitXFixtureResult.GetFixture : ITestFixtureInfo;
 begin
   result := FFixture;
 end;
 
-function TDUnitXFixtureResult.GetHasFailures: Boolean;
+function TDUnitXFixtureResult.GetHasFailures : Boolean;
 begin
   result := FFailureCount > 0;
 end;
 
-function TDUnitXFixtureResult.GetIgnoredCount: Integer;
+function TDUnitXFixtureResult.GetIgnoredCount : Integer;
 begin
   result := FIgnoredCount;
 end;
 
-function TDUnitXFixtureResult.GetName: string;
+function TDUnitXFixtureResult.GetName : string;
 begin
   result := FName;
 end;
 
-function TDUnitXFixtureResult.GetNamespace: string;
+function TDUnitXFixtureResult.GetNamespace : string;
 begin
   result := FName;
 end;
 
-function TDUnitXFixtureResult.GetPassCount: Integer;
+function TDUnitXFixtureResult.GetPassCount : Integer;
 begin
   result := FPassCount;
 end;
 
-function TDUnitXFixtureResult.GetPasses: IList<ITestResult>;
+function TDUnitXFixtureResult.GetPasses : IList<ITestResult>;
 var
   test : ITestResult;
 begin
@@ -269,19 +263,19 @@ begin
   end;
 end;
 
-function TDUnitXFixtureResult.GetStartTime: TDateTime;
+function TDUnitXFixtureResult.GetStartTime : TDateTime;
 begin
   Result := FStartTime;
 end;
 
-function TDUnitXFixtureResult.GetTestResultCount: Integer;
+function TDUnitXFixtureResult.GetTestResultCount : Integer;
 begin
   if FTestResults = nil then
     Exit(0);
   result := FTestResults.Count;
 end;
 
-function TDUnitXFixtureResult.GetTestResults: IList<DUnitX.TestFramework.ITestResult>;
+function TDUnitXFixtureResult.GetTestResults : IList<DUnitX.TestFramework.ITestResult>;
 begin
   if FTestResults = nil then
     FTestResults := TDUnitXList<ITestResult>.Create;
@@ -296,14 +290,13 @@ begin
     result := b;
 end;
 
-
-procedure TDUnitXFixtureResult.RecordTestResult(const AResult: ITestResult);
+procedure TDUnitXFixtureResult.RecordTestResult(const AResult : ITestResult);
 begin
   Inc(FTotalCount);
   case AResult.ResultType of
-    TTestResultType.Pass    : Inc(FPassCount);
+    TTestResultType.Pass : Inc(FPassCount);
     TTestResultType.Failure : Inc(FFailureCount);
-    TTestResultType.Error   : Inc(FErrorCount);
+    TTestResultType.Error : Inc(FErrorCount);
     TTestResultType.Ignored : Inc(FIgnoredCount);
     TTestResultType.MemoryLeak : Inc(FMemoryLeakCount);
   end;
@@ -325,19 +318,19 @@ begin
     //if we have no tests and only one child, then we reduce to that child.
     if FCanReduce and (FChildren.Count = 1) and ((FTestResults = nil) or (FTestResults.Count = 0)) then
     begin
-       fixtureRes := FChildren[0];
+      fixtureRes := FChildren[0];
 
-       FNameSpace := FNameSpace + '.' + FName;
-       FName := fixtureRes.Name;
+      FNameSpace := FNameSpace + '.' + FName;
+      FName := fixtureRes.Name;
 
-       FFixture := fixtureRes.Fixture;
-       if FTestResults = nil then
-         FTestResults := TDUnitXList<ITestResult>.Create;
-       FTestResults.AddRange(fixtureRes.TestResults);
-       FChildren.Clear;
-       if fixtureRes.ChildCount > 0 then
-         FChildren.AddRange(fixtureRes.Children)
-       else
+      FFixture := fixtureRes.Fixture;
+      if FTestResults = nil then
+        FTestResults := TDUnitXList<ITestResult>.Create;
+      FTestResults.AddRange(fixtureRes.TestResults);
+      FChildren.Clear;
+      if fixtureRes.ChildCount > 0 then
+        FChildren.AddRange(fixtureRes.Children)
+      else
         FChildren.Clear;
     end;
   end;
@@ -358,12 +351,12 @@ begin
     for fixture in FChildren do
     begin
       (fixture as IFixtureResultBuilder).RollUpResults;
-      Inc(FErrorCount,fixture.ErrorCount);
-      Inc(FFailureCount,fixture.FailureCount);
-      Inc(FIgnoredCount,fixture.IgnoredCount);
-      Inc(FPassCount,fixture.PassCount);
+      Inc(FErrorCount, fixture.ErrorCount);
+      Inc(FFailureCount, fixture.FailureCount);
+      Inc(FIgnoredCount, fixture.IgnoredCount);
+      Inc(FPassCount, fixture.PassCount);
       FAllPassed := FAllPassed and (not fixture.HasFailures);
-      FFinishTime := Max(FFinishTime,fixture.FinishTime);
+      FFinishTime := Max(FFinishTime, fixture.FinishTime);
       FDuration := FDuration.Add(fixture.Duration);
     end;
   end
@@ -376,3 +369,4 @@ begin
 end;
 
 end.
+

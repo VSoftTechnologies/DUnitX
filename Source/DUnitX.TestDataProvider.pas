@@ -31,20 +31,21 @@ interface
 {$I DUnitX.inc}
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.Classes,
   System.Generics.Collections,
-  {$ELSE}
+{$ELSE}
   Classes,
   Generics.Collections,
-  {$ENDIF}
+{$ENDIF}
   DUnitX.Types,
   DUnitX.InternalDataProvider;
 
 type
   TestDataProviderManager = class
   private
-    class var FList : TDictionary<string, TClass>;
+    class var
+      FList : TDictionary<string, TClass>;
   public
     class constructor Create;
     class destructor Destroy;
@@ -52,8 +53,8 @@ type
     class procedure RegisterProvider(const name : string; const AClass : TTestDataProviderClass);
     class procedure UnregisterProvider(const name : string);
 
-    class function GetProvider(const name : string) : ITestDataProvider;overload;
-    class function GetProvider(const AClass:TTestDataProviderClass) : ITestDataProvider;overload;
+    class function GetProvider(const name : string) : ITestDataProvider; overload;
+    class function GetProvider(const AClass : TTestDataProviderClass) : ITestDataProvider; overload;
   end;
 
 implementation
@@ -65,12 +66,12 @@ begin
   FList := TDictionary<string, TClass>.Create;
 end;
 
-class Destructor TestDataProviderManager.Destroy;
+class destructor TestDataProviderManager.Destroy;
 begin
   FList.Free;
 end;
 
-class function TestDataProviderManager.GetProvider(const AClass: TTestDataProviderClass) : ITestDataProvider;
+class function TestDataProviderManager.GetProvider(const AClass : TTestDataProviderClass) : ITestDataProvider;
 var
   key : string;
 begin
@@ -95,16 +96,17 @@ begin
     result := TTestDataProviderClass(FList[name]).Create;
 end;
 
-class procedure TestDataProviderManager.RegisterProvider(const name: string; const AClass: TTestDataProviderClass);
+class procedure TestDataProviderManager.RegisterProvider(const name : string; const AClass : TTestDataProviderClass);
 begin
   if (not FList.ContainsKey(name)) then
-    FList.add(name,AClass);
+    FList.add(name, AClass);
 end;
 
-class procedure TestDataProviderManager.UnregisterProvider(const name: string);
+class procedure TestDataProviderManager.UnregisterProvider(const name : string);
 begin
- if (FList.ContainsKey(name)) then
+  if (FList.ContainsKey(name)) then
     FList.Remove(Name);
 end;
 
 end.
+

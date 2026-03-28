@@ -34,74 +34,74 @@ uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, DUnitX.TestFramework,
   DUnitX.Extensibility, FMX.Controls.Presentation, FMX.StdCtrls, FMX.ListView.Types, FMX.ListView,
-  FMX.ListView.Appearances, FMX.TabControl, System.Generics.Collections, FMX.ScrollBox, FMX.Memo;
+  FMX.ListView.Appearances, FMX.TabControl, System.Generics.Collections, FMX.ScrollBox, FMX.Memo, FMX.ListView.Adapters.Base, FMX.Memo.Types;
 
 type
   TMobileGUITestRunner = class(TForm, ITestLogger)
-    Panel1: TPanel;
-    TestsListView: TListView;
-    ToolBar1: TToolBar;
-    TabControl1: TTabControl;
-    TestsTab: TTabItem;
-    ResultsTab: TTabItem;
-    Panel2: TPanel;
-    RunTestsButton: TButton;
-    Panel3: TPanel;
-    FailList: TListView;
-    Label1: TLabel;
-    Label2: TLabel;
-    Label3: TLabel;
-    Label4: TLabel;
-    RunsLabel: TLabel;
-    FailLabel: TLabel;
-    SuccessLabel: TLabel;
-    LeakedLabel: TLabel;
-    FailedTestMessage: TMemo;
-    Splitter1: TSplitter;
-    TestProgress: TProgressBar;
-    ProgressLabel: TLabel;
-    procedure FormCreate(Sender: TObject);
-    procedure FormShow(Sender: TObject);
-    procedure TestsListViewItemClick(const Sender: TObject;
-      const AItem: TListViewItem);
-    procedure FormDestroy(Sender: TObject);
-    procedure RunTestsButtonClick(Sender: TObject);
-    procedure FailListItemClick(const Sender: TObject;
-      const AItem: TListViewItem);
+    Panel1 : TPanel;
+    TestsListView : TListView;
+    ToolBar1 : TToolBar;
+    TabControl1 : TTabControl;
+    TestsTab : TTabItem;
+    ResultsTab : TTabItem;
+    Panel2 : TPanel;
+    RunTestsButton : TButton;
+    Panel3 : TPanel;
+    FailList : TListView;
+    Label1 : TLabel;
+    Label2 : TLabel;
+    Label3 : TLabel;
+    Label4 : TLabel;
+    RunsLabel : TLabel;
+    FailLabel : TLabel;
+    SuccessLabel : TLabel;
+    LeakedLabel : TLabel;
+    FailedTestMessage : TMemo;
+    Splitter1 : TSplitter;
+    TestProgress : TProgressBar;
+    ProgressLabel : TLabel;
+    procedure FormCreate(Sender : TObject);
+    procedure FormShow(Sender : TObject);
+    procedure TestsListViewItemClick(const Sender : TObject;
+      const AItem : TListViewItem);
+    procedure FormDestroy(Sender : TObject);
+    procedure RunTestsButtonClick(Sender : TObject);
+    procedure FailListItemClick(const Sender : TObject;
+      const AItem : TListViewItem);
   private
-    FTestRunner: ITestRunner;
-    FFixtureList: ITestFixtureList;
-    FChecked: TList<Integer>;
-    FLastResults: IRunResults;
-    FFailedTests: TDictionary<String, ITestResult>;
+    FTestRunner : ITestRunner;
+    FFixtureList : ITestFixtureList;
+    FChecked : TList<Integer>;
+    FLastResults : IRunResults;
+    FFailedTests : TDictionary<string, ITestResult>;
   protected
-    procedure OnTestingStarts(const threadId: TThreadID; testCount, testActiveCount: Cardinal);
-    procedure OnStartTestFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
-    procedure OnSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
-    procedure OnEndSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
-    procedure OnBeginTest(const threadId: TThreadID; const Test: ITestInfo);
-    procedure OnSetupTest(const threadId: TThreadID; const Test: ITestInfo);
-    procedure OnEndSetupTest(const threadId: TThreadID; const Test: ITestInfo);
-    procedure OnExecuteTest(const threadId: TThreadID; const Test: ITestInfo);
-    procedure OnTestSuccess(const threadId: TThreadID; const Test: ITestResult);
-    procedure OnTestError(const threadId: TThreadID; const Error: ITestError);
-    procedure OnTestFailure(const threadId: TThreadID; const Failure: ITestError);
-    procedure OnTestIgnored(const threadId: TThreadID; const AIgnored: ITestResult);
-    procedure OnTestMemoryLeak(const threadId: TThreadID; const Test: ITestResult);
-    procedure OnLog(const logType: TLogLevel; const msg: string);
-    procedure OnTeardownTest(const threadId: TThreadID; const Test: ITestInfo);
-    procedure OnEndTeardownTest(const threadId: TThreadID; const Test: ITestInfo);
-    procedure OnEndTest(const threadId: TThreadID; const Test: ITestResult);
-    procedure OnTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
-    procedure OnEndTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
-    procedure OnEndTestFixture(const threadId: TThreadID; const results: IFixtureResult);
-    procedure OnTestingEnds(const RunResults: IRunResults);
+    procedure OnTestingStarts(const threadId : TThreadID; testCount, testActiveCount : Cardinal);
+    procedure OnStartTestFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
+    procedure OnSetupFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
+    procedure OnEndSetupFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
+    procedure OnBeginTest(const threadId : TThreadID; const Test : ITestInfo);
+    procedure OnSetupTest(const threadId : TThreadID; const Test : ITestInfo);
+    procedure OnEndSetupTest(const threadId : TThreadID; const Test : ITestInfo);
+    procedure OnExecuteTest(const threadId : TThreadID; const Test : ITestInfo);
+    procedure OnTestSuccess(const threadId : TThreadID; const Test : ITestResult);
+    procedure OnTestError(const threadId : TThreadID; const Error : ITestError);
+    procedure OnTestFailure(const threadId : TThreadID; const Failure : ITestError);
+    procedure OnTestIgnored(const threadId : TThreadID; const AIgnored : ITestResult);
+    procedure OnTestMemoryLeak(const threadId : TThreadID; const Test : ITestResult);
+    procedure OnLog(const logType : TLogLevel; const msg : string);
+    procedure OnTeardownTest(const threadId : TThreadID; const Test : ITestInfo);
+    procedure OnEndTeardownTest(const threadId : TThreadID; const Test : ITestInfo);
+    procedure OnEndTest(const threadId : TThreadID; const Test : ITestResult);
+    procedure OnTearDownFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
+    procedure OnEndTearDownFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
+    procedure OnEndTestFixture(const threadId : TThreadID; const results : IFixtureResult);
+    procedure OnTestingEnds(const RunResults : IRunResults);
   public
     { Public declarations }
   end;
 
 var
-  MobileGUITestRunner: TMobileGUITestRunner;
+  MobileGUITestRunner : TMobileGUITestRunner;
 
 implementation
 
@@ -112,22 +112,22 @@ uses
 
 { TMobileGUITestRunner }
 
-procedure TMobileGUITestRunner.FailListItemClick(const Sender: TObject;
-  const AItem: TListViewItem);
+procedure TMobileGUITestRunner.FailListItemClick(const Sender : TObject;
+  const AItem : TListViewItem);
 var
-  TestResult: ITestResult;
+  TestResult : ITestResult;
 begin
   testResult := FFailedTests[AItem.Detail];
   FailedTestMessage.Text := TestResult.Message;
 end;
 
-procedure TMobileGUITestRunner.FormCreate(Sender: TObject);
+procedure TMobileGUITestRunner.FormCreate(Sender : TObject);
 {$IFDEF CI}
 var
-  NUnitLogger: ITestLogger;
+  NUnitLogger : ITestLogger;
 {$ENDIF}
 begin
-  FFailedTests := TDictionary<String, ITestResult>.Create;
+  FFailedTests := TDictionary<string, ITestResult>.Create;
   FChecked := TList<Integer>.Create;
   FTestRunner := TDUnitX.CreateRunner;
   FTestRunner.AddLogger(Self);
@@ -142,18 +142,18 @@ begin
   ProgressLabel.Text := '';
 end;
 
-procedure TMobileGUITestRunner.FormDestroy(Sender: TObject);
+procedure TMobileGUITestRunner.FormDestroy(Sender : TObject);
 begin
   FFailedTests.Free;
   FChecked.Free;
 end;
 
-procedure TMobileGUITestRunner.FormShow(Sender: TObject);
+procedure TMobileGUITestRunner.FormShow(Sender : TObject);
 
-  procedure BuildTree(const AFixtureList: ITestFixtureList);
+  procedure BuildTree(const AFixtureList : ITestFixtureList);
   var
     LFixture : ITestFixture;
-    LItem: TListViewItem;
+    LItem : TListViewItem;
     test : ITest;
   begin
     for LFixture in AFixtureList do
@@ -182,147 +182,147 @@ begin
   BuildTree(FFixtureList);
 end;
 
-procedure TMobileGUITestRunner.OnBeginTest(const threadId: TThreadID;
-  const Test: ITestInfo);
+procedure TMobileGUITestRunner.OnBeginTest(const threadId : TThreadID;
+  const Test : ITestInfo);
 begin
   ProgressLabel.Text := SRunning + Test.Name;
 end;
 
-procedure TMobileGUITestRunner.OnEndSetupFixture(const threadId: TThreadID;
-  const fixture: ITestFixtureInfo);
+procedure TMobileGUITestRunner.OnEndSetupFixture(const threadId : TThreadID;
+  const fixture : ITestFixtureInfo);
 begin
 
 end;
 
-procedure TMobileGUITestRunner.OnEndSetupTest(const threadId: TThreadID;
-  const Test: ITestInfo);
+procedure TMobileGUITestRunner.OnEndSetupTest(const threadId : TThreadID;
+  const Test : ITestInfo);
 begin
 
 end;
 
-procedure TMobileGUITestRunner.OnEndTearDownFixture(const threadId: TThreadID;
-  const fixture: ITestFixtureInfo);
+procedure TMobileGUITestRunner.OnEndTearDownFixture(const threadId : TThreadID;
+  const fixture : ITestFixtureInfo);
 begin
 
 end;
 
-procedure TMobileGUITestRunner.OnEndTeardownTest(const threadId: TThreadID;
-  const Test: ITestInfo);
+procedure TMobileGUITestRunner.OnEndTeardownTest(const threadId : TThreadID;
+  const Test : ITestInfo);
 begin
 
 end;
 
-procedure TMobileGUITestRunner.OnEndTest(const threadId: TThreadID;
-  const Test: ITestResult);
+procedure TMobileGUITestRunner.OnEndTest(const threadId : TThreadID;
+  const Test : ITestResult);
 var
-  LItem: TListViewItem;
+  LItem : TListViewItem;
 begin
   if (Test.ResultType = TTestResultType.Failure)
-   or (Test.ResultType = TTestResultType.Error)
-   or (Test.ResultType = TTestResultType.MemoryLeak) then
+    or (Test.ResultType = TTestResultType.Error)
+    or (Test.ResultType = TTestResultType.MemoryLeak) then
   begin
     FFailedTests.Add(Test.Test.FullName, Test);
     LItem := FailList.Items.Add;
     LItem.Text := Test.Test.Name;
     LItem.Detail := Test.Test.FullName;
   end;
-  TestProgress.Value := TestProgress.Value + 100/FChecked.Count;
+  TestProgress.Value := TestProgress.Value + 100 / FChecked.Count;
 end;
 
-procedure TMobileGUITestRunner.OnEndTestFixture(const threadId: TThreadID;
-  const results: IFixtureResult);
+procedure TMobileGUITestRunner.OnEndTestFixture(const threadId : TThreadID;
+  const results : IFixtureResult);
 begin
 
 end;
 
-procedure TMobileGUITestRunner.OnExecuteTest(const threadId: TThreadID;
-  const Test: ITestInfo);
+procedure TMobileGUITestRunner.OnExecuteTest(const threadId : TThreadID;
+  const Test : ITestInfo);
 begin
 
 end;
 
-procedure TMobileGUITestRunner.OnLog(const logType: TLogLevel;
-  const msg: string);
+procedure TMobileGUITestRunner.OnLog(const logType : TLogLevel;
+  const msg : string);
 begin
 
 end;
 
-procedure TMobileGUITestRunner.OnSetupFixture(const threadId: TThreadID;
-  const fixture: ITestFixtureInfo);
+procedure TMobileGUITestRunner.OnSetupFixture(const threadId : TThreadID;
+  const fixture : ITestFixtureInfo);
 begin
 
 end;
 
-procedure TMobileGUITestRunner.OnSetupTest(const threadId: TThreadID;
-  const Test: ITestInfo);
+procedure TMobileGUITestRunner.OnSetupTest(const threadId : TThreadID;
+  const Test : ITestInfo);
 begin
 
 end;
 
-procedure TMobileGUITestRunner.OnStartTestFixture(const threadId: TThreadID;
-  const fixture: ITestFixtureInfo);
+procedure TMobileGUITestRunner.OnStartTestFixture(const threadId : TThreadID;
+  const fixture : ITestFixtureInfo);
 begin
 
 end;
 
-procedure TMobileGUITestRunner.OnTearDownFixture(const threadId: TThreadID;
-  const fixture: ITestFixtureInfo);
+procedure TMobileGUITestRunner.OnTearDownFixture(const threadId : TThreadID;
+  const fixture : ITestFixtureInfo);
 begin
 
 end;
 
-procedure TMobileGUITestRunner.OnTeardownTest(const threadId: TThreadID;
-  const Test: ITestInfo);
+procedure TMobileGUITestRunner.OnTeardownTest(const threadId : TThreadID;
+  const Test : ITestInfo);
 begin
 
 end;
 
-procedure TMobileGUITestRunner.OnTestError(const threadId: TThreadID;
-  const Error: ITestError);
+procedure TMobileGUITestRunner.OnTestError(const threadId : TThreadID;
+  const Error : ITestError);
 begin
 
 end;
 
-procedure TMobileGUITestRunner.OnTestFailure(const threadId: TThreadID;
-  const Failure: ITestError);
+procedure TMobileGUITestRunner.OnTestFailure(const threadId : TThreadID;
+  const Failure : ITestError);
 begin
 
 end;
 
-procedure TMobileGUITestRunner.OnTestIgnored(const threadId: TThreadID;
-  const AIgnored: ITestResult);
+procedure TMobileGUITestRunner.OnTestIgnored(const threadId : TThreadID;
+  const AIgnored : ITestResult);
 begin
 
 end;
 
-procedure TMobileGUITestRunner.OnTestingEnds(const RunResults: IRunResults);
+procedure TMobileGUITestRunner.OnTestingEnds(const RunResults : IRunResults);
 begin
 
 end;
 
-procedure TMobileGUITestRunner.OnTestingStarts(const threadId: TThreadID; testCount,
-  testActiveCount: Cardinal);
+procedure TMobileGUITestRunner.OnTestingStarts(const threadId : TThreadID; testCount,
+  testActiveCount : Cardinal);
 begin
 
 end;
 
-procedure TMobileGUITestRunner.OnTestMemoryLeak(const threadId: TThreadID;
-  const Test: ITestResult);
+procedure TMobileGUITestRunner.OnTestMemoryLeak(const threadId : TThreadID;
+  const Test : ITestResult);
 begin
 
 end;
 
-procedure TMobileGUITestRunner.OnTestSuccess(const threadId: TThreadID;
-  const Test: ITestResult);
+procedure TMobileGUITestRunner.OnTestSuccess(const threadId : TThreadID;
+  const Test : ITestResult);
 begin
 
 end;
 
-procedure TMobileGUITestRunner.RunTestsButtonClick(Sender: TObject);
+procedure TMobileGUITestRunner.RunTestsButtonClick(Sender : TObject);
 var
-  LCurrentIndex: Integer;
+  LCurrentIndex : Integer;
 
-  procedure BuildEnabledTestsList(const AFixtureList: ITestFixtureList);
+  procedure BuildEnabledTestsList(const AFixtureList : ITestFixtureList);
   var
     LFixture : ITestFixture;
     test : ITest;
@@ -363,11 +363,11 @@ begin
   LeakedLabel.Text := IntToStr(FLastResults.MemoryLeakCount);
 end;
 
-procedure TMobileGUITestRunner.TestsListViewItemClick(const Sender: TObject;
-  const AItem: TListViewItem);
+procedure TMobileGUITestRunner.TestsListViewItemClick(const Sender : TObject;
+  const AItem : TListViewItem);
 var
-  LIndex: Integer;
-  I: Integer;
+  LIndex : Integer;
+  I : Integer;
 begin
   if AItem.Objects.AccessoryObject.Visible then
   begin
@@ -424,3 +424,4 @@ begin
 end;
 
 end.
+

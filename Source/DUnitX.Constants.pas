@@ -29,14 +29,15 @@ unit DUnitX.Constants;
 interface
 
 const
-  {$IFDEF NEXTGEN}
-  MinStringOffset : integer = 0;
-  MaxStringOffset : integer = 1;
-  {$ELSE}
-  MinStringOffset : integer = 1;
-  MaxStringOffset : integer = 0;
-  {$ENDIF}
+{$IFDEF NEXTGEN}
+  MinStringOffset   : integer = 0;
+  MaxStringOffset   : integer = 1;
+{$ELSE}
+  MinStringOffset   : integer = 1;
+  MaxStringOffset   : integer = 0;
+{$ENDIF}
 
 implementation
 
 end.
+

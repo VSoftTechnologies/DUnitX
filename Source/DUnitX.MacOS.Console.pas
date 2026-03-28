@@ -24,9 +24,6 @@
 {                                                                           }
 {***************************************************************************}
 
-
-
-
 /// <summary>
 ///   Adding this unit to your project will register console support for the
 ///   Mac OS.
@@ -45,81 +42,75 @@ interface
 {$I DUnitX.inc}
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.Classes,
-  {$ELSE}
+{$ELSE}
   Classes,
-  {$ENDIF}
+{$ENDIF}
   DUnitX.ConsoleWriter.Base;
 
-
 type
-   /// <summary>
-   ///   Internal Class and should not be created directly. Adding this unit to
-   ///   the uses will automatically register this class as a
-   ///   <see cref="DUnitX.ConsoleWriter.Base|IDUnitXConsoleWriter">IDUnitXConsoleWriter</see>
-   ///    in the <see cref="TDUnitXServiceLocator|TDUnitXServiceLocator">DUnitX IOC Container</see>.
-   /// </summary>
-   TDUnitXMacOSConsoleWriter = class(TDUnitXConsoleWriterBase)
+  /// <summary>
+  ///   Internal Class and should not be created directly. Adding this unit to
+  ///   the uses will automatically register this class as a
+  ///   <see cref="DUnitX.ConsoleWriter.Base|IDUnitXConsoleWriter">IDUnitXConsoleWriter</see>
+  ///    in the <see cref="TDUnitXServiceLocator|TDUnitXServiceLocator">DUnitX IOC Container</see>.
+  /// </summary>
+  TDUnitXMacOSConsoleWriter = class(TDUnitXConsoleWriterBase)
   private
   protected
-    procedure InternalWriteLn(const s : String); override;
+    procedure InternalWriteLn(const s : string); override;
     procedure InternalWrite(const s : string); override;
   public
-    procedure SetColour(const foreground: TConsoleColour; const background: TConsoleColour = ccDefault); override;
+    procedure SetColour(const foreground : TConsoleColour; const background : TConsoleColour = ccDefault); override;
   end;
-
-
-
 
 implementation
 
 uses
- DUnitX.ServiceLocator;
-
+  DUnitX.ServiceLocator;
 
 const
 
-// AT = Ansi Terminal
-// FG = Foreground
-// BG = Background'
+  // AT = Ansi Terminal
+  // FG = Foreground
+  // BG = Background'
 
- AT_NO_ATTRIB  = #27 + '[0m';
+  AT_NO_ATTRIB      = #27 + '[0m';
 
- AT_BOLD       = #27 + '[1m';
+  AT_BOLD           = #27 + '[1m';
 
- AT_FG_BLACK   = #27 + '[30m';
- AT_FG_RED     = #27 + '[31m';
- AT_FG_GREEN   = #27 + '[32m';
- AT_FG_YELLOW  = #27 + '[33m';
- AT_FG_BLUE    = #27 + '[34m';
- AT_FG_MAGENTA = #27 + '[35m';
- AT_FG_CYAN    = #27 + '[36m';
- AT_FG_WHITE   = #27 + '[37m';
+  AT_FG_BLACK       = #27 + '[30m';
+  AT_FG_RED         = #27 + '[31m';
+  AT_FG_GREEN       = #27 + '[32m';
+  AT_FG_YELLOW      = #27 + '[33m';
+  AT_FG_BLUE        = #27 + '[34m';
+  AT_FG_MAGENTA     = #27 + '[35m';
+  AT_FG_CYAN        = #27 + '[36m';
+  AT_FG_WHITE       = #27 + '[37m';
 
- AT_BG_BLACK   = #27 + '[40m';
- AT_BG_RED     = #27 + '[41m';
- AT_BG_GREEN   = #27 + '[42m';
- AT_BG_YELLOW  = #27 + '[43m';
- AT_BG_BLUE    = #27 + '[44m';
- AT_BG_MAGENTA = #27 + '[45m';
- AT_BG_CYAN    = #27 + '[46m';
- AT_BG_WHITE   = #27 + '[47m';
+  AT_BG_BLACK       = #27 + '[40m';
+  AT_BG_RED         = #27 + '[41m';
+  AT_BG_GREEN       = #27 + '[42m';
+  AT_BG_YELLOW      = #27 + '[43m';
+  AT_BG_BLUE        = #27 + '[44m';
+  AT_BG_MAGENTA     = #27 + '[45m';
+  AT_BG_CYAN        = #27 + '[46m';
+  AT_BG_WHITE       = #27 + '[47m';
 
+  { TDUnitXMacOSConsoleWriter }
 
-{ TDUnitXMacOSConsoleWriter }
-
-procedure TDUnitXMacOSConsoleWriter.InternalWrite(const s: string);
+procedure TDUnitXMacOSConsoleWriter.InternalWrite(const s : string);
 begin
   System.Write(s);
 end;
 
-procedure TDUnitXMacOSConsoleWriter.InternalWriteLn(const s: String);
+procedure TDUnitXMacOSConsoleWriter.InternalWriteLn(const s : string);
 begin
   System.Writeln(s);
 end;
 
-procedure TDUnitXMacOSConsoleWriter.SetColour(const foreground, background: TConsoleColour);
+procedure TDUnitXMacOSConsoleWriter.SetColour(const foreground, background : TConsoleColour);
 begin
   // Background colors on behave strangely with writeln
   // So I decided to always reset the attributes and ignore the background request
@@ -133,23 +124,23 @@ begin
 
   System.Write(AT_NO_ATTRIB);
   // If a Bright color set Bold
-  if foreground in [ccBrightRed,ccBrightBlue,ccBrightGreen,ccBrightYellow,
-                    ccBrightAqua,ccBrightAqua,ccBrightPurple,ccBrightWhite] then
-     System.Write(AT_BOLD);
+  if foreground in [ccBrightRed, ccBrightBlue, ccBrightGreen, ccBrightYellow,
+    ccBrightAqua, ccBrightAqua, ccBrightPurple, ccBrightWhite] then
+    System.Write(AT_BOLD);
 
   case foreground of
     ccBrightRed,
-    ccDarkRed      : System.Write(AT_FG_RED);
+      ccDarkRed : System.Write(AT_FG_RED);
     ccBrightBlue,
-    ccDarkBlue     : System.Write(AT_FG_BLUE);
+      ccDarkBlue : System.Write(AT_FG_BLUE);
     ccBrightGreen,
-    ccDarkGreen    : System.Write(AT_FG_GREEN);
+      ccDarkGreen : System.Write(AT_FG_GREEN);
     ccBrightYellow,
-    ccDarkYellow   : System.Write(AT_FG_YELLOW);
+      ccDarkYellow : System.Write(AT_FG_YELLOW);
     ccBrightAqua,
-    ccDarkAqua     : System.Write(AT_FG_CYAN);
+      ccDarkAqua : System.Write(AT_FG_CYAN);
     ccBrightPurple,
-    ccDarkPurple   : System.Write(AT_FG_MAGENTA);
+      ccDarkPurple : System.Write(AT_FG_MAGENTA);
 
     // Not Set:  default background in terminal.app is white and a white
     //           background on white FG is hard to read.
@@ -160,8 +151,9 @@ begin
 end;
 
 {$IF Defined(MACOS) or Defined(OSX32)}
- initialization
-  TDUnitXServiceLocator.DefaultContainer.RegisterType<IDUnitXConsoleWriter,TDUnitXMacOSConsoleWriter>();
+initialization
+  TDUnitXServiceLocator.DefaultContainer.RegisterType<IDUnitXConsoleWriter, TDUnitXMacOSConsoleWriter>();
 {$IFEND}
 
 end.
+
