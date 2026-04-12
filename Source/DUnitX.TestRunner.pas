@@ -581,8 +581,13 @@ var
 begin
   result := nil;
 
-  fixtures := BuildFixtures;
-  fixtureList := fixtures as ITestFixtureList;
+  if FFixtureList = nil then
+  begin
+    fixtures := BuildFixtures;
+    fixtureList := fixtures as ITestFixtureList;
+  end
+  else
+    fixtureList := FFixtureList;
   if fixtureList.Count = 0 then
     raise ENoTestsRegistered.Create(SNoFixturesFound);
 
