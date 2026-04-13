@@ -53,20 +53,22 @@
 unit DUnitX.AutoDetect.Console;
 
 interface
+
 uses
- {$IF Defined(MSWINDOWS)}
-     DUnitX.Windows.Console;
- {$ELSEIF Defined(MACOS) or Defined(OSX32)}
-     // Simplification as MacOS console supports Ansi, and other terminals
-     // on platforms other than windows typically support some form of
-     // ANSI colors.
-     DUnitX.MacOS.Console;
- {$ELSEIF Defined(LINUX) or Defined(ANDROID)}
-     DUnitX.Linux.Console;
- {$ELSE}
-     {$MESSAGE Error 'Unknown Platform for Console Writer'}
- {$IFEND}
+{$IF Defined(MSWINDOWS)}
+  DUnitX.Windows.Console;
+{$ELSEIF Defined(MACOS) or Defined(OSX32)}
+  // Simplification as MacOS console supports Ansi, and other terminals
+  // on platforms other than windows typically support some form of
+  // ANSI colors.
+  DUnitX.MacOS.Console;
+{$ELSEIF Defined(LINUX) or Defined(ANDROID)}
+  DUnitX.Linux.Console;
+{$ELSE}
+{$MESSAGE ERROR 'Unknown Platform for Console Writer'}
+{$IFEND}
 
 implementation
 
 end.
+

@@ -31,13 +31,13 @@ interface
 {$I DUnitX.inc}
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.Classes,
   System.SysUtils,
-  {$ELSE}
+{$ELSE}
   Classes,
   SysUtils,
-  {$ENDIF}
+{$ENDIF}
 {$IFDEF USE_EUREKALOG7}
   ECallStack,
   EDebugInfo,
@@ -45,14 +45,12 @@ uses
   DUnitX.TestFramework;
 
 type
-  TEurekaLog7StackTraceProvider = class(TInterfacedObject,IStacktraceProvider)
+  TEurekaLog7StackTraceProvider = class(TInterfacedObject, IStacktraceProvider)
   public
-    function GetStackTrace(const ex: Exception; const exAddressAddress: Pointer): string;
-    function PointerToLocationInfo(const Addrs: Pointer): string;
-    function PointerToAddressInfo(Addrs: Pointer): string;
+    function GetStackTrace(const ex : Exception; const exAddressAddress : Pointer) : string;
+    function PointerToLocationInfo(const Addrs : Pointer) : string;
+    function PointerToAddressInfo(Addrs : Pointer) : string;
   end;
-
-
 
 implementation
 
@@ -61,14 +59,14 @@ uses
 
 { TEurekaLog7StackTraceProvider }
 
-function TEurekaLog7StackTraceProvider.GetStackTrace(const ex: Exception; const exAddressAddress: Pointer): string;
+function TEurekaLog7StackTraceProvider.GetStackTrace(const ex : Exception; const exAddressAddress : Pointer) : string;
 {$IFDEF USE_EUREKALOG7}
 var
   LEurekaBaseStackList : TEurekaStackListV7;
 {$ENDIF}
 begin
   result := '';
-  {$IFDEF USE_EUREKALOG7}
+{$IFDEF USE_EUREKALOG7}
   LEurekaBaseStackList := nil;
   try
     LEurekaBaseStackList := TEurekaStackListV7.Create(exAddressAddress);
@@ -76,41 +74,42 @@ begin
   finally
     LEurekaBaseStackList.Free;
   end;
-  {$ENDIF}
+{$ENDIF}
 end;
 
-function TEurekaLog7StackTraceProvider.PointerToAddressInfo(Addrs: Pointer): string;
+function TEurekaLog7StackTraceProvider.PointerToAddressInfo(Addrs : Pointer) : string;
 begin
-  {$IFDEF USE_EUREKALOG7}
+{$IFDEF USE_EUREKALOG7}
   Result := GetLocationInfoStr(Addrs);
-  {$ELSE}
+{$ELSE}
   Result := '';
-  {$ENDIF}
+{$ENDIF}
 end;
 
-function TEurekaLog7StackTraceProvider.PointerToLocationInfo(const Addrs: Pointer): string;
+function TEurekaLog7StackTraceProvider.PointerToLocationInfo(const Addrs : Pointer) : string;
 begin
-  {$IFDEF USE_EUREKALOG7}
+{$IFDEF USE_EUREKALOG7}
   Result := GetLocationInfoStr(Addrs);
-  {$ELSE}
+{$ELSE}
   Result := '';
-  {$ENDIF}
+{$ENDIF}
 end;
 
 initialization
 {$IFDEF USE_EUREKALOG7}
 
-  {$IFDEF DELPHI_XE_UP}
-    TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider,TEurekaLog7StackTraceProvider>(true);
-  {$ELSE}
-    //D2010 bug prevents using above method.
-    TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider>(true,
-     function : IStacktraceProvider
-        begin
-          result := TEurekaLog7StackTraceProvider.Create;
-        end
-     );
-  {$ENDIF}
+{$IFDEF DELPHI_XE_UP}
+  TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider, TEurekaLog7StackTraceProvider>(true);
+{$ELSE}
+  //D2010 bug prevents using above method.
+  TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider>(true,
+    function : IStacktraceProvider
+    begin
+      result := TEurekaLog7StackTraceProvider.Create;
+    end
+    );
+{$ENDIF}
 {$ENDIF}
 
 end.
+

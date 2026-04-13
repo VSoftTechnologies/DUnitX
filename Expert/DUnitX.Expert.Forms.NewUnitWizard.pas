@@ -31,7 +31,7 @@ interface
 {$I DUnitX.inc}
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   WinAPI.Windows,
   WinAPI.Messages,
   System.SysUtils,
@@ -42,7 +42,7 @@ uses
   VCL.Forms,
   VCL.Dialogs,
   VCL.StdCtrls;
-  {$ELSE}
+{$ELSE}
   Windows,
   Messages,
   SysUtils,
@@ -53,23 +53,22 @@ uses
   Forms,
   Dialogs,
   StdCtrls;
-  {$ENDIF}
-
+{$ENDIF}
 
 type
   TfrmDunitXNewUnit = class(TForm)
-    GroupBox1: TGroupBox;
-    btnOK: TButton;
-    btnCancel: TButton;
-    lblClassName: TLabel;
-    edtClassName: TEdit;
-    chkCreateSetupTearDown: TCheckBox;
-    chkCreateSampleMethods: TCheckBox;
-    procedure FormCreate(Sender: TObject);
+    GroupBox1 : TGroupBox;
+    btnOK : TButton;
+    btnCancel : TButton;
+    lblClassName : TLabel;
+    edtClassName : TEdit;
+    chkCreateSetupTearDown : TCheckBox;
+    chkCreateSampleMethods : TCheckBox;
+    procedure FormCreate(Sender : TObject);
   private
-    function GetCreateSampleMethods: boolean;
-    function GetCreateSetupTearDownMethods: boolean;
-    function GetTestFixtureClassName: string;
+    function GetCreateSampleMethods : boolean;
+    function GetCreateSetupTearDownMethods : boolean;
+    function GetTestFixtureClassName : string;
     { Private declarations }
   public
     { Public declarations }
@@ -80,9 +79,10 @@ type
   end;
 
 var
-  frmDunitXNewUnit: TfrmDunitXNewUnit;
+  frmDunitXNewUnit : TfrmDunitXNewUnit;
 
 implementation
+
 uses
   DUnitX.Expert.CodeGen.Templates;
 
@@ -90,22 +90,22 @@ uses
 
 { TfrmDunitXNewUnit }
 
-procedure TfrmDunitXNewUnit.FormCreate(Sender: TObject);
+procedure TfrmDunitXNewUnit.FormCreate(Sender : TObject);
 begin
   edtClassName.TextHint := SDefaultClassName;
 end;
 
-function TfrmDunitXNewUnit.GetCreateSampleMethods: boolean;
+function TfrmDunitXNewUnit.GetCreateSampleMethods : boolean;
 begin
   result := chkCreateSampleMethods.Checked;
 end;
 
-function TfrmDunitXNewUnit.GetCreateSetupTearDownMethods: boolean;
+function TfrmDunitXNewUnit.GetCreateSetupTearDownMethods : boolean;
 begin
   result := chkCreateSetupTearDown.Checked;
 end;
 
-function TfrmDunitXNewUnit.GetTestFixtureClassName: string;
+function TfrmDunitXNewUnit.GetTestFixtureClassName : string;
 begin
   if Trim(edtClassName.Text) = '' then
     result := SDefaultClassName
@@ -114,3 +114,4 @@ begin
 end;
 
 end.
+

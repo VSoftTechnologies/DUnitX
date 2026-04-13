@@ -38,7 +38,7 @@ type
     FFixtureList : ITestFixtureList;
   protected
     function GetUseRtti : boolean;
-    function CreateFixture(const AFixtureClass : TClass; const AName : string; const ACategory : string) : ITestFixture;overload;
+    function CreateFixture(const AFixtureClass : TClass; const AName : string; const ACategory : string) : ITestFixture; overload;
     function BuildFixtureList : ITestFixtureList;
 
   public
@@ -55,7 +55,7 @@ uses
 
 { TDUnitXFixtureBuilder }
 
-function TDUnitXFixtureBuilder.BuildFixtureList: ITestFixtureList;
+function TDUnitXFixtureBuilder.BuildFixtureList : ITestFixtureList;
 var
   provider : IFixtureProvider;
 begin
@@ -69,21 +69,21 @@ begin
 
 end;
 
-constructor TDUnitXFixtureBuilder.Create(useRtti: boolean);
+constructor TDUnitXFixtureBuilder.Create(useRtti : boolean);
 begin
   FUseRtti := useRtti;
   FFixtureList := TTestFixtureList.Create;
 end;
 
-
-function TDUnitXFixtureBuilder.CreateFixture(const AFixtureClass: TClass; const AName, ACategory: string): ITestFixture;
+function TDUnitXFixtureBuilder.CreateFixture(const AFixtureClass : TClass; const AName, ACategory : string) : ITestFixture;
 begin
   result := TDUnitXTestFixture.Create(AName, ACategory, AFixtureClass, AFixtureClass.UnitName);
   FFixtureList.Add(Result);
 end;
 
-function TDUnitXFixtureBuilder.GetUseRtti: boolean;
+function TDUnitXFixtureBuilder.GetUseRtti : boolean;
 begin
   result := FUseRtti;
 end;
 end.
+

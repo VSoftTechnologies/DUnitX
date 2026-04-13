@@ -34,44 +34,42 @@ uses
   DUnitX.TestFrameWork,
   DUnitX.Filters;
 
-
 type
   TDUnitXFilterBuilder = class
     class function BuildFilter(const options : TDUnitXOptions) : ITestFilter;
   end;
 
-
 implementation
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.Classes,
   System.SysUtils,
-  {$ELSE}
+{$ELSE}
   Classes,
   SysUtils,
-  {$ENDIF}
+{$ENDIF}
   DUnitX.CategoryExpression,
   DUnitX.TestNameParser,
   DUnitX.Exceptions;
 
 { TDUnitXFilterBuilder }
 
-class function TDUnitXFilterBuilder.BuildFilter(const options: TDUnitXOptions): ITestFilter;
+class function TDUnitXFilterBuilder.BuildFilter(const options : TDUnitXOptions) : ITestFilter;
 var
-  nameFilter    : INameFilter;
+  nameFilter : INameFilter;
   includeFilter : ITestFilter;
   excludeFilter : ITestFilter;
-  i             : integer;
-  name          : string;
-  sList         : TStringList;
+  i : integer;
+  name : string;
+  sList : TStringList;
 begin
   result := TEmptyFilter.Create;
   nameFilter := TNameFilter.Create;
 
   if options.Run.Count > 0 then
   begin
-    for i := 0 to options.Run.Count -1 do
+    for i := 0 to options.Run.Count - 1 do
     begin
       for name in TTestNameParser.Parse(options.Run[i]) do
         nameFilter.Add(name);
@@ -87,7 +85,7 @@ begin
       sList := TStringList.Create;
       try
         sList.LoadFromFile(options.RunListFile);
-        for i := 0 to sList.Count -1 do
+        for i := 0 to sList.Count - 1 do
         begin
           for name in TTestNameParser.Parse(sList[i]) do
             nameFilter.Add(name);
@@ -108,7 +106,7 @@ begin
     if result.IsEmpty then
       result := includeFilter
     else
-      result := TAndFilter.Create(TArray<ITestFilter>.Create(result,includeFilter));
+      result := TAndFilter.Create(TArray<ITestFilter>.Create(result, includeFilter));
   end;
 
   if Trim(options.Exclude) <> '' then
@@ -117,12 +115,13 @@ begin
     if result.IsEmpty then
       result := excludeFilter
     else
-      result := TAndFilter.Create(TArray<ITestFilter>.Create(result,excludeFilter));
+      result := TAndFilter.Create(TArray<ITestFilter>.Create(result, excludeFilter));
   end;
 
-  if Supports(result,INotFilter) then
+  if Supports(result, INotFilter) then
     (result as INotFilter).TopLevel := true;
 
 end;
 
 end.
+

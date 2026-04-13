@@ -34,165 +34,166 @@ interface
 {$I DUnitX.inc}
 
 uses
-  {$IFDEF DELPHI_XE2_UP}
+{$IFDEF DELPHI_XE2_UP}
   PlatformAPI,
-  {$ENDIF}
+{$ENDIF}
   ToolsAPI;
 
 type
-   TNewProject= class abstract(TNotifierObject,IOTACreator, IOTAProjectCreator,IOTAProjectCreator80)
-   protected
-    //IOTACreator
-    function GetCreatorType: string; virtual;
-    function GetExisting: Boolean;
-    function GetFileSystem: string;
-    function GetOwner: IOTAModule;
-    function GetUnnamed: Boolean;
-    // IOTAProjectCreator
-    function GetFileName: string;
-    function GetOptionFileName: string; deprecated;
-    function GetShowSource: Boolean;
-    procedure NewDefaultModule; deprecated;
-    function NewOptionSource(const ProjectName: string): IOTAFile; deprecated;
-    procedure NewProjectResource(const Project: IOTAProject);
-    function NewProjectSource(const ProjectName: string): IOTAFile; virtual; abstract;  // MUST OVERRIDE!
-    // IOTAProjectCreator80
-    function GetProjectPersonality: string;virtual;
-    procedure NewDefaultProjectModule(const Project: IOTAProject);
-  private
-    procedure SetFileName(const Value: String);
+  TNewProject = class abstract(TNotifierObject, IOTACreator, IOTAProjectCreator, IOTAProjectCreator80)
   protected
-    FFileName : String;
+    //IOTACreator
+    function GetCreatorType : string; virtual;
+    function GetExisting : Boolean;
+    function GetFileSystem : string;
+    function GetOwner : IOTAModule;
+    function GetUnnamed : Boolean;
+    // IOTAProjectCreator
+    function GetFileName : string;
+    function GetOptionFileName : string; deprecated;
+    function GetShowSource : Boolean;
+    procedure NewDefaultModule; deprecated;
+    function NewOptionSource(const ProjectName : string) : IOTAFile; deprecated;
+    procedure NewProjectResource(const Project : IOTAProject);
+    function NewProjectSource(const ProjectName : string) : IOTAFile; virtual; abstract; // MUST OVERRIDE!
+    // IOTAProjectCreator80
+    function GetProjectPersonality : string; virtual;
+    procedure NewDefaultProjectModule(const Project : IOTAProject);
+  private
+    procedure SetFileName(const Value : string);
+  protected
+    FFileName : string;
   public
-     property FileName : String read GetFileName write SetFileName;
+    property FileName : string read GetFileName write SetFileName;
   end;
 
-  {$IFDEF DELPHIX_SEATTLE_UP}
+{$IFDEF DELPHIX_SEATTLE_UP}
   TNewProjectEx = class(TNewProject, IOTAProjectCreator160)
   private
-   FPersonality: string;
+    FPersonality : string;
   protected
-    function GetProjectPersonality: string;override;
+    function GetProjectPersonality : string; override;
 
     // IOTAProjectCreator160
-    function GetPlatforms: TArray<string>;
-    function GetFrameworkType: string;
-    function GetPreferredPlatform: string;
-    procedure SetInitialOptions(const NewProject: IOTAProject);
+    function GetPlatforms : TArray<string>;
+    function GetFrameworkType : string;
+    function GetPreferredPlatform : string;
+    procedure SetInitialOptions(const NewProject : IOTAProject);
   public
     property Personality : string read FPersonality write FPersonality;
   end;
-  {$ENDIF}
+{$ENDIF}
 
 implementation
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.SysUtils;
-  {$ELSE}
+{$ELSE}
   SysUtils;
-  {$ENDIF}
+{$ENDIF}
 
 { TNewProject }
 
-function TNewProject.GetCreatorType: string;
+function TNewProject.GetCreatorType : string;
 begin
- result := sConsole; // May want to change this in the future, at least making method virtual
+  result := sConsole;                   // May want to change this in the future, at least making method virtual
 end;
 
-function TNewProject.GetExisting: Boolean;
+function TNewProject.GetExisting : Boolean;
 begin
- result := false;
+  result := false;
 end;
 
-function TNewProject.GetFileName: string;
+function TNewProject.GetFileName : string;
 begin
- result := FFileName;
+  result := FFileName;
 end;
 
-function TNewProject.GetFileSystem: string;
+function TNewProject.GetFileSystem : string;
 begin
- result := '';
+  result := '';
 end;
 
-function TNewProject.GetOptionFileName: string;
+function TNewProject.GetOptionFileName : string;
 begin
- result := '';
+  result := '';
 end;
 
-function TNewProject.GetOwner: IOTAModule;
+function TNewProject.GetOwner : IOTAModule;
 begin
- result := (BorlandIDEServices as IOTAModuleServices).MainProjectGroup;
+  result := (BorlandIDEServices as IOTAModuleServices).MainProjectGroup;
 end;
 
-function TNewProject.GetProjectPersonality: string;
+function TNewProject.GetProjectPersonality : string;
 begin
- result := sDelphiPersonality;
+  result := sDelphiPersonality;
 end;
 
-function TNewProject.GetShowSource: Boolean;
+function TNewProject.GetShowSource : Boolean;
 begin
- result := false;
+  result := false;
 end;
 
-function TNewProject.GetUnnamed: Boolean;
+function TNewProject.GetUnnamed : Boolean;
 begin
- result := true;
+  result := true;
 end;
 
 procedure TNewProject.NewDefaultModule;
 begin
 end;
 
-procedure TNewProject.NewDefaultProjectModule(const Project: IOTAProject);
+procedure TNewProject.NewDefaultProjectModule(const Project : IOTAProject);
 begin
 end;
 
-function TNewProject.NewOptionSource(const ProjectName: string): IOTAFile;
+function TNewProject.NewOptionSource(const ProjectName : string) : IOTAFile;
 begin
- result := nil;
+  result := nil;
 end;
 
-procedure TNewProject.NewProjectResource(const Project: IOTAProject);
+procedure TNewProject.NewProjectResource(const Project : IOTAProject);
 begin
 end;
 
-
-procedure TNewProject.SetFileName(const Value: String);
+procedure TNewProject.SetFileName(const Value : string);
 begin
   FFileName := Value;
 end;
 
 {$IFDEF DELPHIX_SEATTLE_UP}
-function TNewProjectEx.GetFrameworkType: string;
+function TNewProjectEx.GetFrameworkType : string;
 begin
   Result := '';
 end;
 
-function TNewProjectEx.GetPlatforms: TArray<string>;
+function TNewProjectEx.GetPlatforms : TArray<string>;
 begin
   if Personality = sDelphiPersonality then
-    Result := TArray<string>.Create(cWin32Platform, cWin64Platform, cOSX32Platform, cAndroidPlatform, ciOSSimulatorPlatform {$IFDEF DELPHI_XE8_UP}, ciOSDevice32Platform, ciOSDevice64Platform {$ENDIF})
+    Result := TArray<string>.Create(cWin32Platform, cWin64Platform, cOSX32Platform, cAndroidPlatform,
+      ciOSSimulatorPlatform{$IFDEF DELPHI_XE8_UP}, ciOSDevice32Platform, ciOSDevice64Platform{$ENDIF})
   else
-    Result := TArray<string>.Create(cWin32Platform, cWin64Platform, cOSX32Platform, cAndroidPlatform {$IFDEF DELPHI_XE8_UP}, ciOSDevice32Platform, ciOSDevice64Platform {$ENDIF});
+    Result := TArray<string>.Create(cWin32Platform, cWin64Platform, cOSX32Platform, cAndroidPlatform{$IFDEF DELPHI_XE8_UP},
+      ciOSDevice32Platform, ciOSDevice64Platform{$ENDIF});
 end;
 
-function TNewProjectEx.GetPreferredPlatform: string;
+function TNewProjectEx.GetPreferredPlatform : string;
 begin
   Result := '';
 end;
 
-function TNewProjectEx.GetProjectPersonality: string;
+function TNewProjectEx.GetProjectPersonality : string;
 begin
- if FPersonality.IsEmpty then
-   result := sDelphiPersonality
- else
-   result := FPersonality;
+  if FPersonality.IsEmpty then
+    result := sDelphiPersonality
+  else
+    result := FPersonality;
 end;
 
-procedure TNewProjectEx.SetInitialOptions(const NewProject: IOTAProject);
+procedure TNewProjectEx.SetInitialOptions(const NewProject : IOTAProject);
 var
-  LBuildConf: IOTAProjectOptionsConfigurations;
+  LBuildConf : IOTAProjectOptionsConfigurations;
 begin
   if Supports(NewProject.ProjectOptions, IOTAProjectOptionsConfigurations, LBuildConf) then
   begin
@@ -209,3 +210,4 @@ end;
 {$ENDIF}
 
 end.
+

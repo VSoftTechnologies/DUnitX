@@ -35,16 +35,20 @@ uses
   DUnitX.Expert.CodeGen.NewProject;
 
 type
-  TReportLeakOptions = (rloNone, rloFastMM4, rloFastMM5);
+  TReportLeakOptions = (
+    rloNone,
+    rloFastMM4,
+    rloFastMM5
+  );
 
   TTestProjectFile = class({$IFNDEF DELPHI_SEATTLE_UP}TNewProject{$ELSE}TNewProjectEx{$ENDIF})
   private
-    FReportLeakOptions: TReportLeakOptions;
+    FReportLeakOptions : TReportLeakOptions;
   protected
-    function NewProjectSource(const ProjectName: string): IOTAFile; override;
+    function NewProjectSource(const ProjectName : string) : IOTAFile; override;
   public
-    constructor Create(const ReportLeakOptions: TReportLeakOptions); overload;
-    constructor Create(const APersonality: String; const ReportLeakOptions: TReportLeakOptions); overload;
+    constructor Create(const ReportLeakOptions : TReportLeakOptions); overload;
+    constructor Create(const APersonality : string; const ReportLeakOptions : TReportLeakOptions); overload;
   end;
 
 implementation
@@ -52,50 +56,51 @@ implementation
 uses
   DUnitX.Expert.CodeGen.SourceFile,
   DunitX.Expert.CodeGen.Templates,
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.SysUtils;
-  {$ELSE}
+{$ELSE}
   SysUtils;
-  {$ENDIF}
+{$ENDIF}
 
 const
-  REPORT_LEAK_DECLARATION: array[TReportLeakOptions] of String = ('', '  FastMM4,'#13#10'  DUnitX.MemoryLeakMonitor.FastMM4,'#13#10, '  FastMM5,'#13#10'  DUnitX.MemoryLeakMonitor.FastMM5,'#13#10);
+  REPORT_LEAK_DECLARATION : array[TReportLeakOptions] of string = ('', '  FastMM4,'#13#10'  DUnitX.MemoryLeakMonitor.FastMM4,'#13#10,
+    '  FastMM5,'#13#10'  DUnitX.MemoryLeakMonitor.FastMM5,'#13#10);
 
-{ TProjectFile }
+  { TProjectFile }
 
-constructor TTestProjectFile.Create(const ReportLeakOptions: TReportLeakOptions);
+constructor TTestProjectFile.Create(const ReportLeakOptions : TReportLeakOptions);
 begin
- //TODO: Figure out how to make this be TestProjectX where X is the next available.
- //Return Blank and the project will be 'ProjectX.dpr' where X is the next available number
+  //TODO: Figure out how to make this be TestProjectX where X is the next available.
+  //Return Blank and the project will be 'ProjectX.dpr' where X is the next available number
   FFileName := '';
   FReportLeakOptions := ReportLeakOptions;
 end;
 
-constructor TTestProjectFile.Create(const APersonality: String; const ReportLeakOptions: TReportLeakOptions);
+constructor TTestProjectFile.Create(const APersonality : string; const ReportLeakOptions : TReportLeakOptions);
 begin
   Create(ReportLeakOptions);
-  {$IFDEF DELPHI_SEATTLE_UP}
+{$IFDEF DELPHI_SEATTLE_UP}
   Personality := APersonality;
-  {$ENDIF}
+{$ENDIF}
 end;
 
-function TTestProjectFile.NewProjectSource(const ProjectName: string): IOTAFile;
+function TTestProjectFile.NewProjectSource(const ProjectName : string) : IOTAFile;
 {$IFDEF DELPHI_SEATTLE_UP}
 var
-  TestProjectCode: string;
+  TestProjectCode : string;
 {$ENDIF}
 begin
-  {$IFNDEF DELPHI_SEATTLE_UP}
-  result := TSourceFile.Create(STestDPR,[ProjectName, REPORT_LEAK_DECLARATION[FReportLeakOptions]]);
-  {$ELSE}
+{$IFNDEF DELPHI_SEATTLE_UP}
+  result := TSourceFile.Create(STestDPR, [ProjectName, REPORT_LEAK_DECLARATION[FReportLeakOptions]]);
+{$ELSE}
   if Personality.isEmpty or SameText(Personality, sDelphiPersonality) then
     TestProjectCode := STestDPR
-  else
-    if SameText(Personality, sCBuilderPersonality) then
-      TestProjectCode := STestCBPROJ;
+  else if SameText(Personality, sCBuilderPersonality) then
+    TestProjectCode := STestCBPROJ;
 
   result := TSourceFile.Create(TestProjectCode, [ProjectName, REPORT_LEAK_DECLARATION[FReportLeakOptions]]);
-  {$ENDIF}
+{$ENDIF}
 end;
 
 end.
+

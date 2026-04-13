@@ -1,6 +1,7 @@
 unit DUnitX.Tests.TestDataProvider;
 
 interface
+
 uses
   System.Generics.Collections,
   DUnitX.Types,
@@ -8,42 +9,39 @@ uses
   DUnitX.TestDataProvider,
   DUnitX.TestFramework;
 
-
 type
-  TSampleData = Record
-                  v1,v2 : integer; //simple 2 integer values
-                  AddEx : integer; //Expected value for Add
-                  Equal : boolean; //Expected value for Equal-Compare
-  End;
+  TSampleData = record
+    v1, v2 : integer;                   //simple 2 integer values
+    AddEx : integer;                    //Expected value for Add
+    Equal : boolean;                    //Expected value for Equal-Compare
+  end;
 
-  TSampleProvider = Class(TTestDataProvider)
-    private
-       flist : TList<TSampleData>;
+  TSampleProvider = class(TTestDataProvider)
+  private
+    flist : TList<TSampleData>;
 
-       Procedure InitTestData;
-    public
-      Constructor Create;Override;
-      function GetCaseCount(const methodName : string) : Integer; override;
-      function GetCaseName(const methodName : string; const caseNumber : integer) : string; override;
-      function GetCaseParams(const methodName : string ; const caseNumber : integer) : TValuearray; override;
-      Destructor Destroy;override;
-  End;
-
+    procedure InitTestData;
+  public
+    constructor Create; override;
+    function GetCaseCount(const methodName : string) : Integer; override;
+    function GetCaseName(const methodName : string; const caseNumber : integer) : string; override;
+    function GetCaseParams(const methodName : string; const caseNumber : integer) : TValuearray; override;
+    destructor Destroy; override;
+  end;
 
   [TestFixture]
   TestFixtureProviderTest = class(TObject)
   public
     [Test]
     [TestCaseProvider('Sampleprovider')]
-    Procedure spTstAdd(const value1,Value2:integer;expected:integer);
+    procedure spTstAdd(const value1, Value2 : integer; expected : integer);
     [Test]
     [TestCaseProvider('Sampleprovider')]
-    Procedure spTstEqual(const value1,Value2:integer;expected:boolean);
+    procedure spTstEqual(const value1, Value2 : integer; expected : boolean);
 
   end;
 
 implementation
-
 
 { TSampleProvider }
 
@@ -75,12 +73,12 @@ begin
 
 end;
 
-function TSampleProvider.GetCaseParams(const methodName : string ; const caseNumber : integer) : TValuearray;
+function TSampleProvider.GetCaseParams(const methodName : string; const caseNumber : integer) : TValuearray;
 begin
-  SetLength(result,0);
-  if (caseNumber >=0) and (caseNumber < flist.count) then
+  SetLength(result, 0);
+  if (caseNumber >= 0) and (caseNumber < flist.count) then
   begin
-    SetLength(result,3);
+    SetLength(result, 3);
     result[0] := flist[caseNumber].v1;
     result[1] := flist[caseNumber].v2;
     if (Methodname = 'spTstAdd') then
@@ -124,19 +122,20 @@ end;
 
 { TestFixtureProviderTest }
 
-procedure TestFixtureProviderTest.spTstAdd(const value1, Value2: integer;
-  expected: integer);
+procedure TestFixtureProviderTest.spTstAdd(const value1, Value2 : integer;
+  expected : integer);
 begin
-  Assert.AreEqual(expected,(value1+value2),'Ok');
+  Assert.AreEqual(expected, (value1 + value2), 'Ok');
 end;
 
-procedure TestFixtureProviderTest.spTstEqual(const value1, Value2: integer;
-  expected: boolean);
+procedure TestFixtureProviderTest.spTstEqual(const value1, Value2 : integer;
+  expected : boolean);
 begin
-  Assert.AreEqual(expected,(value1=value2),'Ok');
+  Assert.AreEqual(expected, (value1 = value2), 'Ok');
 end;
 
 initialization
-  TestDataProviderManager.RegisterProvider('Sampleprovider',TSampleProvider);
+  TestDataProviderManager.RegisterProvider('Sampleprovider', TSampleProvider);
   TDUnitX.RegisterTestFixture(TestFixtureProviderTest);
 end.
+

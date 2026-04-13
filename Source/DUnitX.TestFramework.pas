@@ -35,7 +35,7 @@ interface
 {$I DUnitX.inc}
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.Classes,
   System.SysUtils,
   System.SyncObjs,
@@ -43,7 +43,7 @@ uses
   System.Rtti,
   System.TimeSpan,
   System.Generics.Collections,
-  {$ELSE}
+{$ELSE}
   Classes,
   SysUtils,
   SyncObjs,
@@ -51,7 +51,7 @@ uses
   Rtti,
   TimeSpan,
   Generics.Collections,
-  {$ENDIF}
+{$ENDIF}
   DUnitX.Assert,
   DUnitX.Assert.Ex,
   DUnitX.Attributes,
@@ -68,7 +68,6 @@ uses
 {$HPPEMIT '# pragma comment(lib, "DUnitXRuntime")'}
 {$HPPEMIT '#endif'}
 
-
 type
   TestFixtureAttribute = DUnitX.Attributes.TestFixtureAttribute;
   TestInOwnThreadAttribute = DUnitX.Attributes.TestInOwnThreadAttribute;
@@ -81,7 +80,7 @@ type
   CategoryAttribute = DUnitX.Attributes.CategoryAttribute;
   IgnoreAttribute = DUnitX.Attributes.IgnoreAttribute;
   RepeatTestAttribute = DUnitX.Attributes.RepeatTestAttribute;
-  MaxTimeAttribute =  DUnitX.Attributes.MaxTimeAttribute;
+  MaxTimeAttribute = DUnitX.Attributes.MaxTimeAttribute;
   WillRaiseAttribute = DUnitX.Attributes.WillRaiseAttribute;
   TestCaseInfo = DUnitX.Attributes.TestCaseInfo;
   TestCaseInfoArray = DUnitX.Attributes.TestCaseInfoArray;
@@ -98,26 +97,30 @@ type
 
   TTestLocalMethod = TProc;
 
-  {$SCOPEDENUMS ON}
-  TLogLevel = (Information, Warning, Error);
-  {$SCOPEDENUMS OFF}
+{$SCOPEDENUMS ON}
+  TLogLevel = (
+    Information,
+    Warning,
+    Error
+  );
+{$SCOPEDENUMS OFF}
 
   TLogMessage = record
-    Level: TLogLevel;
-    Msg: string;
+    Level : TLogLevel;
+    Msg : string;
   end;
 
   TLogMessageArray = array of TLogMessage;
 
-  {$IFDEF DELPHI_2010}
+{$IFDEF DELPHI_2010}
   TThreadID = Cardinal;
-  {$ENDIF}
+{$ENDIF}
 
 const
-  TLogLevelDesc : array[TLogLevel] of string = ('Info', 'Warn', 'Err');
+  TLogLevelDesc     : array[TLogLevel] of string = ('Info', 'Warn', 'Err');
 
-  exExact = DUnitX.Types.exExact;
-  exDescendant = DUnitX.Types.exDescendant;
+  exExact           = DUnitX.Types.exExact;
+  exDescendant      = DUnitX.Types.exDescendant;
 
 type
 {$IFDEF DELPHI_XE2_UP}
@@ -127,24 +130,24 @@ type
   ///	</summary>
   TTestFixtureHelper = class helper for TObject
   public
-    procedure Log(const logType : TLogLevel; const msg : string);overload;
-    procedure Log(const msg : string);overload;
+    procedure Log(const logType : TLogLevel; const msg : string); overload;
+    procedure Log(const msg : string); overload;
     //for backwards compatibility with DUnit tests.
     procedure Status(const msg : string);
     //redirects WriteLn to our loggers.
-    procedure WriteLn(const msg : string);overload;
-    procedure WriteLn;overload;
+    procedure WriteLn(const msg : string); overload;
+    procedure WriteLn; overload;
   end;
 {$ENDIF}
 
   // inherit because redeclaration raises ICE
   Assert = class(DUnitX.Assert.Ex.Assert);
 
-  {$M+}
+{$M+}
   ITestFixtureInfo = interface;
-  {$M-}
+{$M-}
 
-  {$M+}
+{$M+}
   ITestInfo = interface
     ['{FF61A6EB-A76B-4BE7-887A-598EBBAE5611}']
     function GetName : string;
@@ -176,12 +179,12 @@ type
   end;
 
   TTestInfoList = class(TDUnitXList<ITestInfo>, ITestInfoList);
-  {$M-}
+{$M-}
 
-  {$M+}
+{$M+}
   ITestFixtureInfo = interface
     ['{9E98B1E8-583A-49FC-B409-9B6937E22E81}']
-    function GetName  : string;
+    function GetName : string;
     function GetNameSpace : string;
     function GetFullName : string;
     function GetUnitName : string;
@@ -199,34 +202,34 @@ type
     function GetTestCount : cardinal;
     function GetActiveTestCount : cardinal;
 
-    property Name                       : string read GetName;
-    property NameSpace                  : string read GetNameSpace;
-    property FullName                   : string read GetFullName;
-    property UnitName                   : string read GetUnitName;
-    property Description                : string read GetDescription;
-    property HasChildFixtures           : boolean read GetHasChildren;
-    property TestClass                  : TClass read GetTestClass;
-    property Tests                      : IList<ITestInfo> read GetTests;
-    property SetupMethodName            : string read GetSetupMethodName;
-    property SetupFixtureMethodName     : string read GetSetupFixtureMethodName;
-    property TearDownMethodName         : string read GetTearDownMethodName;
-    property TearDownFixtureMethodName  : string read GetTearDownFixtureMethodName;
-    property TestInOwnThread            : boolean read GetTestInOwnThread;
-    property Categories                 : TList<string> read GetCategories;
+    property Name : string read GetName;
+    property NameSpace : string read GetNameSpace;
+    property FullName : string read GetFullName;
+    property UnitName : string read GetUnitName;
+    property Description : string read GetDescription;
+    property HasChildFixtures : boolean read GetHasChildren;
+    property TestClass : TClass read GetTestClass;
+    property Tests : IList<ITestInfo> read GetTests;
+    property SetupMethodName : string read GetSetupMethodName;
+    property SetupFixtureMethodName : string read GetSetupFixtureMethodName;
+    property TearDownMethodName : string read GetTearDownMethodName;
+    property TearDownFixtureMethodName : string read GetTearDownFixtureMethodName;
+    property TestInOwnThread : boolean read GetTestInOwnThread;
+    property Categories : TList<string> read GetCategories;
 
-    property TestCount                  : cardinal read GetTestCount;
-    property ActiveTestCount            : cardinal read GetActiveTestCount;
+    property TestCount : cardinal read GetTestCount;
+    property ActiveTestCount : cardinal read GetActiveTestCount;
   end;
 
   ITestFixtureInfoList = interface(IList<ITestFixtureInfo>)
     ['{DEE229E7-1450-4DC1-BEEA-562461439084}']
   end;
-  {$M-}
+{$M-}
   TTestFixtureInfoList = class(TDUnitXList<ITestFixtureInfo>, ITestFixtureInfoList);
 
-  {$M+}
+{$M+}
   IResult = interface
-  ['{AEA1E458-157B-4B3A-9474-44EDFB3EE7A1}']
+    ['{AEA1E458-157B-4B3A-9474-44EDFB3EE7A1}']
     function GetStartTime : TDateTime;
     function GetFinishTime : TDateTime;
     function GetDuration : TTimeSpan;
@@ -236,19 +239,25 @@ type
     property FinishTime : TDateTime read GetFinishTime;
     property Duration : TTimeSpan read GetDuration;
   end;
-  {$M-}
+{$M-}
 
-
-  {$SCOPEDENUMS ON}
-  TTestResultType = (Pass,Failure,Error,Ignored,MemoryLeak,Warning);
-  {$M+}
+{$SCOPEDENUMS ON}
+  TTestResultType = (
+    Pass,
+    Failure,
+    Error,
+    Ignored,
+    MemoryLeak,
+    Warning
+  );
+{$M+}
   ITestResult = interface(IResult)
-  ['{EFD44ABA-4F3E-435C-B8FC-1F8EB4B35A3B}']
+    ['{EFD44ABA-4F3E-435C-B8FC-1F8EB4B35A3B}']
     function GetTest : ITestInfo;
     function GetResult : boolean;
     function GetResultType : TTestResultType;
     function GetMessage : string;
-    function GetLogMessages: TLogMessageArray;
+    function GetLogMessages : TLogMessageArray;
     function GetStackTrace : string;
 
     //Test
@@ -258,77 +267,76 @@ type
     property Result : boolean read GetResult;
     property ResultType : TTestResultType read GetResultType;
     property Message : string read GetMessage;
-    property LogMessages: TLogMessageArray read GetLogMessages;
+    property LogMessages : TLogMessageArray read GetLogMessages;
     property StackTrace : string read GetStackTrace;
 
   end;
-  {$M-}
+{$M-}
 
   ITestError = interface(ITestResult)
-  ['{375941C6-CEFD-44E5-9646-30D7915B8A71}']
+    ['{375941C6-CEFD-44E5-9646-30D7915B8A71}']
     function GetExceptionClass : ExceptClass;
     function GetExceptionMessage : string;
     function GetExceptionLocationInfo : string;
     function GetExceptionAddressInfo : string;
     function GetExceptionAddress : Pointer;
-    function GetIsComparable: boolean;
-    function GetExpected: string;
-    function GetActual: string;
-    function GetFormat: TDUnitXComparableFormatClass;
+    function GetIsComparable : boolean;
+    function GetExpected : string;
+    function GetActual : string;
+    function GetFormat : TDUnitXComparableFormatClass;
 
     property ExceptionClass : ExceptClass read GetExceptionClass;
     property ExceptionMessage : string read GetExceptionMessage;
     property ExceptionLocationInfo : string read GetExceptionLocationInfo;
     property ExceptionAddressInfo : string read GetExceptionAddressInfo;
     property ExceptionAddress : Pointer read GetExceptionAddress;
-    property IsComparable: boolean read GetIsComparable;
-    property Expected: string read GetExpected;
-    property Actual: string read GetActual;
-    property Format: TDUnitXComparableFormatClass read GetFormat;
+    property IsComparable : boolean read GetIsComparable;
+    property Expected : string read GetExpected;
+    property Actual : string read GetActual;
+    property Format : TDUnitXComparableFormatClass read GetFormat;
   end;
 
   IFixtureResult = interface(IResult)
-  ['{7264579D-495E-4E00-A15D-751E6A65BEF6}']
-    function GetErrorCount        : integer;
-    function GetFailureCount      : integer;
-    function GetIgnoredCount      : integer;
-    function GetPassCount      : integer;
-    function GetHasFailures       : boolean;
-    function GetTestResultCount   : integer;
-    function GetChildCount        : integer;
+    ['{7264579D-495E-4E00-A15D-751E6A65BEF6}']
+    function GetErrorCount : integer;
+    function GetFailureCount : integer;
+    function GetIgnoredCount : integer;
+    function GetPassCount : integer;
+    function GetHasFailures : boolean;
+    function GetTestResultCount : integer;
+    function GetChildCount : integer;
 
-    function GetFixture           : ITestFixtureInfo;
-    function GetTestResults       : IList<ITestResult>;
-    function GetChildren          : IList<IFixtureResult>;
-    function GetFailures  : IList<ITestResult>;
-    function GetErrors    : IList<ITestError>;
+    function GetFixture : ITestFixtureInfo;
+    function GetTestResults : IList<ITestResult>;
+    function GetChildren : IList<IFixtureResult>;
+    function GetFailures : IList<ITestResult>;
+    function GetErrors : IList<ITestError>;
     function GetPasses : IList<ITestResult>;
     function GetName : string;
     function GetNamespace : string;
     procedure Reduce;
 
-    property HasFailures  : Boolean read GetHasFailures;
+    property HasFailures : Boolean read GetHasFailures;
     property FailureCount : integer read GetFailureCount;
-    property ErrorCount   : integer read GetErrorCount;
+    property ErrorCount : integer read GetErrorCount;
     property IgnoredCount : integer read GetIgnoredCount;
-    property PassCount    : integer read GetPassCount;
-    property ResultCount  : integer read GetTestResultCount;
-    property ChildCount   : integer read GetChildCount;
+    property PassCount : integer read GetPassCount;
+    property ResultCount : integer read GetTestResultCount;
+    property ChildCount : integer read GetChildCount;
 
-    property Name         : string read GetName;
-    property Namespace    : string read GetNamespace;
-    property Fixture      : ITestFixtureInfo read GetFixture;
-    property Children     : IList<IFixtureResult> read GetChildren;
-    property TestResults  : IList<ITestResult> read GetTestResults;
-    property Failures     : IList<ITestResult> read GetFailures;
-    property Errors       : IList<ITestError> read GetErrors;
-    property Passes       : IList<ITestResult> read GetPasses;
+    property Name : string read GetName;
+    property Namespace : string read GetNamespace;
+    property Fixture : ITestFixtureInfo read GetFixture;
+    property Children : IList<IFixtureResult> read GetChildren;
+    property TestResults : IList<ITestResult> read GetTestResults;
+    property Failures : IList<ITestResult> read GetFailures;
+    property Errors : IList<ITestError> read GetErrors;
+    property Passes : IList<ITestResult> read GetPasses;
   end;
 
-
-  {$M+}
+{$M+}
   IRunResults = interface(IResult)
-  ['{4A335B76-33E3-48FD-87DF-9462428C60DA}']
+    ['{4A335B76-33E3-48FD-87DF-9462428C60DA}']
     function GetFixtureCount : integer;
     function GetTestCount : integer;
     function GetAllPassed : boolean;
@@ -360,7 +368,7 @@ type
 
     property FixtureResults : IEnumerable<IFixtureResult> read GetFixtureResults;
   end;
-  {$M-}
+{$M-}
 
   ITestLogger = interface
     ['{AADCA392-421C-4060-8D47-79D7CAAB0EEF}']
@@ -369,117 +377,119 @@ type
     ///	  Called at the start of testing. The default console logger prints the
     ///	  DUnitX banner.
     ///	</summary>
-    procedure OnTestingStarts(const threadId: TThreadID; testCount, testActiveCount: Cardinal);
+    procedure OnTestingStarts(const threadId : TThreadID; testCount, testActiveCount : Cardinal);
 
     ///	<summary>
     ///	  //Called before a Fixture is run.
     ///	</summary>
-    procedure OnStartTestFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
+    procedure OnStartTestFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
 
     ///	<summary>
     ///	  //Called before a fixture Setup method is run
     ///	</summary>
-    procedure OnSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
+    procedure OnSetupFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
 
     ///	<summary>
     ///	  Called after a fixture setup method is run.
     ///	</summary>
-    procedure OnEndSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
+    procedure OnEndSetupFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
 
     ///	<summary>
     ///	  Called before a Test method is run.
     ///	</summary>
-    procedure OnBeginTest(const threadId: TThreadID; const Test: ITestInfo);
+    procedure OnBeginTest(const threadId : TThreadID; const Test : ITestInfo);
 
     ///	<summary>
     ///	  Called before a test setup method is run.
     ///	</summary>
-    procedure OnSetupTest(const threadId: TThreadID; const Test: ITestInfo);
+    procedure OnSetupTest(const threadId : TThreadID; const Test : ITestInfo);
 
     ///	<summary>
     ///	  Called after a test setup method is run.
     ///	</summary>
-    procedure OnEndSetupTest(const threadId: TThreadID; const Test: ITestInfo);
+    procedure OnEndSetupTest(const threadId : TThreadID; const Test : ITestInfo);
 
     ///	<summary>
     ///	  Called before a Test method is run.
     ///	</summary>
-    procedure OnExecuteTest(const threadId: TThreadID; const Test: ITestInfo);
+    procedure OnExecuteTest(const threadId : TThreadID; const Test : ITestInfo);
 
     ///	<summary>
     ///	  Called when a test succeeds
     ///	</summary>
-    procedure OnTestSuccess(const threadId: TThreadID; const Test: ITestResult);
+    procedure OnTestSuccess(const threadId : TThreadID; const Test : ITestResult);
 
     ///	<summary>
     ///	  Called when a test errors.
     ///	</summary>
-    procedure OnTestError(const threadId: TThreadID; const Error: ITestError);
+    procedure OnTestError(const threadId : TThreadID; const Error : ITestError);
 
     ///	<summary>
     ///	  Called when a test fails.
     ///	</summary>
-    procedure OnTestFailure(const threadId: TThreadID; const Failure: ITestError);
+    procedure OnTestFailure(const threadId : TThreadID; const Failure : ITestError);
 
     /// <summary>
     ///   called when a test is ignored.
     /// </summary>
-    procedure OnTestIgnored(const threadId: TThreadID; const AIgnored: ITestResult);
+    procedure OnTestIgnored(const threadId : TThreadID; const AIgnored : ITestResult);
 
     /// <summary>
     ///   called when a test memory leaks.
     /// </summary>
-    procedure OnTestMemoryLeak(const threadId: TThreadID; const Test: ITestResult);
+    procedure OnTestMemoryLeak(const threadId : TThreadID; const Test : ITestResult);
 
     /// <summary>
     ///   allows tests to write to the log.
     /// </summary>
-    procedure OnLog(const logType: TLogLevel; const msg: string);
+    procedure OnLog(const logType : TLogLevel; const msg : string);
 
     /// <summary>
     ///   called before a Test Teardown method is run.
     /// </summary>
-    procedure OnTeardownTest(const threadId: TThreadID; const Test: ITestInfo);
+    procedure OnTeardownTest(const threadId : TThreadID; const Test : ITestInfo);
 
     /// <summary>
     ///   called after a test teardown method is run.
     /// </summary>
-    procedure OnEndTeardownTest(const threadId: TThreadID; const Test: ITestInfo);
+    procedure OnEndTeardownTest(const threadId : TThreadID; const Test : ITestInfo);
 
     /// <summary>
     ///   called after a test method and teardown is run.
     /// </summary>
-    procedure OnEndTest(const threadId: TThreadID; const Test: ITestResult);
+    procedure OnEndTest(const threadId : TThreadID; const Test : ITestResult);
 
     /// <summary>
     ///   called before a Fixture Teardown method is called.
     /// </summary>
-    procedure OnTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
+    procedure OnTearDownFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
 
     /// <summary>
     ///   called after a Fixture Teardown method is called.
     /// </summary>
-    procedure OnEndTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
+    procedure OnEndTearDownFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
 
     /// <summary>
     ///   called after a Fixture has run.
     /// </summary>
-    procedure OnEndTestFixture(const threadId: TThreadID; const results: IFixtureResult);
+    procedure OnEndTestFixture(const threadId : TThreadID; const results : IFixtureResult);
 
     /// <summary>
     ///   called after all fixtures have run.
     /// </summary>
-    procedure OnTestingEnds(const RunResults: IRunResults);
+    procedure OnTestingEnds(const RunResults : IRunResults);
   end;
 
-  TDUnitXExitBehavior = (Continue, //The runner will exit normally
-                         Pause //The runner will pause after displaying it's results
-                         );
+  TDUnitXExitBehavior = (
+    Continue,                           //The runner will exit normally
+    Pause                               //The runner will pause after displaying it's results
+  );
 
-  TDunitXConsoleMode = (Off,    // Don't create a console runner
-                        Quiet,  // Create a console runner in quiet mode
-                        Verbose // Create a console runner in verbose mode
-                        );
+  TDunitXConsoleMode = (
+    Off,                                // Don't create a console runner
+    Quiet,                              // Create a console runner in quiet mode
+    Verbose                             // Create a console runner in verbose mode
+  );
 
   ITestRunner = interface
     ['{06C0D8D2-B2D7-42F9-8D23-8F2D8A75263F}']
@@ -498,13 +508,13 @@ type
 
     function Execute : IRunResults;
 
-    procedure Log(const logType : TLogLevel; const msg : string);overload;
-    procedure Log(const msg : string);overload;
+    procedure Log(const logType : TLogLevel; const msg : string); overload;
+    procedure Log(const msg : string); overload;
     //for backwards compatibility with DUnit tests.
     procedure Status(const msg : string);
     //redirects WriteLn to our loggers.
-    procedure WriteLn(const msg : string);overload;
-    procedure WriteLn;overload;
+    procedure WriteLn(const msg : string); overload;
+    procedure WriteLn; overload;
 
     ///	<summary>
     ///	  When true, test fixtures will be found by using RTTI to search for
@@ -533,7 +543,7 @@ type
     FDontShowIgnored : boolean;
   public
     constructor Create;
-    destructor Destroy;override;
+    destructor Destroy; override;
     //The xml output file to be generated by xml loggers
     property XMLOutputFile : string read FXMLOutputFile write FXMLOutputFile;
 
@@ -557,7 +567,7 @@ type
     //Defaults to Continue
     property ExitBehavior : TDUnitXExitBehavior read FExitBehavior write FExitBehavior;
 
-    property ConsoleMode : TDunitXConsoleMode read FConsoleMode write FConsoleMode ;
+    property ConsoleMode : TDunitXConsoleMode read FConsoleMode write FConsoleMode;
 
     // Show command line usage
     property ShowUsage : boolean read FShowUsage write FShowUsage;
@@ -566,26 +576,25 @@ type
     property DontShowIgnored : boolean read FDontShowIgnored write FDontShowIgnored;
   end;
 
-
   TDUnitX = class
   private
     class var
       FOptions : TDUnitXOptions;
       FFilter : ITestFilter;
-      FAssertCounters : TDictionary<TThreadID,Cardinal>;
+      FAssertCounters : TDictionary<TThreadID, Cardinal>;
       FLock : TCriticalSection;
   protected
     class constructor Create;
     class destructor Destroy;
   public class var
-    RegisteredFixtures : TDictionary<TClass,string>;
+      RegisteredFixtures : TDictionary<TClass, string>;
   public
-    class function CreateRunner : ITestRunner;overload;
-    class function CreateRunner(const ALogger : ITestLogger) : ITestRunner;overload;
-    class function CreateRunner(const ALoggers : array of ITestLogger) : ITestRunner;overload;
-    class procedure RegisterTestFixture(const AClass : TClass; const AName : string = '' );
+    class function CreateRunner : ITestRunner; overload;
+    class function CreateRunner(const ALogger : ITestLogger) : ITestRunner; overload;
+    class function CreateRunner(const ALoggers : array of ITestLogger) : ITestRunner; overload;
+    class procedure RegisterTestFixture(const AClass : TClass; const AName : string = '');
     class function CurrentRunner : ITestRunner;
-    class function GetAssertCount(const AThreadId: TThreadID) : Cardinal;
+    class function GetAssertCount(const AThreadId : TThreadID) : Cardinal;
     ///  Parses the command line options and applies them the the Options object.
     ///  Will throw exception if there are errors.
     class procedure CheckCommandLine;
@@ -597,14 +606,14 @@ type
 
   // Register an implementation via TDUnitXServiceLocator.DefaultContainer
   IStacktraceProvider = interface
-  ['{382288B7-932C-4B6E-8417-660FFCA849EB}']
-    function GetStackTrace(const ex: Exception; const exAddressAddress: Pointer) : string;
-    function PointerToLocationInfo(const Addrs: Pointer): string;
-    function PointerToAddressInfo(Addrs: Pointer): string;
+    ['{382288B7-932C-4B6E-8417-660FFCA849EB}']
+    function GetStackTrace(const ex : Exception; const exAddressAddress : Pointer) : string;
+    function PointerToLocationInfo(const Addrs : Pointer) : string;
+    function PointerToAddressInfo(Addrs : Pointer) : string;
   end;
 
   IMemoryLeakMonitor = interface
-  ['{A374A4D0-9BF6-4E01-8A29-647F92CBF41C}']
+    ['{A374A4D0-9BF6-4E01-8A29-647F92CBF41C}']
     procedure PreSetup;
     procedure PostSetUp;
     procedure PreTest;
@@ -612,38 +621,38 @@ type
     procedure PreTearDown;
     procedure PostTearDown;
 
-    function SetUpMemoryAllocated: Int64;
-    function TearDownMemoryAllocated: Int64;
-    function TestMemoryAllocated: Int64;
+    function SetUpMemoryAllocated : Int64;
+    function TearDownMemoryAllocated : Int64;
+    function TestMemoryAllocated : Int64;
   end;
 
   IMemoryLeakMonitor2 = interface(IMemoryLeakMonitor)
-  ['{33559983-D522-4ED5-9B5E-AC9A055FA01A}']
-    function GetReport: string;
+    ['{33559983-D522-4ED5-9B5E-AC9A055FA01A}']
+    function GetReport : string;
   end;
 
 const
-  EXIT_OK     = 0;
-  EXIT_ERRORS = 1;
+  EXIT_OK           = 0;
+  EXIT_ERRORS       = 1;
   EXIT_OPTIONS_ERROR = 100;
 
 implementation
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.Variants,
   System.Math,
   System.StrUtils,
   System.Types,
   System.RegularExpressions,
   System.Generics.Defaults,
-  {$ELSE}
+{$ELSE}
   Variants,
   Math,
   StrUtils,
   Types,
   Generics.Defaults,
-  {$ENDIF}
+{$ENDIF}
   DUnitX.ResStrs,
   DUnitX.ConsoleWriter.Base,
   DUnitX.Banner,
@@ -676,18 +685,18 @@ end;
 
 { TDUnitX }
 
-class function TDUnitX.CreateRunner: ITestRunner;
+class function TDUnitX.CreateRunner : ITestRunner;
 begin
   result := CreateRunner(nil);
 end;
 
-class function TDUnitX.CreateRunner(const ALogger: ITestLogger): ITestRunner;
+class function TDUnitX.CreateRunner(const ALogger : ITestLogger) : ITestRunner;
 begin
   result := TDUnitXTestRunner.Create(ALogger);
 end;
 
 class function TDUnitX.CreateRunner(
-  const ALoggers: array of ITestLogger): ITestRunner;
+  const ALoggers : array of ITestLogger) : ITestRunner;
 begin
   Result := TDUnitXTestRunner.Create(ALoggers);
 end;
@@ -700,20 +709,19 @@ begin
     System.Writeln(value);
 end;
 
-
 procedure ShowUsage(consoleWriter : IDUnitXConsoleWriter);
 begin
   if consoleWriter <> nil then
-    consoleWriter.SetColour(ccBrightYellow,ccDefault);
-  Writeline(consoleWriter, Format(SUsage, [ExtractFileName(ParamStr(0))])+#13#10);
+    consoleWriter.SetColour(ccBrightYellow, ccDefault);
+  Writeline(consoleWriter, Format(SUsage, [ExtractFileName(ParamStr(0))]) + #13#10);
   Writeline(consoleWriter, SOptions);
   if consoleWriter <> nil then
-    consoleWriter.SetColour(ccBrightWhite,ccDefault);
+    consoleWriter.SetColour(ccBrightWhite, ccDefault);
 
   TOptionsRegistry.PrintUsage(procedure(value : string)
-                            begin
-                               WriteLine(consoleWriter, value);
-                            end);
+    begin
+      WriteLine(consoleWriter, value);
+    end);
   if consoleWriter <> nil then
     consoleWriter.SetColour(ccDefault);
 end;
@@ -735,14 +743,14 @@ begin
 
       consoleWriter := TDUnitXServiceLocator.DefaultContainer.Resolve<IDUnitXConsoleWriter>;
       if consoleWriter <> nil then
-        consoleWriter.SetColour(ccBrightRed,ccDefault);
+        consoleWriter.SetColour(ccBrightRed, ccDefault);
       Writeline(consoleWriter, parseResult.ErrorText);
       //if the user said hidebanner then don't print the usage either
       if not FOptions.HideBanner then
         ShowUsage(consoleWriter);
       if consoleWriter <> nil then
-        consoleWriter.SetColour(ccDefault,ccDefault);
-      System.ExitCode :=EXIT_OPTIONS_ERROR;
+        consoleWriter.SetColour(ccDefault, ccDefault);
+      System.ExitCode := EXIT_OPTIONS_ERROR;
       raise ECommandLineError.Create(parseResult.ErrorText);
     end
     else
@@ -776,39 +784,39 @@ end;
 class constructor TDUnitX.Create;
 begin
   FOptions := TDUnitXOptions.Create;
-  FAssertCounters := TDictionary<TThreadID,Cardinal>.Create(8);
+  FAssertCounters := TDictionary<TThreadID, Cardinal>.Create(8);
   FLock := TCriticalSection.Create;
-  RegisteredFixtures := TDictionary<TClass,string>.Create;
+  RegisteredFixtures := TDictionary<TClass, string>.Create;
   //Make sure we have at least a dummy memory leak monitor registered.
   if not TDUnitXServiceLocator.DefaultContainer.HasService<IMemoryLeakMonitor> then
     DUnitX.MemoryLeakMonitor.Default.RegisterDefaultProvider;
   FFilter := nil;
   Assert.OnAssert := procedure
-                    var
-                      threadId : TThreadID;
-                      value : cardinal;
-                    begin
-                      threadId := TThread.CurrentThread.ThreadID;
-                      FLock.Enter;
-                      try
-                        if FAssertCounters.TryGetValue(threadId,value) then
-                        begin
-                          Inc(value);
-                          FAssertCounters.AddOrSetValue(threadId,value);
-                        end
-                        else
-                          FAssertCounters.Add(threadId,1)
-                      finally
-                        FLock.Leave;
-                      end;
-                    end;
+      var
+      threadId : TThreadID;
+      value : cardinal;
+    begin
+      threadId := TThread.CurrentThread.ThreadID;
+      FLock.Enter;
+      try
+        if FAssertCounters.TryGetValue(threadId, value) then
+        begin
+          Inc(value);
+          FAssertCounters.AddOrSetValue(threadId, value);
+        end
+        else
+          FAssertCounters.Add(threadId, 1)
+      finally
+        FLock.Leave;
+      end;
+    end;
 end;
 
-class function TDUnitX.CurrentRunner: ITestRunner;
+class function TDUnitX.CurrentRunner : ITestRunner;
 var
   ref : IWeakReference<ITestRunner>;
 begin
-  if not TDUnitXTestRunner.FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId,ref) then
+  if not TDUnitXTestRunner.FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId, ref) then
     raise Exception.Create(SNoRunner);
   result := ref.Data;
 
@@ -822,18 +830,18 @@ begin
   FLock.Free;
 end;
 
-class function TDUnitX.GetAssertCount(const AThreadId: TThreadID): Cardinal;
+class function TDUnitX.GetAssertCount(const AThreadId : TThreadID) : Cardinal;
 begin
   result := 0;
   FLock.Enter;
   try
-    FAssertCounters.TryGetValue(AThreadId,result);
+    FAssertCounters.TryGetValue(AThreadId, result);
   finally
     FLock.Leave;
   end;
 end;
 
-class procedure TDUnitX.RegisterTestFixture(const AClass: TClass; const AName : string);
+class procedure TDUnitX.RegisterTestFixture(const AClass : TClass; const AName : string);
 var
   sName : string;
   attrib : TestFixtureAttribute;
@@ -853,36 +861,34 @@ begin
         sName := attrib.Name;
     end;
 
-
     if sName = '' then
       sName := AClass.ClassName;
-
 
   end;
 
   if not RegisteredFixtures.ContainsKey(AClass) then
-      RegisteredFixtures.Add(AClass,sName );
+    RegisteredFixtures.Add(AClass, sName);
 end;
 
 {$IFDEF DELPHI_XE2_UP}
 
 { TTestFixtureHelper }
 
-procedure TTestFixtureHelper.Log(const msg: string);
+procedure TTestFixtureHelper.Log(const msg : string);
 begin
-  Self.Log(TLogLevel.Information,msg);
+  Self.Log(TLogLevel.Information, msg);
 end;
 
-procedure TTestFixtureHelper.Log(const logType : TLogLevel; const msg: string);
+procedure TTestFixtureHelper.Log(const logType : TLogLevel; const msg : string);
 var
   runner : ITestRunner;
   ref : IWeakReference<ITestRunner>;
 begin
-  if TDUnitXTestRunner.FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId,ref) then
+  if TDUnitXTestRunner.FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId, ref) then
   begin
     runner := ref.Data;
     if runner <> nil then
-      runner.Log(logType,msg)
+      runner.Log(logType, msg)
     else
       System.Writeln(msg);
   end
@@ -890,19 +896,19 @@ begin
     System.Writeln(msg);
 end;
 
-procedure TTestFixtureHelper.Status(const msg: string);
+procedure TTestFixtureHelper.Status(const msg : string);
 begin
-  Self.Log(TLogLevel.Information,msg);
+  Self.Log(TLogLevel.Information, msg);
 end;
 
 procedure TTestFixtureHelper.WriteLn;
 begin
-  Self.Log(TLogLevel.Information,'');
+  Self.Log(TLogLevel.Information, '');
 end;
 
-procedure TTestFixtureHelper.WriteLn(const msg: string);
+procedure TTestFixtureHelper.WriteLn(const msg : string);
 begin
-  Self.Log(TLogLevel.Information,msg);
+  Self.Log(TLogLevel.Information, msg);
 end;
 {$ENDIF}
 
@@ -916,10 +922,11 @@ end;
 
 initialization
   InitAssert;
-  TDUnitXServiceLocator.DefaultContainer.RegisterType<IFixtureProvider,TDUnitXFixtureProvider>();
+  TDUnitXServiceLocator.DefaultContainer.RegisterType<IFixtureProvider, TDUnitXFixtureProvider>();
 
 finalization
 
 {$ENDIF}
 
 end.
+

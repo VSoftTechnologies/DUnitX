@@ -31,23 +31,22 @@ interface
 {$I DUnitX.inc}
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.TimeSpan,
   System.Rtti,
   System.Generics.Collections,
   System.SysUtils,
-  {$ELSE}
+{$ELSE}
   TimeSpan,
   Rtti,
   Generics.Collections,
   SysUtils,
-  {$ENDIF}
+{$ENDIF}
   DUnitX.Types,
   DUnitX.Generics;
 
 type
   TTestMethod = procedure of object;
-
 
   //These interfaces mirror the Info classes in the framework but expose stuff we need for runtime.
   ITestFixture = interface;
@@ -72,10 +71,10 @@ type
     function GetIgnoreReason : string;
     function GetIgnoreMemoryLeaks() : Boolean;
     procedure SetIgnoreMemoryLeaks(const AValue : Boolean);
-    function GetMaxTime: cardinal;
-    procedure SetMaxTime(const AValue: cardinal);
-    function GetTimedOut: Boolean;
-    procedure SetTimedOut(const AValue: Boolean);
+    function GetMaxTime : cardinal;
+    procedure SetMaxTime(const AValue : cardinal);
+    function GetTimedOut : Boolean;
+    procedure SetTimedOut(const AValue : Boolean);
     function GetIsTestCase : boolean;
 
     property Name : string read GetName;
@@ -89,8 +88,8 @@ type
     property IsTestCase : boolean read GetIsTestCase;
     property TestMethod : TTestMethod read GetTestMethod;
     property IgnoreMemoryLeaks : Boolean read GetIgnoreMemoryLeaks write SetIgnoreMemoryLeaks;
-    property MaxTime: cardinal read GetMaxTime write SetMaxTime;
-    property TimedOut: Boolean read GetTimedOut write SetTimedOut;
+    property MaxTime : cardinal read GetMaxTime write SetMaxTime;
+    property TimedOut : Boolean read GetTimedOut write SetTimedOut;
   end;
 
   ITestList = interface(IList<ITest>)
@@ -104,7 +103,7 @@ type
   ///
   ITestFixture = interface
     ['{B2F140C3-1D6A-4C09-B4C6-0D6AFC99BC87}']
-    function GetName  : string;
+    function GetName : string;
     function GetFullName : string;
     function GetUnitName : string;
     function GetDescription : string;
@@ -134,11 +133,14 @@ type
     function GetIgnoreReason : string;
     function GetHasActiveTests : boolean;
 
-    function AddTest(const AMethodName : string; const AMethod : TTestMethod; const AName : string; const ACategory : string; const ARttiMethod : TRttiMethod; const AEnabled : boolean = true;const AIgnored : boolean = false; const AIgnoreReason : string = ''; const AMaxTime :cardinal = 0; const AExpectedException: ExceptClass = nil; const AExceptionInheritance: TExceptionInheritance = exExact) : ITest;
-    function AddTestCase(const AMethodName : string; const ACaseName : string; const AName : string; const ACategory : string; const AMethod : TRttiMethod; const AEnabled : boolean; const AArgs : TValueArray) : ITest;
+    function AddTest(const AMethodName : string; const AMethod : TTestMethod; const AName : string; const ACategory : string; const ARttiMethod : TRttiMethod;
+      const AEnabled : boolean = true; const AIgnored : boolean = false; const AIgnoreReason : string = ''; const AMaxTime : cardinal = 0; const
+      AExpectedException : ExceptClass = nil; const AExceptionInheritance : TExceptionInheritance = exExact) : ITest;
+    function AddTestCase(const AMethodName : string; const ACaseName : string; const AName : string; const ACategory : string; const AMethod : TRttiMethod;
+      const AEnabled : boolean; const AArgs : TValueArray) : ITest;
 
-    function AddChildFixture(const ATestClass : TClass; const AName : string; const ACategory : string) : ITestFixture;overload;
-    function AddChildFixture(const AInstance : TObject; const AName : string; const ACategory : string) : ITestFixture;overload;
+    function AddChildFixture(const ATestClass : TClass; const AName : string; const ACategory : string) : ITestFixture; overload;
+    function AddChildFixture(const AInstance : TObject; const AName : string; const ACategory : string) : ITestFixture; overload;
 
     procedure SetSetupTestMethod(const AMethodName : string; const AMethod : TTestMethod);
     procedure SetSetupFixtureMethod(const AMethodName : string; const AMethod : TTestMethod);
@@ -149,32 +151,32 @@ type
     procedure ExecuteFixtureTearDown;
     procedure InitFixtureInstance;
 
-    property Name                       : string read GetName;
-    property NameSpace                  : string read GetNameSpace;
-    property FullName                   : string read GetFullName;
-    property UnitName                   : string read GetUnitName;
-    property Categories                 : TList<string> read GetCategories;
-    property Children                   : ITestFixtureList read GetChildren;
-    property Description                : string read GetDescription;
-    property Enabled                    : boolean read GetEnabled write SetEnabled;
-    property FixtureInstance            : TObject read GetFixtureInstance;
-    property HasChildFixtures           : boolean read GetHasChildren;
-    property HasTests                   : boolean read GetHasTests;
-    property HasChildTests              : boolean read GetHasChildTests;
-    property TestClass                  : TClass read GetTestClass;
-    property Tests                      : ITestList read GetTests;
-    property SetupMethod                : TTestMethod read GetSetupMethod;
-    property SetupMethodName            : string read GetSetupMethodName;
-    property SetupFixtureMethod         : TTestMethod read GetSetupFixtureMethod;
-    property SetupFixtureMethodName     : string read GetSetupFixtureMethodName;
-    property TearDownMethod             : TTestMethod read GetTearDownMethod;
-    property TearDownMethodName         : string read GetTearDownMethodName;
-    property TearDownFixtureMethod      : TTestMethod read GetTearDownFixtureMethod;
-    property TearDownFixtureMethodName  : string read GetTearDownFixtureMethodName;
-    property TestInOwnThread            : boolean read GetTestInOwnThread write SetTestInOwnThread;
-    property Ignored                    : boolean read GetIgnored;
-    property IgnoreReason               : string read GetIgnoreReason;
-    property HasActiveTests             : boolean read GetHasActiveTests;
+    property Name : string read GetName;
+    property NameSpace : string read GetNameSpace;
+    property FullName : string read GetFullName;
+    property UnitName : string read GetUnitName;
+    property Categories : TList<string> read GetCategories;
+    property Children : ITestFixtureList read GetChildren;
+    property Description : string read GetDescription;
+    property Enabled : boolean read GetEnabled write SetEnabled;
+    property FixtureInstance : TObject read GetFixtureInstance;
+    property HasChildFixtures : boolean read GetHasChildren;
+    property HasTests : boolean read GetHasTests;
+    property HasChildTests : boolean read GetHasChildTests;
+    property TestClass : TClass read GetTestClass;
+    property Tests : ITestList read GetTests;
+    property SetupMethod : TTestMethod read GetSetupMethod;
+    property SetupMethodName : string read GetSetupMethodName;
+    property SetupFixtureMethod : TTestMethod read GetSetupFixtureMethod;
+    property SetupFixtureMethodName : string read GetSetupFixtureMethodName;
+    property TearDownMethod : TTestMethod read GetTearDownMethod;
+    property TearDownMethodName : string read GetTearDownMethodName;
+    property TearDownFixtureMethod : TTestMethod read GetTearDownFixtureMethod;
+    property TearDownFixtureMethodName : string read GetTearDownFixtureMethodName;
+    property TestInOwnThread : boolean read GetTestInOwnThread write SetTestInOwnThread;
+    property Ignored : boolean read GetIgnored;
+    property IgnoreReason : string read GetIgnoreReason;
+    property HasActiveTests : boolean read GetHasActiveTests;
   end;
 
   ITestFixtureList = interface(IList<ITestFixture>)
@@ -189,17 +191,16 @@ type
     procedure Sort;
   end;
 
-
   //Used by the runner to call the provider.
   IFixtureBuilder = interface
-  ['{71A5DFE1-AE08-46C8-9405-65000A96FAA0}']
+    ['{71A5DFE1-AE08-46C8-9405-65000A96FAA0}']
     function BuildFixtureList : ITestFixtureList;
   end;
 
   //used by the fixture provider to create the fixtures, abstracts the fixture class.
   IFixtureProviderContext = interface
     ['{933F8442-77F1-4574-BB5E-2F3D0B8E6E6F}']
-    function CreateFixture(const AFixtureClass : TClass; const AName : string; const ACategory : string) : ITestFixture;overload;
+    function CreateFixture(const AFixtureClass : TClass; const AName : string; const ACategory : string) : ITestFixture; overload;
     function GetUseRtti : boolean;
     //The runner UseRtti property exposed for provider use.
     property UseRtti : boolean read GetUseRtti;
@@ -211,28 +212,27 @@ type
     procedure Execute(const context : IFixtureProviderContext);
   end;
 
-
 implementation
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.Generics.Defaults
-  {$ELSE}
+{$ELSE}
   Generics.Defaults
-  {$ENDIF}
+{$ENDIF}
   ;
 
 { TTestFixtureList }
 
 procedure TTestFixtureList.Sort;
 var
-  AFixture: ITestFixture;
+  AFixture : ITestFixture;
 
-  Comparer: TDelegatedComparer<ITestFixture>;
+  Comparer : TDelegatedComparer<ITestFixture>;
 
 begin
   Comparer := TDelegatedComparer<ITestFixture>.Create(
-    function (const Left, Right: ITestFixture): Integer
+    function(const Left, Right : ITestFixture) : Integer
     begin
       Result := CompareStr(Left.FullName, Right.FullName);
     end);

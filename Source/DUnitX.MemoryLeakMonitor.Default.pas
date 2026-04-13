@@ -31,15 +31,15 @@ interface
 {$I DUnitX.inc}
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.Classes,
-  {$ELSE}
+{$ELSE}
   Classes,
-  {$ENDIF}
+{$ENDIF}
   DUnitX.TestFramework;
 
 type
-  TDUnitXDefaultMemoryLeakMonitor = class(TInterfacedObject,IMemoryLeakMonitor)
+  TDUnitXDefaultMemoryLeakMonitor = class(TInterfacedObject, IMemoryLeakMonitor)
   public
     procedure PreSetup;
     procedure PostSetUp;
@@ -48,26 +48,22 @@ type
     procedure PreTearDown;
     procedure PostTearDown;
 
-    function SetUpMemoryAllocated: Int64;
-    function TearDownMemoryAllocated: Int64;
-    function TestMemoryAllocated: Int64;
+    function SetUpMemoryAllocated : Int64;
+    function TearDownMemoryAllocated : Int64;
+    function TestMemoryAllocated : Int64;
   end;
 
-
-
-  procedure RegisterDefaultProvider;
+procedure RegisterDefaultProvider;
 
 implementation
 
 uses
   DUnitX.ServiceLocator;
 
-
 procedure RegisterDefaultProvider;
 begin
   TDUnitXServiceLocator.DefaultContainer.RegisterType<IMemoryLeakMonitor, TDUnitXDefaultMemoryLeakMonitor>;
 end;
-
 
 { TDUnitXDefaultMemoryLeakMonitor }
 
@@ -101,19 +97,20 @@ begin
 
 end;
 
-function TDUnitXDefaultMemoryLeakMonitor.SetUpMemoryAllocated: Int64;
+function TDUnitXDefaultMemoryLeakMonitor.SetUpMemoryAllocated : Int64;
 begin
   Result := 0;
 end;
 
-function TDUnitXDefaultMemoryLeakMonitor.TearDownMemoryAllocated: Int64;
+function TDUnitXDefaultMemoryLeakMonitor.TearDownMemoryAllocated : Int64;
 begin
   Result := 0;
 end;
 
-function TDUnitXDefaultMemoryLeakMonitor.TestMemoryAllocated: Int64;
+function TDUnitXDefaultMemoryLeakMonitor.TestMemoryAllocated : Int64;
 begin
   Result := 0;
 end;
 
 end.
+

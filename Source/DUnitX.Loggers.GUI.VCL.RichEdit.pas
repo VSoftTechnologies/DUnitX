@@ -31,32 +31,32 @@ interface
 {$I DUnitX.inc}
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   Vcl.ComCtrls,
   Vcl.Graphics,
   System.Generics.Collections,
-  {$ELSE}
+{$ELSE}
   ComCtrls,
   Graphics,
   Generics.Collections,
-  {$ENDIF}
+{$ENDIF}
   DUnitX.ConsoleWriter.Base,
   DUnitX.TestFramework;
 
 type
-  TTestBookmarkList = TDictionary<string,integer>;
+  TTestBookmarkList = TDictionary<string, integer>;
 
   TDUnitXGUIVCLRichEditLogger = class(TInterfacedObject, ITestLogger)
   private
-    FRichEdit: TRichEdit;
-    FIndent: integer;
-    FCurrColor: TColor;
-    FTestBookmarkList: TTestBookmarkList;
-    procedure Write(const Msg: string);
+    FRichEdit : TRichEdit;
+    FIndent : integer;
+    FCurrColor : TColor;
+    FTestBookmarkList : TTestBookmarkList;
+    procedure Write(const Msg : string);
     procedure WriteBlankLine;
-    procedure SetColor(const Color: TColor);
-    procedure Indent(const Value: integer = 1);
-    procedure Outdent(const Value: integer = 1);
+    procedure SetColor(const Color : TColor);
+    procedure Indent(const Value : integer = 1);
+    procedure Outdent(const Value : integer = 1);
   strict protected
     procedure SetConsoleDefaultColor; virtual;
     procedure SetConsoleErrorColor; virtual;
@@ -66,42 +66,42 @@ type
     procedure SetConsoleSummaryColor; virtual;
     procedure SetConsoleWarningColor; virtual;
   protected
-    procedure OnBeginTest(const threadId: TThreadID; const Test: ITestInfo);
-    procedure OnEndSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
-    procedure OnEndSetupTest(const threadId: TThreadID; const Test: ITestInfo);
-    procedure OnEndTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
-    procedure OnEndTeardownTest(const threadId: TThreadID; const Test: ITestInfo);
-    procedure OnEndTest(const threadId: TThreadID; const Test: ITestResult);
-    procedure OnEndTestFixture(const threadId: TThreadID; const results: IFixtureResult);
-    procedure OnExecuteTest(const threadId: TThreadID; const Test: ITestInfo);
+    procedure OnBeginTest(const threadId : TThreadID; const Test : ITestInfo);
+    procedure OnEndSetupFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
+    procedure OnEndSetupTest(const threadId : TThreadID; const Test : ITestInfo);
+    procedure OnEndTearDownFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
+    procedure OnEndTeardownTest(const threadId : TThreadID; const Test : ITestInfo);
+    procedure OnEndTest(const threadId : TThreadID; const Test : ITestResult);
+    procedure OnEndTestFixture(const threadId : TThreadID; const results : IFixtureResult);
+    procedure OnExecuteTest(const threadId : TThreadID; const Test : ITestInfo);
     procedure OnLog(const logType : TLogLevel; const msg : string);
-    procedure OnSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
-    procedure OnSetupTest(const threadId: TThreadID; const Test: ITestInfo);
-    procedure OnStartTestFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
-    procedure OnTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
-    procedure OnTeardownTest(const threadId: TThreadID; const Test: ITestInfo);
-    procedure OnTestError(const threadId: TThreadID; const Error: ITestError);
-    procedure OnTestFailure(const threadId: TThreadID; const Failure: ITestError);
-    procedure OnTestIgnored(const threadId: TThreadID; const AIgnored: ITestResult);
-    procedure OnTestingEnds(const RunResults: IRunResults);
-    procedure OnTestingStarts(const threadId: TThreadID; testCount, testActiveCount: Cardinal);
-    procedure OnTestMemoryLeak(const threadId : TThreadID; const Test: ITestResult);
-    procedure OnTestSuccess(const threadId: TThreadID; const Test: ITestResult);
+    procedure OnSetupFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
+    procedure OnSetupTest(const threadId : TThreadID; const Test : ITestInfo);
+    procedure OnStartTestFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
+    procedure OnTearDownFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
+    procedure OnTeardownTest(const threadId : TThreadID; const Test : ITestInfo);
+    procedure OnTestError(const threadId : TThreadID; const Error : ITestError);
+    procedure OnTestFailure(const threadId : TThreadID; const Failure : ITestError);
+    procedure OnTestIgnored(const threadId : TThreadID; const AIgnored : ITestResult);
+    procedure OnTestingEnds(const RunResults : IRunResults);
+    procedure OnTestingStarts(const threadId : TThreadID; testCount, testActiveCount : Cardinal);
+    procedure OnTestMemoryLeak(const threadId : TThreadID; const Test : ITestResult);
+    procedure OnTestSuccess(const threadId : TThreadID; const Test : ITestResult);
   public
-    constructor Create(const RichEdit: TRichEdit; const TestBookmarkList: TTestBookmarkList);
+    constructor Create(const RichEdit : TRichEdit; const TestBookmarkList : TTestBookmarkList);
   end;
 
 implementation
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.SysUtils,
-  {$ELSE}
+{$ELSE}
   SysUtils,
-  {$ENDIF}
+{$ENDIF}
   DUnitX.ResStrs;
 
-constructor TDUnitXGUIVCLRichEditLogger.Create(const RichEdit: TRichEdit; const TestBookmarkList: TTestBookmarkList);
+constructor TDUnitXGUIVCLRichEditLogger.Create(const RichEdit : TRichEdit; const TestBookmarkList : TTestBookmarkList);
 begin
   FRichEdit := RichEdit;
   FTestBookmarkList := TestBookmarkList;
@@ -109,67 +109,67 @@ begin
   FIndent := 0;
 end;
 
-procedure TDUnitXGUIVCLRichEditLogger.Indent(const Value: integer);
+procedure TDUnitXGUIVCLRichEditLogger.Indent(const Value : integer);
 begin
   Inc(FIndent, Value);
 end;
 
-procedure TDUnitXGUIVCLRichEditLogger.OnBeginTest(const threadId: TThreadID; const Test: ITestInfo);
+procedure TDUnitXGUIVCLRichEditLogger.OnBeginTest(const threadId : TThreadID; const Test : ITestInfo);
 begin
   FTestBookmarkList.Add(Test.FullName, FRichEdit.Lines.Count);
 
   SetConsoleRunTestColor();
   Indent(1);
-  Write(STest +  Test.FullName);
+  Write(STest + Test.FullName);
   Write('-------------------------------------------------');
   SetConsoleDefaultColor();
 end;
 
-procedure TDUnitXGUIVCLRichEditLogger.OnEndSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
+procedure TDUnitXGUIVCLRichEditLogger.OnEndSetupFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
 begin
   Outdent(1);
 end;
 
-procedure TDUnitXGUIVCLRichEditLogger.OnEndSetupTest(const threadId: TThreadID; const Test: ITestInfo);
+procedure TDUnitXGUIVCLRichEditLogger.OnEndSetupTest(const threadId : TThreadID; const Test : ITestInfo);
 begin
   //Empty
 end;
 
-procedure TDUnitXGUIVCLRichEditLogger.OnEndTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
+procedure TDUnitXGUIVCLRichEditLogger.OnEndTearDownFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
 begin
   //Empty
 end;
 
-procedure TDUnitXGUIVCLRichEditLogger.OnEndTeardownTest(const threadId: TThreadID; const Test: ITestInfo);
+procedure TDUnitXGUIVCLRichEditLogger.OnEndTeardownTest(const threadId : TThreadID; const Test : ITestInfo);
 begin
   //Empty
 end;
 
-procedure TDUnitXGUIVCLRichEditLogger.OnEndTest(const threadId: TThreadID; const Test: ITestResult);
+procedure TDUnitXGUIVCLRichEditLogger.OnEndTest(const threadId : TThreadID; const Test : ITestResult);
 begin
   Outdent(1);
 end;
 
-procedure TDUnitXGUIVCLRichEditLogger.OnEndTestFixture(const threadId: TThreadID; const results: IFixtureResult);
+procedure TDUnitXGUIVCLRichEditLogger.OnEndTestFixture(const threadId : TThreadID; const results : IFixtureResult);
 begin
   Outdent(3);
   WriteBlankLine;
 end;
 
-procedure TDUnitXGUIVCLRichEditLogger.OnExecuteTest(const threadId: TThreadID; const Test: ITestInfo);
+procedure TDUnitXGUIVCLRichEditLogger.OnExecuteTest(const threadId : TThreadID; const Test : ITestInfo);
 begin
   Write(SExecutingTest + Test.Name);
   WriteBlankLine;
 end;
 
-procedure TDUnitXGUIVCLRichEditLogger.OnLog(const logType: TLogLevel; const msg: string);
+procedure TDUnitXGUIVCLRichEditLogger.OnLog(const logType : TLogLevel; const msg : string);
 begin
   Indent(2);
   try
-    case logType  of
-      TLogLevel.Information: SetConsoleDefaultColor();
-      TLogLevel.Warning: SetConsoleWarningColor();
-      TLogLevel.Error: SetConsoleErrorColor();
+    case logType of
+      TLogLevel.Information : SetConsoleDefaultColor();
+      TLogLevel.Warning : SetConsoleWarningColor();
+      TLogLevel.Error : SetConsoleErrorColor();
     end;
 
     Write(msg);
@@ -179,19 +179,19 @@ begin
   end;
 end;
 
-procedure TDUnitXGUIVCLRichEditLogger.OnSetupFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
+procedure TDUnitXGUIVCLRichEditLogger.OnSetupFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
 begin
   Indent(1);
   Write(SRunningFixtureSetup + fixture.SetupFixtureMethodName);
 end;
 
-procedure TDUnitXGUIVCLRichEditLogger.OnSetupTest(const threadId: TThreadID; const Test: ITestInfo);
+procedure TDUnitXGUIVCLRichEditLogger.OnSetupTest(const threadId : TThreadID; const Test : ITestInfo);
 begin
   SetConsoleSetupTestColor();
   Write(SRunningSetup + Test.Name);
 end;
 
-procedure TDUnitXGUIVCLRichEditLogger.OnStartTestFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
+procedure TDUnitXGUIVCLRichEditLogger.OnStartTestFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
 begin
   SetConsoleWarningColor();
   Indent(2);
@@ -201,13 +201,13 @@ begin
   SetConsoleDefaultColor();
 end;
 
-procedure TDUnitXGUIVCLRichEditLogger.OnTearDownFixture(const threadId: TThreadID; const fixture: ITestFixtureInfo);
+procedure TDUnitXGUIVCLRichEditLogger.OnTearDownFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
 begin
   Write(SRunningFixtureTeardown + fixture.TearDownFixtureMethodName);
   WriteBlankLine;
 end;
 
-procedure TDUnitXGUIVCLRichEditLogger.OnTeardownTest(const threadId: TThreadID; const Test: ITestInfo);
+procedure TDUnitXGUIVCLRichEditLogger.OnTeardownTest(const threadId : TThreadID; const Test : ITestInfo);
 begin
   WriteBlankLine;
   Indent(1);
@@ -216,24 +216,24 @@ begin
   Outdent(1);
 end;
 
-procedure TDUnitXGUIVCLRichEditLogger.OnTestError(const threadId: TThreadID; const Error: ITestError);
+procedure TDUnitXGUIVCLRichEditLogger.OnTestError(const threadId : TThreadID; const Error : ITestError);
 begin
   //Empty
 end;
 
-procedure TDUnitXGUIVCLRichEditLogger.OnTestFailure(const threadId: TThreadID; const Failure: ITestError);
+procedure TDUnitXGUIVCLRichEditLogger.OnTestFailure(const threadId : TThreadID; const Failure : ITestError);
 begin
   //Empty
 end;
 
-procedure TDUnitXGUIVCLRichEditLogger.OnTestIgnored(const threadId: TThreadID; const AIgnored: ITestResult);
+procedure TDUnitXGUIVCLRichEditLogger.OnTestIgnored(const threadId : TThreadID; const AIgnored : ITestResult);
 begin
   //Empty
 end;
 
-procedure TDUnitXGUIVCLRichEditLogger.OnTestingEnds(const RunResults: IRunResults);
+procedure TDUnitXGUIVCLRichEditLogger.OnTestingEnds(const RunResults : IRunResults);
 var
-  TestResult: ITestResult;
+  TestResult : ITestResult;
 begin
   OutDent(1);
   Write(SDoneTesting);
@@ -269,9 +269,9 @@ begin
     SetConsoleErrorColor()
   else
     SetConsoleDefaultColor;
-  Write(Format(STestsErrored,[RunResults.ErrorCount]));
+  Write(Format(STestsErrored, [RunResults.ErrorCount]));
 
-  if RunResults.FailureCount > 0  then
+  if RunResults.FailureCount > 0 then
   begin
     SetConsoleErrorColor;
     WriteBlankLine;
@@ -293,7 +293,7 @@ begin
     WriteBlankLine;
   end;
 
-  if RunResults.ErrorCount > 0  then
+  if RunResults.ErrorCount > 0 then
   begin
     SetConsoleErrorColor;
     WriteBlankLine;
@@ -315,7 +315,7 @@ begin
     WriteBlankLine;
   end;
 
-  if RunResults.MemoryLeakCount > 0  then
+  if RunResults.MemoryLeakCount > 0 then
   begin
     SetConsoleWarningColor;
     WriteBlankLine;
@@ -340,7 +340,7 @@ begin
   SetConsoleDefaultColor;
 end;
 
-procedure TDUnitXGUIVCLRichEditLogger.OnTestingStarts(const threadId: TThreadID; testCount, testActiveCount : Cardinal);
+procedure TDUnitXGUIVCLRichEditLogger.OnTestingStarts(const threadId : TThreadID; testCount, testActiveCount : Cardinal);
 begin
   FRichEdit.Clear;
   FTestBookmarkList.Clear;
@@ -350,12 +350,12 @@ begin
   WriteBlankLine;
 end;
 
-procedure TDUnitXGUIVCLRichEditLogger.OnTestMemoryLeak(const threadId: TThreadID; const Test: ITestResult);
+procedure TDUnitXGUIVCLRichEditLogger.OnTestMemoryLeak(const threadId : TThreadID; const Test : ITestResult);
 begin
   //Empty
 end;
 
-procedure TDUnitXGUIVCLRichEditLogger.OnTestSuccess(const threadId: TThreadID; const Test: ITestResult);
+procedure TDUnitXGUIVCLRichEditLogger.OnTestSuccess(const threadId : TThreadID; const Test : ITestResult);
 var
   sMessage : string;
 begin
@@ -370,12 +370,12 @@ begin
   Outdent(2);
 end;
 
-procedure TDUnitXGUIVCLRichEditLogger.Outdent(const Value: integer);
+procedure TDUnitXGUIVCLRichEditLogger.Outdent(const Value : integer);
 begin
   Dec(FIndent, Value);
 end;
 
-procedure TDUnitXGUIVCLRichEditLogger.SetColor(const Color: TColor);
+procedure TDUnitXGUIVCLRichEditLogger.SetColor(const Color : TColor);
 begin
   FCurrColor := Color;
 end;
@@ -415,7 +415,7 @@ begin
   SetColor(clOlive);
 end;
 
-procedure TDUnitXGUIVCLRichEditLogger.Write(const Msg: string);
+procedure TDUnitXGUIVCLRichEditLogger.Write(const Msg : string);
 begin
   FRichEdit.SelAttributes.Color := FCurrColor;
   FRichEdit.SelText := StringOfChar(' ', FIndent) + Msg + #13#10;
@@ -427,3 +427,4 @@ begin
 end;
 
 end.
+

@@ -46,12 +46,13 @@ Delphi 2010 and has so far proven to be very reliable.
 interface
 
 {$I DUnitX.inc}
+
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.Generics.Collections;
-  {$ELSE}
+{$ELSE}
   Generics.Collections;
-  {$ENDIF}
+{$ENDIF}
 
 type
   /// Implemented by our weak referenced object base class
@@ -69,23 +70,23 @@ type
   private const
     objDestroyingFlag = Integer($80000000);
   protected
-  {$IFNDEF AUTOREFCOUNT}
-    FRefCount: Integer;
-  {$ENDIF}
+{$IFNDEF AUTOREFCOUNT}
+    FRefCount : Integer;
+{$ENDIF}
     FWeakReferences : TList<Pointer>;
-    function QueryInterface(const IID: TGUID; out Obj): HResult; stdcall;
-    function _AddRef: Integer; stdcall;
-    function _Release: Integer; stdcall;
+    function QueryInterface(const IID : TGUID; out Obj) : HResult; stdcall;
+    function _AddRef : Integer; stdcall;
+    function _Release : Integer; stdcall;
     procedure AddWeakRef(value : Pointer);
     procedure RemoveWeakRef(value : Pointer);
     function GetRefCount : integer; inline;
   public
     procedure AfterConstruction; override;
     procedure BeforeDestruction; override;
-    {$IFDEF AUTOREFCOUNT}[Result: Unsafe]{$ENDIF} class function NewInstance: TObject; override;
-  {$IFNDEF AUTOREFCOUNT}
-    property RefCount: Integer read GetRefCount;
-  {$ENDIF}
+{$IFDEF AUTOREFCOUNT} [Result : Unsafe]{$ENDIF}class function NewInstance : TObject; override;
+{$IFNDEF AUTOREFCOUNT}
+    property RefCount : Integer read GetRefCount;
+{$ENDIF}
   end;
 
   // This is our generic WeakReference interface
@@ -95,7 +96,7 @@ type
   end;
 
   //The actual WeakReference implementation.
-  TWeakReference<T: IInterface> = class(TInterfacedObject, IWeakReference<T>)
+  TWeakReference<T : IInterface> = class(TInterfacedObject, IWeakReference<T>)
   private
     FData : Pointer;
   protected
@@ -103,49 +104,49 @@ type
     function Data : T;
   public
     constructor Create(const data : T);
-    destructor Destroy;override;
+    destructor Destroy; override;
   end;
 
 //only here to work around compiler limitation.
-function SafeMonitorTryEnter(const AObject: TObject): Boolean;
+function SafeMonitorTryEnter(const AObject : TObject) : Boolean;
 
 implementation
 
 uses
   DUnitX.ResStrs,
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.TypInfo,
   System.Classes,
   System.Sysutils,
   System.SyncObjs;
-  {$ELSE}
+{$ELSE}
   TypInfo,
   classes,
   SysUtils,
   SyncObjs;
-  {$ENDIF}
+{$ENDIF}
 
 {$IFNDEF DELPHI_XE2_UP}
 type
   TInterlocked = class
   public
-    class function Increment(var Target: Integer): Integer; static; inline;
-    class function Decrement(var Target: Integer): Integer; static; inline;
-    class function Add(var Target: Integer; Increment: Integer): Integer;static;
-    class function CompareExchange(var Target: Integer; Value, Comparand: Integer): Integer; static;
+    class function Increment(var Target : Integer) : Integer; static; inline;
+    class function Decrement(var Target : Integer) : Integer; static; inline;
+    class function Add(var Target : Integer; Increment : Integer) : Integer; static;
+    class function CompareExchange(var Target : Integer; Value, Comparand : Integer) : Integer; static;
   end;
 
-class function TInterlocked.Decrement(var Target: Integer): Integer;
+class function TInterlocked.Decrement(var Target : Integer) : Integer;
 begin
-  result := Add(Target,-1);
+  result := Add(Target, -1);
 end;
 
-class function TInterlocked.Increment(var Target: Integer): Integer;
+class function TInterlocked.Increment(var Target : Integer) : Integer;
 begin
-  result := Add(Target,1);
+  result := Add(Target, 1);
 end;
 
-class function TInterlocked.Add(var Target: Integer; Increment: Integer): Integer;
+class function TInterlocked.Add(var Target : Integer; Increment : Integer) : Integer;
 {$IFNDEF CPUX86}
 asm
   .NOFRAME
@@ -162,7 +163,7 @@ asm
 end;
 {$ENDIF}
 
-class function TInterlocked.CompareExchange(var Target: Integer; Value, Comparand: Integer): Integer;
+class function TInterlocked.CompareExchange(var Target : Integer; Value, Comparand : Integer) : Integer;
 asm
   XCHG EAX,EDX
   XCHG EAX,ECX
@@ -171,7 +172,7 @@ end;
 {$ENDIF DELPHI_XE2_UPE2}
 
 //MonitorTryEnter doesn't do a nil check!
-function SafeMonitorTryEnter(const AObject: TObject): Boolean;
+function SafeMonitorTryEnter(const AObject : TObject) : Boolean;
 begin
   if AObject <> nil then
     Result := TMonitor.TryEnter(AObject)
@@ -179,8 +180,7 @@ begin
     result := False;
 end;
 
-
-constructor TWeakReference<T>.Create(const data: T);
+constructor TWeakReference<T>.Create(const data : T);
 var
   target : IWeakReferenceableObject;
 begin
@@ -189,7 +189,7 @@ begin
 
   inherited Create;
 
-  if Supports(IInterface(data),IWeakReferenceableObject,target) then
+  if Supports(IInterface(data), IWeakReferenceableObject, target) then
   begin
     FData := IInterface(data) as TObject;
     target.AddWeakRef(@FData);
@@ -198,15 +198,15 @@ begin
     raise Exception.Create(SWeakReferenceError);
 end;
 
-function TWeakReference<T>.Data: T;
+function TWeakReference<T>.Data : T;
 begin
-  result := Default(T); /// can't assign nil to T
+  result := Default(T);                 /// can't assign nil to T
   if FData <> nil then
   begin
     //Make sure that the object supports the interface which is our generic type if we
     //simply pass in the interface base type, the method table doesn't work correctly
     if Supports(FData, GetTypeData(TypeInfo(T))^.Guid, result) then
-    //if Supports(FData, IInterface, result) then
+      //if Supports(FData, IInterface, result) then
       result := T(result);
   end;
 end;
@@ -217,13 +217,13 @@ var
 begin
   if FData <> nil then
   begin
-    if SafeMonitorTryEnter(FData) then //FData could become nil
+    if SafeMonitorTryEnter(FData) then  //FData could become nil
     begin
       //get a strong reference to the target
-      if Supports(FData,IWeakReferenceableObject,target) then
+      if Supports(FData, IWeakReferenceableObject, target) then
       begin
         target.RemoveWeakRef(@FData);
-        target := nil; //release the reference asap.
+        target := nil;                  //release the reference asap.
       end;
       MonitorExit(FData);
     end;
@@ -232,14 +232,14 @@ begin
   inherited;
 end;
 
-function TWeakReference<T>.IsAlive: boolean;
+function TWeakReference<T>.IsAlive : boolean;
 begin
   result := FData <> nil;
 end;
 
 { TWeakReferencedObject }
 
-procedure TWeakReferencedObject.AddWeakRef(value: Pointer);
+procedure TWeakReferencedObject.AddWeakRef(value : Pointer);
 begin
   MonitorEnter(Self);
   try
@@ -251,16 +251,16 @@ begin
   end;
 end;
 
-procedure TWeakReferencedObject.RemoveWeakRef(value: Pointer);
+procedure TWeakReferencedObject.RemoveWeakRef(value : Pointer);
 begin
   MonitorEnter(Self);
   try
-    if FWeakReferences = nil then // should never happen
-      {$IFDEF DEBUG}
+    if FWeakReferences = nil then       // should never happen
+{$IFDEF DEBUG}
       raise Exception.Create('FWeakReferences = nil');
-      {$ELSE}
+{$ELSE}
       exit;
-      {$ENDIF}
+{$ENDIF}
     FWeakReferences.Remove(value);
     if FWeakReferences.Count = 0 then
       FreeAndNil(FWeakReferences);
@@ -279,7 +279,7 @@ end;
 procedure TWeakReferencedObject.BeforeDestruction;
 var
   value : PPointer;
-  i: Integer;
+  i : Integer;
 begin
 {$IFNDEF AUTOREFCOUNT}
   if RefCount <> 0 then
@@ -291,7 +291,7 @@ begin
   try
     if FWeakReferences <> nil then
     begin
-      for i := 0 to FWeakReferences.Count -1 do
+      for i := 0 to FWeakReferences.Count - 1 do
       begin
         value := FWeakReferences.Items[i];
         value^ := nil;
@@ -303,12 +303,12 @@ begin
   end;
 end;
 
-function TWeakReferencedObject.GetRefCount: integer;
+function TWeakReferencedObject.GetRefCount : integer;
 begin
   Result := FRefCount and not objDestroyingFlag;
 end;
 
-class function TWeakReferencedObject.NewInstance: TObject;
+class function TWeakReferencedObject.NewInstance : TObject;
 begin
   Result := inherited NewInstance;
 {$IFNDEF AUTOREFCOUNT}
@@ -318,7 +318,7 @@ begin
 {$ENDIF}
 end;
 
-function TWeakReferencedObject.QueryInterface(const IID: TGUID; out Obj): HResult;
+function TWeakReferencedObject.QueryInterface(const IID : TGUID; out Obj) : HResult;
 begin
   if GetInterface(IID, Obj) then
     Result := 0
@@ -326,7 +326,7 @@ begin
     Result := E_NOINTERFACE;
 end;
 
-function TWeakReferencedObject._AddRef: Integer;
+function TWeakReferencedObject._AddRef : Integer;
 begin
 {$IFNDEF AUTOREFCOUNT}
   Result := TInterlocked.Increment(FRefCount);
@@ -335,12 +335,12 @@ begin
 {$ENDIF}
 end;
 
-function TWeakReferencedObject._Release: Integer;
+function TWeakReferencedObject._Release : Integer;
 
 {$IFNDEF AUTOREFCOUNT}
   procedure __MarkDestroying(const Obj);
   var
-    LRef: Integer;
+    LRef : Integer;
   begin
     repeat
       LRef := TWeakReferencedObject(Obj).FRefCount;
@@ -362,3 +362,4 @@ begin
 end;
 
 end.
+

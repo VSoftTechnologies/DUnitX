@@ -31,7 +31,7 @@ unit DUnitX.ResStrs;
 interface
 
 resourcestring
-  STestRunComplete = 'Test Run Complete';
+  STestRunComplete  = 'Test Run Complete';
 
   SUnexpectedErrorExt = 'Expected [%g] but got [%g] %s';
   SUnexpectedErrorInt = 'Expected [%d] but got [%d] %s';
@@ -42,65 +42,65 @@ resourcestring
   SNotEqualErrorStr = 'Expected [%s] but got [%s] %s';
   SMemoryValuesNotEqual = 'Memory values are not equal. ';
   SFileDoesNotExist = 'File [%s] does not exist';
-  SFileDoesExist = 'File [%s] does exist';
+  SFileDoesExist    = 'File [%s] does exist';
   SFileUnexpectedErrorCreation = 'Expected creation datetime [%s] but got [%s] %s';
-  SEqualsErrorExt = 'Expected [%g] equals actual [%g] %s';
-  SEqualsErrorStr = 'Expected [%s] equals actual [%s] %s';
-  SEqualsErrorInt = 'Expected [%d] equals actual [%d] %s';
-  SEqualsErrorDbl = 'Expected [%g] equals actual [%g] %s';
-  SEqualsErrorObj = 'Object [%s] equals object [%s] %s';
-  SEqualsErrorGUID = 'Expected [%s] equals actual [%s] %s';
+  SEqualsErrorExt   = 'Expected [%g] equals actual [%g] %s';
+  SEqualsErrorStr   = 'Expected [%s] equals actual [%s] %s';
+  SEqualsErrorInt   = 'Expected [%d] equals actual [%d] %s';
+  SEqualsErrorDbl   = 'Expected [%g] equals actual [%g] %s';
+  SEqualsErrorObj   = 'Object [%s] equals object [%s] %s';
+  SEqualsErrorGUID  = 'Expected [%s] equals actual [%s] %s';
   SEqualsErrorStream = 'Streams are equal %s';
-  SEqualsErrorIntf = 'references are the same. %s';
+  SEqualsErrorIntf  = 'references are the same. %s';
   SMemoryValuesEqual = 'Memory values are equal. ';
   SNotEqualErrorIntf = 'references are Not the same. %s';
   SNotEqualErrorObj = 'Object [%s] does not equal object [%s] %s';
   SArraysHaveDifferentLength = 'Arrays have different length. Expected [%d] but got [%d] %s';
   SArraysAreDifferent = 'Arrays are different at position [%d]. Expected [%s] but got [%s] %s';
-  SValueNotInList = 'List does not contain value %s. %s';
-  SValueInList = 'List contains value %s. %s';
+  SValueNotInList   = 'List does not contain value %s. %s';
+  SValueInList      = 'List contains value %s. %s';
   SIntfNotImplemented = 'value does not implement %s. %s';
-  SListNotEmpty = 'List is Not Empty. %s';
-  SStrNotEmpty = 'String is Not Empty. %s';
-  SVarNotEmpty = 'Variant is Not Empty. %s';
-  SIsFalseError = 'Condition is True when False expected. %s';
-  SListEmpty = 'List is Empty when Not Empty expected. %s';
-  SStrEmpty = 'String is Empty. %s';
-  SVarEmpty = 'Variant is Empty. %s';
-  SIntfNil = 'Interface is Nil when Not Nil expected. %s';
-  SPointerNil = 'Pointer is Nil when Not Nil expected. %s';
-  SObjNil = 'Object is Nil when Not Nil expected. %s';
-  SVariantNull = 'Variant is Null when Not Null expected. %s';
-  SVariantNotNull = 'Variant is Not Null when Null expected. [%s]';
-  SIntfNotNil = 'Interface is Not Nil when Nil expected. [%s]';
-  SObjNotNil = 'Object is Not Nil when Nil expected. [%s]';
-  SPointerNotNil = 'Pointer is Not Nil when Nil expected. [%s]';
-  SIsTrueError = 'Condition is False when True expected. [%s]';
-  STypeError = 'value is not of type T';
+  SListNotEmpty     = 'List is Not Empty. %s';
+  SStrNotEmpty      = 'String is Not Empty. %s';
+  SVarNotEmpty      = 'Variant is Not Empty. %s';
+  SIsFalseError     = 'Condition is True when False expected. %s';
+  SListEmpty        = 'List is Empty when Not Empty expected. %s';
+  SStrEmpty         = 'String is Empty. %s';
+  SVarEmpty         = 'Variant is Empty. %s';
+  SIntfNil          = 'Interface is Nil when Not Nil expected. %s';
+  SPointerNil       = 'Pointer is Nil when Not Nil expected. %s';
+  SObjNil           = 'Object is Nil when Not Nil expected. %s';
+  SVariantNull      = 'Variant is Null when Not Null expected. %s';
+  SVariantNotNull   = 'Variant is Not Null when Null expected. [%s]';
+  SIntfNotNil       = 'Interface is Not Nil when Nil expected. [%s]';
+  SObjNotNil        = 'Object is Not Nil when Nil expected. [%s]';
+  SPointerNotNil    = 'Pointer is Not Nil when Nil expected. [%s]';
+  SIsTrueError      = 'Condition is False when True expected. [%s]';
+  STypeError        = 'value is not of type T';
   SUnexpectedException = 'Method raised [%s] was expecting not to raise Any exception. %s';
   SUnexpectedExceptionAlt = 'Method raised [%s] was expecting not to raise Any exception.';
   SMethodRaisedException = 'Method raised an exception of type : ';
   SMethodRaisedExceptionMessage = 'Exception [%s] was raised with message [%s]. %s';
   SMethodRaisedExceptionAlt = 'Method raised [%s] was expecting not to raise [%s] %s. %s';
-  SNoException = 'Method did not throw any exceptions.';
+  SNoException      = 'Method did not throw any exceptions.';
   SUnexpectedExceptionMessage = 'Exception [%s] was raised with message [%s] was expecting [%s] %s';
   SCheckExceptionClassError = 'Method raised [%s] was expecting [%s]. %s';
   SCheckExceptionClassDescError = 'Method raised [%s] was expecting a descendant of [%s]. %s';
   SStrDoesNotContain = '[%s] does not contain [%s] %s';
   SStrDoesNotEndWith = '[%s] does not end with [%s] %s';
-  SStrDoesNotMatch = '[%s] does not match [%s] %s';
+  SStrDoesNotMatch  = '[%s] does not match [%s] %s';
   SStrCannotBeEmpty = 'subString cannot be empty';
   SStrDoesNotStartWith = '[%s] does not start with [%s] %s';
   SNumberOfStringsNotEqual = 'Number of strings is not equal';
-  SDiffAtPosition = 'Difference at position %d';
+  SDiffAtPosition   = 'Difference at position %d';
   SCheckEmptyExpectation = 'Expectation not achieved [%s] %s';
 
   SInvalidValueBool = 'Invalid value, not boolean';
   SInvalidOptionType = 'Invalid option type - only string, integer, float, boolean, enum and sets are supported';
-  SInvalidEnum = 'Invalid enum value : ';
-  SInvalidOpt = 'invalid option type';
+  SInvalidEnum      = 'Invalid enum value : ';
+  SInvalidOpt       = 'invalid option type';
 
-  SNameRequired = 'Name required - use RegisterUnamed to register unamed options';
+  SNameRequired     = 'Name required - use RegisterUnamed to register unamed options';
   SOptionAlreadyRegistered = 'Options : %s already registered';
   SUnknownOptionStart = 'Unknown option start : ';
 
@@ -116,64 +116,65 @@ resourcestring
   SRegisteredImplementationError = 'The implementation registered (%s) does not implement %s';
   SImplementationAlreadyRegistered = 'An implementation for type %s with name %s is already registered with IoC';
   SNoImplementationRegistered = 'No implementation registered for type %s';
-  SNoInstance = 'The activator delegate failed to return an instance %s';
+  SNoInstance       = 'The activator delegate failed to return an instance %s';
 
-  SNoConsoleWriterClassRegistered = 'No ConsoleWriter class is registered. You will need to include DUnitX.Windows.Console, DUnitX.MacOS.Console or DUnitX.Linux.Console in you application';
-  SExecutingTest = 'Executing Test : ';
+  SNoConsoleWriterClassRegistered =
+    'No ConsoleWriter class is registered. You will need to include DUnitX.Windows.Console, DUnitX.MacOS.Console or DUnitX.Linux.Console in you application';
+  SExecutingTest    = 'Executing Test : ';
   SRunningFixtureSetup = 'Running Fixture Setup Method : ';
-  SRunningSetup = 'Running Setup for : ';
-  STest = 'Test : ';
-  SFixture = 'Fixture : ';
-  SSuccess = 'Success';
+  SRunningSetup     = 'Running Setup for : ';
+  STest             = 'Test : ';
+  SFixture          = 'Fixture : ';
+  SSuccess          = 'Success';
   SRunningFixtureTeardown = 'Running Fixture Teardown Method : ';
   SRunningTestTeardown = 'Running Teardown for Test : ';
-  SDoneTesting = 'Done testing.';
-  STestsFound = 'Tests Found   : %d';
-  STestsIgnored = 'Tests Ignored : %d';
-  STestsPassed = 'Tests Passed  : %d';
-  STestsLeaked = 'Tests Leaked  : %d';
-  STestsFailed = 'Tests Failed  : %d';
-  STestsErrored = 'Tests Errored : %d';
-  STestsWarning = 'Tests with Warnings : %d';
-  SFailingTests = 'Failing Tests';
-  SMessage = '  Message: ';
-  STestsWithErrors = 'Tests With Errors';
-  STestsWithLeak = 'Tests With Memory Leak';
-  SStartingTests = 'DUnitX - [%s] - Starting Tests.';
-  SApplicationName = 'DUnitX - [%s]';
+  SDoneTesting      = 'Done testing.';
+  STestsFound       = 'Tests Found   : %d';
+  STestsIgnored     = 'Tests Ignored : %d';
+  STestsPassed      = 'Tests Passed  : %d';
+  STestsLeaked      = 'Tests Leaked  : %d';
+  STestsFailed      = 'Tests Failed  : %d';
+  STestsErrored     = 'Tests Errored : %d';
+  STestsWarning     = 'Tests with Warnings : %d';
+  SFailingTests     = 'Failing Tests';
+  SMessage          = '  Message: ';
+  STestsWithErrors  = 'Tests With Errors';
+  STestsWithLeak    = 'Tests With Memory Leak';
+  SStartingTests    = 'DUnitX - [%s] - Starting Tests.';
+  SApplicationName  = 'DUnitX - [%s]';
 
-  SRunning = 'Running ';
+  SRunning          = 'Running ';
 
-  SUsage = 'Usage : %s options';
-  SOptions = ' Options :';
-  SNoRunner = 'No Runner found for current thread';
+  SUsage            = 'Usage : %s options';
+  SOptions          = ' Options :';
+  SNoRunner         = 'No Runner found for current thread';
 
   SSetupTeardownBytesLeaked = '%d bytes were leaked in the setup/teardown methods';
-  STestBytesLeaked = '%d bytes were leaked in the test method';
+  STestBytesLeaked  = '%d bytes were leaked in the test method';
   SSetupTestTeardownBytesLeaked = '%d bytes were leaked in the setup/test/teardown methods';
-  STestPassed = 'Test Passed : ';
-  STestFailed = 'Test Failed : ';
-  STestError = 'Test Error : ';
-  STestIgnored = 'Test Ignored : ';
-  STestLeaked = 'Test Leaked Memory : ';
+  STestPassed       = 'Test Passed : ';
+  STestFailed       = 'Test Failed : ';
+  STestError        = 'Test Error : ';
+  STestIgnored      = 'Test Ignored : ';
+  STestLeaked       = 'Test Leaked Memory : ';
   SOnEndSetupEventError = 'Error in OnEndSetupEvent : ';
   SOnEndSetupTestLogError = 'unable to log error in OnEndSetupTest event : ';
-  SNoFixturesFound = 'No Test Fixtures found';
+  SNoFixturesFound  = 'No Test Fixtures found';
   SFixtureSetupError = 'Error in Fixture Setup. Fixture: %s Error: %s';
-  SSkippingFixture = 'Skipping Fixture.';
+  SSkippingFixture  = 'Skipping Fixture.';
   SFixtureTeardownError = 'Error in Fixture TearDown. Fixture: %s Error: %s';
-  SNoAssertions = 'No assertions were made during the test';
+  SNoAssertions     = 'No assertions were made during the test';
   SITestExecuteNotSupported = '%s does not support ITestExecute';
 
   SWeakReferenceError = 'TWeakReference can only be used with objects derived from TWeakReferencedObject';
 
-  SNotImplemented = 'Not Implemented!';
+  SNotImplemented   = 'Not Implemented!';
 
   SOperationTimedOut = 'Operation Timed Out';
 
   SCouldNotFindResultsForTest = 'Could not find results for test.';
 
-  SGUIStatusIdle = 'Idle';
+  SGUIStatusIdle    = 'Idle';
   SGUIStatusRunning = 'Running (%d of %d)';
 
   SNoFixtureProvider = 'No FixtureProvider registered';
@@ -181,3 +182,4 @@ resourcestring
 implementation
 
 end.
+
