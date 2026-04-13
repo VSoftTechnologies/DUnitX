@@ -255,7 +255,7 @@ var
   expected : TDate;
 begin
   expected := EncodeDate(1988, 10, 21);
-  Assert.IsTrue(SameDate(expected, date));
+  Assert.IsSameDate(expected, date, 'SameDate(..)');
 end;
 
 procedure TMyExampleTests.TestDateTimeArgument(dateTime : TDateTime);
@@ -264,7 +264,7 @@ var
 begin
   dateTime := RecodeMilliSecond(dateTime, 000);
   expected := EncodeDateTime(1988, 10, 21, 17, 44, 23, 000);
-  Assert.IsTrue(SameDateTime(expected, dateTime));
+  Assert.IsSameDateTime(expected, dateTime, 'SameDateTime(..)');
 end;
 
 procedure TMyExampleTests.TestMaxTime;
@@ -316,7 +316,7 @@ var
 begin
   time := RecodeMilliSecond(time, 0);
   expected := EncodeTime(17, 44, 23, 000);
-  Assert.IsTrue(SameTime(expected, time));
+  Assert.IsSameTime(expected, time, 'SameTime(..)');
 end;
 
 procedure TMyExampleTests.TestTwo;

@@ -214,11 +214,11 @@ var
   actual : TDate;
 begin
   setFormatSettings(locale);
-  Assert.IsTrue(TValue.From(text).TryConvert<TDate>(asTValue), 'TryConvert<TDate>');
-  Assert.IsTrue(asTValue.IsType<TDate>(), 'IsType TDate');
+  Assert.IsTrue( TValue.From(text).TryConvert<TDate>(asTValue), 'TryConvert<TDate>' );
+  Assert.IsTrue( asTValue.IsType<TDate>(), 'IsType TDate' );
 
   actual := asTValue.AsType<TDate>();
-  Assert.IsTrue(SameDate(expectedDate, actual), 'SameDate(..)');
+  Assert.IsSameDate(expectedDate, actual, 'SameDate(..)');
 end;
 
 procedure TValueHelperTests.TestDateTimeConversion(const locale, text : string);
@@ -232,7 +232,7 @@ begin
 
   expected := (expectedDate + expectedTime);
   actual := asTValue.AsType<TDateTime>();
-  Assert.IsTrue(SameDateTime(expected, actual), 'SameDateTime(..)');
+  Assert.IsSameDateTime(expected, actual, 'SameDateTime(..)');
 end;
 
 procedure TValueHelperTests.TestDateTimeConversion2(const locale, text : string);
@@ -243,7 +243,7 @@ begin
 
   expected := (expectedDate + expectedTime);
   actual := StrToDateTime(text);
-  Assert.IsTrue(SameDateTime(expected, actual), 'SameDateTime(..)');
+  Assert.IsSameDateTime(expected, actual, 'SameDateTime(..)');
 end;
 
 procedure TValueHelperTests.TestTimeConversion(const locale, text : string);
@@ -256,7 +256,7 @@ begin
   Assert.IsTrue(asTvalue.IsType<TTime>(), 'IsType TTime');
 
   actual := asTValue.AsType<TTime>();
-  Assert.IsTrue(SameTime(expectedTime, actual), 'SameTime(..)');
+  Assert.IsSameTime(expectedTime, actual, 'SameTime(..)');
 end;
 
 initialization
