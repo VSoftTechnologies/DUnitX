@@ -112,7 +112,10 @@ type
 
 
 
-implementationuses
+implementation
+
+uses
+
 {$IFDEF USE_NS}
   System.DateUtils,
   System.Rtti,

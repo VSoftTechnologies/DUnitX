@@ -1003,7 +1003,7 @@ class procedure Assert.IsSameDate(const expected, actual: TDateTime;
 begin
   DoAssert;
   if not SameDate(expected, actual) then
-    FailFmt(SUnexpectedErrorStr, [expected.ToString, actual.ToString, message], ReturnAddress);
+    FailFmt(SUnexpectedErrorStr, [DateToStr(expected), DateToStr(actual), message], ReturnAddress);
 end;
 
 class procedure Assert.IsSameDateTime(const expected, actual: TDateTime;
@@ -1011,7 +1011,7 @@ class procedure Assert.IsSameDateTime(const expected, actual: TDateTime;
 begin
   DoAssert;
   if not SameDateTime(expected, actual) then
-    FailFmt(SUnexpectedErrorStr, [expected.ToString, actual.ToString, message], ReturnAddress);
+    FailFmt(SUnexpectedErrorStr, [DateTimeToStr(expected), DateTimeToStr(actual), message], ReturnAddress);
 end;
 
 class procedure Assert.IsSameTime(const expected, actual: TDateTime;
@@ -1019,7 +1019,7 @@ class procedure Assert.IsSameTime(const expected, actual: TDateTime;
 begin
   DoAssert;
   if not SameTime(expected, actual) then
-    FailFmt(SUnexpectedErrorStr, [expected.ToString, actual.ToString, message], ReturnAddress);
+    FailFmt(SUnexpectedErrorStr, [TimeToStr(expected), TimeToStr(actual), message], ReturnAddress);
 end;
 
 class procedure Assert.IsTrue(const condition : boolean; const message : string);
