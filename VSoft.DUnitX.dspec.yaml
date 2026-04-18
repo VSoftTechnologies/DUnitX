@@ -1,0 +1,34 @@
+# DPM package spec file
+# Used to build packages
+
+min client version: 1.0
+# metadata describes the package to the user
+metadata:
+  id: VSoft.DUnitX
+  version: 0.4.4
+  authors: [ Vincent Parrett ]
+  description: Delphi Unit Testing Framework
+  projectUrl: https://github.com/VSoftTechnologies/DUnitX
+  repositoryUrl: https://github.com/VSoftTechnologies/DUnitX
+  license: Apache-2.0
+  readme: README.md
+  copyright: Vincent Parrett and contributors
+  tags: [ unit testing, dunitx, dunit ]
+  repositoryCommit: Id:1f5be9e57449f694d5ab52c3b1189586616a49fc
+
+# package folder names are a mess. 
+targetPlatforms:
+  - compiler from: delphixe2
+    compiler to: delphi13
+    platforms: [ win32, win64 ]
+
+templates:
+  - name: default
+    source:
+      - src: ./LICENSE.txt
+      - src: ./source/*.pas
+      - src: ./source/*.inc
+      - src: ./packages/*.dpk
+      - src: ./packages/*.dproj
+    build:
+      - project: ./packages/VSoft.DUnitXR.dproj
