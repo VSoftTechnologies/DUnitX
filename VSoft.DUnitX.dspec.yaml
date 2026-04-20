@@ -14,7 +14,7 @@ metadata:
   readme: README.md
   copyright: Vincent Parrett and contributors
   tags: [ unit testing, dunitx, dunit ]
-  repositoryCommit: Id:1f5be9e57449f694d5ab52c3b1189586616a49fc
+  repositoryCommit: #HASH#
 
 # package folder names are a mess. 
 targetPlatforms:
