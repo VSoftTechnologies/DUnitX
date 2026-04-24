@@ -665,7 +665,11 @@ uses
   DUnitX.FixtureProvider,
   DUnitX.FilterBuilder,
   DUnitX.WeakReference,
-  DUnitX.TestDataProvider;
+  DUnitX.TestDataProvider
+  {$IFDEF DELPHI_XE3}
+  ,DUnitX.Init
+  {$ENDIF}
+  ;
 
 { TDUnitXOptions }
 
