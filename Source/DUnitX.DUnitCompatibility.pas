@@ -33,11 +33,11 @@ interface
 {$I DUnitX.inc}
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.SysUtils,
-  {$ELSE}
+{$ELSE}
   SysUtils,
-  {$ENDIF}
+{$ENDIF}
   DUnitX.TestFramework;
 
 type
@@ -47,85 +47,82 @@ type
     procedure TearDown; virtual;
     function GetName : string;
   public
-    procedure Check(const condition: Boolean; const msg: string = '');deprecated  'Use DUnitX.Assert class';
-    procedure CheckTrue(const condition: Boolean; const msg: string = '');deprecated  'Use DUnitX.Assert class';
-    procedure CheckFalse(const condition: Boolean; const msg: string = '');deprecated  'Use DUnitX.Assert class';
-    procedure CheckEquals(const expected, actual: extended; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
-    procedure CheckEquals(const expected, actual: extended; const delta: extended; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
-    procedure CheckEquals(const expected, actual: integer; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
-    procedure CheckEquals(const expected, actual: Cardinal; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
-    procedure CheckEquals(const expected, actual: int64; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
-    procedure CheckEquals(const expected, actual: UnicodeString; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
+    procedure Check(const condition : Boolean; const msg : string = ''); deprecated 'Use DUnitX.Assert class';
+    procedure CheckTrue(const condition : Boolean; const msg : string = ''); deprecated 'Use DUnitX.Assert class';
+    procedure CheckFalse(const condition : Boolean; const msg : string = ''); deprecated 'Use DUnitX.Assert class';
+    procedure CheckEquals(const expected, actual : extended; const msg : string = ''); overload; deprecated 'Use DUnitX.Assert class';
+    procedure CheckEquals(const expected, actual : extended; const delta : extended; const msg : string = ''); overload; deprecated 'Use DUnitX.Assert class';
+    procedure CheckEquals(const expected, actual : integer; const msg : string = ''); overload; deprecated 'Use DUnitX.Assert class';
+    procedure CheckEquals(const expected, actual : Cardinal; const msg : string = ''); overload; deprecated 'Use DUnitX.Assert class';
+    procedure CheckEquals(const expected, actual : int64; const msg : string = ''); overload; deprecated 'Use DUnitX.Assert class';
+    procedure CheckEquals(const expected, actual : UnicodeString; const msg : string = ''); overload; deprecated 'Use DUnitX.Assert class';
 {$IFNDEF NEXTGEN}
-    procedure CheckEquals(const expected, actual: AnsiString; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
-    procedure CheckEquals(const expected, actual: ShortString; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
+    procedure CheckEquals(const expected, actual : AnsiString; const msg : string = ''); overload; deprecated 'Use DUnitX.Assert class';
+    procedure CheckEquals(const expected, actual : ShortString; const msg : string = ''); overload; deprecated 'Use DUnitX.Assert class';
 {$ENDIF}
-    procedure CheckEqualsString(const expected, actual: string; const msg: string = '');deprecated  'Use DUnitX.Assert class';
+    procedure CheckEqualsString(const expected, actual : string; const msg : string = ''); deprecated 'Use DUnitX.Assert class';
 {$IFNDEF NEXTGEN}
-    procedure CheckEquals(const expected, actual: WideString; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
-    procedure CheckEqualsWideString(const expected, actual: WideString; const msg: string = '');deprecated  'Use DUnitX.Assert class';
+    procedure CheckEquals(const expected, actual : WideString; const msg : string = ''); overload; deprecated 'Use DUnitX.Assert class';
+    procedure CheckEqualsWideString(const expected, actual : WideString; const msg : string = ''); deprecated 'Use DUnitX.Assert class';
 {$ENDIF}
-    procedure CheckEqualsMem(const expected, actual: pointer; const size:longword; const msg : string='');deprecated  'Use DUnitX.Assert class';
-    procedure CheckEquals(const expected, actual: Boolean; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
-    procedure CheckEqualsBin(const expected, actual: longword; const msg: string = ''; digits: integer=32);deprecated  'Use DUnitX.Assert class';
-    procedure CheckEqualsHex(const expected, actual: longword; const msg: string = ''; digits: integer=8);deprecated  'Use DUnitX.Assert class';
+    procedure CheckEqualsMem(const expected, actual : pointer; const size : longword; const msg : string = ''); deprecated 'Use DUnitX.Assert class';
+    procedure CheckEquals(const expected, actual : Boolean; const msg : string = ''); overload; deprecated 'Use DUnitX.Assert class';
+    procedure CheckEqualsBin(const expected, actual : longword; const msg : string = ''; digits : integer = 32); deprecated 'Use DUnitX.Assert class';
+    procedure CheckEqualsHex(const expected, actual : longword; const msg : string = ''; digits : integer = 8); deprecated 'Use DUnitX.Assert class';
 
-    procedure CheckNotEquals(const expected, actual: integer; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
-    procedure CheckNotEquals(const expected, actual: Cardinal; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
-    procedure CheckNotEquals(const expected, actual: int64; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
-    procedure CheckNotEquals(const expected: extended; const actual: extended; const delta: extended = 0; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
-    procedure CheckNotEquals(const expected, actual: string; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
-    procedure CheckNotEqualsString(const expected, actual: string; const msg: string = '');deprecated  'Use DUnitX.Assert class';
+    procedure CheckNotEquals(const expected, actual : integer; const msg : string = ''); overload; deprecated 'Use DUnitX.Assert class';
+    procedure CheckNotEquals(const expected, actual : Cardinal; const msg : string = ''); overload; deprecated 'Use DUnitX.Assert class';
+    procedure CheckNotEquals(const expected, actual : int64; const msg : string = ''); overload; deprecated 'Use DUnitX.Assert class';
+    procedure CheckNotEquals(const expected : extended; const actual : extended; const delta : extended = 0; const msg : string = ''); overload; deprecated
+      'Use DUnitX.Assert class';
+    procedure CheckNotEquals(const expected, actual : string; const msg : string = ''); overload; deprecated 'Use DUnitX.Assert class';
+    procedure CheckNotEqualsString(const expected, actual : string; const msg : string = ''); deprecated 'Use DUnitX.Assert class';
 {$IFNDEF NEXTGEN}
-    procedure CheckNotEquals(const expected, actual: WideString; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
-    procedure CheckNotEqualsWideString(const expected, actual: WideString; const msg: string = '');deprecated  'Use DUnitX.Assert class';
+    procedure CheckNotEquals(const expected, actual : WideString; const msg : string = ''); overload; deprecated 'Use DUnitX.Assert class';
+    procedure CheckNotEqualsWideString(const expected, actual : WideString; const msg : string = ''); deprecated 'Use DUnitX.Assert class';
 {$ENDIF}
-    procedure CheckNotEqualsMem(const expected, actual: pointer; const size:longword; const msg : string='');deprecated  'Use DUnitX.Assert class';
-    procedure CheckNotEquals(const expected, actual: Boolean; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
-    procedure CheckNotEqualsBin(const expected, actual: longword; const msg: string = ''; digits: integer=32);deprecated  'Use DUnitX.Assert class';
-    procedure CheckNotEqualsHex(const expected, actual: longword; const msg: string = ''; digits: integer=8);deprecated  'Use DUnitX.Assert class';
+    procedure CheckNotEqualsMem(const expected, actual : pointer; const size : longword; const msg : string = ''); deprecated 'Use DUnitX.Assert class';
+    procedure CheckNotEquals(const expected, actual : Boolean; const msg : string = ''); overload; deprecated 'Use DUnitX.Assert class';
+    procedure CheckNotEqualsBin(const expected, actual : longword; const msg : string = ''; digits : integer = 32); deprecated 'Use DUnitX.Assert class';
+    procedure CheckNotEqualsHex(const expected, actual : longword; const msg : string = ''; digits : integer = 8); deprecated 'Use DUnitX.Assert class';
 
-    procedure CheckNotNull(const obj :IUnknown; const msg :string = ''); overload;deprecated  'Use DUnitX.Assert class';
-    procedure CheckNull(const obj: IUnknown; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
-    procedure CheckSame(const expected, actual: IInterface; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
-    procedure CheckSame(const expected, actual: TObject; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
+    procedure CheckNotNull(const obj : IUnknown; const msg : string = ''); overload; deprecated 'Use DUnitX.Assert class';
+    procedure CheckNull(const obj : IUnknown; const msg : string = ''); overload; deprecated 'Use DUnitX.Assert class';
+    procedure CheckSame(const expected, actual : IInterface; const msg : string = ''); overload; deprecated 'Use DUnitX.Assert class';
+    procedure CheckSame(const expected, actual : TObject; const msg : string = ''); overload; deprecated 'Use DUnitX.Assert class';
 
-    procedure CheckNotNull(const obj: TObject; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
-    procedure CheckNull(const obj: TObject; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
+    procedure CheckNotNull(const obj : TObject; const msg : string = ''); overload; deprecated 'Use DUnitX.Assert class';
+    procedure CheckNull(const obj : TObject; const msg : string = ''); overload; deprecated 'Use DUnitX.Assert class';
 
-    procedure CheckException(const AMethod: TTestMethod; const AExceptionClass: ExceptClass; const msg :string = '');deprecated  'Use DUnitX.Assert class';
-    procedure CheckEquals(const expected, actual: TClass; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
-    procedure CheckInherits(const expected, actual: TClass; const msg: string = ''); overload;deprecated  'Use DUnitX.Assert class';
-    procedure CheckIs(const AObject :TObject; const AClass: TClass; const msg: string = ''); overload;deprecated 'Use DUnitX.Assert class';
+    procedure CheckException(const AMethod : TTestMethod; const AExceptionClass : ExceptClass; const msg : string = ''); deprecated 'Use DUnitX.Assert class';
+    procedure CheckEquals(const expected, actual : TClass; const msg : string = ''); overload; deprecated 'Use DUnitX.Assert class';
+    procedure CheckInherits(const expected, actual : TClass; const msg : string = ''); overload; deprecated 'Use DUnitX.Assert class';
+    procedure CheckIs(const AObject : TObject; const AClass : TClass; const msg : string = ''); overload; deprecated 'Use DUnitX.Assert class';
 
     procedure Status(const msg : string);
     //Redirect WriteLn to our loggers.
-    procedure WriteLn(const msg : string);overload;
-    procedure WriteLn;overload;
+    procedure WriteLn(const msg : string); overload;
+    procedure WriteLn; overload;
     [Setup]
     procedure TestSetupMethod;
     [TearDown]
     procedure TestTeardownMethod;
-    property Name:    string  read GetName;
+    property Name : string read GetName;
   end;
-
-
-
 
 implementation
 
 uses
   DUnitX.TestRunner;
 
-
 //Borrowed from DUnit.
 
-function IntToBin(const value, digits: longword): string;
+function IntToBin(const value, digits : longword) : string;
 const
-  ALL_32_BIT_0 = '00000000000000000000000000000000';
+  ALL_32_BIT_0      = '00000000000000000000000000000000';
 var
-  counter: integer;
-  pow:     integer;
+  counter : integer;
+  pow : integer;
 begin
   Result := ALL_32_BIT_0;
   SetLength(Result, digits);
@@ -135,27 +132,27 @@ begin
     begin
       if (value and (pow shr counter)) <> 0 then
       begin
-      	{$IFDEF NEXTGEN}
+{$IFDEF NEXTGEN}
         Result.Remove(counter, 1);
         Result.Insert(counter, '1');
-	{$ELSE}
-	Result[counter + 1] := '1';
-	{$ENDIF}
+{$ELSE}
+        Result[counter + 1] := '1';
+{$ENDIF}
       end;
     end;
 end;
 
-procedure TTestCase.Check(const condition: Boolean; const msg: string);
+procedure TTestCase.Check(const condition : Boolean; const msg : string);
 begin
   Assert.IsTrue(condition, msg);
 end;
 
-procedure TTestCase.CheckTrue(const condition: Boolean; const msg: string);
+procedure TTestCase.CheckTrue(const condition : Boolean; const msg : string);
 begin
   Assert.IsTrue(condition, msg);
 end;
 
-function TTestCase.GetName: string;
+function TTestCase.GetName : string;
 begin
   result := TDUnitXTestRunner.GetCurrentTestName;
 end;
@@ -165,7 +162,7 @@ begin
 
 end;
 
-procedure TTestCase.Status(const msg: string);
+procedure TTestCase.Status(const msg : string);
 begin
   Self.WriteLn(msg);
 end;
@@ -185,7 +182,7 @@ begin
   Self.TearDown;
 end;
 
-procedure TTestCase.WriteLn(const msg: string);
+procedure TTestCase.WriteLn(const msg : string);
 var
   runner : ITestRunner;
 begin
@@ -201,22 +198,22 @@ begin
   Self.WriteLn('');
 end;
 
-procedure TTestCase.CheckFalse(const condition: Boolean; const msg: string);
+procedure TTestCase.CheckFalse(const condition : Boolean; const msg : string);
 begin
   Assert.IsFalse(condition, msg);
 end;
 
-procedure TTestCase.CheckEquals(const expected, actual: extended; const msg: string);
+procedure TTestCase.CheckEquals(const expected, actual : extended; const msg : string);
 begin
   Assert.AreEqual(expected, actual, 0, msg);
 end;
 
-procedure TTestCase.CheckEquals(const expected, actual: extended; const delta: extended; const msg: string);
+procedure TTestCase.CheckEquals(const expected, actual : extended; const delta : extended; const msg : string);
 begin
   Assert.AreEqual(expected, actual, delta, msg);
 end;
 
-procedure TTestCase.CheckEquals(const expected, actual: integer; const msg: string);
+procedure TTestCase.CheckEquals(const expected, actual : integer; const msg : string);
 begin
 {$IFDEF DELPHI_XE2_UP}
   Assert.AreEqual<integer>(expected, actual, msg);
@@ -225,25 +222,25 @@ begin
 {$ENDIF}
 end;
 
-procedure TTestCase.CheckEquals(const expected, actual: Cardinal; const msg: string);
+procedure TTestCase.CheckEquals(const expected, actual : Cardinal; const msg : string);
 begin
 {$IFDEF DELPHI_XE2_UP}
-  Assert.AreEqual<Cardinal>(expected, actual,msg);
+  Assert.AreEqual<Cardinal>(expected, actual, msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);
 {$ENDIF}
 end;
 
-procedure TTestCase.CheckEquals(const expected, actual: int64; const msg: string);
+procedure TTestCase.CheckEquals(const expected, actual : int64; const msg : string);
 begin
 {$IFDEF DELPHI_XE2_UP}
-  Assert.AreEqual<Int64>(expected, actual,msg);
+  Assert.AreEqual<Int64>(expected, actual, msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);
 {$ENDIF}
 end;
 
-procedure TTestCase.CheckEquals(const expected, actual: UnicodeString; const msg: string);
+procedure TTestCase.CheckEquals(const expected, actual : UnicodeString; const msg : string);
 begin
 {$IFDEF DELPHI_XE2_UP}
   Assert.AreEqual(expected, actual, msg);
@@ -253,7 +250,7 @@ begin
 end;
 
 {$IFNDEF NEXTGEN}
-procedure TTestCase.CheckEquals(const expected, actual: AnsiString; const msg: string);
+procedure TTestCase.CheckEquals(const expected, actual : AnsiString; const msg : string);
 begin
 {$IFDEF DELPHI_XE2_UP}
   Assert.AreEqual<AnsiString>(expected, actual, msg);
@@ -262,7 +259,7 @@ begin
 {$ENDIF}
 end;
 
-procedure TTestCase.CheckEquals(const expected, actual: ShortString; const msg: string);
+procedure TTestCase.CheckEquals(const expected, actual : ShortString; const msg : string);
 begin
 {$IFDEF DELPHI_XE2_UP}
   Assert.AreEqual<ShortString>(expected, actual, msg);
@@ -272,29 +269,29 @@ begin
 end;
 {$ENDIF}
 
-procedure TTestCase.CheckEqualsString(const expected, actual: string; const msg: string);
+procedure TTestCase.CheckEqualsString(const expected, actual : string; const msg : string);
 begin
   Assert.AreEqual(expected, actual, true, msg);
 end;
 
 {$IFNDEF NEXTGEN}
-procedure TTestCase.CheckEquals(const expected, actual: WideString; const msg: string);
+procedure TTestCase.CheckEquals(const expected, actual : WideString; const msg : string);
 begin
   Assert.AreEqual(expected, actual, true, msg);
 end;
 
-procedure TTestCase.CheckEqualsWideString(const expected, actual: WideString; const msg: string);
+procedure TTestCase.CheckEqualsWideString(const expected, actual : WideString; const msg : string);
 begin
   Assert.AreEqual(expected, actual, true, msg);
 end;
 {$ENDIF}
 
-procedure TTestCase.CheckEqualsMem(const expected, actual: pointer; const size:longword; const msg : string = '');
+procedure TTestCase.CheckEqualsMem(const expected, actual : pointer; const size : longword; const msg : string = '');
 begin
   Assert.AreEqualMemory(expected, actual, size, msg);
 end;
 
-procedure TTestCase.CheckEquals(const expected, actual: Boolean; const msg: string);
+procedure TTestCase.CheckEquals(const expected, actual : Boolean; const msg : string);
 begin
 {$IFDEF DELPHI_XE2_UP}
   Assert.AreEqual<Boolean>(expected, actual, msg);
@@ -303,21 +300,21 @@ begin
 {$ENDIF}
 end;
 
-procedure TTestCase.CheckEqualsBin(const expected, actual: longword; const msg: string; digits: integer);
+procedure TTestCase.CheckEqualsBin(const expected, actual : longword; const msg : string; digits : integer);
 begin
 {$IFDEF DELPHI_XE2_UP}
-  Assert.AreEqual(IntToBin(expected, digits), IntToBin(actual, digits),msg);
+  Assert.AreEqual(IntToBin(expected, digits), IntToBin(actual, digits), msg);
 {$ELSE}
   Assert.IsTrue(IntToBin(expected, digits) = IntToBin(actual, digits), msg);
 {$ENDIF}
 end;
 
-procedure TTestCase.CheckEqualsHex(const expected, actual: longword; const msg: string; digits: integer);
+procedure TTestCase.CheckEqualsHex(const expected, actual : longword; const msg : string; digits : integer);
 begin
   Assert.AreEqual(IntToHex(expected, digits), IntToHex(actual, digits), true, msg);
 end;
 
-procedure TTestCase.CheckNotEquals(const expected, actual: integer; const msg: string);
+procedure TTestCase.CheckNotEquals(const expected, actual : integer; const msg : string);
 begin
 {$IFDEF DELPHI_XE2_UP}
   Assert.AreNotEqual<integer>(expected, actual, msg);
@@ -326,16 +323,16 @@ begin
 {$ENDIF}
 end;
 
-procedure TTestCase.CheckNotEquals(const expected, actual: Cardinal; const msg: string);
+procedure TTestCase.CheckNotEquals(const expected, actual : Cardinal; const msg : string);
 begin
 {$IFDEF DELPHI_XE2_UP}
-  Assert.AreNotEqual<Cardinal>(expected,actual,msg);
+  Assert.AreNotEqual<Cardinal>(expected, actual, msg);
 {$ELSE}
   Assert.IsFalse(expected = actual, msg);
 {$ENDIF}
 end;
 
-procedure TTestCase.CheckNotEquals(const expected, actual: int64; const msg: string);
+procedure TTestCase.CheckNotEquals(const expected, actual : int64; const msg : string);
 begin
 {$IFDEF DELPHI_XE2_UP}
   Assert.AreNotEqual<int64>(expected, actual, msg);
@@ -344,39 +341,39 @@ begin
 {$ENDIF}
 end;
 
-procedure TTestCase.CheckNotEquals(const expected: extended; const actual: extended; const delta: extended; const msg: string);
+procedure TTestCase.CheckNotEquals(const expected : extended; const actual : extended; const delta : extended; const msg : string);
 begin
   Assert.AreNotEqual(expected, actual, delta, msg);
 end;
 
-procedure TTestCase.CheckNotEquals(const expected, actual: string; const msg: string);
+procedure TTestCase.CheckNotEquals(const expected, actual : string; const msg : string);
 begin
   Assert.AreNotEqual(expected, actual, true, msg);
 end;
 
-procedure TTestCase.CheckNotEqualsString(const expected, actual: string; const msg: string);
+procedure TTestCase.CheckNotEqualsString(const expected, actual : string; const msg : string);
 begin
   Assert.AreNotEqual(expected, actual, true, msg);
 end;
 
 {$IFNDEF NEXTGEN}
-procedure TTestCase.CheckNotEquals(const expected, actual: WideString; const msg: string);
+procedure TTestCase.CheckNotEquals(const expected, actual : WideString; const msg : string);
 begin
   Assert.AreNotEqual(expected, actual, true, msg);
 end;
 
-procedure TTestCase.CheckNotEqualsWideString(const expected, actual: WideString; const msg: string);
+procedure TTestCase.CheckNotEqualsWideString(const expected, actual : WideString; const msg : string);
 begin
   Assert.AreNotEqual(expected, actual, true, msg);
 end;
 {$ENDIF}
 
-procedure TTestCase.CheckNotEqualsMem(const expected, actual: pointer; const size:longword; const msg:string='');
+procedure TTestCase.CheckNotEqualsMem(const expected, actual : pointer; const size : longword; const msg : string = '');
 begin
   Assert.AreNotEqualMemory(expected, actual, size, msg);
 end;
 
-procedure TTestCase.CheckNotEquals(const expected, actual: Boolean; const msg: string);
+procedure TTestCase.CheckNotEquals(const expected, actual : Boolean; const msg : string);
 begin
 {$IFDEF DELPHI_XE2_UP}
   Assert.AreNotEqual<boolean>(expected, actual, msg);
@@ -385,7 +382,7 @@ begin
 {$ENDIF}
 end;
 
-procedure TTestCase.CheckNotEqualsBin(const expected, actual: longword; const msg: string; digits: integer);
+procedure TTestCase.CheckNotEqualsBin(const expected, actual : longword; const msg : string; digits : integer);
 begin
 {$IFDEF DELPHI_XE2_UP}
   Assert.AreNotEqual<longword>(expected, actual, msg);
@@ -394,22 +391,22 @@ begin
 {$ENDIF}
 end;
 
-procedure TTestCase.CheckNotEqualsHex(const expected, actual: longword; const msg: string; digits: integer);
+procedure TTestCase.CheckNotEqualsHex(const expected, actual : longword; const msg : string; digits : integer);
 begin
   Assert.AreNotEqual(IntToHex(expected, digits), IntToHex(actual, digits), true, msg);
 end;
 
-procedure TTestCase.CheckNotNull(const obj :IUnknown; const msg :string);
+procedure TTestCase.CheckNotNull(const obj : IUnknown; const msg : string);
 begin
   Assert.IsNotNull(obj, msg);
 end;
 
-procedure TTestCase.CheckNull(const obj: IUnknown; const msg: string);
+procedure TTestCase.CheckNull(const obj : IUnknown; const msg : string);
 begin
   Assert.IsNull(obj, msg);
 end;
 
-procedure TTestCase.CheckSame(const expected, actual: IUnknown; const msg: string);
+procedure TTestCase.CheckSame(const expected, actual : IUnknown; const msg : string);
 begin
 {$IFDEF DELPHI_XE2_UP}
   Assert.AreEqual<IInterface>(expected, actual, msg);
@@ -418,7 +415,7 @@ begin
 {$ENDIF}
 end;
 
-procedure TTestCase.CheckSame(const expected, actual: TObject; const msg: string);
+procedure TTestCase.CheckSame(const expected, actual : TObject; const msg : string);
 begin
 {$IFDEF DELPHI_XE2_UP}
   Assert.AreEqual<TObject>(expected, actual, msg);
@@ -427,34 +424,35 @@ begin
 {$ENDIF}
 end;
 
-procedure TTestCase.CheckNotNull(const obj: TObject; const msg: string);
+procedure TTestCase.CheckNotNull(const obj : TObject; const msg : string);
 begin
   Assert.IsNotNull(obj, msg);
 end;
 
-procedure TTestCase.CheckNull(const obj: TObject; const msg: string);
+procedure TTestCase.CheckNull(const obj : TObject; const msg : string);
 begin
   Assert.IsNull(obj, msg);
 end;
 
-procedure TTestCase.CheckException(const AMethod: TTestMethod; const AExceptionClass: ExceptClass; const msg :string);
+procedure TTestCase.CheckException(const AMethod : TTestMethod; const AExceptionClass : ExceptClass; const msg : string);
 begin
   Assert.WillRaise(AMethod, AExceptionClass, msg);
 end;
 
-procedure TTestCase.CheckEquals(const expected, actual: TClass; const msg: string);
+procedure TTestCase.CheckEquals(const expected, actual : TClass; const msg : string);
 begin
   Assert.AreEqual(expected, actual, msg);
 end;
 
-procedure TTestCase.CheckInherits(const expected, actual: TClass; const msg: string);
+procedure TTestCase.CheckInherits(const expected, actual : TClass; const msg : string);
 begin
   Assert.InheritsFrom(expected, actual, msg);
 end;
 
-procedure TTestCase.CheckIs(const AObject :TObject; const AClass: TClass; const msg: string);
+procedure TTestCase.CheckIs(const AObject : TObject; const AClass : TClass; const msg : string);
 begin
   Assert.InheritsFrom(AObject.ClassType, AClass, msg);
 end;
 
 end.
+

@@ -31,12 +31,13 @@ interface
 {$I DUnitX.inc}
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.SysUtils,
-  {$ELSE}
+{$ELSE}
   SysUtils,
-  {$ENDIF}
-  DUnitX.ComparableFormat;
+{$ENDIF}
+
+  DUnitX.ComparableFormat;
 
 type
   ETestFrameworkException = class(Exception);
@@ -50,17 +51,17 @@ type
 
   ETestFailureStrCompare = class(ETestFailure)
   private
-    FActual: string;
-    FExpected: string;
-    FMsg: string;
-    FFormat: TDUnitXComparableFormatClass;
+    FActual : string;
+    FExpected : string;
+    FMsg : string;
+    FFormat : TDUnitXComparableFormatClass;
   public
-    property Actual: string read FActual;
-    property Expected: string read FExpected;
-    property Msg: string read FMsg;
-    property Format: TDUnitXComparableFormatClass read FFormat;
+    property Actual : string read FActual;
+    property Expected : string read FExpected;
+    property Msg : string read FMsg;
+    property Format : TDUnitXComparableFormatClass read FFormat;
 
-    constructor Create(const aExpected, aActual, aMessage: string; const aFormat: TDUnitXComparableFormatClass); reintroduce;
+    constructor Create(const aExpected, aActual, aMessage : string; const aFormat : TDUnitXComparableFormatClass); reintroduce;
   end;
 
   ETestPass = class(EAbort);
@@ -75,13 +76,14 @@ implementation
 uses
   DUnitX.ResStrs;
 
-constructor ETestFailureStrCompare.Create(const aExpected, aActual, aMessage: string; const aFormat: TDUnitXComparableFormatClass);
+constructor ETestFailureStrCompare.Create(const aExpected, aActual, aMessage : string; const aFormat : TDUnitXComparableFormatClass);
 begin
   FExpected := aExpected;
   FActual := aActual;
   FMsg := aMessage;
   FFormat := aFormat;
-  inherited Create({$IFDEF USE_NS}System.{$ENDIF}SysUtils.Format(SNotEqualErrorStr,[aExpected, aActual, aMessage]));
+  inherited Create({$IFDEF USE_NS}System.{$ENDIF}SysUtils.Format(SNotEqualErrorStr, [aExpected, aActual, aMessage]));
 end;
 
 end.
+

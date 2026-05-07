@@ -39,18 +39,18 @@ uses System.SysUtils, DUnitX.ServiceLocator, FastMM5;
 type
   TDUnitXFastMM5MemoryLeakMonitor = class(TInterfacedObject, IMemoryLeakMonitor)
   private
-    FPreSetupAllocation: Int64;
-    FPostSetupAllocation: Int64;
-    FPreTestAllocation: Int64;
-    FPostTestAllocation: Int64;
-    FPreTearDownAllocation: Int64;
-    FPostTearDownAllocation: Int64;
+    FPreSetupAllocation : Int64;
+    FPostSetupAllocation : Int64;
+    FPreTestAllocation : Int64;
+    FPostTestAllocation : Int64;
+    FPreTearDownAllocation : Int64;
+    FPostTearDownAllocation : Int64;
 
-    function GetMemoryAllocated: Int64;
+    function GetMemoryAllocated : Int64;
   public
-    function SetUpMemoryAllocated: Int64;
-    function TearDownMemoryAllocated: Int64;
-    function TestMemoryAllocated: Int64;
+    function SetUpMemoryAllocated : Int64;
+    function TearDownMemoryAllocated : Int64;
+    function TestMemoryAllocated : Int64;
 
     procedure PostSetUp;
     procedure PostTearDown;
@@ -60,9 +60,9 @@ type
     procedure PreTest;
   end;
 
-{ TDUnitXFastMM5MemoryLeakMonitor }
+  { TDUnitXFastMM5MemoryLeakMonitor }
 
-function TDUnitXFastMM5MemoryLeakMonitor.GetMemoryAllocated: Int64;
+function TDUnitXFastMM5MemoryLeakMonitor.GetMemoryAllocated : Int64;
 begin
   Result := FastMM_GetUsageSummary.AllocatedBytes;
 end;
@@ -97,29 +97,30 @@ begin
   FPreTestAllocation := GetMemoryAllocated;
 end;
 
-function TDUnitXFastMM5MemoryLeakMonitor.SetUpMemoryAllocated: Int64;
+function TDUnitXFastMM5MemoryLeakMonitor.SetUpMemoryAllocated : Int64;
 begin
   Result := FPostSetupAllocation - FPreSetupAllocation;
 end;
 
-function TDUnitXFastMM5MemoryLeakMonitor.TearDownMemoryAllocated: Int64;
+function TDUnitXFastMM5MemoryLeakMonitor.TearDownMemoryAllocated : Int64;
 begin
   Result := FPostTearDownAllocation - FPreTearDownAllocation;
 end;
 
-function TDUnitXFastMM5MemoryLeakMonitor.TestMemoryAllocated: Int64;
+function TDUnitXFastMM5MemoryLeakMonitor.TestMemoryAllocated : Int64;
 begin
   Result := FPostTestAllocation - FPreTestAllocation;
 end;
 
 initialization
   TDUnitXServiceLocator.DefaultContainer.RegisterType<IMemoryLeakMonitor>(
-    function: IMemoryLeakMonitor
+    function : IMemoryLeakMonitor
     begin
       if FastMM_GetInstallationState <> mmisInstalled then
         raise Exception.Create('You must add FastMM5.pas in your project as the first''s unit in .dpr! Check and try to use again!');
-      
+
       Result := TDUnitXFastMM5MemoryLeakMonitor.Create;
     end);
 
 end.
+

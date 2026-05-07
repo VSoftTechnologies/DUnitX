@@ -33,12 +33,12 @@ uses
   DUnitX.TestFixture;
 
 const
-  TIMES_RUN = 3;
-  TIMES_RUN_ANYWAY = 5;
+  TIMES_RUN         = 3;
+  TIMES_RUN_ANYWAY  = 5;
   TIMES_RUN_TEST_CASE = 2;
 
 type
-  {$M+}
+{$M+}
   [TestFixture]
   TTestClassWithNonPublicSetup = class
   private
@@ -50,14 +50,14 @@ type
     constructor Create;
     property SetupRun : Boolean read FSetupRun;
   end;
-  {$M-}
+{$M-}
 
   MockTestSourceAttribute = class(CustomTestCaseSourceAttribute)
   protected
     function GetCaseInfoArray : TestCaseInfoArray; override;
   end;
 
-  {$M+}
+{$M+}
   [TestFixture]
   TTestClassWithTestSource = class
   public
@@ -65,9 +65,9 @@ type
     [MockTestSource]
     procedure DataTest(Value : Integer);
   end;
-  {$M-}
+{$M-}
 
-  {$M+}
+{$M+}
   [TestFixture]
   TTestRepeatAttribute = class
   public
@@ -84,7 +84,7 @@ type
     [RepeatTest(TIMES_RUN_TEST_CASE)]
     [Test]
     [TestCase('Sum Case', '1,2,3')]
-    procedure Sum(const A, B, Expected: Integer);
+    procedure Sum(const A, B, Expected : Integer);
 
     [Test]
     [RepeatTest(0)]
@@ -97,9 +97,9 @@ type
     [RepeatTest(0)]
     procedure IgnoreMeAnyWayWhenRepeatIsZero;
   end;
-  {$M-}
+{$M-}
 
-  {$M+}
+{$M+}
   [TestFixture]
   TTestMaxTimeAttribute = class
   public
@@ -116,45 +116,45 @@ type
     [MaxTime(100)]
     procedure TestDoesNotTimeout;
   end;
-  {$M-}
+{$M-}
 
   TTestCaseAttribute = class
   public
     procedure ProcedureWithUntypedParameter(const Param1);
   end;
 
-  {$M+}
+{$M+}
   [TestFixture]
   TDUnitXTestFixtureTests = class
   public
     [Test]
     procedure WhenATestCaseHasAUntypedParameterCantRaiseAnyError;
   end;
-  {$M-}
+{$M-}
 
 implementation
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.Math,
   System.SysUtils,
   System.Rtti,
-  {$ELSE}
+{$ELSE}
   Math,
   SysUtils,
   Rtti,
-  {$ENDIF}
+{$ENDIF}
   DUnitX.Types,
   DUnitX.Extensibility;
 
 var
-  _TimesRun: Integer;
-  _TimesRunAnyWay: Integer;
-  _TimesRunTestCase: Integer;
+  _TimesRun : Integer;
+  _TimesRunAnyWay : Integer;
+  _TimesRunTestCase : Integer;
 
-{ TDUnitXTestFixtureTests }
+  { TDUnitXTestFixtureTests }
 
-{ TTestClassWithNonPublicSetup }
+  { TTestClassWithNonPublicSetup }
 
 constructor TTestClassWithNonPublicSetup.Create;
 begin
@@ -170,25 +170,25 @@ end;
 
 { TTestSourceAttribute }
 
-function MockTestSourceAttribute.GetCaseInfoArray: TestCaseInfoArray;
+function MockTestSourceAttribute.GetCaseInfoArray : TestCaseInfoArray;
 var
- I : Integer;
+  I : Integer;
 begin
-  SetLength(result,3);
+  SetLength(result, 3);
   for I := 0 to 2 do
   begin
-     result[I].Name := 'DataTest' + IntToStr(I);
-     SetLength(result[I].Values,1);
-     result[I].Values[0] := I;
+    result[I].Name := 'DataTest' + IntToStr(I);
+    SetLength(result[I].Values, 1);
+    result[I].Values[0] := I;
   end;
 end;
 
 { TTestClassWithTestSource }
 
-procedure TTestClassWithTestSource.DataTest(Value: Integer);
+procedure TTestClassWithTestSource.DataTest(Value : Integer);
 begin
-  TDUnitX.CurrentRunner.Status(Format('DataTest(%d) Called',[Value]));
-  Assert.IsTrue(InRange(Value,0,2));
+  TDUnitX.CurrentRunner.Status(Format('DataTest(%d) Called', [Value]));
+  Assert.IsTrue(InRange(Value, 0, 2));
 end;
 
 { TTestRepeatAttribute }
@@ -208,12 +208,12 @@ end;
 
 procedure TTestRepeatAttribute.IgnoreMeAnyWayWhenRepeatIsZero;
 begin
-  Assert.IsTrue(false,'I should not have been called!');
+  Assert.IsTrue(false, 'I should not have been called!');
 end;
 
 procedure TTestRepeatAttribute.IgnoreMeWhenRepeatIsZero;
 begin
-  Assert.IsTrue(false,'I should not have been called!');
+  Assert.IsTrue(false, 'I should not have been called!');
 end;
 
 procedure TTestRepeatAttribute.SetUpFixture;
@@ -223,7 +223,7 @@ begin
   _TimesRunTestCase := 0;
 end;
 
-procedure TTestRepeatAttribute.Sum(const A, B, Expected: Integer);
+procedure TTestRepeatAttribute.Sum(const A, B, Expected : Integer);
 begin
   Assert.AreEqual(Expected, A + B);
   Inc(_TimesRunTestCase);
@@ -240,20 +240,20 @@ end;
 
 procedure TTestMaxTimeAttribute.MaxTimeIsZero;
 begin
-  Sleep( 100 );
-  Assert.Pass;  // even after a delay,
-                // the test should not timeout, as zero means no timeout
+  Sleep(100);
+  Assert.Pass;                          // even after a delay,
+  // the test should not timeout, as zero means no timeout
 end;
 
 procedure TTestMaxTimeAttribute.TestTimeout;
 begin
-  Sleep( 150 );
-  Assert.Fail('Timeout should catch this test.');  // the test should time out before this point
+  Sleep(150);
+  Assert.Fail('Timeout should catch this test.'); // the test should time out before this point
 end;
 
 procedure TTestMaxTimeAttribute.TestDoesNotTimeout;
 begin
-  Assert.Pass;  // the test should NOT time out before this point
+  Assert.Pass;                          // the test should NOT time out before this point
 end;
 
 { TDUnitXTestFixtureTests }

@@ -35,16 +35,15 @@ procedure ShowBanner;
 implementation
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.DateUtils,
   System.SysUtils,
-  {$ELSE}
+{$ELSE}
   DateUtils,
   SysUtils,
-  {$ENDIF}
+{$ENDIF}
   DUnitX.ConsoleWriter.Base,
   DUnitX.ServiceLocator;
-
 
 procedure ShowBanner;
 var
@@ -59,14 +58,12 @@ var
       System.Writeln(value);
   end;
 
-
 begin
   consoleWriter := TDUnitXServiceLocator.DefaultContainer.Resolve<IDUnitXConsoleWriter>();
   if consoleWriter <> nil then
     consoleWriter.SetColour(ccBrightWhite, ccDefault);
 
   yr := YearOf(Today);
-
 
   WriteLine('**********************************************************************');
   WriteLine(Format('*        DUnitX - (c) 2015-%d Vincent Parrett & Contributors       *', [yr]));
@@ -79,3 +76,4 @@ begin
 end;
 
 end.
+

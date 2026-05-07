@@ -31,11 +31,11 @@ interface
 {$I DUnitX.inc}
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.TimeSpan,
-  {$ELSE}
+{$ELSE}
   TimeSpan,
-  {$ENDIF}
+{$ENDIF}
   DUnitX.Types,
   DUnitX.Generics,
   DUnitX.Extensibility,
@@ -77,11 +77,11 @@ type
     procedure AddTestResult(const AResult : ITestResult);
     procedure AddChild(const AFixtureResult : IFixtureResult);
     procedure RollUpResults;
-   // function Combine(const AFixtureResult : IFixtureResult) : IFixtureResult;
-   // function AreEqual(const AFixtureResult : IFixtureResult) : boolean;
+    // function Combine(const AFixtureResult : IFixtureResult) : IFixtureResult;
+    // function AreEqual(const AFixtureResult : IFixtureResult) : boolean;
   end;
-
 
 implementation
 
 end.
+

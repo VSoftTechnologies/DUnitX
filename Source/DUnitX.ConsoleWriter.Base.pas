@@ -31,32 +31,41 @@ interface
 {$I DUnitX.inc}
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.Classes;
-  {$ELSE}
+{$ELSE}
   Classes;
-  {$ENDIF}
-
-
+{$ENDIF}
 
 type
-  TConsoleColour = (ccDefault, ccBrightRed, ccDarkRed,
-                    ccBrightBlue, ccDarkBlue,
-                    ccBrightGreen, ccDarkGreen,
-                    ccBrightYellow, ccDarkYellow,
-                    ccBrightAqua, ccDarkAqua,
-                    ccBrightPurple, ccDarkPurple,
-                    ccGrey, ccBlack,
-                    ccBrightWhite,
-                    ccWhite); // the normal colour of text on the console
-  {$M+}
+  TConsoleColour = (
+    ccDefault,
+    ccBrightRed,
+    ccDarkRed,
+    ccBrightBlue,
+    ccDarkBlue,
+    ccBrightGreen,
+    ccDarkGreen,
+    ccBrightYellow,
+    ccDarkYellow,
+    ccBrightAqua,
+    ccDarkAqua,
+    ccBrightPurple,
+    ccDarkPurple,
+    ccGrey,
+    ccBlack,
+    ccBrightWhite,
+    ccWhite                             // the normal colour of text on the console
+  );
+
+{$M+}
   IDUnitXConsoleWriter = interface
     ['{EFE59EB8-0C0B-4790-A964-D8126A2728A9}']
     function GetIndent : Integer;
-    procedure SetIndent(const count: Integer);
-    procedure SetColour(const foreground: TConsoleColour; const background: TConsoleColour = ccDefault);
-    procedure WriteLn(const s: String);overload;
-    procedure WriteLn;overload;
+    procedure SetIndent(const count : Integer);
+    procedure SetColour(const foreground : TConsoleColour; const background : TConsoleColour = ccDefault);
+    procedure WriteLn(const s : string); overload;
+    procedure WriteLn; overload;
     procedure Write(const s : string);
     procedure Indent(const value : integer = 1);
     procedure Outdent(const value : integer = 1);
@@ -71,38 +80,37 @@ type
     FRedirectedStdOut : boolean;
   protected
     function GetIndent : Integer;
-    procedure SetIndent(const count: Integer);virtual;
-    function InternalBreakupMessage(const s : string): TStringList;
-    procedure InternalWriteLn(const s : string); virtual;abstract;
-    procedure InternalWrite(const s : string);virtual;abstract;
+    procedure SetIndent(const count : Integer); virtual;
+    function InternalBreakupMessage(const s : string) : TStringList;
+    procedure InternalWriteLn(const s : string); virtual; abstract;
+    procedure InternalWrite(const s : string); virtual; abstract;
     procedure Indent(const value : integer = 1);
     procedure Outdent(const value : integer = 1);
     property ConsoleWidth : integer read FConsoleWidth write FConsoleWidth;
     property RedirectedStdOut : boolean read FRedirectedStdOut write FRedirectedStdOut;
   public
-    constructor Create;virtual;
-    procedure SetColour(const foreground: TConsoleColour; const background: TConsoleColour = ccDefault); virtual;abstract;
-    procedure WriteLn(const s: String);overload;virtual;
-    procedure WriteLn;overload;virtual;
-    procedure Write(const s : string);virtual;
+    constructor Create; virtual;
+    procedure SetColour(const foreground : TConsoleColour; const background : TConsoleColour = ccDefault); virtual; abstract;
+    procedure WriteLn(const s : string); overload; virtual;
+    procedure WriteLn; overload; virtual;
+    procedure Write(const s : string); virtual;
     property CurrentIndentLevel : Integer read GetIndent write SetIndent;
   end;
-
 
 implementation
 
 { TDUnitXConsoleWriterBase }
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.Types,
   System.StrUtils,
   System.SysUtils;
-  {$ELSE}
+{$ELSE}
   Types,
   StrUtils,
   SysUtils;
-  {$ENDIF}
+{$ENDIF}
 
 const
   DEFAULT_CONSOLE_WIDTH = 80;
@@ -114,19 +122,19 @@ begin
   FIndent := 0;
 end;
 
-function TDUnitXConsoleWriterBase.GetIndent: Integer;
+function TDUnitXConsoleWriterBase.GetIndent : Integer;
 begin
   result := FIndent;
 end;
 
-procedure TDUnitXConsoleWriterBase.Indent(const value: integer);
+procedure TDUnitXConsoleWriterBase.Indent(const value : integer);
 begin
   SetIndent(FIndent + value);
 end;
 
-function TDUnitXConsoleWriterBase.InternalBreakupMessage(const s: string): TStringList;
+function TDUnitXConsoleWriterBase.InternalBreakupMessage(const s : string) : TStringList;
 var
-  line: string;
+  line : string;
   offset, width, len : Integer;
   slLines : TStringList;
 begin
@@ -148,23 +156,23 @@ begin
     //Walk through the string list pulling of the console width of characters at a time.
     for line in slLines do
     begin
-      {$IFDEF NEXTGEN}	
-      len := line.Length;	
-      {$ELSE}
+{$IFDEF NEXTGEN}
+      len := line.Length;
+{$ELSE}
       len := Length(line);
-      {$ENDIF}
-      
+{$ENDIF}
+
       if (width > 0) and (len > width) then
       begin
         offset := 1;
         while offset <= len do
         begin
           //Write a line as we have hit the limit of the console.
-	  {$IFDEF NEXTGEN}
-	  Result.Add(line.Substring(offset-1, width));
-	  {$ELSE}
+{$IFDEF NEXTGEN}
+          Result.Add(line.Substring(offset - 1, width));
+{$ELSE}
           Result.Add(Copy(line, offset, width));
-	  {$ENDIF}
+{$ENDIF}
           Inc(offset, width);
         end;
       end
@@ -177,12 +185,12 @@ begin
   end;
 end;
 
-procedure TDUnitXConsoleWriterBase.Outdent(const value: integer);
+procedure TDUnitXConsoleWriterBase.Outdent(const value : integer);
 begin
   SetIndent(FIndent - value);
 end;
 
-procedure TDUnitXConsoleWriterBase.SetIndent(const count: Integer);
+procedure TDUnitXConsoleWriterBase.SetIndent(const count : Integer);
 begin
   if Count < 0 then
     FIndent := 0
@@ -197,7 +205,7 @@ begin
   end;
 end;
 
-procedure TDUnitXConsoleWriterBase.Write(const s: string);
+procedure TDUnitXConsoleWriterBase.Write(const s : string);
 var
   // offset, width, len : Integer;
   slLines : TStringList;
@@ -206,7 +214,7 @@ begin
   slLines := InternalBreakupMessage(s);
   try
     //Write out all the lines except the last one.
-    for iLineIndx  := 0 to slLines.Count - 2 do
+    for iLineIndx := 0 to slLines.Count - 2 do
       InternalWriteLn(slLines[iLineIndx]);
 
     //Now write out the last one without an end of line character.
@@ -223,7 +231,7 @@ begin
   WriteLn('');
 end;
 
-procedure TDUnitXConsoleWriterBase.WriteLn(const s: String);
+procedure TDUnitXConsoleWriterBase.WriteLn(const s : string);
 var
   // offset, width, len : Integer;
   slLines : TStringList;
@@ -232,7 +240,7 @@ begin
   slLines := InternalBreakupMessage(s);
   try
     //Write out all the lines except the last one.
-    for iLineIndx  := 0 to slLines.Count - 1 do
+    for iLineIndx := 0 to slLines.Count - 1 do
       InternalWriteLn(slLines[iLineIndx]);
   finally
     FreeAndNil(slLines);
@@ -240,3 +248,4 @@ begin
 end;
 
 end.
+

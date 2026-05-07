@@ -34,23 +34,22 @@ uses
 
 type
   // a typical DUnit like class
-  {$M+}
+{$M+}
   TMyDUnitTest = class(TTestCase)
   published
     procedure ATest;
   end;
 
-  {$M+}
+{$M+}
   TMyDUnitTestSetup = class(TTestCase)
   protected
-    FObject: TObject;
+    FObject : TObject;
     procedure SetUp; override;
     procedure TearDown; override;
   published
     procedure ATest;
     procedure Test_TestName;
   end;
-
 
 implementation
 
@@ -60,7 +59,7 @@ procedure TMyDUnitTest.ATest;
 begin
   Status('Testing Status Redirect');
 {$WARN SYMBOL_DEPRECATED OFF}
-  CheckTrue(true,'true is always true!');
+  CheckTrue(true, 'true is always true!');
 {$WARN SYMBOL_DEPRECATED ON}
 end;
 
@@ -68,9 +67,9 @@ end;
 
 procedure TMyDUnitTestSetup.ATest;
 begin
-  {$WARN SYMBOL_DEPRECATED OFF}
+{$WARN SYMBOL_DEPRECATED OFF}
   CheckNotNull(FObject);
-  {$WARN SYMBOL_DEPRECATED ON}
+{$WARN SYMBOL_DEPRECATED ON}
 end;
 
 procedure TMyDUnitTestSetUp.SetUp;
@@ -88,7 +87,7 @@ end;
 procedure TMyDUnitTestSetup.Test_TestName;
 begin
   Status('The Test Name is : ' + Self.Name);
-  CheckEqualsString('Test_TestName', Self.Name,'Test Name not working');
+  CheckEqualsString('Test_TestName', Self.Name, 'Test Name not working');
 end;
 
 initialization
@@ -96,3 +95,4 @@ initialization
   TDUnitX.RegisterTestFixture(TMyDUnitTestSetup);
 
 end.
+

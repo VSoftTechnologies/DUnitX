@@ -37,9 +37,9 @@ type
 {$M+}
   TMyBaseTestClass = class
   private
-    FBlah: string;
+    FBlah : string;
   protected
-    function GetSomething: string; virtual;
+    function GetSomething : string; virtual;
   public
     constructor Create; virtual;
     destructor Destroy; override;
@@ -53,7 +53,7 @@ type
 
   TMyDerivedTest = class(TMyBaseTestClass)
   protected
-    function GetSomething: string; override;
+    function GetSomething : string; override;
   public
     constructor Create; override;
     destructor Destroy; override;
@@ -72,7 +72,7 @@ begin
   inherited;
 end;
 
-function TMyBaseTestClass.GetSomething: string;
+function TMyBaseTestClass.GetSomething : string;
 begin
   Result := 'base';
 end;
@@ -100,7 +100,7 @@ begin
   inherited;
 end;
 
-function TMyDerivedTest.GetSomething: string;
+function TMyDerivedTest.GetSomething : string;
 begin
   Result := 'derived';
   Assert.Pass;
@@ -110,3 +110,4 @@ initialization
   TDUnitX.RegisterTestFixture(TMyDerivedTest);
 
 end.
+

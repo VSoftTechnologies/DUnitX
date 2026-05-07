@@ -32,7 +32,7 @@ uses
   DUnitX.TestFramework;
 
 type
-  {$M+}
+{$M+}
   [TestFixture]
   [IgnoreMemoryLeaks]
   TTestsNoMemoryLeaksReported = class
@@ -46,7 +46,7 @@ type
 
   [TestFixture]
   // if the "IgnoreMemoryLeaks" attribute is not specified, then all memory leaks will be reported.
-  [IgnoreMemoryLeaks(False)]  // Report all leaks. This is the same as not specifying this attribute.
+  [IgnoreMemoryLeaks(False)]            // Report all leaks. This is the same as not specifying this attribute.
   TTestsMemoryLeaksReported = class
   published
     [Test]
@@ -93,3 +93,4 @@ initialization
   TDUnitX.RegisterTestFixture(TTestsMemoryLeaksReported);
 
 end.
+

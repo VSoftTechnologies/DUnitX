@@ -81,10 +81,10 @@ type
     function GetInternalUseOnly : string;
   public
     property Name : string read GetName;
-    constructor Create(const ANewName: string);
+    constructor Create(const ANewName : string);
   end;
 
-  {$M+}
+{$M+}
   [TestFixture]
   TDUnitX_WeakReferenceXMLNUnitTests = class
   public
@@ -106,7 +106,7 @@ var
   mockExternalObj : IExternalUseInterface;
   weakRef : IWeakReference<IExternalUseInterface>;
 const
-  EXPECTED_NAME = 'We can see this exposed!';
+  EXPECTED_NAME     = 'We can see this exposed!';
 begin
   //Make sure to create the object and store under the internal interface
   mockInternalObj := TExposedObject.Create(EXPECTED_NAME);
@@ -132,7 +132,6 @@ begin
   //Check
   Assert.AreEqual(weakRef.Data.GetName, mockInterface.GetName);
 end;
-
 
 procedure TDUnitX_WeakReferenceXMLNUnitTests.After_The_Reference_Is_Freed_The_WeakReference_Data_Is_Nill;
 var
@@ -168,25 +167,25 @@ end;
 
 { TExposedObject }
 
-function TExposedObject.GetName: string;
+function TExposedObject.GetName : string;
 begin
   Result := FName;
 end;
 
-constructor TExposedObject.Create(const ANewName: string);
+constructor TExposedObject.Create(const ANewName : string);
 begin
   inherited Create;
   FName := ANewName;
 end;
 
-function TExposedObject.GetInternalUseOnly: string;
+function TExposedObject.GetInternalUseOnly : string;
 begin
   Result := 'Only here for completeness!';
 end;
 
 { TSimpleInterfacedObject }
 
-function TSimpleInterfacedObject.GetName: string;
+function TSimpleInterfacedObject.GetName : string;
 begin
   Result := Self.ClassName;
 end;
@@ -194,3 +193,4 @@ end;
 initialization
   TDUnitX.RegisterTestFixture(TDUnitX_WeakReferenceXMLNUnitTests);
 end.
+

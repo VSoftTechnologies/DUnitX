@@ -28,31 +28,28 @@ unit DUnitX.Helpers;
 
 interface
 
-
 {$I DUnitX.inc}
 
 uses
-  {$IFDEF USE_NS}
+{$IFDEF USE_NS}
   System.TypInfo;
-  {$ELSE}
+{$ELSE}
   TypInfo;
-  {$ENDIF}
+{$ENDIF}
 
 type
   TTypeInfoHelper = record helper for TTypeInfo
     function TypeData : PTypeData;
   end;
 
-
 implementation
-
-
 
 { TTypeInfoHelper }
 
-function TTypeInfoHelper.TypeData: PTypeData;
+function TTypeInfoHelper.TypeData : PTypeData;
 begin
   result := GetTypeData(@Self);
 end;
 
 end.
+
