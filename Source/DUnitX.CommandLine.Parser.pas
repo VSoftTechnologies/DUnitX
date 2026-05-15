@@ -326,7 +326,7 @@ end;
 
 procedure TCommandLineParseResult.AddError(const value : string);
 begin
-  FErrors.Add(value)
+  FErrors.Add(value);
 end;
 
 constructor TCommandLineParseResult.Create;

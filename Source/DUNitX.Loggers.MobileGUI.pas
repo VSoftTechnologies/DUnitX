@@ -419,7 +419,7 @@ begin
         end;
       end;
     end;
-    FChecked.Add(AItem.Index)
+    FChecked.Add(AItem.Index);
   end;
 end;
 

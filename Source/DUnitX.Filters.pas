@@ -242,7 +242,7 @@ begin
   if name <> '' then
   begin
     if not FNames.Contains(name) then
-      FNames.Add(name)
+      FNames.Add(name);
   end;
 end;
 

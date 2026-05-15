@@ -948,7 +948,7 @@ begin
     PString(@LBuffer[LType.TypeSize - SizeOf(string)])^ := DefaultTrueBoolStr;
     TValue.Make(LBuffer, LType.Handle, AResult);
     PString(@LBuffer[LType.TypeSize - SizeOf(string)])^ := '';
-  end
+  end;
 end;
 
 function ConvClass2Class(const ASource : TValue; ATarget : PTypeInfo; out AResult : TValue) : Boolean;
@@ -1057,7 +1057,7 @@ begin
   begin
     LValue := TValue.From(ASource.GetReferenceToRawData, LType.GetGenericArguments[0].Handle);
     Result := LValue.TryConvert(ATarget, AResult);
-  end
+  end;
 end;
 
 function ConvOrd2Float(const ASource : TValue; ATarget : PTypeInfo; out AResult : TValue) : Boolean;
@@ -1118,7 +1118,7 @@ begin
       Enumerations.Add(LTypeData.CompType^, LStrings);
     end;
     AResult := TValue.From(LStrings, TStrings);
-  end
+  end;
 end;
 
 function ConvStr2Enum(const ASource : TValue; ATarget : PTypeInfo; out AResult : TValue) : Boolean;
@@ -1509,7 +1509,7 @@ begin
   end
   else
   begin
-    Result := ''
+    Result := '';
   end;
 {$ELSE}
   i := s.IndexOf('<');
@@ -2237,7 +2237,7 @@ begin
         Result := False;
         Break;
       end;
-    end
+    end;
   end;
 end;
 
@@ -2741,7 +2741,7 @@ begin
         Result := False;
         Break;
       end;
-    end
+    end;
   end;
 end;
 
@@ -3130,7 +3130,7 @@ begin
       end;
       case ATypeInfo.Kind of
         tkRecord : Result := ConvAny2Nullable(Self, ATypeInfo, AResult);
-      end
+      end;
     end;
     if not Result then
     begin
@@ -3277,7 +3277,7 @@ begin
   if Assigned(Parent.BaseType) then
     Result := FindByName(Parent.BaseType, PropertyName)
   else
-    Result := nil
+    Result := nil;
 end;
 
 class function TRttiPropertyExtension.FindByName(

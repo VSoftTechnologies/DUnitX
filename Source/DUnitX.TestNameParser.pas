@@ -84,7 +84,7 @@ begin
       '(', '<' : Inc(nest);
       ')', '>' : Dec(nest);
     end;
-    Inc(index)
+    Inc(index);
   end;
 {$ELSE}
   while index < arg.Length - 1 do
@@ -105,7 +105,7 @@ begin
       '(', '<' : Inc(nest);
       ')', '>' : Dec(nest);
     end;
-    Inc(index)
+    Inc(index);
   end;
 {$ENDIF}
 end;

@@ -207,7 +207,7 @@ begin
 
     if option.HelpText <> '' then
       helpString := helpString + ' - ' + option.HelpText;
-    proc(helpString)
+    proc(helpString);
   end;
 end;
 

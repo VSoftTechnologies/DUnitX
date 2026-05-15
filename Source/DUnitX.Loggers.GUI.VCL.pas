@@ -1126,7 +1126,7 @@ begin
       HitNode.Selected := true;
       Application.ProcessMessages;
       PostMessage(Handle, WM_TESTPOPUP, Mouse.CursorPos.X, Mouse.CursorPos.Y);
-    end
+    end;
   end;
 end;
 
@@ -1155,7 +1155,7 @@ begin
   if Key = ' ' then
   begin
     TTestNode(tvwTests.Selected).InvertState;
-    Key := #0
+    Key := #0;
   end;
 end;
 

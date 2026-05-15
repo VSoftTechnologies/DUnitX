@@ -337,7 +337,7 @@ begin
     Result := (p = nil) or ((Pointer(P^) <> P) and (Pointer(P^) = P));
   except
     Result := true;
-  end
+  end;
 end;
 
 function ReturnAddress : Pointer; assembler;
@@ -440,7 +440,7 @@ begin
   begin
     expectedValue := TValue.From<T>(expected);
     actualValue := TValue.From<T>(actual);
-    FailFmt(SNotEqualErrorStr, [expectedValue.ToString, actualValue.ToString, message], ReturnAddress)
+    FailFmt(SNotEqualErrorStr, [expectedValue.ToString, actualValue.ToString, message], ReturnAddress);
   end;
 end;
 
@@ -462,7 +462,7 @@ begin
       begin
         expectedValue := TValue.From<T>(expected[i]);
         actualValue := TValue.From<T>(actual[i]);
-        FailFmt(SArraysAreDifferent, [i, expectedValue.ToString, actualValue.ToString, message], ReturnAddress)
+        FailFmt(SArraysAreDifferent, [i, expectedValue.ToString, actualValue.ToString, message], ReturnAddress);
       end;
     end;
   end;
