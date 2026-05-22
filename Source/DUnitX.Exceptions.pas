@@ -47,6 +47,8 @@ type
   //base exception for any internal exceptions which cause the test to stop
   EAbort = class(ETestFrameworkException);
 
+  ETestIgnored = class(ETestFrameworkException);
+
   ETestFailure = class(EAbort);
 
   ETestFailureStrCompare = class(ETestFailure)

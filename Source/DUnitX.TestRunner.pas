@@ -848,6 +848,8 @@ begin
 
       except
         //Handle the results which are raised in the test.
+        on e : ETestIgnored do
+          testResult := ExecuteIgnoredResult(context, threadId, test, test.IgnoreReason);
         on e : ETestPass do
           testResult := ExecuteSuccessfulResult(context, threadId, test, e.Message, FLogMessagesEx);
         on e : ETestFailure do
