@@ -59,13 +59,14 @@ type
       fOutput:  TStream;
       fOwnOut:  Boolean;
       fIndent:  Integer;
+      fIssues:  TStringList;
 
     function GetFixtureName(const Fixture : ITestFixtureInfo) : string;
     function GetTestName(const Test : ITestInfo) : string;
     function GetTimeSuffix(const Caption : string) : string;
 
-    procedure IncIndent();
-    procedure DecIndent();
+    procedure IncIndent(const Steps : Integer = 1);
+    procedure DecIndent(const Steps : Integer = 1);
 
     procedure WriteLine(const text : string = ''); overload;
     procedure WriteLine(const textFmt : string; textArgs: array of const); overload;
@@ -107,18 +108,20 @@ implementation
 constructor TDunitXTextLogger.Create(const outputStream : TStream; const ownsStream : Boolean);
 begin
   inherited Create();
+  fIssues := TStringList.Create();
 
   fOutput := outputStream;
   fOwnOut := ownsStream
 end;
 
-procedure TDunitXTextLogger.DecIndent();
+procedure TDunitXTextLogger.DecIndent(const Steps : Integer);
 begin
-  Dec(fIndent, fIndentStep)
+  Dec(fIndent, Steps * fIndentStep)
 end;
 
 destructor TDunitXTextLogger.Destroy;
 begin
+  fIssues.Free();
   if fOwnOut then
     fOutput.Free();
 
@@ -146,9 +149,9 @@ begin
   Result := Caption + ' ' + FormatDateTime('yyyy-mm-dd hh:nn:ss.zzz', Now())
 end;
 
-procedure TDunitXTextLogger.IncIndent();
+procedure TDunitXTextLogger.IncIndent(const Steps : Integer);
 begin
-  Inc(fIndent, fIndentStep)
+  Inc(fIndent, Steps * fIndentStep)
 end;
 
 procedure  TDunitXTextLogger.OnBeginTest(const threadId : TThreadID; const Test : ITestInfo);
@@ -182,33 +185,52 @@ end;
 procedure TDunitXTextLogger.OnTestError(const threadId : TThreadID; const Error : ITestError);
 begin
   inherited;
-  WriteLine('- Status: ERROR %s', [Error.Message])
+  WriteLine('- Status: ERROR %s', [Error.Message]);
+  fIssues.Values[Error.Test.FullName] := Error.Message
 end;
 
 procedure TDunitXTextLogger.OnTestFailure(const threadId : TThreadID; const Failure : ITestError);
 begin
   inherited;
-  WriteLine('- Status: FAILURE %s', [Failure.Message])
+  WriteLine('- Status: FAILURE %s', [Failure.Message]);
+  fIssues.Values[Failure.Test.FullName] := Failure.Message
 end;
 
 procedure TDunitXTextLogger.OnTestIgnored(const threadId : TThreadID; const Ignored : ITestResult);
 begin
   inherited;
-  WriteLine('- Status: IGNORED %s', [Ignored.Message])
+  WriteLine('- Status: IGNORED %s', [Ignored.Message]);
+  fIssues.Values[Ignored.Test.FullName] := Ignored.Message
 end;
 
 procedure TDunitXTextLogger.OnTestingEnds(const RunResults : IRunResults);
+var
+  i: Integer;
 begin
   inherited;
 
   DecIndent();
 
-  WriteLine();
   WriteLine('Testing finished');
+
+  if fIssues.Count <> 0 then
+    begin
+      WriteLine('- Issues:');
+      IncIndent();
+      for i := 0 to fIssues.Count - 1  do
+        begin
+          WriteLine('%d %s', [i + 1, fIssues.Names[i]]);
+          IncIndent(2);
+          WriteLine(fIssues.ValueFromIndex[i]);
+          DecIndent(2)
+        end;
+      DecIndent();
+      WriteLine()
+    end;
+
   WriteLine('- Fixture Count: %d', [RunResults.FixtureCount]);
   WriteLine('- Test Count:    %d', [RunResults.TestCount]);
   WriteLine('- Pass Count:    %d', [RunResults.PassCount]);
-
   if RunResults.FailureCount <> 0 then
     WriteLine('- Failure Count: %d', [RunResults.FailureCount]);
   if RunResults.ErrorCount <> 0 then
@@ -217,9 +239,8 @@ begin
     WriteLine('- Ignored Count: %d', [RunResults.IgnoredCount]);
   if RunResults.MemoryLeakCount <> 0 then
     WriteLine('- Memory Leaks:  %d', [RunResults.MemoryLeakCount]);
-
   if RunResults.AllPassed then
-    WriteLine('- All PASSED')
+    WriteLine('- All PASSED');
 end;
 
 procedure TDunitXTextLogger.OnTestingStarts(const threadId : TThreadID; testCount, testActiveCount : Cardinal);
@@ -245,7 +266,8 @@ end;
 procedure TDunitXTextLogger.OnTestMemoryLeak(const threadId : TThreadID; const TestResult : ITestResult);
 begin
   inherited;
-  WriteLine('- Status: MEMORY LEAK %s', [TestResult.Message])
+  WriteLine('- Status: MEMORY LEAK %s', [TestResult.Message]);
+  fIssues.Values[TestResult.Test.FullName] := TestResult.Message
 end;
 
 procedure TDunitXTextLogger.OnTestSuccess(const threadId : TThreadID; const TestResult : ITestResult);
