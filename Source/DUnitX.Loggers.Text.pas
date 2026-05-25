@@ -205,8 +205,8 @@ begin
 
   WriteLine();
   WriteLine('Testing finished');
-  WriteLine('- Test Count:    %d', [RunResults.TestCount]);
   WriteLine('- Fixture Count: %d', [RunResults.FixtureCount]);
+  WriteLine('- Test Count:    %d', [RunResults.TestCount]);
   WriteLine('- Pass Count:    %d', [RunResults.PassCount]);
 
   if RunResults.FailureCount <> 0 then
