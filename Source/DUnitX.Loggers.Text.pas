@@ -31,179 +31,327 @@ interface
 {$I DUnitX.inc}
 
 uses
-{$IFDEF USE_NS}
+{$IFDEF USE_NS}   // since Delphi XE2
+  WinAPI.Windows,
+  System.SysUtils,
   System.Classes,
+  System.TimeSpan,
+  System.Generics.Collections,
 {$ELSE}
+  Windows,
+  SysUtils,
   Classes,
+  TimeSpan,
+  Generics.Collections,
 {$ENDIF}
-  DUnitX.TestFramework;
+  DUnitX.TestFramework,
+  DUnitX.Loggers.Null;
 
 type
   // Simple text file logger.
-  TDUnitXTextFileLogger = class(TInterfacedObject, ITestLogger)
-  private
-    //FFileName : string;
+  TDunitXTextLogger = class(TDUnitXNullLogger)
+  strict private
+    const
+      fIndentStep = 2;
+      fStartSuffix = ' - START';
+      fStopSuffix  = ' - STOP';
+    var
+      fOutput:  TStream;
+      fOwnOut:  Boolean;
+      fIndent:  Integer;
+
+    function GetFixtureName(const Fixture : ITestFixtureInfo) : string;
+    function GetTestName(const Test : ITestInfo) : string;
+    function GetTimeSuffix(const Caption : string) : string;
+
+    procedure IncIndent();
+    procedure DecIndent();
+
+    procedure WriteLine(const text : string = ''); overload;
+    procedure WriteLine(const textFmt : string; textArgs: array of const); overload;
+    procedure WriteLine(const text : string; const duration : TTimeSpan); overload;
+
   protected
-    procedure OnTestingStarts(const threadId : TThreadID; testCount, testActiveCount : Cardinal);
+    procedure OnTestingStarts(const threadId : TThreadID; testCount, testActiveCount : Cardinal); override;
 
-    procedure OnStartTestFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
+    procedure OnStartTestFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo); override;
 
-    procedure OnSetupFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
-    procedure OnEndSetupFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
+    procedure OnBeginTest(const threadId : TThreadID; const Test : ITestInfo); override;
 
-    procedure OnBeginTest(const threadId : TThreadID; const Test : ITestInfo);
+    procedure OnTestSuccess(const threadId : TThreadID; const TestResult : ITestResult); override;
+    procedure OnTestError(const threadId : TThreadID; const Error : ITestError); override;
+    procedure OnTestFailure(const threadId : TThreadID; const Failure : ITestError); override;
+    procedure OnTestIgnored(const threadId : TThreadID; const Ignored : ITestResult); override;
+    procedure OnTestMemoryLeak(const threadId : TThreadID; const TestResult : ITestResult); override;
 
-    procedure OnSetupTest(const threadId : TThreadID; const Test : ITestInfo);
-    procedure OnEndSetupTest(const threadId : TThreadID; const Test : ITestInfo);
+    procedure OnEndTest(const threadId : TThreadID; const TestResult : ITestResult); override;
 
-    procedure OnExecuteTest(const threadId : TThreadID; const Test : ITestInfo);
+    procedure OnEndTestFixture(const threadId : TThreadID; const results : IFixtureResult); override;
 
-    procedure OnTestSuccess(const threadId : TThreadID; const Test : ITestResult);
-    procedure OnTestError(const threadId : TThreadID; const Error : ITestError);
-    procedure OnTestFailure(const threadId : TThreadID; const Failure : ITestError);
-    procedure OnTestIgnored(const threadId : TThreadID; const AIgnored : ITestResult);
-    procedure OnTestMemoryLeak(const threadId : TThreadID; const Test : ITestResult);
+    procedure OnTestingEnds(const RunResults : IRunResults); override;
 
-    procedure OnLog(const logType : TLogLevel; const msg : string);
-
-    procedure OnTeardownTest(const threadId : TThreadID; const Test : ITestInfo);
-    procedure OnEndTeardownTest(const threadId : TThreadID; const Test : ITestInfo);
-
-    procedure OnEndTest(const threadId : TThreadID; const Test : ITestResult);
-
-    procedure OnTearDownFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
-    procedure OnEndTearDownFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
-
-    procedure OnEndTestFixture(const threadId : TThreadID; const results : IFixtureResult);
-
-    procedure OnTestingEnds(const RunResults : IRunResults);
   public
-    constructor Create(const AFileName : string; const overwrite : boolean = true);
+    constructor Create(const outputStream : TStream; const ownsStream : Boolean = False);
+    destructor Destroy(); override;
+  end;
+
+  TDunitXTextFileLogger = class(TDunitXTextLogger)
+  public
+    constructor Create(const fileName : string = ''; const overwrite : Boolean = True; const encoding : TEncoding = nil);
   end;
 
 implementation
 
-uses
-{$IFDEF DELPHI_2010}
-  DUnitX.Exceptions,                    //ENotImplemented is not in SysUtils in D2010
-{$ENDIF}
-{$IFDEF USE_NS}
-  System.SysUtils;
-{$ELSE}
-  SysUtils;
-{$ENDIF}
+{$REGION 'TDunitXTextLogger'}
 
-{ TDUnitXTextFileLogger }
-
-constructor TDUnitXTextFileLogger.Create(const AFileName : string; const overwrite : boolean);
+constructor TDunitXTextLogger.Create(const outputStream : TStream; const ownsStream : Boolean);
 begin
-  raise ENotImplemented.Create('Not Implemented');
+  inherited Create();
+
+  fOutput := outputStream;
+  fOwnOut := ownsStream
 end;
 
-procedure TDUnitXTextFileLogger.OnEndSetupFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
+procedure TDunitXTextLogger.DecIndent();
 begin
-  raise ENotImplemented.Create('Not Implemented');
+  Dec(fIndent, fIndentStep)
 end;
 
-procedure TDUnitXTextFileLogger.OnEndSetupTest(const threadId : TThreadID; const Test : ITestInfo);
+destructor TDunitXTextLogger.Destroy;
 begin
-  raise ENotImplemented.Create('Not Implemented');
+  if fOwnOut then
+    fOutput.Free();
+
+  inherited;
 end;
 
-procedure TDUnitXTextFileLogger.OnEndTearDownFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
+function TDunitXTextLogger.GetFixtureName(const Fixture : ITestFixtureInfo) : string;
 begin
-  raise ENotImplemented.Create('Not Implemented');
+  if  SameText(Fixture.UnitName, 'System')  then
+    Result := Fixture.FullName
+  else
+    Result := Format('%s (%s)', [Fixture.FullName, Fixture.UnitName])
 end;
 
-procedure TDUnitXTextFileLogger.OnEndTeardownTest(const threadId : TThreadID; const Test : ITestInfo);
+function TDunitXTextLogger.GetTestName(const Test: ITestInfo): string;
 begin
-  raise ENotImplemented.Create('Not Implemented');
+  if Test.Name <> Test.MethodName then
+    Result := Format('%s (%s)', [Test.MethodName, Test.Name])
+  else
+    Result := Test.MethodName
 end;
 
-procedure TDUnitXTextFileLogger.OnEndTest(const threadId : TThreadID; const Test : ITestResult);
+function TDunitXTextLogger.GetTimeSuffix(const Caption : string) : string;
 begin
-  raise ENotImplemented.Create('Not Implemented');
+  Result := Caption + ' ' + FormatDateTime('yyyy-mm-dd hh:nn:ss.zzz', Now())
 end;
 
-procedure TDUnitXTextFileLogger.OnEndTestFixture(const threadId : TThreadID; const results : IFixtureResult);
+procedure TDunitXTextLogger.IncIndent();
 begin
-  raise ENotImplemented.Create('Not Implemented');
+  Inc(fIndent, fIndentStep)
 end;
 
-procedure TDUnitXTextFileLogger.OnExecuteTest(const threadId : TThreadID; const Test : ITestInfo);
+procedure  TDunitXTextLogger.OnBeginTest(const threadId : TThreadID; const Test : ITestInfo);
 begin
-  raise ENotImplemented.Create('Not Implemented');
+  inherited;
+
+  WriteLine(GetTestName(Test) + GetTimeSuffix(fStartSuffix));
+  IncIndent()
 end;
 
-procedure TDUnitXTextFileLogger.OnTestError(const threadId : TThreadID; const Error : ITestError);
+procedure TDunitXTextLogger.OnEndTest(const threadId : TThreadID; const TestResult : ITestResult);
 begin
-  raise ENotImplemented.Create('Not Implemented');
+  inherited;
+  WriteLine(GetTestName(TestResult.Test) + GetTimeSuffix(fStopSuffix), TestResult.Duration);
 end;
 
-procedure TDUnitXTextFileLogger.OnTestFailure(const threadId : TThreadID; const Failure : ITestError);
+procedure TDunitXTextLogger.OnEndTestFixture(const threadId : TThreadID; const results : IFixtureResult);
 begin
-  raise ENotImplemented.Create('Not Implemented');
+  inherited;
+  WriteLine(GetFixtureName(results.Fixture) + GetTimeSuffix(fStopSuffix), results.Duration);
 end;
 
-procedure TDUnitXTextFileLogger.OnTestIgnored(const threadId : TThreadID; const AIgnored : ITestResult);
+procedure TDunitXTextLogger.OnStartTestFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
 begin
-  raise ENotImplemented.Create('Not Implemented');
+  inherited;
+  WriteLine(GetFixtureName(fixture) + GetTimeSuffix(fStartSuffix));
+  WriteLine();
+  IncIndent()
 end;
 
-procedure TDUnitXTextFileLogger.OnLog(const logType : TLogLevel; const msg : string);
+procedure TDunitXTextLogger.OnTestError(const threadId : TThreadID; const Error : ITestError);
 begin
-  raise ENotImplemented.Create('Not Implemented');
+  inherited;
+  WriteLine('- Status: ERROR %s', [Error.Message])
 end;
 
-procedure TDUnitXTextFileLogger.OnSetupFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
+procedure TDunitXTextLogger.OnTestFailure(const threadId : TThreadID; const Failure : ITestError);
 begin
-  raise ENotImplemented.Create('Not Implemented');
+  inherited;
+  WriteLine('- Status: FAILURE %s', [Failure.Message])
 end;
 
-procedure TDUnitXTextFileLogger.OnSetupTest(const threadId : TThreadID; const Test : ITestInfo);
+procedure TDunitXTextLogger.OnTestIgnored(const threadId : TThreadID; const Ignored : ITestResult);
 begin
-  raise ENotImplemented.Create('Not Implemented');
+  inherited;
+  WriteLine('- Status: IGNORED %s', [Ignored.Message])
 end;
 
-procedure TDUnitXTextFileLogger.OnBeginTest(const threadId : TThreadID; const Test : ITestInfo);
+procedure TDunitXTextLogger.OnTestingEnds(const RunResults : IRunResults);
 begin
-  raise ENotImplemented.Create('Not Implemented');
+  inherited;
+
+  DecIndent();
+
+  WriteLine();
+  WriteLine('Testing finished');
+  WriteLine('- Test Count:    %d', [RunResults.TestCount]);
+  WriteLine('- Fixture Count: %d', [RunResults.FixtureCount]);
+  WriteLine('- Pass Count:    %d', [RunResults.PassCount]);
+
+  if RunResults.FailureCount <> 0 then
+    WriteLine('- Failure Count: %d', [RunResults.FailureCount]);
+  if RunResults.ErrorCount <> 0 then
+    WriteLine('- Error Count:   %d', [RunResults.ErrorCount]);
+  if RunResults.IgnoredCount <> 0 then
+    WriteLine('- Ignored Count: %d', [RunResults.IgnoredCount]);
+  if RunResults.MemoryLeakCount <> 0 then
+    WriteLine('- Memory Leaks:  %d', [RunResults.MemoryLeakCount]);
+
+  if RunResults.AllPassed then
+    WriteLine('- All PASSED')
 end;
 
-procedure TDUnitXTextFileLogger.OnStartTestFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
+procedure TDunitXTextLogger.OnTestingStarts(const threadId : TThreadID; testCount, testActiveCount : Cardinal);
+var
+  buf : string;
 begin
-  raise ENotImplemented.Create('Not Implemented');
+  inherited;
+
+  buf := 'Starting to perform %u test';
+  if testCount <> 1 then
+    buf := buf + 's';
+  if testCount <> testActiveCount then
+    buf := buf + ', %u active';
+
+  buf := Format(buf, [testCount, testActiveCount]);
+  WriteLine(buf);
+  WriteLine(StringOfChar('~', Length(buf)));
+  WriteLine();
+
+  IncIndent()
 end;
 
-procedure TDUnitXTextFileLogger.OnTestSuccess(const threadId : TThreadID; const Test : ITestResult);
+procedure TDunitXTextLogger.OnTestMemoryLeak(const threadId : TThreadID; const TestResult : ITestResult);
 begin
-  raise ENotImplemented.Create('Not Implemented');
+  inherited;
+  WriteLine('- Status: MEMORY LEAK %s', [TestResult.Message])
 end;
 
-procedure TDUnitXTextFileLogger.OnTearDownFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
+procedure TDunitXTextLogger.OnTestSuccess(const threadId : TThreadID; const TestResult : ITestResult);
 begin
-  raise ENotImplemented.Create('Not Implemented');
+  inherited;
+  WriteLine('- Status: SUCCESS')
 end;
 
-procedure TDUnitXTextFileLogger.OnTeardownTest(const threadId : TThreadID; const Test : ITestInfo);
+procedure TDunitXTextLogger.WriteLine(const text : string; const duration : TTimeSpan);
+var
+  buf : string;
 begin
-  raise ENotImplemented.Create('Not Implemented');
+  DecIndent();
+
+  WriteLine(text);
+
+  if duration.Ticks <> 0 then
+    begin
+      buf := duration.ToString();
+
+      while Copy(buf, 1, 3) = '00:' do
+        Delete(buf, 1, 3);
+      if (Length(buf) >= 2) and (buf[1] = '0') and CharInSet(buf[2], ['0'..'9']) then
+        Delete(buf, 1, 1);
+
+      while (buf <> '') and (buf[Length(buf)] = '0') do
+        SetLength(buf, Length(buf) - 1);
+      if (buf <> '') and (buf[Length(buf)] = '.') then
+        SetLength(buf, Length(buf) - 1);
+
+      if buf <> '' then
+        WriteLine('- elapsed time: ' + buf);
+    end;
+
+  WriteLine()
 end;
 
-procedure TDUnitXTextFileLogger.OnTestingEnds(const RunResults : IRunResults);
+procedure TDunitXTextLogger.WriteLine(const textFmt : string; textArgs : array of const);
 begin
-  raise ENotImplemented.Create('Not Implemented');
+  WriteLine(Format(textFmt, textArgs))
 end;
 
-procedure TDUnitXTextFileLogger.OnTestingStarts(const threadId : TThreadID; testCount, testActiveCount : Cardinal);
+procedure TDunitXTextLogger.WriteLine(const text: string);
+
+var
+  bufS : string;
+  bufB : TBytes;
+
 begin
-  raise ENotImplemented.Create('Not Implemented');
+  if Trim(text) <> '' then
+    bufS := StringOfChar(' ', fIndent) + Trim(text) + sLineBreak
+  else
+    bufS := sLineBreak;
+  {-}
+  bufB := TEncoding.UTF8.GetBytes(bufS);
+  fOutput.Write(bufB, Length(bufB))
 end;
 
-procedure TDUnitXTextFileLogger.OnTestMemoryLeak(const threadId : TThreadID; const Test : ITestResult);
+{$ENDREGION 'TDunitXTextLogger'}
+
+
+{$REGION 'TDunitXTextFileLogger'}
+
+constructor TDunitXTextFileLogger.Create(const fileName : string; const overwrite : Boolean; const encoding : TEncoding);
+
+type
+  {$IF Declared(TBufferedFileStream)}
+    TOutputStream = TBufferedFileStream;
+  {$ELSE}
+    TOutputStream = TFileStream;
+  {$IFEND}
+
+var
+  outName : string;
+  outStream : TOutputStream;
+  outEncoding : TEncoding;
+  bufBOM : TBytes;
+
 begin
-  raise ENotImplemented.Create('Not Implemented');
+  outName := FileName;
+  if outName = '' then
+    outName := ChangeFileExt(ParamStr(0), '.log');
+
+  outEncoding := encoding;
+  if outEncoding = nil then
+    outEncoding := TEncoding.UTF8;
+
+  if overwrite then
+    begin
+      outStream := TOutputStream.Create(outName, fmCreate);
+
+      bufBOM := outEncoding.GetPreamble();
+      outStream.WriteData(bufBOM, Length(bufBOM))
+    end
+  else
+    begin
+      outStream := TOutputStream.Create(outName, fmOpenReadWrite);
+
+      outStream.Seek(0, soFromEnd)
+    end;
+
+  inherited Create(outStream, True)
 end;
+
+{$ENDREGION 'TDunitXTextFileLogger'}
+
 
 end.
 
