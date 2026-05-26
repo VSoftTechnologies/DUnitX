@@ -56,10 +56,11 @@ type
       fStartSuffix = ' - START';
       fStopSuffix  = ' - STOP';
     var
-      fOutput:  TStream;
-      fOwnOut:  Boolean;
-      fIndent:  Integer;
-      fIssues:  TStringList;
+      fOutput:   TStream;
+      fOwnOut:   Boolean;
+      fIndent:   Integer;
+      fIssues:   TStringList;
+      fEncoding: TEncoding;
 
     function GetFixtureName(const Fixture : ITestFixtureInfo) : string;
     function GetTestName(const Test : ITestInfo) : string;
@@ -92,7 +93,7 @@ type
     procedure OnTestingEnds(const RunResults : IRunResults); override;
 
   public
-    constructor Create(const outputStream : TStream; const ownsStream : Boolean = False);
+    constructor Create(const outputStream : TStream; const ownsStream : Boolean = False; encoding : TEncoding = nil);
     destructor Destroy(); override;
   end;
 
@@ -105,13 +106,18 @@ implementation
 
 {$REGION 'TDunitXTextLogger'}
 
-constructor TDunitXTextLogger.Create(const outputStream : TStream; const ownsStream : Boolean);
+constructor TDunitXTextLogger.Create(const outputStream : TStream; const ownsStream : Boolean; encoding : TEncoding);
 begin
   inherited Create();
   fIssues := TStringList.Create();
 
   fOutput := outputStream;
-  fOwnOut := ownsStream
+  fOwnOut := ownsStream;
+
+  if encoding <> nil then
+    fEncoding := encoding
+  else
+    fEncoding := TEncoding.UTF8;
 end;
 
 procedure TDunitXTextLogger.DecIndent(const Steps : Integer);
@@ -346,7 +352,7 @@ begin
   else
     bufS := sLineBreak;
   {-}
-  bufB := TEncoding.UTF8.GetBytes(bufS);
+  bufB := fEncoding.GetBytes(bufS);
   fOutput.Write(bufB, Length(bufB))
 end;
 
@@ -394,7 +400,7 @@ begin
     outStream.Seek(0, soFromEnd)
   end;
 
-  inherited Create(outStream, True)
+  inherited Create(outStream, True, outEncoding)
 end;
 
 {$ENDREGION 'TDunitXTextFileLogger'}
