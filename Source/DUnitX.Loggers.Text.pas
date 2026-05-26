@@ -247,6 +247,7 @@ begin
     WriteLine('- Memory Leaks:  %d', [RunResults.MemoryLeakCount]);
   if RunResults.AllPassed then
     WriteLine('- All PASSED');
+  WriteLine()
 end;
 
 procedure TDunitXTextLogger.OnTestingStarts(const threadId : TThreadID; testCount, testActiveCount : Cardinal);
@@ -375,27 +376,40 @@ var
   outStream : TOutputStream;
   outEncoding : TEncoding;
   bufBOM : TBytes;
+  len : Integer;
 
 begin
   outName := FileName;
   if outName = '' then
     outName := ChangeFileExt(ParamStr(0), '.log');
 
-  outEncoding := encoding;
-  if outEncoding = nil then
-    outEncoding := TEncoding.UTF8;
-
-  if overwrite then
+  if overwrite or not FileExists(outName) then
   begin
     outStream := TOutputStream.Create(outName, fmCreate);
 
+    if encoding <> nil then
+      outEncoding := encoding
+    else
+      outEncoding := TEncoding.UTF8;
+
     bufBOM := outEncoding.GetPreamble();
-    //todo : confirm this work
-    outStream.Write(bufBOM, Length(bufBOM))
+    if bufBOM <> nil then
+      outStream.Write(bufBOM, Length(bufBOM))
   end
   else
   begin
     outStream := TOutputStream.Create(outName, fmOpenReadWrite);
+
+    outEncoding := encoding;
+    if outEncoding = nil then
+    begin
+      // A standard BOM consists of 2 to 4 bytes.
+      // In the case of exotic encodings, such as UTF-7, the BOM may consist of 5 bytes.
+      SetLength(bufBOM, 5);
+      len := outStream.Read(bufBOM, 5);
+      SetLength(bufBOM, len);
+      TEncoding.GetBufferEncoding(bufBOM, outEncoding, TEncoding.UTF8)
+    end;
 
     outStream.Seek(0, soFromEnd)
   end;
