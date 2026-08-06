@@ -1,7 +1,7 @@
 DUnitX Overview
 ===============
 
-DUnitX is a new test framework, taking ideas from DUnit, NUnit and other test frameworks. It is designed to work with Delphi 2010 or later, it makes use of language/RTL features that are not available in older versions of Delphi.
+DUnitX is a new test framework, taking ideas from DUnit, NUnit and other test frameworks. It is designed to work with Delphi XE2 or later, it makes use of language/RTL features that are not available in older versions of Delphi.
 
 
 DUnitX Features
@@ -54,7 +54,7 @@ A [recent list of contributors](https://github.com/VSoftTechnologies/DUnitX/grap
 License
 ========
 Apache Version 2.0 
-Copyright (C) 2012-2016 Vincent Parrett
+Copyright (C) 2012+ Vincent Parrett
 vincent@finalbuilder.com                                         
 http://www.finalbuilder.com
 
