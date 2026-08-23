@@ -37,7 +37,8 @@ FMX designer/form files break across Delphi versions. Related history:
 ## Example
 
 `Examples/DUnitXConsoleFMX.dpr` - one modern FMX multi-device example
-(Win32 + Android). Not a version matrix. Include path points at `Source`.
+(Win32, Win64, Android, iOSDevice64, iOSSimARM64). Not a version matrix.
+Include path points at `Source`.
 
 ## Usage
 
