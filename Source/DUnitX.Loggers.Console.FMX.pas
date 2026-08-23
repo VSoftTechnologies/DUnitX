@@ -39,7 +39,6 @@ uses
   FMX.Controls,
   FMX.Forms,
   FMX.StdCtrls,
-  FMX.Layouts,
   FMX.Memo,
   FMX.Objects,
   FMX.Controls.Presentation,
@@ -52,7 +51,6 @@ uses
   FMX.Controls,
   FMX.Forms,
   FMX.StdCtrls,
-  FMX.Layouts,
   FMX.Memo,
   FMX.Objects,
 {$ENDIF}
@@ -108,8 +106,8 @@ type
   TDUnitXFMXConsoleHost = class(TForm)
   private
     FStatus : TLabel;
-    FRunAgain : TLayout;
-    FRunAgainLabel : TLabel;
+    FRunAgain : TRectangle;
+    FRunAgainLabel : TText;
     FMemo : TMemo;
     FHasAutoRun : Boolean;
     FRunning : Boolean;
@@ -520,25 +518,32 @@ begin
   ApplyConsoleText(FStatus.TextSettings);
   FStatus.Text := 'Ready';
 
-  // TLabel's styled TText eats mouse hits and does not bubble OnClick.
-  // A layout is the hit target; the label is display-only.
-  FRunAgain := TLayout.Create(Self);
+  // TLabel/TLayout: styled TText still has HitTest=True and swallows the click.
+  // TRectangle + primitive TText (HitTest=False) is a real mouse target.
+  FRunAgain := TRectangle.Create(Self);
   FRunAgain.Parent := Self;
   FRunAgain.Align := TAlignLayout.Top;
   FRunAgain.Height := 24;
   FRunAgain.Margins.Left := 8;
   FRunAgain.Margins.Right := 8;
   FRunAgain.Margins.Bottom := 4;
+  FRunAgain.Fill.Kind := TBrushKind.Solid;
+  FRunAgain.Fill.Color := $FF0C0C0C;
+  FRunAgain.Stroke.Kind := TBrushKind.None;
   FRunAgain.HitTest := True;
+  FRunAgain.AutoCapture := True;
   FRunAgain.Cursor := crHandPoint;
   FRunAgain.OnClick := HandleRunAgainClick;
 
-  FRunAgainLabel := TLabel.Create(FRunAgain);
+  FRunAgainLabel := TText.Create(FRunAgain);
   FRunAgainLabel.Parent := FRunAgain;
   FRunAgainLabel.Align := TAlignLayout.Client;
   FRunAgainLabel.HitTest := False;
-  FRunAgainLabel.StyledSettings := [];
-  ApplyConsoleText(FRunAgainLabel.TextSettings);
+  FRunAgainLabel.HorzTextAlign := TTextAlign.Leading;
+  FRunAgainLabel.VertTextAlign := TTextAlign.Center;
+  FRunAgainLabel.TextSettings.Font.Family := ConsoleFontFamily;
+  FRunAgainLabel.TextSettings.Font.Size := 12;
+  FRunAgainLabel.TextSettings.FontColor := $FFD4D4D4;
   FRunAgainLabel.Text := '> Run again';
 
   FMemo := TMemo.Create(Self);
