@@ -1127,6 +1127,36 @@ begin
   Result := True;
 end;
 
+function StripIso8601TimeZone(const ASource : string) : string;
+var
+  i : Integer;
+  len : Integer;
+begin
+  // TestCase values such as '1988-10-21T17:44:23.456Z' / '+02:30' are wall-clock
+  // timestamps; the suffix is not applied. StrToDateTimeDef rejects those suffixes
+  // and returns 0 (30.12.1899), which is what the ISO-8601 verbose tests hit.
+  Result := ASource;
+  len := Length(Result);
+  if len = 0 then
+    Exit;
+
+  if CharInSet(Result[len], ['Z', 'z']) then
+  begin
+    SetLength(Result, len - 1);
+    Exit;
+  end;
+
+  // yyyy-mm-dd is 10 characters; any later '+' or '-' is a timezone offset.
+  for i := 11 to len do
+  begin
+    if CharInSet(Result[i], ['+', '-']) then
+    begin
+      SetLength(Result, i - 1);
+      Exit;
+    end;
+  end;
+end;
+
 function Str2DateTimeValue(const ASource : string) : TValue;
 var
   dateTime : TDateTime;
@@ -1140,7 +1170,7 @@ begin
     iso8601.ShortTimeFormat := 'hh:nn:ss\.nnn';
     iso8601.TimeSeparator := ':';
 
-    dateTime := StrToDateTimeDef(ASource, 0, iso8601);
+    dateTime := StrToDateTimeDef(StripIso8601TimeZone(ASource), 0, iso8601);
   end;
 
   Result := TValue.From<TDateTime>(dateTime);
