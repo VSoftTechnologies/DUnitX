@@ -33,20 +33,26 @@ uses
 {$IFDEF USE_NS}
   System.Classes,
   System.SysUtils,
+  System.UITypes,
   FMX.Types,
+  FMX.Graphics,
   FMX.Controls,
   FMX.Forms,
   FMX.StdCtrls,
   FMX.Memo,
+  FMX.Objects,
   FMX.Controls.Presentation,
 {$ELSE}
   Classes,
   SysUtils,
+  UITypes,
   FMX.Types,
+  FMX.Graphics,
   FMX.Controls,
   FMX.Forms,
   FMX.StdCtrls,
   FMX.Memo,
+  FMX.Objects,
 {$ENDIF}
   DUnitX.TestFramework,
   DUnitX.ResStrs;
@@ -100,11 +106,13 @@ type
   TDUnitXFMXConsoleHost = class(TForm)
   private
     FStatus : TLabel;
-    FRunAgain : TButton;
+    FRunAgain : TLabel;
     FMemo : TMemo;
     FHasAutoRun : Boolean;
     FRunning : Boolean;
+    procedure ApplyConsoleText(const ATextSettings : TTextSettings);
     procedure BuildUI;
+    procedure HandleMemoApplyStyleLookup(Sender : TObject);
     procedure HandleShow(Sender : TObject);
     procedure HandleRunAgainClick(Sender : TObject);
     procedure RunTests;
@@ -442,26 +450,98 @@ begin
   OnShow := HandleShow;
 end;
 
+function ConsoleFontFamily : string;
+begin
+{$IFDEF MSWINDOWS}
+  Result := 'Consolas';
+{$ELSE}
+{$IFDEF ANDROID}
+  Result := 'monospace';
+{$ELSE}
+{$IFDEF IOS}
+  Result := 'Menlo';
+{$ELSE}
+  Result := 'Courier New';
+{$ENDIF}
+{$ENDIF}
+{$ENDIF}
+end;
+
+procedure TDUnitXFMXConsoleHost.ApplyConsoleText(const ATextSettings : TTextSettings);
+begin
+  ATextSettings.Font.Family := ConsoleFontFamily;
+  ATextSettings.Font.Size := 12;
+  ATextSettings.FontColor := $FFD4D4D4;
+end;
+
+procedure TDUnitXFMXConsoleHost.HandleMemoApplyStyleLookup(Sender : TObject);
+const
+  cConsoleBg = $FF0C0C0C;
+var
+  LBackground : TFmxObject;
+  LRect : TRectangle;
+  i : Integer;
+begin
+  // Default FMX memo skin is TActiveStyleObject (bitmap), not TRectangle.
+  LBackground := FMemo.FindStyleResource('background');
+  if LBackground = nil then
+    Exit;
+  for i := 0 to LBackground.ChildrenCount - 1 do
+    if LBackground.Children[i].StyleName = 'consolebg' then
+      Exit;
+
+  LRect := TRectangle.Create(LBackground);
+  LRect.StyleName := 'consolebg';
+  LRect.Parent := LBackground;
+  LRect.Align := TAlignLayout.Contents;
+  LRect.HitTest := False;
+  LRect.Stroke.Kind := TBrushKind.None;
+  LRect.Fill.Kind := TBrushKind.Solid;
+  LRect.Fill.Color := cConsoleBg;
+  LRect.SendToBack;
+end;
+
 procedure TDUnitXFMXConsoleHost.BuildUI;
 begin
   // Entire UI is created in code - no .fmx (see Docs/FMX-Pseudo-Console.md).
+  Fill.Kind := TBrushKind.Solid;
+  Fill.Color := $FF0C0C0C;
+
   FStatus := TLabel.Create(Self);
   FStatus.Parent := Self;
   FStatus.Align := TAlignLayout.Top;
   FStatus.Height := 28;
+  FStatus.Margins.Left := 8;
+  FStatus.Margins.Right := 8;
+  FStatus.StyledSettings := [];
+  ApplyConsoleText(FStatus.TextSettings);
   FStatus.Text := 'Ready';
 
-  FRunAgain := TButton.Create(Self);
+  FRunAgain := TLabel.Create(Self);
   FRunAgain.Parent := Self;
   FRunAgain.Align := TAlignLayout.Top;
-  FRunAgain.Height := 36;
-  FRunAgain.Text := 'Run again';
+  FRunAgain.Height := 24;
+  FRunAgain.Margins.Left := 8;
+  FRunAgain.Margins.Right := 8;
+  FRunAgain.Margins.Bottom := 4;
+  FRunAgain.HitTest := True;
+  FRunAgain.Cursor := crHandPoint;
+  FRunAgain.StyledSettings := [];
+  ApplyConsoleText(FRunAgain.TextSettings);
+  FRunAgain.Text := '> Run again';
   FRunAgain.OnClick := HandleRunAgainClick;
 
   FMemo := TMemo.Create(Self);
+  FMemo.OnApplyStyleLookup := HandleMemoApplyStyleLookup;
   FMemo.Parent := Self;
   FMemo.Align := TAlignLayout.Client;
+  FMemo.Margins.Left := 8;
+  FMemo.Margins.Right := 8;
+  FMemo.Margins.Bottom := 8;
   FMemo.ReadOnly := True;
+  FMemo.WordWrap := False;
+  FMemo.StyledSettings := [];
+  ApplyConsoleText(FMemo.TextSettings);
 end;
 
 procedure TDUnitXFMXConsoleHost.HandleShow(Sender : TObject);
@@ -488,6 +568,7 @@ begin
     Exit;
   FRunning := True;
   FRunAgain.Enabled := False;
+  FRunAgain.Opacity := 0.45;
   try
     try
       FMemo.Lines.Clear;
@@ -517,6 +598,7 @@ begin
   finally
     FRunning := False;
     FRunAgain.Enabled := True;
+    FRunAgain.Opacity := 1;
   end;
 end;
 
