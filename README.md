@@ -34,6 +34,7 @@ This is far from a complete list, but a few planned features are listed here to 
 
 Tips and Tricks
 ===========
+* FMX / mobile: there is no console app on Android/iOS. Use `DUnitX.Loggers.Console.FMX` (`DUnitX.Loggers.Console.FMX.Run`) as a console stand-in that streams results to an in-app memo. This is **not** a GUI test explorer; for IDE workflows use [TestInsight](https://bitbucket.org/sglienke/testinsight/wiki/Home). See [Docs/FMX-Pseudo-Console.md](Docs/FMX-Pseudo-Console.md).
 * In order to workaround the [Delphi XE3 Bug](https://github.com/VSoftTechnologies/DUnitX/issues/117), you need to add the unit DUnitX.Init to your test projects.
 * To use this GitHub version of DUnitX in place of the bundled version included with RAD Studio, it’s pretty simple by following these steps (as the bundled version is quite a few commits behind this repo):
   - Remove the Embarcadero Unit test package (DUnitXIDEExpertXXX.bpl) from the installed packages list.
