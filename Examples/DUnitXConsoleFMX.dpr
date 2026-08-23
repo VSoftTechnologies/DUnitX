@@ -1,6 +1,6 @@
 ﻿program DUnitXConsoleFMX;
 
-{
+(*
   FMX pseudo-console example for DUnitX.
 
   This is an FMX application - not {$APPTYPE CONSOLE}.
@@ -9,7 +9,7 @@
   output in a code-created memo host.
 
   See Docs/FMX-Pseudo-Console.md and Source/DUnitX.Loggers.Console.FMX.pas.
-}
+*)
 
 uses
   System.StartUpCopy,
