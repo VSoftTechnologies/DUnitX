@@ -111,11 +111,13 @@ type
     FMemo : TMemo;
     FHasAutoRun : Boolean;
     FRunning : Boolean;
+    FRunCount : Integer;
     procedure ApplyConsoleText(const ATextSettings : TTextSettings);
     procedure BuildUI;
     procedure HandleMemoApplyStyleLookup(Sender : TObject);
     procedure HandleShow(Sender : TObject);
-    procedure HandleRunAgainClick(Sender : TObject);
+    procedure HandleRunAgainMouseDown(Sender : TObject; Button : TMouseButton;
+      Shift : TShiftState; X, Y : Single);
     procedure RunTests;
   public
     constructor CreateNew(AOwner : TComponent; Dummy : NativeInt = 0); override;
@@ -447,6 +449,7 @@ begin
   Height := 500;
   FHasAutoRun := False;
   FRunning := False;
+  FRunCount := 0;
   BuildUI;
   OnShow := HandleShow;
 end;
@@ -533,7 +536,7 @@ begin
   FRunAgain.HitTest := True;
   FRunAgain.AutoCapture := True;
   FRunAgain.Cursor := crHandPoint;
-  FRunAgain.OnClick := HandleRunAgainClick;
+  FRunAgain.OnMouseDown := HandleRunAgainMouseDown;
 
   FRunAgainLabel := TText.Create(FRunAgain);
   FRunAgainLabel.Parent := FRunAgain;
@@ -568,9 +571,11 @@ begin
   end;
 end;
 
-procedure TDUnitXFMXConsoleHost.HandleRunAgainClick(Sender : TObject);
+procedure TDUnitXFMXConsoleHost.HandleRunAgainMouseDown(Sender : TObject;
+  Button : TMouseButton; Shift : TShiftState; X, Y : Single);
 begin
-  RunTests;
+  if Button = TMouseButton.mbLeft then
+    RunTests;
 end;
 
 procedure TDUnitXFMXConsoleHost.RunTests;
@@ -586,8 +591,12 @@ begin
   FRunAgain.Opacity := 0.45;
   try
     try
+      Inc(FRunCount);
       FMemo.Lines.Clear;
-      FStatus.Text := 'Running...';
+      FStatus.Text := Format('Running...  (run %d)', [FRunCount]);
+      FStatus.Repaint;
+      FMemo.Repaint;
+      Application.ProcessMessages;
 
       runner := TDUnitX.CreateRunner;
       runner.UseRTTI := True;
@@ -599,10 +608,10 @@ begin
       results := runner.Execute;
 
       if results.AllPassed then
-        FStatus.Text := Format('Done - all passed (%d)', [results.PassCount])
+        FStatus.Text := Format('Done - all passed (%d)  · run %d', [results.PassCount, FRunCount])
       else
-        FStatus.Text := Format('Done - failed: %d  errored: %d  ignored: %d  passed: %d',
-          [results.FailureCount, results.ErrorCount, results.IgnoredCount, results.PassCount]);
+        FStatus.Text := Format('Done - failed: %d  errored: %d  ignored: %d  passed: %d  · run %d',
+          [results.FailureCount, results.ErrorCount, results.IgnoredCount, results.PassCount, FRunCount]);
     except
       on E : Exception do
       begin
