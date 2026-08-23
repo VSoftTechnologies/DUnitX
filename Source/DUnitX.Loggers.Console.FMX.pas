@@ -39,6 +39,7 @@ uses
   FMX.Controls,
   FMX.Forms,
   FMX.StdCtrls,
+  FMX.Layouts,
   FMX.Memo,
   FMX.Objects,
   FMX.Controls.Presentation,
@@ -51,6 +52,7 @@ uses
   FMX.Controls,
   FMX.Forms,
   FMX.StdCtrls,
+  FMX.Layouts,
   FMX.Memo,
   FMX.Objects,
 {$ENDIF}
@@ -106,7 +108,8 @@ type
   TDUnitXFMXConsoleHost = class(TForm)
   private
     FStatus : TLabel;
-    FRunAgain : TLabel;
+    FRunAgain : TLayout;
+    FRunAgainLabel : TLabel;
     FMemo : TMemo;
     FHasAutoRun : Boolean;
     FRunning : Boolean;
@@ -517,7 +520,9 @@ begin
   ApplyConsoleText(FStatus.TextSettings);
   FStatus.Text := 'Ready';
 
-  FRunAgain := TLabel.Create(Self);
+  // TLabel's styled TText eats mouse hits and does not bubble OnClick.
+  // A layout is the hit target; the label is display-only.
+  FRunAgain := TLayout.Create(Self);
   FRunAgain.Parent := Self;
   FRunAgain.Align := TAlignLayout.Top;
   FRunAgain.Height := 24;
@@ -526,10 +531,15 @@ begin
   FRunAgain.Margins.Bottom := 4;
   FRunAgain.HitTest := True;
   FRunAgain.Cursor := crHandPoint;
-  FRunAgain.StyledSettings := [];
-  ApplyConsoleText(FRunAgain.TextSettings);
-  FRunAgain.Text := '> Run again';
   FRunAgain.OnClick := HandleRunAgainClick;
+
+  FRunAgainLabel := TLabel.Create(FRunAgain);
+  FRunAgainLabel.Parent := FRunAgain;
+  FRunAgainLabel.Align := TAlignLayout.Client;
+  FRunAgainLabel.HitTest := False;
+  FRunAgainLabel.StyledSettings := [];
+  ApplyConsoleText(FRunAgainLabel.TextSettings);
+  FRunAgainLabel.Text := '> Run again';
 
   FMemo := TMemo.Create(Self);
   FMemo.OnApplyStyleLookup := HandleMemoApplyStyleLookup;
