@@ -83,13 +83,9 @@ type
     [TestCase('EN-GB local format, 12 h, verbose', 'EN-GB,22/06/2020 06:36:00 pm')]
     [TestCase('DE local format, verbose', 'DE,22.06.2020 18:36:00.000')]
     [TestCase('DE local format, short', 'DE,22.6.20 18:36')]
-{$IFDEF DELPHI_X8_UP}
-    [TestCase('EN-US iso 8601 format', 'EN-US,2020-06-22 18:36:00')]
-    [TestCase('EN-US iso 8601 format, verbose', 'EN-US,2020-06-22T18:36:00.000Z')]
-    [TestCase('EN-GB iso8601 format', 'EN-GB,2020-06-22 18:36')]
-    [TestCase('EN-GB iso8601 format, verbose', 'EN-GB,2020-06-22T18:36:00+00')]
-    [TestCase('DE iso8601 format', 'DE,2020-06-22 18:36:00')]
-{$ENDIF}
+    // ISO-8601 belongs on TestDateTimeConversion (TValue.TryConvert).
+    // RTL StrToDateTime does not parse those strings (Delphi 13.1, EN-US/EN-GB/DE).
+    // The previous {$IFDEF DELPHI_X8_UP} never compiled (DUnitX.inc defines DELPHI_XE8_UP).
     procedure TestDateTimeConversion2(const locale : string; const text : string);
 
     [Test]
