@@ -42,7 +42,10 @@ implementation
 
 uses
   DUnitX.MemoryLeakMonitor.Default,
-  DUnitX.ServiceLocator;
+  DUnitX.ServiceLocator
+{$IFDEF USE_FASTMM4_LEAK_MONITOR}
+  , FastMM4
+{$ENDIF};
 
 type
   TDUnitXFastMM4MemoryLeakMonitor = class(TInterfacedObject, IMemoryLeakMonitor)
@@ -71,6 +74,19 @@ type
   { TDUnitXFastMM4MemoryLeakMonitor }
 
 function TDUnitXFastMM4MemoryLeakMonitor.GetMemoryAllocated : Int64;
+{$IFDEF USE_FASTMM4_LEAK_MONITOR}
+var
+  LSummary : TMemoryManagerUsageSummary;
+begin
+  { System.GetMemoryManagerState walks the RTL's bundled FastMM, not a
+    FastMM4.pas installed as the first unit (the leak-monitor setup). Those
+    structures stay empty / stale, so the old SmallBlockTypeStates loop
+    reported 0 or nonsense. FastMM4.GetMemoryManagerUsageSummary reads
+    FastMM4's own block lists. }
+  GetMemoryManagerUsageSummary(LSummary);
+  Result := Int64(LSummary.AllocatedBytes);
+end;
+{$ELSE}
 var
   st : TMemoryManagerState;
   sb : TSmallBlockTypeState;
@@ -84,6 +100,7 @@ begin
     Result := Result + Int64(sb.UseableBlockSize * sb.AllocatedBlockCount);
   end;
 end;
+{$ENDIF}
 
 procedure TDUnitXFastMM4MemoryLeakMonitor.PostSetUp;
 begin
