@@ -1,0 +1,95 @@
+﻿package DUnitX_VLC;
+
+{$R *.res}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO OFF}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS OFF}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION ON}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO OFF}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DEFINE RELEASE}
+{$ENDIF IMPLICITBUILDING}
+{$DESCRIPTION 'DUnitX VCL/Windows'}
+{$RUNONLY}
+{$IMPLICITBUILD ON}
+
+requires
+  rtl,
+  vcl,
+  vclactnband;
+
+contains
+  DUnitX.Loggers.GUI.VCL in '..\DUnitX.Loggers.GUI.VCL.pas' {GUIVCLTestRunner},
+  DUnitX.Loggers.GUI.VCL.RichEdit in '..\DUnitX.Loggers.GUI.VCL.RichEdit.pas',
+  DUnitX.Windows.Console in '..\DUnitX.Windows.Console.pas',
+  DUnitX.WeakReference in '..\DUnitX.WeakReference.pas',
+  DUnitX.Utils.XML in '..\DUnitX.Utils.XML.pas',
+  DUnitX.Utils in '..\DUnitX.Utils.pas',
+  DUnitX.Types in '..\DUnitX.Types.pas',
+  DUnitX.Timeout in '..\DUnitX.Timeout.pas',
+  DUnitX.TestRunner in '..\DUnitX.TestRunner.pas',
+  DUnitX.TestResult in '..\DUnitX.TestResult.pas',
+  DUnitX.TestNameParser in '..\DUnitX.TestNameParser.pas',
+  DUnitX.TestFramework in '..\DUnitX.TestFramework.pas',
+  DUnitX.TestFixture in '..\DUnitX.TestFixture.pas',
+  DUnitX.TestDataProvider in '..\DUnitX.TestDataProvider.pas',
+  DUnitX.Test in '..\DUnitX.Test.pas',
+  DUnitX.ServiceLocator in '..\DUnitX.ServiceLocator.pas',
+  DUnitX.RunResults in '..\DUnitX.RunResults.pas',
+  DUnitX.ResStrs in '..\DUnitX.ResStrs.pas',
+  DUnitX.OptionsDefinition in '..\DUnitX.OptionsDefinition.pas',
+  DUnitX.MemoryLeakMonitor.FastMM4 in '..\DUnitX.MemoryLeakMonitor.FastMM4.pas',
+  DUnitX.MemoryLeakMonitor.Default in '..\DUnitX.MemoryLeakMonitor.Default.pas',
+  DUnitX.MacOS.Console in '..\DUnitX.MacOS.Console.pas',
+  DUnitX.Loggers.XML.xUnit in '..\DUnitX.Loggers.XML.xUnit.pas',
+  DUnitX.Loggers.XML.NUnit in '..\DUnitX.Loggers.XML.NUnit.pas',
+  DUnitX.Loggers.XML.JUnit in '..\DUnitX.Loggers.XML.JUnit.pas',
+  DUnitX.Loggers.Text in '..\DUnitX.Loggers.Text.pas',
+  DUnitX.Loggers.Null in '..\DUnitX.Loggers.Null.pas',
+  DUnitX.Loggers.Console in '..\DUnitX.Loggers.Console.pas',
+  DUnitX.Linux.Console in '..\DUnitX.Linux.Console.pas',
+  DUnitX.InternalInterfaces in '..\DUnitX.InternalInterfaces.pas',
+  DUnitX.InternalDataProvider in '..\DUnitX.InternalDataProvider.pas',
+  DUnitX.Init in '..\DUnitX.Init.pas',
+  DUnitX.Helpers in '..\DUnitX.Helpers.pas',
+  DUnitX.Generics in '..\DUnitX.Generics.pas',
+  DUnitX.FixtureResult in '..\DUnitX.FixtureResult.pas',
+  DUnitX.FixtureProvider in '..\DUnitX.FixtureProvider.pas',
+  DUnitX.FixtureBuilder in '..\DUnitX.FixtureBuilder.pas',
+  DUnitX.Filters in '..\DUnitX.Filters.pas',
+  DUnitX.FilterBuilder in '..\DUnitX.FilterBuilder.pas',
+  DUnitX.Extensibility in '..\DUnitX.Extensibility.pas',
+  DUnitX.Exceptions in '..\DUnitX.Exceptions.pas',
+  DUnitX.DUnitCompatibility in '..\DUnitX.DUnitCompatibility.pas',
+  DUnitX.Constants in '..\DUnitX.Constants.pas',
+  DUnitX.ConsoleWriter.Base in '..\DUnitX.ConsoleWriter.Base.pas',
+  DUnitX.ComparableFormat.Xml in '..\DUnitX.ComparableFormat.Xml.pas',
+  DUnitX.ComparableFormat in '..\DUnitX.ComparableFormat.pas',
+  DUnitX.ComparableFormat.Csv in '..\DUnitX.ComparableFormat.Csv.pas',
+  DUnitX.CommandLine.Parser in '..\DUnitX.CommandLine.Parser.pas',
+  DUnitX.CommandLine.Options in '..\DUnitX.CommandLine.Options.pas',
+  DUnitX.CommandLine.OptionDef in '..\DUnitX.CommandLine.OptionDef.pas',
+  DUnitX.CategoryExpression in '..\DUnitX.CategoryExpression.pas',
+  DUnitX.Banner in '..\DUnitX.Banner.pas',
+  DUnitX.AutoDetect.Console in '..\DUnitX.AutoDetect.Console.pas',
+  DUnitX.Attributes in '..\DUnitX.Attributes.pas',
+  DUnitX.Assert in '..\DUnitX.Assert.pas',
+  DUnitX.Assert.Ex in '..\DUnitX.Assert.Ex.pas';
+
+end.
