@@ -27,8 +27,9 @@
 
 
 // Uncomment to use FastMM4 Memory Leak Tracking.
-//NOTE : Memory leak tracking does not work very well at the moment, as it's
-//reporting leaks when logging information during tests (calls to .Status etc).
+// FastMM4.pas must be the first unit in the .dpr (see the New Test Project wizard).
+// NOTE: Leak tracking can still report "leaks" from logging during tests
+// (calls to .Status etc).
 {.$DEFINE USE_FASTMM4_LEAK_MONITOR}
 
 
