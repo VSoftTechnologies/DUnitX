@@ -85,6 +85,12 @@ type
     class procedure AreEqual(const expected, actual : word; const message : string = ''); overload;
     class procedure AreEqual(const expected, actual : Integer; const message : string = ''); overload;
     class procedure AreEqual(const expected, actual : Int64; const message : string = ''); overload;
+{$IFDEF CPU64BITS}
+    // Count and Length are NativeInt (Int64 on 64-bit): with an Integer on the other side
+    // overload resolution picks AreEqual<T> and type inference fails with E2532.
+    class procedure AreEqual(const expected : Integer; const actual : Int64; const message : string = ''); overload;
+    class procedure AreEqual(const expected : Int64; const actual : Integer; const message : string = ''); overload;
+{$ENDIF}
     class procedure AreEqual(const expected, actual : cardinal; const message : string = ''); overload;
     class procedure AreEqual(const expected, actual : boolean; const message : string = ''); overload;
 
@@ -491,6 +497,22 @@ begin
   if expected <> actual then
     FailFmt(SUnexpectedErrorInt, [expected, actual, message], ReturnAddress);
 end;
+
+{$IFDEF CPU64BITS}
+class procedure Assert.AreEqual(const expected : Integer; const actual : Int64; const message : string);
+begin
+  DoAssert;
+  if expected <> actual then
+    FailFmt(SUnexpectedErrorInt, [expected, actual, message], ReturnAddress);
+end;
+
+class procedure Assert.AreEqual(const expected : Int64; const actual : Integer; const message : string);
+begin
+  DoAssert;
+  if expected <> actual then
+    FailFmt(SUnexpectedErrorInt, [expected, actual, message], ReturnAddress);
+end;
+{$ENDIF}
 
 class procedure Assert.AreEqual(const expected, actual : boolean; const message : string);
 begin
