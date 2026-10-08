@@ -65,6 +65,14 @@ type
     [Test]
     procedure AreEqual_Integer_Throws_ETestFailure_When_Values_Are_NotEqual;
 
+{$IFDEF CPU64BITS}
+    [Test]
+    procedure AreEqual_Integer_NativeInt_Throws_No_Exception_When_Values_Are_Equal;
+
+    [Test]
+    procedure AreEqual_Integer_NativeInt_Throws_ETestFailure_When_Values_Are_NotEqual;
+{$ENDIF}
+
     [Test]
     procedure AreEqual_Extended_Throws_No_Exception_When_Values_Are_Equal;
 
@@ -1001,6 +1009,35 @@ begin
       Assert.AreEqual(1, 2);
     end, ETestFailure, Format('[%d] is Not Equal to [%d] %s', [2, 1, '']));
 end;
+
+{$IFDEF CPU64BITS}
+procedure TTestsAssert.AreEqual_Integer_NativeInt_Throws_No_Exception_When_Values_Are_Equal;
+begin
+  Assert.WillNotRaise(
+    procedure
+    var
+      actual : NativeInt;
+      expected : Integer;
+    begin
+      actual := 1;
+      expected := 1;
+      Assert.AreEqual(1, actual);
+      Assert.AreEqual(actual, expected);
+    end, Exception);
+end;
+
+procedure TTestsAssert.AreEqual_Integer_NativeInt_Throws_ETestFailure_When_Values_Are_NotEqual;
+begin
+  Assert.WillRaise(
+    procedure
+    var
+      actual : NativeInt;
+    begin
+      actual := 2;
+      Assert.AreEqual(1, actual);
+    end, ETestFailure, Format('[%d] is Not Equal to [%d] %s', [2, 1, '']));
+end;
+{$ENDIF}
 
 procedure TTestsAssert.AreEqual_Integer_Throws_No_Exception_When_Values_Are_Equal;
 begin
