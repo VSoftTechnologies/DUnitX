@@ -36,7 +36,6 @@ uses
 {$ELSE}
   SysUtils,
 {$ENDIF}
-
   DUnitX.ComparableFormat;
 
 type

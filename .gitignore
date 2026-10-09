@@ -54,3 +54,10 @@ Examples/OSX32/
 
 
 *.lnk
+/Source/Packages/Android
+/Source/Packages/Linux64
+/Source/Packages/Android64
+/Source/Packages/iOSDevice64
+/Source/Packages/iOSSimARM64
+/Source/Packages/OSX64
+/Source/Packages/OSXARM64
