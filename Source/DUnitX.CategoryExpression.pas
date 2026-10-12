@@ -117,7 +117,7 @@ var
 begin
   Max := Length(value);
   i := StartIndex;
-  while i < Max do
+  while i <= Max do
   begin
     for j := 0 to Length(AnyOf) - 1 do
     begin
