@@ -646,7 +646,7 @@ begin
         begin
           raise TestExceptionOne.Create('Test');
         end, TestExceptionOne);
-    end);
+    end, ETestFailure);
 end;
 
 procedure TTestsAssert.WillNotRaiseWithMessage_MatchingExceptionParam_MatchingExceptionMessage_WillRaise;
@@ -659,7 +659,7 @@ begin
         begin
           raise TestExceptionOne.Create('Test');
         end, TestExceptionOne, 'Test');
-    end);
+    end, ETestFailure);
 end;
 
 procedure TTestsAssert.WillNotRaiseWithMessage_MatchingExceptionParam_NonMatchingExceptionMessage_WillNotRaise;
