@@ -373,6 +373,17 @@ type
 
     [Test]
     procedure Test64BitListIndex;
+
+{$IFDEF DELPHI_XE2_UP}
+    [Test]
+    procedure AreEqual_T_Double_Fails_When_Actual_Is_NaN;
+
+    [Test]
+    procedure AreNotEqual_T_Double_Passes_When_Actual_Is_NaN;
+
+    [Test]
+    procedure Contains_T_Double_Fails_For_NaN;
+{$ENDIF}
   end;
 
 implementation
@@ -382,9 +393,11 @@ uses
   System.SysUtils,
   System.Classes,
   System.Generics.Collections,
+  System.Math,
 {$ELSE}
   SysUtils,
   Classes,
+  Math,
 {$ENDIF}
   DUnitX.Exceptions,
   DUnitX.Assert;
@@ -1358,6 +1371,35 @@ begin
   Assert.AreEqual(Int64(0), x);         //compiler can't find overload with 0
   Assert.AreEqual(x, Int64(0));         //compiler can't find overload with 0
 end;
+
+{$IFDEF DELPHI_XE2_UP}
+procedure TTestsAssert.AreEqual_T_Double_Fails_When_Actual_Is_NaN;
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.AreEqual<Double>(1.0, NaN);
+    end, ETestFailure);
+end;
+
+procedure TTestsAssert.AreNotEqual_T_Double_Passes_When_Actual_Is_NaN;
+begin
+  Assert.WillNotRaise(
+    procedure
+    begin
+      Assert.AreNotEqual<Double>(1.0, NaN);
+    end);
+end;
+
+procedure TTestsAssert.Contains_T_Double_Fails_For_NaN;
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.Contains<Double>([1.0, 2.0], NaN);
+    end, ETestFailure);
+end;
+{$ENDIF}
 
 procedure TTestsAssert.Test_AreNotSameOnSameObjectWithDifferentInterfaces_Throws_Exception;
 var
