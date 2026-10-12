@@ -37,6 +37,8 @@ type
 {$M+}
   [TestFixture]
   TTestsAssert = class
+  private
+    procedure RaiseFilerError;
   published
     [Test]
     procedure Pass_Throws_ETestPass_Exception;
@@ -373,6 +375,9 @@ type
 
     [Test]
     procedure Test64BitListIndex;
+
+    [Test]
+    procedure WillNotRaiseDescendant_Method_With_DescendingClass_Negative;
   end;
 
 implementation
@@ -1357,6 +1362,24 @@ begin
   Assert.AreEqual(x, x);
   Assert.AreEqual(Int64(0), x);         //compiler can't find overload with 0
   Assert.AreEqual(x, Int64(0));         //compiler can't find overload with 0
+end;
+
+procedure TTestsAssert.RaiseFilerError;
+begin
+  raise EFilerError.Create('Test');
+end;
+
+procedure TTestsAssert.WillNotRaiseDescendant_Method_With_DescendingClass_Negative;
+var
+  method : TTestMethod;
+begin
+  method := RaiseFilerError;
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.WillNotRaiseDescendant(method, EStreamError);
+    end,
+    ETestFailure);
 end;
 
 procedure TTestsAssert.Test_AreNotSameOnSameObjectWithDifferentInterfaces_Throws_Exception;
