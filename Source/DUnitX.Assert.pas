@@ -57,6 +57,9 @@ type
     class var fTestPass : ExceptClass;
     class procedure CheckExceptionClass(E : Exception; const exceptionClass : ExceptClass);
     class procedure CheckExceptionClassDescendant(E : Exception; const exceptionClass : ExceptClass);
+{$IFDEF DELPHI_XE_UP}
+    class function ValuesEqual<T>(const left, right : T) : boolean;
+{$ENDIF}
   protected
     class function StreamsEqual(const stream1, stream2 : TStream) : boolean;
     class function AddLineBreak(const msg : string) : string;
@@ -433,16 +436,25 @@ begin
   end;
 end;
 
+{$IFDEF DELPHI_XE_UP}
+class function Assert.ValuesEqual<T>(const left, right : T) : boolean;
+begin
+  //TComparer<T> returns 0 for floats when either value is NaN, the equality comparer uses =
+  if PTypeInfo(TypeInfo(T))^.Kind = tkFloat then
+    result := TEqualityComparer<T>.Default.Equals(left, right)
+  else
+    result := TComparer<T>.Default.Compare(left, right) = 0;
+end;
+{$ENDIF}
+
 {$IFDEF DELPHI_XE2_UP}
 //Delphi 2010 and XE compiler bug breaks this
 class procedure Assert.AreEqual<T>(const expected, actual : T; const message : string);
 var
-  comparer : IComparer<T>;
   expectedValue, actualValue : TValue;
 begin
   DoAssert;
-  comparer := TComparer<T>.Default;
-  if comparer.Compare(actual, expected) <> 0 then
+  if not ValuesEqual<T>(actual, expected) then
   begin
     expectedValue := TValue.From<T>(expected);
     actualValue := TValue.From<T>(actual);
@@ -453,7 +465,6 @@ end;
 class procedure Assert.AreEqual<T>(const expected, actual : TArray<T>; const message : string = '');
 var
   i : integer;
-  comparer : IComparer<T>;
   expectedValue, actualValue : TValue;
 begin
   DoAssert;
@@ -461,10 +472,9 @@ begin
     FailFmt(SArraysHaveDifferentLength, [Length(expected), Length(actual), message], ReturnAddress)
   else
   begin
-    comparer := TComparer<T>.Default;
     for i := 0 to High(expected) do
     begin
-      if comparer.Compare(expected[i], actual[i]) <> 0 then
+      if not ValuesEqual<T>(expected[i], actual[i]) then
       begin
         expectedValue := TValue.From<T>(expected[i]);
         actualValue := TValue.From<T>(actual[i]);
@@ -616,12 +626,10 @@ end;
 //Delphi 2010 and XE compiler bug breaks this
 class procedure Assert.AreNotEqual<T>(const expected, actual : T; const message : string);
 var
-  comparer : IComparer<T>;
   expectedValue, actualValue : TValue;
 begin
   DoAssert;
-  comparer := TComparer<T>.Default;
-  if comparer.Compare(actual, expected) = 0 then
+  if ValuesEqual<T>(actual, expected) then
   begin
     expectedValue := TValue.From<T>(expected);
     actualValue := TValue.From<T>(actual);
@@ -708,13 +716,11 @@ end;
 class procedure Assert.Contains<T>(const list : IEnumerable<T>; const value : T; const message : string);
 var
   o : T;
-  comparer : IComparer<T>;
 begin
   DoAssert;
-  comparer := TComparer<T>.Default;
   for o in list do
   begin
-    if comparer.Compare(o, value) = 0 then
+    if ValuesEqual<T>(o, value) then
       exit;
   end;
 
@@ -724,13 +730,11 @@ end;
 class procedure Assert.Contains<T>(const arr : array of T; const value : T; const message : string = '');
 var
   o : T;
-  comparer : IComparer<T>;
 begin
   DoAssert;
-  comparer := TComparer<T>.Default;
   for o in arr do
   begin
-    if comparer.Compare(o, value) = 0 then
+    if ValuesEqual<T>(o, value) then
       exit;
   end;
 
@@ -743,13 +747,11 @@ end;
 class procedure Assert.DoesNotContain<T>(const list : IEnumerable<T>; const value : T; const message : string);
 var
   o : T;
-  comparer : IComparer<T>;
 begin
   DoAssert;
-  comparer := TComparer<T>.Default;
   for o in list do
   begin
-    if comparer.Compare(o, value) = 0 then
+    if ValuesEqual<T>(o, value) then
       FailFmt(SValueInList, [TValue.From<T>(value).ToString, message], ReturnAddress);
   end;
 end;
@@ -757,13 +759,11 @@ end;
 class procedure Assert.DoesNotContain<T>(const arr : array of T; const value : T; const message : string = '');
 var
   o : T;
-  comparer : IComparer<T>;
 begin
   DoAssert;
-  comparer := TComparer<T>.Default;
   for o in arr do
   begin
-    if comparer.Compare(o, value) = 0 then
+    if ValuesEqual<T>(o, value) then
       FailFmt(SValueInList, [TValue.From<T>(value).ToString, message], ReturnAddress);
   end;
 end;
