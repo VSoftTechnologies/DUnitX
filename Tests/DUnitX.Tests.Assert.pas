@@ -373,6 +373,15 @@ type
 
     [Test]
     procedure Test64BitListIndex;
+
+    [Test]
+    procedure WillRaiseAny_Does_Not_Swallow_A_Failing_Assert;
+
+    [Test]
+    procedure WillRaise_Without_Class_Does_Not_Swallow_Assert_Pass;
+
+    [Test]
+    procedure WillRaiseDescendant_Exception_Does_Not_Swallow_A_Failing_Assert;
   end;
 
 implementation
@@ -1357,6 +1366,46 @@ begin
   Assert.AreEqual(x, x);
   Assert.AreEqual(Int64(0), x);         //compiler can't find overload with 0
   Assert.AreEqual(x, Int64(0));         //compiler can't find overload with 0
+end;
+
+procedure TTestsAssert.WillRaiseAny_Does_Not_Swallow_A_Failing_Assert;
+begin
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      Assert.WillRaiseAny(
+        procedure
+        begin
+          Assert.Fail('inner failure');
+        end);
+    end, ETestFailure, 'inner failure');
+end;
+
+procedure TTestsAssert.WillRaise_Without_Class_Does_Not_Swallow_Assert_Pass;
+begin
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      Assert.WillRaise(
+        procedure
+        begin
+          Assert.Pass('inner pass');
+        end);
+    end, ETestPass, 'inner pass');
+end;
+
+procedure TTestsAssert.WillRaiseDescendant_Exception_Does_Not_Swallow_A_Failing_Assert;
+begin
+  //This is also what [WillRaise(Exception, exDescendant)] on a test method does
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      Assert.WillRaiseDescendant(
+        procedure
+        begin
+          Assert.Fail('inner failure');
+        end, Exception);
+    end, ETestFailure, 'inner failure');
 end;
 
 procedure TTestsAssert.Test_AreNotSameOnSameObjectWithDifferentInterfaces_Throws_Exception;
