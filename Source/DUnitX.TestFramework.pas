@@ -485,6 +485,11 @@ type
     Pause                               //The runner will pause after displaying it's results
   );
 
+  TDUnitXExitMode = (
+    Simple,                             //EXIT_ERRORS when any test fails, errors or leaks (default)
+    Bitmask                             //EXIT_BIT_* flags OR'd together
+  );
+
   TDunitXConsoleMode = (
     Off,                                // Don't create a console runner
     Quiet,                              // Create a console runner in quiet mode
@@ -541,6 +546,8 @@ type
     FConsoleMode : TDunitXConsoleMode;
     FShowUsage : boolean;
     FDontShowIgnored : boolean;
+    FExitMode : TDUnitXExitMode;
+    FFailOnIgnored : boolean;
   public
     constructor Create;
     destructor Destroy; override;
@@ -574,6 +581,12 @@ type
 
     //Don't run or show ignored tests at all
     property DontShowIgnored : boolean read FDontShowIgnored write FDontShowIgnored;
+
+    //How TDUnitX.ExitCodeFor reports the outcome. Defaults to Simple
+    property ExitMode : TDUnitXExitMode read FExitMode write FExitMode;
+
+    //Ignored tests make the exit code non zero
+    property FailOnIgnored : boolean read FFailOnIgnored write FFailOnIgnored;
   end;
 
   TDUnitX = class
@@ -598,6 +611,12 @@ type
     ///  Parses the command line options and applies them the the Options object.
     ///  Will throw exception if there are errors.
     class procedure CheckCommandLine;
+    ///  The process exit code for a run, according to Options.ExitMode and Options.FailOnIgnored.
+    class function ExitCodeFor(const AResults : IRunResults) : integer;
+    ///  The exit code for the given counts. Simple returns EXIT_OK or EXIT_ERRORS,
+    ///  Bitmask returns the EXIT_BIT_* flags for the non zero counts.
+    class function CalcExitCode(const AMode : TDUnitXExitMode; const AFailOnIgnored : boolean;
+      const AErrors, AFailures, ALeaks, AIgnored : integer) : integer;
     //   Container for all options supported
     class property Options : TDUnitXOptions read FOptions;
     //   This is the test filter used by the runners. It's here because we need to build it when checking the command line.
@@ -635,6 +654,13 @@ const
   EXIT_OK           = 0;
   EXIT_ERRORS       = 1;
   EXIT_OPTIONS_ERROR = 100;
+
+  //Exit code flags used when Options.ExitMode is Bitmask
+  EXIT_BIT_RUNNER   = $01; //Bad command line options, or the run aborted
+  EXIT_BIT_ERRORS   = $02; //Tests raised unexpected exceptions
+  EXIT_BIT_FAILURES = $04; //Tests failed an assertion
+  EXIT_BIT_LEAKS    = $08; //Tests leaked memory
+  EXIT_BIT_IGNORED  = $10; //Tests were ignored, only with Options.FailOnIgnored
 
 implementation
 
@@ -754,7 +780,10 @@ begin
         ShowUsage(consoleWriter);
       if consoleWriter <> nil then
         consoleWriter.SetColour(ccDefault, ccDefault);
-      System.ExitCode := EXIT_OPTIONS_ERROR;
+      if FOptions.ExitMode = TDUnitXExitMode.Bitmask then
+        System.ExitCode := EXIT_BIT_RUNNER
+      else
+        System.ExitCode := EXIT_OPTIONS_ERROR;
       raise ECommandLineError.Create(parseResult.ErrorText);
     end
     else
@@ -814,6 +843,29 @@ begin
         FLock.Leave;
       end;
     end;
+end;
+
+class function TDUnitX.CalcExitCode(const AMode : TDUnitXExitMode; const AFailOnIgnored : boolean;
+  const AErrors, AFailures, ALeaks, AIgnored : integer) : integer;
+begin
+  result := 0;
+  if AErrors > 0 then
+    result := result or EXIT_BIT_ERRORS;
+  if AFailures > 0 then
+    result := result or EXIT_BIT_FAILURES;
+  if ALeaks > 0 then
+    result := result or EXIT_BIT_LEAKS;
+  if AFailOnIgnored and (AIgnored > 0) then
+    result := result or EXIT_BIT_IGNORED;
+
+  if (AMode = TDUnitXExitMode.Simple) and (result <> 0) then
+    result := EXIT_ERRORS;
+end;
+
+class function TDUnitX.ExitCodeFor(const AResults : IRunResults) : integer;
+begin
+  result := CalcExitCode(FOptions.ExitMode, FOptions.FailOnIgnored,
+    AResults.ErrorCount, AResults.FailureCount, AResults.MemoryLeakCount, AResults.IgnoredCount);
 end;
 
 class function TDUnitX.CurrentRunner : ITestRunner;
