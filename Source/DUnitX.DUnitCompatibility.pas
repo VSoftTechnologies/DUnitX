@@ -243,7 +243,7 @@ end;
 procedure TTestCase.CheckEquals(const expected, actual : UnicodeString; const msg : string);
 begin
 {$IFDEF DELPHI_XE2_UP}
-  Assert.AreEqual(expected, actual, msg);
+  Assert.AreEqual(expected, actual, false, msg);
 {$ELSE}
   Assert.IsTrue(expected = actual, msg);
 {$ENDIF}
@@ -271,18 +271,18 @@ end;
 
 procedure TTestCase.CheckEqualsString(const expected, actual : string; const msg : string);
 begin
-  Assert.AreEqual(expected, actual, true, msg);
+  Assert.AreEqual(expected, actual, false, msg);
 end;
 
 {$IFNDEF NEXTGEN}
 procedure TTestCase.CheckEquals(const expected, actual : WideString; const msg : string);
 begin
-  Assert.AreEqual(expected, actual, true, msg);
+  Assert.AreEqual(expected, actual, false, msg);
 end;
 
 procedure TTestCase.CheckEqualsWideString(const expected, actual : WideString; const msg : string);
 begin
-  Assert.AreEqual(expected, actual, true, msg);
+  Assert.AreEqual(expected, actual, false, msg);
 end;
 {$ENDIF}
 
@@ -352,23 +352,23 @@ end;
 
 procedure TTestCase.CheckNotEquals(const expected, actual : string; const msg : string);
 begin
-  Assert.AreNotEqual(expected, actual, true, msg);
+  Assert.AreNotEqual(expected, actual, false, msg);
 end;
 
 procedure TTestCase.CheckNotEqualsString(const expected, actual : string; const msg : string);
 begin
-  Assert.AreNotEqual(expected, actual, true, msg);
+  Assert.AreNotEqual(expected, actual, false, msg);
 end;
 
 {$IFNDEF NEXTGEN}
 procedure TTestCase.CheckNotEquals(const expected, actual : WideString; const msg : string);
 begin
-  Assert.AreNotEqual(expected, actual, true, msg);
+  Assert.AreNotEqual(expected, actual, false, msg);
 end;
 
 procedure TTestCase.CheckNotEqualsWideString(const expected, actual : WideString; const msg : string);
 begin
-  Assert.AreNotEqual(expected, actual, true, msg);
+  Assert.AreNotEqual(expected, actual, false, msg);
 end;
 {$ENDIF}
 
