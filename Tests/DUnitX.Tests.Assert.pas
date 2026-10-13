@@ -292,6 +292,12 @@ type
     [Test]
     procedure Test_AreNotSameOnSameObjectWithDifferentInterfaces_Throws_Exception;
 
+    [Test]
+    procedure AreSame_Fails_For_Two_Instances_That_Are_Equal;
+
+    [Test]
+    procedure AreNotSame_Passes_For_Two_Instances_That_Are_Equal;
+
 {$IFDEF DELPHI_XE_UP}
     [Test]
     procedure Contains_ArrayOfT_Throws_No_Exception_When_Value_In_Array;
@@ -448,6 +454,12 @@ type
 
   TestExceptionOne = class(Exception);
   TestExceptionTwo = class(Exception);
+
+  //Two distinct instances compare equal through Equals, so only an identity check can tell them apart.
+  TEqualToAnyObject = class(TObject)
+  public
+    function Equals(Obj : TObject) : Boolean; override;
+  end;
 
   //Mask to override the default AssertEx in DUnitX.TestFramework
   Assert = class(DUnitX.Assert.Assert);
@@ -1524,6 +1536,47 @@ begin
     begin
       Assert.AreNotSame(myObject, myObject as IInterface);
     end, ETestFailure);
+end;
+
+function TEqualToAnyObject.Equals(Obj : TObject) : Boolean;
+begin
+  result := true;
+end;
+
+procedure TTestsAssert.AreSame_Fails_For_Two_Instances_That_Are_Equal;
+var
+  first, second : TEqualToAnyObject;
+begin
+  first := TEqualToAnyObject.Create;
+  second := TEqualToAnyObject.Create;
+  try
+    Assert.WillRaise(
+      procedure
+      begin
+        Assert.AreSame(first, second);
+      end, ETestFailure);
+  finally
+    second.Free;
+    first.Free;
+  end;
+end;
+
+procedure TTestsAssert.AreNotSame_Passes_For_Two_Instances_That_Are_Equal;
+var
+  first, second : TEqualToAnyObject;
+begin
+  first := TEqualToAnyObject.Create;
+  second := TEqualToAnyObject.Create;
+  try
+    Assert.WillNotRaiseAny(
+      procedure
+      begin
+        Assert.AreNotSame(first, second);
+      end);
+  finally
+    second.Free;
+    first.Free;
+  end;
 end;
 
 procedure TTestsAssert.AreNotEqual_Integer_Throws_No_Exception_When_Values_Are_NotEqual;
