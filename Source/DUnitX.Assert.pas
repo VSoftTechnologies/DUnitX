@@ -877,7 +877,7 @@ end;
 class procedure Assert.IsEmpty(const value : Variant; const message : string);
 begin
   DoAssert;
-  if VarIsEmpty(value) or VarIsNull(value) then
+  if not (VarIsEmpty(value) or VarIsNull(value)) then
     FailFmt(SVarNotEmpty, [message], ReturnAddress);
 end;
 
@@ -943,7 +943,7 @@ end;
 class procedure Assert.IsNotEmpty(const value : Variant; const message : string);
 begin
   DoAssert;
-  if VarIsEmpty(value) then
+  if VarIsEmpty(value) or VarIsNull(value) then
     FailFmt(SVarEmpty, [message], ReturnAddress);
 end;
 
