@@ -107,7 +107,10 @@ resourcestring
     '    {$ENDIF}'#13#10 +
     '  except'#13#10 +
     '    on E: Exception do'#13#10 +
+    '    begin'#13#10 +
     '      System.Writeln(E.ClassName, '': '', E.Message);'#13#10 +
+    '      System.ExitCode := EXIT_ERRORS;'#13#10 +
+    '    end;'#13#10 +
     '  end;'#13#10 +
     '{$ENDIF}'#13#10 +
     'end.'#13#10;
