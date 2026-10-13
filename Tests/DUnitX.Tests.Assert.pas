@@ -408,6 +408,9 @@ type
 
     [Test]
     procedure Contains_T_Double_Fails_For_NaN;
+
+    [Test]
+    procedure AreEqual_T_Passes_For_Type_Without_RTTI;
 {$ENDIF}
 
     [Test]
@@ -450,6 +453,9 @@ type
   end;
   TMockClassTwo = class(TObject)
   end;
+
+  //explicit ordinals, so the compiler emits no RTTI and TypeInfo returns nil
+  TEnumWithoutRtti = (ewrFirst = 1, ewrSecond = 5);
 
   IAmImplemented = interface
     ['{4B503CDD-6262-403C-BF68-5D5DE01C3B13}']
@@ -1536,6 +1542,15 @@ begin
     begin
       Assert.Contains<Double>([1.0, 2.0], NaN);
     end, ETestFailure);
+end;
+
+procedure TTestsAssert.AreEqual_T_Passes_For_Type_Without_RTTI;
+begin
+  Assert.WillNotRaise(
+    procedure
+    begin
+      Assert.AreEqual<TEnumWithoutRtti>(ewrSecond, ewrSecond);
+    end);
 end;
 {$ENDIF}
 
