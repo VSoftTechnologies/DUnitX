@@ -687,7 +687,7 @@ end;
 class procedure Assert.AreNotSame(const expected, actual : TObject; const message : string);
 begin
   DoAssert;
-  if expected.Equals(actual) then
+  if expected = actual then
     FailFmt(SEqualsErrorObj, [expected.ToString, actual.ToString, message], ReturnAddress);
 end;
 
@@ -708,7 +708,7 @@ end;
 class procedure Assert.AreSame(const expected, actual : TObject; const message : string);
 begin
   DoAssert;
-  if not expected.Equals(actual) then
+  if expected <> actual then
     FailFmt(SNotEqualErrorObj, [expected.ToString, actual.ToString, message], ReturnAddress);
 end;
 
