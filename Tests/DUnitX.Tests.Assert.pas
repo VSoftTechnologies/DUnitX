@@ -281,6 +281,18 @@ type
     procedure WillNotRaise_With_NoClass;
 
     [Test]
+    procedure WillNotRaise_With_Class_Does_Not_Swallow_A_Failing_Assert;
+
+    [Test]
+    procedure WillNotRaiseDescendant_Does_Not_Swallow_A_Failing_Assert;
+
+    [Test]
+    procedure WillNotRaiseWithMessage_Does_Not_Swallow_A_Failing_Assert;
+
+    [Test]
+    procedure WillNotRaiseAny_Does_Not_Report_Assert_Pass_As_Unexpected;
+
+    [Test]
     procedure Test_Implements_Will_Fail_If_Not_Implemented;
 
     [Test]
@@ -813,6 +825,59 @@ begin
     ETestFailure,
       EXPECTED_EXCEPTION_MSG);
 end;
+
+procedure TTestsAssert.WillNotRaise_With_Class_Does_Not_Swallow_A_Failing_Assert;
+begin
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      Assert.WillNotRaise(
+        procedure
+        begin
+          Assert.Fail('inner failure');
+        end, EStreamError);
+    end, ETestFailure, 'inner failure');
+end;
+
+procedure TTestsAssert.WillNotRaiseDescendant_Does_Not_Swallow_A_Failing_Assert;
+begin
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      Assert.WillNotRaiseDescendant(
+        procedure
+        begin
+          Assert.Fail('inner failure');
+        end, EStreamError);
+    end, ETestFailure, 'inner failure');
+end;
+
+procedure TTestsAssert.WillNotRaiseWithMessage_Does_Not_Swallow_A_Failing_Assert;
+begin
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      Assert.WillNotRaiseWithMessage(
+        procedure
+        begin
+          Assert.Fail('inner failure');
+        end, EStreamError, '');
+    end, ETestFailure, 'inner failure');
+end;
+
+procedure TTestsAssert.WillNotRaiseAny_Does_Not_Report_Assert_Pass_As_Unexpected;
+begin
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      Assert.WillNotRaiseAny(
+        procedure
+        begin
+          Assert.Pass('inner pass');
+        end);
+    end, ETestPass, 'inner pass');
+end;
+
 
 procedure TTestsAssert.WillRaiseAny;
 begin
