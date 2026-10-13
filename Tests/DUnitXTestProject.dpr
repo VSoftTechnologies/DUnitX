@@ -34,7 +34,8 @@ uses
   DUnitX.Tests.TestDataProvider in 'DUnitX.Tests.TestDataProvider.pas',
   DUnitX.Tests.IgnoreFixture in 'DUnitX.Tests.IgnoreFixture.pas',
   DUnitX.Tests.Utils in 'DUnitX.Tests.Utils.pas',
-  DUnitX.Tests.Loggers.XML.JUnit in 'DUnitX.Tests.Loggers.XML.JUnit.pas';
+  DUnitX.Tests.Loggers.XML.JUnit in 'DUnitX.Tests.Loggers.XML.JUnit.pas',
+  DUnitX.Tests.ExitCode in 'DUnitX.Tests.ExitCode.pas';
 
 
 {$IFNDEF TESTINSIGHT}
@@ -71,8 +72,7 @@ begin
 
     //Run tests
     results := runner.Execute;
-    if not results.AllPassed then
-      System.ExitCode := EXIT_ERRORS;
+    System.ExitCode := TDUnitX.ExitCodeFor(results);
 
     {$IFNDEF CI}
     TDUnitX.Options.ExitBehavior := TDUnitXExitBehavior.Pause;
@@ -86,7 +86,10 @@ begin
     {$ENDIF}
   except
     on E: Exception do
+    begin
       System.Writeln(E.ClassName, ': ', E.Message);
+      System.ExitCode := EXIT_ERRORS;
+    end;
   end;
 {$ENDIF}
 end.

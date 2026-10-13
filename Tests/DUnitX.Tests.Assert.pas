@@ -375,6 +375,15 @@ type
     procedure Test64BitListIndex;
 
     [Test]
+    procedure IsEmpty_Variant_Passes_For_Unassigned_And_Null;
+
+    [Test]
+    procedure IsEmpty_Variant_Fails_For_A_Value;
+
+    [Test]
+    procedure IsNotEmpty_Variant_Fails_For_Null;
+
+    [Test]
     procedure WillRaiseAny_Does_Not_Swallow_A_Failing_Assert;
 
     [Test]
@@ -391,9 +400,11 @@ uses
   System.SysUtils,
   System.Classes,
   System.Generics.Collections,
+  System.Variants,
 {$ELSE}
   SysUtils,
   Classes,
+  Variants,
 {$ENDIF}
   DUnitX.Exceptions,
   DUnitX.Assert;
@@ -1366,6 +1377,38 @@ begin
   Assert.AreEqual(x, x);
   Assert.AreEqual(Int64(0), x);         //compiler can't find overload with 0
   Assert.AreEqual(x, Int64(0));         //compiler can't find overload with 0
+end;
+
+procedure TTestsAssert.IsEmpty_Variant_Passes_For_Unassigned_And_Null;
+begin
+  Assert.WillNotRaise(
+    procedure
+    begin
+      Assert.IsEmpty(Unassigned);
+    end);
+  Assert.WillNotRaise(
+    procedure
+    begin
+      Assert.IsEmpty(Null);
+    end);
+end;
+
+procedure TTestsAssert.IsEmpty_Variant_Fails_For_A_Value;
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.IsEmpty(Variant('abc'));
+    end, ETestFailure);
+end;
+
+procedure TTestsAssert.IsNotEmpty_Variant_Fails_For_Null;
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.IsNotEmpty(Null);
+    end, ETestFailure);
 end;
 
 procedure TTestsAssert.WillRaiseAny_Does_Not_Swallow_A_Failing_Assert;

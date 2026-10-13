@@ -94,8 +94,7 @@ resourcestring
     #13#10 +
     '    //Run tests'#13#10 +
     '    results := runner.Execute;'#13#10 +
-    '    if not results.AllPassed then'#13#10 +
-    '      System.ExitCode := EXIT_ERRORS;'#13#10 +
+    '    System.ExitCode := TDUnitX.ExitCodeFor(results);'#13#10 +
     #13#10 +
     '    {$IFNDEF CI}'#13#10 +
     '    //We don''t want this happening when running under CI.'#13#10 +
@@ -107,7 +106,10 @@ resourcestring
     '    {$ENDIF}'#13#10 +
     '  except'#13#10 +
     '    on E: Exception do'#13#10 +
+    '    begin'#13#10 +
     '      System.Writeln(E.ClassName, '': '', E.Message);'#13#10 +
+    '      System.ExitCode := EXIT_ERRORS;'#13#10 +
+    '    end;'#13#10 +
     '  end;'#13#10 +
     '{$ENDIF}'#13#10 +
     'end.'#13#10;
