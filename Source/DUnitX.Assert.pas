@@ -567,7 +567,7 @@ class procedure Assert.AreEqual(const expected, actual : Currency; const message
 begin
   DoAssert;
   if expected <> actual then
-    FailFmt(SEqualsErrorExt, [expected, actual, message], ReturnAddress);
+    FailFmt(SUnexpectedErrorExt, [expected, actual, message], ReturnAddress);
 end;
 
 class procedure Assert.AreEqualMemory(const expected : Pointer; const actual : Pointer; const size : Cardinal; const message : string);
@@ -1465,10 +1465,10 @@ begin
   if ignoreCase then
   begin
     if {$IFDEF USE_NS}System.{$ENDIF}StrUtils.ContainsText(theString, subString) then
-      FailFmt(SStrDoesNotContain, [theString, subString, message], ReturnAddress);
+      FailFmt(SStrContains, [theString, subString, message], ReturnAddress);
   end
   else if {$IFDEF USE_NS}System.{$ENDIF}StrUtils.ContainsStr(theString, subString) then
-    FailFmt(SStrDoesNotContain, [theString, subString, message], ReturnAddress);
+    FailFmt(SStrContains, [theString, subString, message], ReturnAddress);
 end;
 
 class procedure Assert.EndsWith(const subString : string; const theString : string; const ignoreCase : boolean; const message : string);

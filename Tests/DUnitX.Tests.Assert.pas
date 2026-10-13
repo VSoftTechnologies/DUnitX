@@ -322,6 +322,12 @@ type
 {$ENDIF}
 
     [Test]
+    procedure AreEqual_Currency_Failure_Message;
+
+    [Test]
+    procedure DoesNotContain_String_Failure_Message;
+
+    [Test]
     [TestCase('substring', 'a str,a string,false')]
     [TestCase('substring - case sensitive', 'a str,a string,true')]
     procedure StartsWith_SubString_Is_At_The_Start_Of_String(const subString, theString : string; caseSensitive : boolean);
@@ -1728,6 +1734,27 @@ begin
     end, ETestFailure);
 end;
 {$ENDIF}
+
+procedure TTestsAssert.AreEqual_Currency_Failure_Message;
+const
+  EXPECTED_CURRENCY : Currency = 1;
+  ACTUAL_CURRENCY   : Currency = 2;
+begin
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      Assert.AreEqual(EXPECTED_CURRENCY, ACTUAL_CURRENCY);
+    end, ETestFailure, 'Expected [1] but got [2]');
+end;
+
+procedure TTestsAssert.DoesNotContain_String_Failure_Message;
+begin
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      Assert.DoesNotContain('abc', 'b');
+    end, ETestFailure, '[abc] contains [b]');
+end;
 
 procedure TTestsAssert.StartsWith_SubString_Is_At_The_Start_Of_String(const subString, theString : string; caseSensitive : boolean);
 begin

@@ -87,6 +87,7 @@ resourcestring
   SCheckExceptionClassError = 'Method raised [%s] was expecting [%s]. %s';
   SCheckExceptionClassDescError = 'Method raised [%s] was expecting a descendant of [%s]. %s';
   SStrDoesNotContain = '[%s] does not contain [%s] %s';
+  SStrContains      = '[%s] contains [%s] %s';
   SStrDoesNotEndWith = '[%s] does not end with [%s] %s';
   SStrDoesNotMatch  = '[%s] does not match [%s] %s';
   SStrCannotBeEmpty = 'subString cannot be empty';
