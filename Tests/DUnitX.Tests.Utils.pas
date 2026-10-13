@@ -106,6 +106,14 @@ type
     procedure TestColorTestCase(const AColor : TColor; const AColorOrd : Integer);
   end;
 
+  [TestFixture]
+  [Category('Utils')]
+  TDUnitXListTests = class
+  public
+    [Test]
+    procedure ToArray_Returns_The_Items;
+  end;
+
 
 
 implementation
@@ -121,6 +129,7 @@ uses
   Rtti,
   Windows,
 {$ENDIF}
+  DUnitX.Generics,
   DUnitX.Utils;
 
 { TValueHelperTests }
@@ -258,8 +267,27 @@ begin
   Assert.IsSameTime(expectedTime, actual, 'SameTime(..)');
 end;
 
+{ TDUnitXListTests }
+
+procedure TDUnitXListTests.ToArray_Returns_The_Items;
+var
+  list : IList<Integer>;
+  items : TArray<Integer>;
+begin
+  list := TDUnitXList<Integer>.Create;
+  list.Add(3);
+  list.Add(1);
+  list.Add(2);
+  items := list.ToArray;
+  Assert.AreEqual(3, Length(items), 'Length');
+  Assert.AreEqual(3, items[0]);
+  Assert.AreEqual(1, items[1]);
+  Assert.AreEqual(2, items[2]);
+end;
+
 initialization
   TDUnitX.RegisterTestFixture(TValueHelperTests);
+  TDUnitX.RegisterTestFixture(TDUnitXListTests);
 
 end.
 
