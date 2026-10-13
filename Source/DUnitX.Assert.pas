@@ -537,7 +537,7 @@ class procedure Assert.AreEqual(const expected, actual : cardinal; const message
 begin
   DoAssert;
   if expected <> actual then
-    FailFmt(SUnexpectedErrorInt, [expected, actual, message], ReturnAddress);
+    FailFmt(SUnexpectedErrorInt, [Int64(expected), Int64(actual), message], ReturnAddress);
 end;
 
 class procedure Assert.AreEqual(const expected, actual, tolerance : Double; const message : string);
