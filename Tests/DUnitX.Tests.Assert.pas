@@ -293,6 +293,9 @@ type
     procedure WillNotRaiseAny_Does_Not_Report_Assert_Pass_As_Unexpected;
 
     [Test]
+    procedure WillNotRaiseAny_Does_Not_Use_The_Message_As_A_Format_String;
+
+    [Test]
     procedure Test_Implements_Will_Fail_If_Not_Implemented;
 
     [Test]
@@ -884,6 +887,24 @@ begin
     end, ETestPass, 'inner pass');
 end;
 
+
+procedure TTestsAssert.WillNotRaiseAny_Does_Not_Use_The_Message_As_A_Format_String;
+var
+  failMessage : string;
+begin
+  failMessage := '';
+  try
+    Assert.WillNotRaiseAny(
+      procedure
+      begin
+        raise EAbort.Create('inner');
+      end, 'coverage 100%');
+  except
+    on E : ETestFailure do
+      failMessage := E.Message;
+  end;
+  Assert.EndsWith('coverage 100%', failMessage, false);
+end;
 
 procedure TTestsAssert.WillRaiseAny;
 begin

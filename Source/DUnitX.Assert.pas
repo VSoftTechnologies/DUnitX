@@ -1149,9 +1149,9 @@ begin
       if (e is Exception) and IsUnrequestedTestOutcome(exception(e), nil) then
         raise;
       if e is Exception then
-        FailFmt(SUnexpectedException + AddLineBreak(msg), [e.ClassName, exception(e).message], ReturnAddress)
+        Fail(Trim(Format(SUnexpectedException, [e.ClassName, exception(e).message]) + AddLineBreak(msg)), ReturnAddress)
       else
-        FailFmt(SUnexpectedExceptionAlt + AddLineBreak(msg), [e.ClassName], ReturnAddress);
+        Fail(Trim(Format(SUnexpectedExceptionAlt, [e.ClassName]) + AddLineBreak(msg)), ReturnAddress);
     end;
   end;
 end;
