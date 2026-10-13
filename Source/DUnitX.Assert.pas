@@ -1183,7 +1183,7 @@ end;
 
 class procedure Assert.WillNotRaiseDescendant(const AMethod : TTestMethod; const exceptionClass : ExceptClass; const msg : string);
 begin
-  Assert.WillNotRaise(
+  Assert.WillNotRaiseDescendant(
     procedure
     begin
       AMethod;

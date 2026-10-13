@@ -37,6 +37,8 @@ type
 {$M+}
   [TestFixture]
   TTestsAssert = class
+  private
+    procedure RaiseFilerError;
   published
     [Test]
     procedure Pass_Throws_ETestPass_Exception;
@@ -383,6 +385,8 @@ type
     [Test]
     procedure IsNotEmpty_Variant_Fails_For_Null;
 
+    [Test]
+    procedure WillNotRaiseDescendant_Method_With_DescendingClass_Negative;
 {$IFDEF DELPHI_XE2_UP}
     [Test]
     procedure AreEqual_T_Double_Fails_When_Actual_Is_NaN;
@@ -1415,6 +1419,23 @@ begin
     end, ETestFailure);
 end;
 
+procedure TTestsAssert.RaiseFilerError;
+begin
+  raise EFilerError.Create('Test');
+end;
+
+procedure TTestsAssert.WillNotRaiseDescendant_Method_With_DescendingClass_Negative;
+var
+  method : TTestMethod;
+begin
+  method := RaiseFilerError;
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.WillNotRaiseDescendant(method, EStreamError);
+    end,
+    ETestFailure);
+end;
 {$IFDEF DELPHI_XE2_UP}
 procedure TTestsAssert.AreEqual_T_Double_Fails_When_Actual_Is_NaN;
 begin
