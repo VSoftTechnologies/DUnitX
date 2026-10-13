@@ -48,6 +48,9 @@ type
     procedure TearDown; override;
   published
     procedure ATest;
+    procedure CheckEquals_String_Is_Case_Sensitive;
+    procedure CheckEqualsString_Is_Case_Sensitive;
+    procedure CheckNotEquals_String_Passes_When_Only_Case_Differs;
     procedure Test_TestName;
   end;
 
@@ -69,6 +72,45 @@ procedure TMyDUnitTestSetup.ATest;
 begin
 {$WARN SYMBOL_DEPRECATED OFF}
   CheckNotNull(FObject);
+{$WARN SYMBOL_DEPRECATED ON}
+end;
+
+procedure TMyDUnitTestSetup.CheckEquals_String_Is_Case_Sensitive;
+var
+  lower, upper : string;
+begin
+  //DUnit's string checks are case-sensitive
+  lower := 'abc';
+  upper := 'ABC';
+  Assert.WillRaiseDescendant(
+    procedure
+    begin
+{$WARN SYMBOL_DEPRECATED OFF}
+      CheckEquals(lower, upper);
+{$WARN SYMBOL_DEPRECATED ON}
+    end, Assert.TestFailure);
+end;
+
+procedure TMyDUnitTestSetup.CheckEqualsString_Is_Case_Sensitive;
+begin
+  Assert.WillRaiseDescendant(
+    procedure
+    begin
+{$WARN SYMBOL_DEPRECATED OFF}
+      CheckEqualsString('abc', 'ABC');
+{$WARN SYMBOL_DEPRECATED ON}
+    end, Assert.TestFailure);
+end;
+
+procedure TMyDUnitTestSetup.CheckNotEquals_String_Passes_When_Only_Case_Differs;
+var
+  lower, upper : string;
+begin
+  lower := 'abc';
+  upper := 'ABC';
+{$WARN SYMBOL_DEPRECATED OFF}
+  CheckNotEquals(lower, upper);
+  CheckNotEqualsString(lower, upper);
 {$WARN SYMBOL_DEPRECATED ON}
 end;
 
