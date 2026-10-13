@@ -38,6 +38,8 @@ type
   TMyDUnitTest = class(TTestCase)
   published
     procedure ATest;
+    procedure CheckInherits_Passes_When_Actual_Descends_From_Expected;
+    procedure CheckInherits_Fails_When_Expected_Descends_From_Actual;
   end;
 
 {$M+}
@@ -62,6 +64,25 @@ begin
 {$WARN SYMBOL_DEPRECATED OFF}
   CheckTrue(true, 'true is always true!');
 {$WARN SYMBOL_DEPRECATED ON}
+end;
+
+procedure TMyDUnitTest.CheckInherits_Passes_When_Actual_Descends_From_Expected;
+begin
+  //DUnit: CheckInherits(expected, actual) checks actual.InheritsFrom(expected)
+{$WARN SYMBOL_DEPRECATED OFF}
+  CheckInherits(TObject, TTestCase);
+{$WARN SYMBOL_DEPRECATED ON}
+end;
+
+procedure TMyDUnitTest.CheckInherits_Fails_When_Expected_Descends_From_Actual;
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+{$WARN SYMBOL_DEPRECATED OFF}
+      CheckInherits(TTestCase, TObject);
+{$WARN SYMBOL_DEPRECATED ON}
+    end, Assert.TestFailure);
 end;
 
 { TMyDUnitTestSetup }
