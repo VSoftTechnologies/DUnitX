@@ -396,8 +396,12 @@ begin
 end;
 
 function TDUnitXList<T>.ToArray : TArray<T>;
+var
+  i : Integer;
 begin
-  result := nil;                        //FList.ToArray<T>;
+  SetLength(result, FList.Count);
+  for i := 0 to FList.Count - 1 do
+    result[i] := FList[i];
 end;
 
 procedure TDUnitXList<T>.TrimExcess;
