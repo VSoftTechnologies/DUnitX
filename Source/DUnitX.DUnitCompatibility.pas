@@ -446,7 +446,8 @@ end;
 
 procedure TTestCase.CheckInherits(const expected, actual : TClass; const msg : string);
 begin
-  Assert.InheritsFrom(expected, actual, msg);
+  //DUnit checks actual.InheritsFrom(expected); Assert.InheritsFrom takes (descendant, parent)
+  Assert.InheritsFrom(actual, expected, msg);
 end;
 
 procedure TTestCase.CheckIs(const AObject : TObject; const AClass : TClass; const msg : string);
