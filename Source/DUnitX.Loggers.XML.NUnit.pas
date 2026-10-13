@@ -436,7 +436,9 @@ begin
     sXmlFilename := ExtractFilePath(ParamStr(0)) + DEFAULT_NUNIT_FILE_NAME;
 
   lXmlDirectory := ExtractFilePath(sXmlFilename);
-  ForceDirectories(lXmlDirectory);
+  //A bare file name has no directory part, and ForceDirectories('') raises
+  if lXmlDirectory <> '' then
+    ForceDirectories(lXmlDirectory);
 
   fileStream := TFileStream.Create(sXmlFilename, fmCreate);
 
