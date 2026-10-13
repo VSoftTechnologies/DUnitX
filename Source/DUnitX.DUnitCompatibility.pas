@@ -302,6 +302,10 @@ end;
 
 procedure TTestCase.CheckEqualsBin(const expected, actual : longword; const msg : string; digits : integer);
 begin
+  //As in DUnit, the values are compared and digits only sets the display width: when they differ above the
+  //requested digits, show all 32 so the failure message does not show two equal strings
+  if (expected <> actual) and (IntToBin(expected, digits) = IntToBin(actual, digits)) then
+    digits := 32;
 {$IFDEF DELPHI_XE2_UP}
   Assert.AreEqual(IntToBin(expected, digits), IntToBin(actual, digits), msg);
 {$ELSE}

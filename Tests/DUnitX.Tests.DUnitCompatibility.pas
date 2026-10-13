@@ -49,6 +49,7 @@ type
   published
     procedure ATest;
     procedure Test_TestName;
+    procedure CheckEqualsBin_Fails_When_Values_Differ_Above_Digits;
   end;
 
 implementation
@@ -88,6 +89,18 @@ procedure TMyDUnitTestSetup.Test_TestName;
 begin
   Status('The Test Name is : ' + Self.Name);
   CheckEqualsString('Test_TestName', Self.Name, 'Test Name not working');
+end;
+
+procedure TMyDUnitTestSetup.CheckEqualsBin_Fails_When_Values_Differ_Above_Digits;
+begin
+  //DUnit compares the values; digits only sets how many binary digits the failure message shows
+  Assert.WillRaiseDescendant(
+    procedure
+    begin
+{$WARN SYMBOL_DEPRECATED OFF}
+      CheckEqualsBin($100, $000, '', 8);
+{$WARN SYMBOL_DEPRECATED ON}
+    end, Assert.TestFailure);
 end;
 
 initialization
