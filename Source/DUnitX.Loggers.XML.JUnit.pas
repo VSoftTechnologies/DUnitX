@@ -222,7 +222,7 @@ begin
 
     sName := EscapeForXML(sName);
     sTime := EscapeForXML(sTime);
-    sDate := FormatDateTime('yyyy-MM-dd"T"hh:nn:ss', fixtureResult.StartTime);
+    sDate := FormatDateTime('yyyy-MM-dd"T"hh":"nn":"ss', fixtureResult.StartTime);
 
     // There is only a "disabled" attribute on the top level, but "disabled" and "skipped" on fixture level. Return ignored tests as "disabled"
     WriteXMLLine(Format('<testsuite name="%s" tests="%d" disabled="%d" errors="%d" failures="%d" time="%s" timestamp="%s">',
