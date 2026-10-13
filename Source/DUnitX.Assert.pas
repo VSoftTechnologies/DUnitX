@@ -1179,10 +1179,10 @@ begin
       if exceptionClass <> nil then
       begin
         if e is exceptionClass then
-          Fail(SMethodRaisedException + exceptionClass.ClassName + sLineBreak + e.Message + AddLineBreak(msg), ReturnAddress);
+          Fail(SMethodRaisedException + e.ClassName + sLineBreak + e.Message + AddLineBreak(msg), ReturnAddress);
       end
       else
-        FailFmt(SMethodRaisedExceptionAlt, [e.ClassName, exceptionClass.ClassName, e.message, AddLineBreak(msg)], ReturnAddress);
+        FailFmt(SUnexpectedException, [e.ClassName, e.message + AddLineBreak(msg)], ReturnAddress);
     end;
   end;
 end;
@@ -1209,7 +1209,7 @@ begin
         raise;
       if ((exceptionMsg = '') or SameStr(e.Message, exceptionMsg)) and
         (((exceptionClass <> nil) and (e.ClassType = exceptionClass)) or (exceptionClass = nil)) then
-        FailFmt(SMethodRaisedExceptionMessage, [exceptionClass.ClassName, e.Message, AddLineBreak(msg)], ReturnAddress);
+        FailFmt(SMethodRaisedExceptionMessage, [e.ClassName, e.Message, AddLineBreak(msg)], ReturnAddress);
     end;
   end;
 end;
