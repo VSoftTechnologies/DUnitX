@@ -227,10 +227,12 @@ var
   sExecuted : string;
   sName : string;
   sSuccess : string;
+  fixtureFailed : boolean;
 begin
   Indent;
   try
-    if not fixtureResult.HasFailures then
+    fixtureFailed := fixtureResult.HasFailures or (fixtureResult.ErrorCount > 0);
+    if not fixtureFailed then
       sResult := 'Success'
     else
       sResult := 'Failure';
@@ -238,7 +240,7 @@ begin
 
     sName := EscapeForXML(fixtureResult.Fixture.Name);
     sResult := EscapeForXML(sResult);
-    sSuccess := EscapeForXML(BoolToStr(not fixtureResult.HasFailures, true));
+    sSuccess := EscapeForXML(BoolToStr(not fixtureFailed, true));
     sTime := EscapeForXML(sTime);
 
     //its a real fixture if the class is not TObject.
