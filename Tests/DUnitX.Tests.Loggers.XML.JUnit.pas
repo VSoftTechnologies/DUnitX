@@ -44,6 +44,8 @@ type
   [TestFixture]
   TDUnitX_LoggerXMLJUnitTests = class
   public
+    [Test]
+    procedure FileLogger_Accepts_A_Bare_File_Name;
     [Test(false)]
     procedure OnTestingStarts_Fills_The_Start_Of_The_Stream_With_Header_Info;
     //  [Test(false)]
@@ -272,6 +274,30 @@ begin
   Assert.AreEqual(Copy(mockStream.DataString, iPositionOfWarning, Length(sExceptedWarning)), sExceptedWarning);
 end;
 {$ENDIF}
+
+procedure TDUnitX_LoggerXMLJUnitTests.FileLogger_Accepts_A_Bare_File_Name;
+const
+  BARE_FILE_NAME = 'dunitx-junit-bare-file-name-test.xml';
+var
+  oldDir : string;
+begin
+  //A file name with no directory part must not make the logger call ForceDirectories('')
+  oldDir := GetCurrentDir;
+  SetCurrentDir(GetEnvironmentVariable('TEMP'));
+  try
+    Assert.WillNotRaiseAny(
+      procedure
+      var
+        logger : ITestLogger;
+      begin
+        logger := TDUnitXXMLJUnitFileLogger.Create(BARE_FILE_NAME);
+      end);
+    Assert.IsTrue(FileExists(BARE_FILE_NAME), 'The log file was not created in the current directory');
+  finally
+    DeleteFile(BARE_FILE_NAME);
+    SetCurrentDir(oldDir);
+  end;
+end;
 
 initialization
   TDUnitX.RegisterTestFixture(TDUnitX_LoggerXMLJUnitTests);
