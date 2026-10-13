@@ -41,6 +41,9 @@ type
     [Test]
     procedure PlusAndMinusCombined;
 
+    [Test]
+    procedure OperatorAsLastCharacter;
+
   end;
 
 implementation
@@ -238,6 +241,24 @@ begin
   Assert.AreEqual(catFilter.Categories[0], 'D');
   Assert.AreEqual(catFilter.Categories[1], 'E');
   Assert.AreEqual(catFilter.Categories[2], 'F');
+end;
+
+procedure TCategoryParseTests.OperatorAsLastCharacter;
+var
+  filter : ITestFilter;
+  orFilter : IOrFilter;
+  catFilter : ICategoryFilter;
+begin
+  filter := TCategoryExpression.CreateFilter('(Slow|Integration)');
+  orFilter := filter as IOrFilter;
+  Assert.IsNotNull(orFilter);
+  Assert.AreEqual(2, orFilter.Filters.Count);
+
+  catFilter := orFilter.Filters[0] as ICategoryFilter;
+  Assert.AreEqual('Slow', catFilter.Categories[0]);
+
+  catFilter := orFilter.Filters[1] as ICategoryFilter;
+  Assert.AreEqual('Integration', catFilter.Categories[0]);
 end;
 
 initialization

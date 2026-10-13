@@ -150,6 +150,7 @@
         <DCCReference Include="DUnitX.Tests.IgnoreFixture.pas"/>
         <DCCReference Include="DUnitX.Tests.Utils.pas"/>
         <DCCReference Include="DUnitX.Tests.Loggers.XML.JUnit.pas"/>
+        <DCCReference Include="DUnitX.Tests.ExitCode.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
