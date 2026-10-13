@@ -105,6 +105,19 @@ begin
       TDUnitX.Options.ExitBehavior := value
     end);
 
+  TOptionsRegistry.RegisterOption<TDUnitXExitMode>('exitmode', 'em', 'Exit code - Simple (default), Bitmask',
+    procedure(value : TDUnitXExitMode)
+    begin
+      TDUnitX.Options.ExitMode := value
+    end);
+
+  def := TOptionsRegistry.RegisterOption<boolean>('failonignored', 'foi', 'Ignored tests give a non zero exit code',
+    procedure(value : boolean)
+    begin
+      TDUnitX.Options.FailOnIgnored := value;
+    end);
+  def.HasValue := false;
+
   TOptionsRegistry.RegisterOption<TDunitXConsoleMode>('consolemode', 'cm', 'Console mode - Off, Quiet, Verbose (default)',
     procedure(value : TDunitXConsoleMode)
     begin
