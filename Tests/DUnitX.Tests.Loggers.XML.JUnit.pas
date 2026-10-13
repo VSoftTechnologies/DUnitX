@@ -54,6 +54,8 @@ type
     [Test(false)]
     procedure OnTestWarning_Adds_Warnings_To_Be_Written_Out_On_Next_Error;
     procedure OnTestWarning_Adds_Warnings_To_Be_Written_Out_On_Next_Success;
+    [Test]
+    procedure OnTestingEnds_Writes_An_ISO_8601_Timestamp;
 {$ENDIF}
   end;
 
@@ -63,11 +65,13 @@ uses
 {$IFDEF USE_NS}
   System.Rtti,
   System.SysUtils,
+  System.Generics.Collections,
   System.TimeSpan,
   System.DateUtils,
 {$ELSE}
   Rtti,
   SysUtils,
+  Generics.Collections,
   TimeSpan,
   DateUtils,
 {$ENDIF}
@@ -75,6 +79,8 @@ uses
   Delphi.Mocks,
 {$ENDIF}
   DUnitX.Generics,
+  DUnitX.FixtureResult,
+  DUnitX.InternalInterfaces,
   DUnitX.RunResults;
 
 const
@@ -272,6 +278,74 @@ begin
   iPositionOfWarning := Pos(sExceptedWarning, mockStream.DataString);
   Assert.IsTrue(iPositionOfWarning > 0);
   Assert.AreEqual(Copy(mockStream.DataString, iPositionOfWarning, Length(sExceptedWarning)), sExceptedWarning);
+end;
+{$ENDIF}
+
+{$IFDEF DELPHI_XE2_UP}
+procedure TDUnitX_LoggerXMLJUnitTests.OnTestingEnds_Writes_An_ISO_8601_Timestamp;
+var
+  logger : ITestLogger;
+  stream : TStringStream;
+  categories : TList<string>;
+  mockFixture : TMock<ITestFixtureInfo>;
+  mockTest : TMock<ITestInfo>;
+  mockResult : TMock<ITestResult>;
+  runResults : TDUnitXRunResults;
+  runResultsIntf : IRunResults;
+  context : ITestExecuteContext;
+  fixtureResult : IFixtureResult;
+  xml : string;
+  stamp : string;
+  oldTimeSeparator : Char;
+begin
+  categories := TList<string>.Create;
+  stream := TStringStream.Create('', TEncoding.UTF8);
+  oldTimeSeparator := FormatSettings.TimeSeparator;
+  try
+    mockFixture := TMock<ITestFixtureInfo>.Create;
+    mockFixture.Setup.WillReturn('AFixture').When.Name;
+    mockFixture.Setup.WillReturn('My.Namespace').When.NameSpace;
+    mockFixture.Setup.WillReturn('My.Namespace.AFixture').When.FullName;
+    mockFixture.Setup.WillReturn(TValue.From<TClass>(TStringList)).When.TestClass;
+    mockFixture.Setup.WillReturn(TValue.From<TList<string>>(categories)).When.Categories;
+
+    mockTest := TMock<ITestInfo>.Create;
+    mockTest.Setup.WillReturn('ATest').When.Name;
+    mockTest.Setup.WillReturn('My.Namespace.AFixture.ATest').When.FullName;
+    mockTest.Setup.WillReturn(TValue.From<TList<string>>(categories)).When.Categories;
+    mockTest.Setup.WillReturn(mockFixture.InstanceAsValue).When.Fixture;
+
+    mockResult := TMock<ITestResult>.Create;
+    mockResult.Setup.WillReturn(TValue.From<TTestResultType>(TTestResultType.Failure)).When.ResultType;
+    mockResult.Setup.WillReturn(mockTest.InstanceAsValue).When.Test;
+    mockResult.Setup.WillReturn(TValue.From<TTimeSpan>(TTimeSpan.FromMilliseconds(0))).When.Duration;
+    mockResult.Setup.WillReturn('failure message').When.Message;
+    mockResult.Setup.WillReturn('failure stack').When.StackTrace;
+
+    runResults := TDUnitXRunResults.Create;
+    runResultsIntf := runResults;
+    context := runResults;
+    fixtureResult := TDUnitXFixtureResult.Create(nil, mockFixture.Instance);
+    context.RecordFixture(fixtureResult);
+    context.RecordResult(fixtureResult, mockResult.Instance);
+    context.RollupResults;
+
+    FormatSettings.TimeSeparator := '.';
+    logger := TDUnitXXMLJUnitLogger.Create(stream);
+    logger.OnTestingEnds(runResultsIntf);
+    xml := stream.DataString;
+
+    Assert.IsTrue(Pos('timestamp="', xml) > 0, xml);
+    stamp := Copy(xml, Pos('timestamp="', xml) + Length('timestamp="'), 19);
+    Assert.AreEqual('T', Copy(stamp, 11, 1), stamp);
+    Assert.AreEqual(':', Copy(stamp, 14, 1), stamp);
+    Assert.AreEqual(':', Copy(stamp, 17, 1), stamp);
+  finally
+    FormatSettings.TimeSeparator := oldTimeSeparator;
+    logger := nil;
+    stream.Free;
+    categories.Free;
+  end;
 end;
 {$ENDIF}
 
