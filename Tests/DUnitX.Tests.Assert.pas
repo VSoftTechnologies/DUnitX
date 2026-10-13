@@ -79,6 +79,12 @@ type
     procedure AreEqual_Extended_Throws_No_Exception_When_Values_Are_Equal;
 
     [Test]
+    procedure AreEqual_Double_Infinity;
+
+    [Test]
+    procedure AreEqual_Extended_Infinity;
+
+    [Test]
     procedure AreEqual_Extended_Throws_ETestFailure_When_Values_Are_NotEqual;
 
     [Test]
@@ -1083,6 +1089,54 @@ begin
     begin
       Assert.AreEqual(ACTUAL_EXTENDED, EXPECTED_EXTENDED, TOLERANCE_EXTENDED);
     end, Exception);
+end;
+
+procedure TTestsAssert.AreEqual_Double_Infinity;
+var
+  posInf, negInf : Double;
+begin
+  posInf := Infinity;
+  negInf := NegInfinity;
+  Assert.WillNotRaiseAny(
+    procedure
+    begin
+      Assert.AreEqual(posInf, posInf);
+      Assert.AreEqual(negInf, negInf);
+    end);
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.AreNotEqual(posInf, posInf);
+    end, ETestFailure);
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.AreEqual(posInf, negInf);
+    end, ETestFailure);
+end;
+
+procedure TTestsAssert.AreEqual_Extended_Infinity;
+var
+  posInf, negInf : Extended;
+begin
+  posInf := Infinity;
+  negInf := NegInfinity;
+  Assert.WillNotRaiseAny(
+    procedure
+    begin
+      Assert.AreEqual(posInf, posInf);
+      Assert.AreEqual(negInf, negInf);
+    end);
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.AreNotEqual(posInf, posInf);
+    end, ETestFailure);
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.AreEqual(posInf, negInf);
+    end, ETestFailure);
 end;
 
 procedure TTestsAssert.AreEqual_GUID_Throws_ETestFailure_When_Values_Are_NotEqual;
