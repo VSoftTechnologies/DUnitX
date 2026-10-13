@@ -441,7 +441,8 @@ end;
 class function Assert.ValuesEqual<T>(const left, right : T) : boolean;
 begin
   //TComparer<T> returns 0 for floats when either value is NaN, the equality comparer uses =
-  if PTypeInfo(TypeInfo(T))^.Kind = tkFloat then
+  //TypeInfo is nil for types without RTTI (e.g. enums with explicit ordinals); float types always have it
+  if (TypeInfo(T) <> nil) and (PTypeInfo(TypeInfo(T))^.Kind = tkFloat) then
     result := TEqualityComparer<T>.Default.Equals(left, right)
   else
     result := TComparer<T>.Default.Compare(left, right) = 0;
