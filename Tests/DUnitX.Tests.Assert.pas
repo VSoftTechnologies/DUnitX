@@ -182,6 +182,9 @@ type
     procedure AreEqual_TStrings_Throws_No_Exception_When_Strings_Are_Equal;
 
     [Test]
+    procedure AreEqual_TStrings_Passes_For_The_Same_Instance;
+
+    [Test]
     procedure AreEqual_TStrings_Accepts_A_Repeated_Ignored_Line;
 
     [Test]
@@ -1270,6 +1273,19 @@ begin
     begin
       Assert.AreEqual(actualAndExpected, actualAndExpected, tolerance);
     end, Exception);
+end;
+
+procedure TTestsAssert.AreEqual_TStrings_Passes_For_The_Same_Instance;
+var
+  list : TStrings;
+begin
+  list := TStringList.Create;
+  try
+    list.CommaText := '1,2,3';
+    Assert.AreEqual(list, list);
+  finally
+    list.Free;
+  end;
 end;
 
 procedure TTestsAssert.AreEqual_TStrings_Throws_ETestFailure_When_Strings_Are_NotEqual;
