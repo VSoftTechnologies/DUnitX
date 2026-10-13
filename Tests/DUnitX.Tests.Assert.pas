@@ -397,6 +397,15 @@ type
     [Test]
     procedure Contains_T_Double_Fails_For_NaN;
 {$ENDIF}
+
+    [Test]
+    procedure WillRaiseAny_Does_Not_Swallow_A_Failing_Assert;
+
+    [Test]
+    procedure WillRaise_Without_Class_Does_Not_Swallow_Assert_Pass;
+
+    [Test]
+    procedure WillRaiseDescendant_Exception_Does_Not_Swallow_A_Failing_Assert;
   end;
 
 implementation
@@ -665,7 +674,7 @@ begin
         begin
           raise TestExceptionOne.Create('Test');
         end, TestExceptionOne);
-    end);
+    end, ETestFailure);
 end;
 
 procedure TTestsAssert.WillNotRaiseWithMessage_MatchingExceptionParam_MatchingExceptionMessage_WillRaise;
@@ -678,7 +687,7 @@ begin
         begin
           raise TestExceptionOne.Create('Test');
         end, TestExceptionOne, 'Test');
-    end);
+    end, ETestFailure);
 end;
 
 procedure TTestsAssert.WillNotRaiseWithMessage_MatchingExceptionParam_NonMatchingExceptionMessage_WillNotRaise;
@@ -1464,6 +1473,46 @@ begin
     end, ETestFailure);
 end;
 {$ENDIF}
+
+procedure TTestsAssert.WillRaiseAny_Does_Not_Swallow_A_Failing_Assert;
+begin
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      Assert.WillRaiseAny(
+        procedure
+        begin
+          Assert.Fail('inner failure');
+        end);
+    end, ETestFailure, 'inner failure');
+end;
+
+procedure TTestsAssert.WillRaise_Without_Class_Does_Not_Swallow_Assert_Pass;
+begin
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      Assert.WillRaise(
+        procedure
+        begin
+          Assert.Pass('inner pass');
+        end);
+    end, ETestPass, 'inner pass');
+end;
+
+procedure TTestsAssert.WillRaiseDescendant_Exception_Does_Not_Swallow_A_Failing_Assert;
+begin
+  //This is also what [WillRaise(Exception, exDescendant)] on a test method does
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      Assert.WillRaiseDescendant(
+        procedure
+        begin
+          Assert.Fail('inner failure');
+        end, Exception);
+    end, ETestFailure, 'inner failure');
+end;
 
 procedure TTestsAssert.Test_AreNotSameOnSameObjectWithDifferentInterfaces_Throws_Exception;
 var

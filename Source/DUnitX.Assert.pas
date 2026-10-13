@@ -57,6 +57,7 @@ type
     class var fTestPass : ExceptClass;
     class procedure CheckExceptionClass(E : Exception; const exceptionClass : ExceptClass);
     class procedure CheckExceptionClassDescendant(E : Exception; const exceptionClass : ExceptClass);
+    class function IsUnrequestedTestOutcome(E : Exception; const exceptionClass : ExceptClass) : boolean;
 {$IFDEF DELPHI_XE_UP}
     class function ValuesEqual<T>(const left, right : T) : boolean;
 {$ENDIF}
@@ -1224,6 +1225,8 @@ begin
   except
     on E : Exception do
     begin
+      if IsUnrequestedTestOutcome(E, exceptionClass) then
+        raise;
       CheckExceptionClass(e, exceptionClass);
       Exit;
     end;
@@ -1268,6 +1271,8 @@ begin
   except
     on E : Exception do
     begin
+      if IsUnrequestedTestOutcome(E, nil) then
+        raise;
       Exit;
     end;
   end;
@@ -1292,6 +1297,8 @@ begin
   except
     on E : Exception do
     begin
+      if IsUnrequestedTestOutcome(E, exceptionClass) then
+        raise;
       CheckExceptionClassDescendant(e, exceptionClass);
       Exit;
     end;
@@ -1317,6 +1324,8 @@ begin
   except
     on E : Exception do
     begin
+      if IsUnrequestedTestOutcome(E, exceptionClass) then
+        raise;
       CheckExceptionClass(E, exceptionClass);
       if (exceptionMsg <> '') and (not SameStr(E.Message, exceptionMsg)) then
         FailFmt(SUnexpectedExceptionMessage, [E.ClassName, E.Message, exceptionMsg, msg]);
@@ -1336,6 +1345,8 @@ begin
   except
     on E : Exception do
     begin
+      if IsUnrequestedTestOutcome(E, exceptionClass) then
+        raise;
       CheckExceptionClass(E, exceptionClass);
       if (exceptionMsgRegexPattern <> '') and (not PerformIsMatch(exceptionMsgRegexPattern, E.Message)) then
         FailFmt(SUnexpectedExceptionMessage, [E.ClassName, E.Message, exceptionMsgRegexPattern, msg]);
@@ -1381,6 +1392,14 @@ begin
 
   if not (E is exceptionClass) then
     FailFmt(SCheckExceptionClassDescError, [E.ClassName, exceptionClass.ClassName, E.message], ReturnAddress);
+end;
+
+class function Assert.IsUnrequestedTestOutcome(E : Exception; const exceptionClass : ExceptClass) : boolean;
+begin
+  //A failure or pass raised by an assert inside the method is the test's own outcome, not the exception being
+  //tested for, unless the caller explicitly asked for it (e.g. WillRaise(..., ETestFailure)).
+  result := (((fTestFailure <> nil) and (E is fTestFailure)) or ((fTestPass <> nil) and (E is fTestPass))) and
+    not ((exceptionClass <> nil) and (exceptionClass <> Exception) and (E is exceptionClass));
 end;
 
 class procedure Assert.CheckExpectation(const EmptyExpectation, Message : string);
