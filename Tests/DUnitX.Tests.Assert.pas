@@ -182,6 +182,9 @@ type
     procedure AreEqual_TStrings_Throws_No_Exception_When_Strings_Are_Equal;
 
     [Test]
+    procedure AreEqual_TStrings_Accepts_A_Repeated_Ignored_Line;
+
+    [Test]
     procedure AreEqual_TStrings_Throws_ETestFailure_When_Strings_Are_NotEqual;
 
 {$IFDEF DELPHI_XE2_UP}
@@ -1290,6 +1293,26 @@ begin
         Assert.AreEqual(expected, actual);
       end, ETestFailure,
       'Difference at position 16: [''r adipisic''] does not match [''r adisipic''] at line 2');
+  finally
+    expected.Free;
+    actual.Free;
+  end;
+end;
+
+procedure TTestsAssert.AreEqual_TStrings_Accepts_A_Repeated_Ignored_Line;
+var
+  expected, actual : TStrings;
+begin
+  expected := TStringList.Create;
+  actual := TStringList.Create;
+  try
+    expected.CommaText := '1,2,3';
+    actual.CommaText := '1,x,3';
+    Assert.WillNotRaiseAny(
+      procedure
+      begin
+        Assert.AreEqual(expected, actual, [2, 2]);
+      end);
   finally
     expected.Free;
     actual.Free;

@@ -1589,7 +1589,7 @@ begin
     begin
       for index := 0 to Length(ignoreLines) - 1 do
       begin
-        ignoreLinesDict.Add(ignoreLines[index], true);
+        ignoreLinesDict.AddOrSetValue(ignoreLines[index], true);
       end;
     end;
 
