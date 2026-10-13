@@ -411,6 +411,10 @@ type
 
     [Test]
     procedure WillNotRaiseDescendant_Method_With_DescendingClass_Negative;
+    [Test]
+    procedure WillNotRaiseDescendant_Fails_Cleanly_With_A_Nil_Class;
+    [Test]
+    procedure WillNotRaiseDescendant_Names_The_Raised_Class;
 {$IFDEF DELPHI_XE2_UP}
     [Test]
     procedure AreEqual_T_Double_Fails_When_Actual_Is_NaN;
@@ -665,7 +669,7 @@ begin
         begin
           raise Exception.Create('Test');
         end);
-    end);
+    end, ETestFailure);
 end;
 
 procedure TTestsAssert.WillNotRaiseWithMessage_NilExceptionParam_MatchingExceptionMessage_WillRaise;
@@ -678,7 +682,7 @@ begin
         begin
           raise Exception.Create('Test');
         end, nil, 'Test');
-    end);
+    end, ETestFailure);
 end;
 
 procedure TTestsAssert.WillNotRaiseWithMessage_NilExceptionParam_NonMatchingExceptionMessage_WillNotRaise;
@@ -1566,6 +1570,33 @@ begin
     end,
     ETestFailure);
 end;
+procedure TTestsAssert.WillNotRaiseDescendant_Fails_Cleanly_With_A_Nil_Class;
+begin
+  Assert.WillRaiseDescendant(
+    procedure
+    begin
+      Assert.WillNotRaiseDescendant(
+        procedure
+        begin
+          raise EFilerError.Create('Test');
+        end);
+    end, ETestFailure);
+end;
+
+procedure TTestsAssert.WillNotRaiseDescendant_Names_The_Raised_Class;
+var
+  failureMessage : string;
+begin
+  failureMessage := '';
+  try
+    Assert.WillNotRaiseDescendant(RaiseFilerError, EStreamError);
+  except
+    on E : ETestFailure do
+      failureMessage := E.Message;
+  end;
+  Assert.Contains(failureMessage, 'EFilerError');
+end;
+
 {$IFDEF DELPHI_XE2_UP}
 procedure TTestsAssert.AreEqual_T_Double_Fails_When_Actual_Is_NaN;
 begin
