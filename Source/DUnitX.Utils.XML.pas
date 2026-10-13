@@ -46,7 +46,7 @@ uses
 function IsValidXMLChar(const wc : WideChar) : Boolean;
 begin
   case Word(wc) of
-    $0009, $000A, $000C, $000D,
+    $0009, $000A, $000D,
     $0020..$D7FF,
     $E000..$FFFD,                       // Standard Unicode chars below $FFFF
     $D800..$DBFF,                       // High surrogate of Unicode character  = $10000 - $10FFFF

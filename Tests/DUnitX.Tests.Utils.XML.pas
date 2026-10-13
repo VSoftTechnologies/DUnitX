@@ -28,6 +28,32 @@ unit DUnitX.Tests.Utils.XML;
 
 interface
 
+{$I ..\Source\DUnitX.inc}
+
+uses
+  DUnitX.TestFramework;
+
+type
+  [TestFixture]
+  TUtilsXMLTests = class
+  public
+    [Test]
+    procedure Form_Feed_Is_Not_A_Valid_XML_Char;
+  end;
+
 implementation
+
+uses
+  DUnitX.Utils.XML;
+
+procedure TUtilsXMLTests.Form_Feed_Is_Not_A_Valid_XML_Char;
+begin
+  Assert.IsTrue(IsValidXMLChar(#$09), 'tab');
+  Assert.IsFalse(IsValidXMLChar(#$0C), 'form feed');
+  Assert.AreEqual('a b', StripInvalidXML('a'#$0C'b'));
+end;
+
+initialization
+  TDUnitX.RegisterTestFixture(TUtilsXMLTests);
 
 end.
