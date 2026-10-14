@@ -1586,7 +1586,11 @@ var
   ignoreLinesDict : TDictionary<Integer, Boolean>;
 begin
   DoAssert;
-  IsTrue(expected <> actual, message);
+  if expected = actual then
+  begin
+    IsTrue(expected <> nil, message);
+    Exit;
+  end;
   ignoreLinesDict := TDictionary<Integer, Boolean>.Create;
   try
     if (Length(ignoreLines) > 0) then
