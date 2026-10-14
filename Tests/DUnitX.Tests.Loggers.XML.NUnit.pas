@@ -54,6 +54,8 @@ type
     [Test(false)]
     procedure OnTestWarning_Adds_Warnings_To_Be_Written_Out_On_Next_Error;
     procedure OnTestWarning_Adds_Warnings_To_Be_Written_Out_On_Next_Success;
+    [Test]
+    procedure OnTestingEnds_Reports_An_Errored_Fixture_As_Failed;
 {$ENDIF}
   end;
 
@@ -63,11 +65,13 @@ uses
 {$IFDEF USE_NS}
   System.Rtti,
   System.SysUtils,
+  System.Generics.Collections,
   System.TimeSpan,
   System.DateUtils,
 {$ELSE}
   Rtti,
   SysUtils,
+  Generics.Collections,
   TimeSpan,
   DateUtils,
 {$ENDIF}
@@ -75,6 +79,8 @@ uses
   Delphi.Mocks,
 {$ENDIF}
   DUnitX.Generics,
+  DUnitX.FixtureResult,
+  DUnitX.InternalInterfaces,
   DUnitX.RunResults;
 
 const
@@ -272,6 +278,63 @@ begin
   iPositionOfWarning := Pos(sExceptedWarning, mockStream.DataString);
   Assert.IsTrue(iPositionOfWarning > 0);
   Assert.AreEqual(Copy(mockStream.DataString, iPositionOfWarning, Length(sExceptedWarning)), sExceptedWarning);
+end;
+{$ENDIF}
+
+{$IFDEF DELPHI_XE2_UP}
+procedure TDUnitX_LoggerXMLNUnitTests.OnTestingEnds_Reports_An_Errored_Fixture_As_Failed;
+var
+  logger : ITestLogger;
+  stream : TStringStream;
+  categories : TList<string>;
+  mockFixture : TMock<ITestFixtureInfo>;
+  mockTest : TMock<ITestInfo>;
+  mockError : TMock<ITestResult>;
+  runResults : TDUnitXRunResults;
+  runResultsIntf : IRunResults;
+  context : ITestExecuteContext;
+  fixtureResult : IFixtureResult;
+begin
+  categories := TList<string>.Create;
+  stream := TStringStream.Create('', TEncoding.UTF8);
+  try
+    mockFixture := TMock<ITestFixtureInfo>.Create;
+    mockFixture.Setup.WillReturn('ErroredFixture').When.Name;
+    mockFixture.Setup.WillReturn('My.Namespace').When.NameSpace;
+    mockFixture.Setup.WillReturn('My.Namespace.ErroredFixture').When.FullName;
+    mockFixture.Setup.WillReturn(TValue.From<TClass>(TStringList)).When.TestClass;
+    mockFixture.Setup.WillReturn(TValue.From<TList<string>>(categories)).When.Categories;
+
+    mockTest := TMock<ITestInfo>.Create;
+    mockTest.Setup.WillReturn('ATest').When.Name;
+    mockTest.Setup.WillReturn('My.Namespace.ErroredFixture.ATest').When.FullName;
+    mockTest.Setup.WillReturn(TValue.From<TList<string>>(categories)).When.Categories;
+    mockTest.Setup.WillReturn(mockFixture.InstanceAsValue).When.Fixture;
+
+    mockError := TMock<ITestResult>.Create;
+    mockError.Setup.WillReturn(TValue.From<TTestResultType>(TTestResultType.Error)).When.ResultType;
+    mockError.Setup.WillReturn(mockTest.InstanceAsValue).When.Test;
+    mockError.Setup.WillReturn(TValue.From<TTimeSpan>(TTimeSpan.FromMilliseconds(0))).When.Duration;
+    mockError.Setup.WillReturn('error message').When.Message;
+    mockError.Setup.WillReturn('error stack').When.StackTrace;
+
+    runResults := TDUnitXRunResults.Create;
+    runResultsIntf := runResults;
+    context := runResults;
+    fixtureResult := TDUnitXFixtureResult.Create(nil, mockFixture.Instance);
+    context.RecordFixture(fixtureResult);
+    context.RecordResult(fixtureResult, mockError.Instance);
+    context.RollupResults;
+
+    logger := TDUnitXXMLNUnitLogger.Create(stream);
+    logger.OnTestingEnds(runResultsIntf);
+
+    Assert.Contains(stream.DataString, 'name="ErroredFixture" executed="True" result="Failure" success="False"');
+  finally
+    logger := nil;
+    stream.Free;
+    categories.Free;
+  end;
 end;
 {$ENDIF}
 
