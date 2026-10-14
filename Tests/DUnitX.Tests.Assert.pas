@@ -76,6 +76,9 @@ type
 {$ENDIF}
 
     [Test]
+    procedure AreEqual_Cardinal_Reports_Large_Values_Unsigned;
+
+    [Test]
     procedure AreEqual_Extended_Throws_No_Exception_When_Values_Are_Equal;
 
     [Test]
@@ -1234,6 +1237,24 @@ begin
     end, ETestFailure, Format('[%d] is Not Equal to [%d] %s', [2, 1, '']));
 end;
 {$ENDIF}
+
+procedure TTestsAssert.AreEqual_Cardinal_Reports_Large_Values_Unsigned;
+var
+  expected : Cardinal;
+  actual : Cardinal;
+  failureMessage : string;
+begin
+  expected := High(Cardinal);
+  actual := 0;
+  failureMessage := '';
+  try
+    Assert.AreEqual(expected, actual);
+  except
+    on E : ETestFailure do
+      failureMessage := E.Message;
+  end;
+  Assert.Contains(failureMessage, '[4294967295]');
+end;
 
 procedure TTestsAssert.AreEqual_Integer_Throws_No_Exception_When_Values_Are_Equal;
 begin
