@@ -129,6 +129,8 @@ type
   public
     [Test]
     procedure WhenATestCaseHasAUntypedParameterCantRaiseAnyError;
+    [Test]
+    procedure FixtureResult_Namespace_Is_The_Fixture_Namespace;
   end;
 {$M-}
 
@@ -145,7 +147,8 @@ uses
   Rtti,
 {$ENDIF}
   DUnitX.Types,
-  DUnitX.Extensibility;
+  DUnitX.Extensibility,
+  DUnitX.FixtureResult;
 
 var
   _TimesRun : Integer;
@@ -282,6 +285,16 @@ begin
   TestFixture := nil;
 
   Context.Free;
+end;
+
+procedure TDUnitXTestFixtureTests.FixtureResult_Namespace_Is_The_Fixture_Namespace;
+var
+  fixture : ITestFixture;
+  fixtureResult : IFixtureResult;
+begin
+  fixture := TDUnitXTestFixture.Create('My.Namespace.AFixture', '', TTestCaseAttribute, 'AUnit') as ITestFixture;
+  fixtureResult := TDUnitXFixtureResult.Create(nil, fixture as ITestFixtureInfo);
+  Assert.AreEqual('My.Namespace', fixtureResult.Namespace);
 end;
 
 { TTestCaseAttribute }

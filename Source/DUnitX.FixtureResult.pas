@@ -240,7 +240,7 @@ end;
 
 function TDUnitXFixtureResult.GetNamespace : string;
 begin
-  result := FName;
+  result := FNameSpace;
 end;
 
 function TDUnitXFixtureResult.GetPassCount : Integer;
