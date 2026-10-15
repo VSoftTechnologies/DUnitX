@@ -71,6 +71,8 @@ type
 
     FFailsOnNoAsserts : boolean;
     FCurrentTestName : string;
+    //The results of failed fixture teardowns hold their tests weakly, so the runner keeps the tests.
+    FTearDownFixtureTests : TList<ITest>;
   protected
     procedure CountAndFilterTests(const fixtureList : ITestFixtureList; var count, active : Cardinal);
     //Logger calls - sequence ordered
@@ -200,7 +202,8 @@ uses
   DUnitX.Utils,
   DUnitX.ServiceLocator,
   DUnitX.ResStrs,
-  DUnitX.FixtureBuilder;
+  DUnitX.FixtureBuilder,
+  DUnitX.Test;
 
 { TDUnitXTestRunner }
 
@@ -346,6 +349,7 @@ begin
   FFixtureClasses := TDictionary<TClass, string>.Create;
   FUseRTTI := False;
   FLogMessages := TStringList.Create;
+  FTearDownFixtureTests := TList<ITest>.Create;
   MonitorEnter(TDUnitXTestRunner.FActiveRunners);
   try
     TDUnitXTestRunner.FActiveRunners.Add(TThread.CurrentThread.ThreadID, TWeakReference<ITestRunner>.Create(Self));
@@ -387,6 +391,7 @@ begin
     MonitorExit(TDUnitXTestRunner.FActiveRunners);
   end;
 
+  FTearDownFixtureTests.Free;
   FLogMessages.Free;
   FLoggers.Free;
   FFixtureClasses.Free;
@@ -743,6 +748,9 @@ end;
 
 procedure TDUnitXTestRunner.ExecuteTearDownFixtureMethod(const context : ITestExecuteContext; const threadId : TThreadID; const fixture : ITestFixture; const
   fixtureResult : IFixtureResult);
+var
+  tearDownTest : ITest;
+  tearDownResult : ITestResult;
 begin
   try
     Self.Loggers_TeardownFixture(threadId, fixture as ITestFixtureInfo);
@@ -751,7 +759,14 @@ begin
   except
     on e : Exception do
     begin
-      InvalidateTestsInFixture(fixture, context, threadId, e, fixtureResult);
+      //The fixture's tests have already run and been recorded, so the failure is recorded once, as a result of its own.
+      tearDownTest := TDUnitXTest.Create(fixture, fixture.TearDownFixtureMethodName, fixture.TearDownFixtureMethodName, '', fixture.TearDownFixtureMethod,
+        true);
+      FTearDownFixtureTests.Add(tearDownTest);
+      Self.Loggers_BeginTest(threadId, tearDownTest as ITestInfo);
+      tearDownResult := ExecuteErrorResult(context, threadId, tearDownTest, e, FLogMessagesEx);
+      RecordResult(context, threadId, fixtureResult, tearDownResult);
+      Self.Loggers_EndTest(threadId, tearDownResult);
       Log(TLogLevel.Error, Format(SFixtureTeardownError, [fixture.Name, e.Message]));
     end;
   end;
