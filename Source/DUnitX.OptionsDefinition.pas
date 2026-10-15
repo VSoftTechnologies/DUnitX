@@ -35,6 +35,8 @@ uses
 
 //Defines the command line options for DUnitX. Add any new options definitions
 
+procedure RegisterOptions;
+
 implementation
 
 uses
@@ -89,7 +91,7 @@ begin
   def := TOptionsRegistry.RegisterOption<boolean>('dontshowignored', 'dsi', 'Don''t show ignored tests',
     procedure(value : boolean)
     begin
-      TDUnitX.Options.DontShowIgnored := true;
+      TDUnitX.Options.DontShowIgnored := value;
     end);
   def.HasValue := false;
 
