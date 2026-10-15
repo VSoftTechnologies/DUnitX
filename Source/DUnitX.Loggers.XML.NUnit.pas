@@ -196,7 +196,7 @@ begin
 //  WriteXMLLine('<environment nunit-version="DUnitX" clr-version="2.0.0.0" os-version="6.1.0.0" platform="Windows" cwd="" machine-name="" user="" user-domain=""  />');
   WriteXMLLine('<culture-info current-culture="en" current-uiculture="en" />');
   WriteXMLLine(Format('<test-suite type="Assembly" name="%s" executed="true" result="%s" success="%s" time="%s" asserts="0">', [sExeName, sResult,
-    BoolToStr(RunResults.AllPassed, true), sTime]));
+    BoolToStr(RunResults.AllPassed, true), Format('%.3f', [RunResults.Duration.TotalSeconds])]));
   Indent;
   WriteXMLLine('<results>');
 
