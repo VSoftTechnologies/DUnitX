@@ -456,6 +456,7 @@ end;
 
 procedure TTestCase.CheckIs(const AObject : TObject; const AClass : TClass; const msg : string);
 begin
+  Assert.IsNotNull(AObject, msg);
   Assert.InheritsFrom(AObject.ClassType, AClass, msg);
 end;
 
