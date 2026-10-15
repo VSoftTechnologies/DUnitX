@@ -361,9 +361,7 @@ begin
       begin
         repeatCount := repeatAttrib.Count;
         currentFixture := fixture.AddChildFixture(fixture.TestClass, Format('%s.%s', [currentFixture.FullName, method.Name]), category);
-        //setup and teardown might have already been set.. so take them from the parent fixture.
-        currentFixture.SetSetupTestMethod(fixture.SetupMethodName, fixture.SetupMethod);
-        currentFixture.SetTearDownTestMethod(fixture.TearDownMethodName, fixture.TearDownMethod);
+        //setup and teardown are given to the child once all the methods have been seen, below.
         //don't assign setupfixture or teardown fixture as the parent fixture's methods will still be run.
       end;
     end;
@@ -537,6 +535,20 @@ begin
       begin
         currentFixture.AddTest(method.Name, TTestMethod(meth), FormatTestName(method.Name, i, repeatCount), category, method, true, ignoredTest, ignoredReason,
           maxTime);
+      end;
+    end;
+  end;
+
+  //The setup and teardown of the fixture may be declared after a [RepeatTest] method, or in a base class (whose methods
+  //come after the class's own), so give the repeat child fixtures the fixture's final ones.
+  if fixture.HasChildFixtures then
+  begin
+    for childFixture in fixture.Children do
+    begin
+      if childFixture.TestClass = fixture.TestClass then
+      begin
+        childFixture.SetSetupTestMethod(fixture.SetupMethodName, fixture.SetupMethod);
+        childFixture.SetTearDownTestMethod(fixture.TearDownMethodName, fixture.TearDownMethod);
       end;
     end;
   end;
