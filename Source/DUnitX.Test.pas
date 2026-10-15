@@ -437,10 +437,15 @@ end;
 procedure TDUnitXExceptionTest.Execute(const context : ITestExecuteContext);
 begin
   FRaiseContext := context;
-  if FExceptionInheritance = exDescendant then
-    Assert.WillRaiseDescendant(RaiseMethod, FExpectedException)
-  else
-    Assert.WillRaise(RaiseMethod, FExpectedException);
+  try
+    if FExceptionInheritance = exDescendant then
+      Assert.WillRaiseDescendant(RaiseMethod, FExpectedException)
+    else
+      Assert.WillRaise(RaiseMethod, FExpectedException);
+  finally
+    //Only RaiseMethod needs it; keeping it would hold the run's results, and through them this test, alive.
+    FRaiseContext := nil;
+  end;
 end;
 
 procedure TDUnitXExceptionTest.RaiseMethod;

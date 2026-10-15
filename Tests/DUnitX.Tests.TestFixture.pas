@@ -139,6 +139,8 @@ type
     procedure RaisingDestructorTearDown_Runs_The_Destructor_Once;
     [Test]
     procedure FixtureResult_Namespace_Is_The_Fixture_Namespace;
+    [Test]
+    procedure WillRaiseTest_Releases_The_Context_After_Execute;
   end;
 {$M-}
 
@@ -156,13 +158,29 @@ uses
 {$ENDIF}
   DUnitX.Types,
   DUnitX.Extensibility,
-  DUnitX.FixtureResult;
+  DUnitX.FixtureResult,
+  DUnitX.InternalInterfaces;
 
 var
   _TimesRun : Integer;
   _TimesRunAnyWay : Integer;
   _TimesRunTestCase : Integer;
   _RaisingDestructorCalls : Integer;
+  _RaiseContextFreed : Boolean;
+
+type
+  TRaiseContextSpy = class(TInterfacedObject, ITestExecuteContext)
+  public
+    destructor Destroy; override;
+    procedure RecordFixture(const fixtureResult : IFixtureResult);
+    procedure RecordResult(const fixtureResult : IFixtureResult; const testResult : ITestResult);
+    procedure RollupResults;
+  end;
+
+  TWillRaiseClass = class
+  public
+    procedure RaisesAbort;
+  end;
 
   { TDUnitXTestFixtureTests }
 
@@ -329,6 +347,53 @@ begin
   if calls = 1 then
     instance.FreeInstance;
   Assert.AreEqual(1, calls);
+end;
+
+procedure TDUnitXTestFixtureTests.WillRaiseTest_Releases_The_Context_After_Execute;
+var
+  rttiContext : TRttiContext;
+  fixture : ITestFixture;
+  instance : TWillRaiseClass;
+  test : ITestExecute;
+  context : ITestExecuteContext;
+begin
+  _RaiseContextFreed := False;
+  rttiContext := TRttiContext.Create;
+  fixture := TDUnitXTestFixture.Create('AWillRaiseFixture', '', TWillRaiseClass, 'AUnit') as ITestFixture;
+  instance := fixture.FixtureInstance as TWillRaiseClass;
+  test := fixture.AddTest('RaisesAbort', instance.RaisesAbort, 'RaisesAbort', '',
+    rttiContext.GetType(TWillRaiseClass).GetMethod('RaisesAbort'), True, False, '', 0, EAbort) as ITestExecute;
+  context := TRaiseContextSpy.Create;
+  test.Execute(context);
+  context := nil;
+  Assert.IsTrue(_RaiseContextFreed, 'The [WillRaise] test still holds the context after Execute');
+end;
+
+{ TRaiseContextSpy }
+
+destructor TRaiseContextSpy.Destroy;
+begin
+  _RaiseContextFreed := True;
+  inherited;
+end;
+
+procedure TRaiseContextSpy.RecordFixture(const fixtureResult : IFixtureResult);
+begin
+end;
+
+procedure TRaiseContextSpy.RecordResult(const fixtureResult : IFixtureResult; const testResult : ITestResult);
+begin
+end;
+
+procedure TRaiseContextSpy.RollupResults;
+begin
+end;
+
+{ TWillRaiseClass }
+
+procedure TWillRaiseClass.RaisesAbort;
+begin
+  raise EAbort.Create('expected');
 end;
 
 { TRaisingDestructorClass }
