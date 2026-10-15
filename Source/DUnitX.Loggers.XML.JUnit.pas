@@ -207,6 +207,9 @@ var
   testResult : ITestResult;
   sExecuted : string;
   sName : string;
+  ignoredCount : integer;
+  errorCount : integer;
+  failureCount : integer;
 begin
   //its a real fixture if the class is not TObject.
   if (not fixtureResult.Fixture.TestClass.ClassNameIs('TObject')) then
@@ -224,9 +227,21 @@ begin
     sTime := EscapeForXML(sTime);
     sDate := FormatDateTime('yyyy-MM-dd"T"hh":"nn":"ss', fixtureResult.StartTime);
 
+    //Count this suite's own test cases, as tests="" does; child fixtures are written as suites of their own.
+    //A leaked test is written as <error>, so it is counted as one.
+    ignoredCount := 0;
+    errorCount := 0;
+    failureCount := 0;
+    for testResult in fixtureResult.TestResults do
+      case testResult.ResultType of
+        TTestResultType.Ignored : Inc(ignoredCount);
+        TTestResultType.Error, TTestResultType.MemoryLeak : Inc(errorCount);
+        TTestResultType.Failure : Inc(failureCount);
+      end;
+
     // There is only a "disabled" attribute on the top level, but "disabled" and "skipped" on fixture level. Return ignored tests as "disabled"
     WriteXMLLine(Format('<testsuite name="%s" tests="%d" disabled="%d" errors="%d" failures="%d" time="%s" timestamp="%s">',
-        [sName, fixtureResult.TestResults.Count, fixtureResult.IgnoredCount, fixtureResult.ErrorCount, fixtureResult.FailureCount, sTime, sDate]));
+        [sName, fixtureResult.TestResults.Count, ignoredCount, errorCount, failureCount, sTime, sDate]));
     //WriteCategoryNodes(fixtureResult.Fixture.Categories);
 
     for testResult in fixtureResult.TestResults do
