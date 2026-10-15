@@ -343,6 +343,11 @@ type
     procedure DoesNotContain_String_Failure_Message;
 
     [Test]
+    [TestCase('ignoring case', 'true')]
+    [TestCase('case sensitive', 'false')]
+    procedure Contains_And_DoesNotContain_Fail_For_An_Empty_SubString(const ignoreCase : boolean);
+
+    [Test]
     [TestCase('substring', 'a str,a string,false')]
     [TestCase('substring - case sensitive', 'a str,a string,true')]
     procedure StartsWith_SubString_Is_At_The_Start_Of_String(const subString, theString : string; caseSensitive : boolean);
@@ -1899,6 +1904,21 @@ begin
     begin
       Assert.DoesNotContain('abc', 'b');
     end, ETestFailure, '[abc] contains [b]');
+end;
+
+procedure TTestsAssert.Contains_And_DoesNotContain_Fail_For_An_Empty_SubString(const ignoreCase : boolean);
+begin
+  //As with StartsWith and EndsWith: every string contains an empty string, so an empty subString is a mistake in the test.
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      Assert.DoesNotContain('a string', '', ignoreCase);
+    end, ETestFailure, 'subString cannot be empty');
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      Assert.Contains('a string', '', ignoreCase);
+    end, ETestFailure, 'subString cannot be empty');
 end;
 
 procedure TTestsAssert.StartsWith_SubString_Is_At_The_Start_Of_String(const subString, theString : string; caseSensitive : boolean);

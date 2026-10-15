@@ -1444,6 +1444,9 @@ end;
 class procedure Assert.Contains(const theString : string; const subString : string; const ignoreCase : boolean; const message : string);
 begin
   DoAssert;
+  //every string contains an empty string, so, as with StartsWith and EndsWith, an empty subString is a mistake in the test.
+  if subString = '' then
+    FailFmt(SStrCannotBeEmpty, [], ReturnAddress);
   if ignoreCase then
   begin
     if not {$IFDEF USE_NS}System.StrUtils.{$ENDIF}ContainsText(theString, subString) then
@@ -1466,6 +1469,8 @@ end;
 class procedure Assert.DoesNotContain(const theString, subString : string; const ignoreCase : boolean; const message : string);
 begin
   DoAssert;
+  if subString = '' then
+    FailFmt(SStrCannotBeEmpty, [], ReturnAddress);
   if ignoreCase then
   begin
     if {$IFDEF USE_NS}System.{$ENDIF}StrUtils.ContainsText(theString, subString) then
