@@ -250,8 +250,7 @@ begin
   begin
     if FTearDownFixtureIsDestructor then
     begin
-      FFixtureInstance.Free;
-      FFixtureInstance := nil;
+      FreeAndNil(FFixtureInstance);
     end
     else
       FTearDownFixtureMethod();
