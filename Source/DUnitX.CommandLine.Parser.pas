@@ -154,7 +154,11 @@ begin
     else if value.StartsWith('/') then
       value := value.Remove(0, 1)
     else if value.StartsWith('@') then
-      value := value.Remove(0, 1)
+    begin
+      //@<file> reads an options file. The name is taken whole, so the colon of a drive does not split it.
+      InternalParseFile(value.Substring(1), parseErrors);
+      continue;
+    end
 {$ELSE}
 
     if value = '' then
@@ -166,7 +170,11 @@ begin
     else if StartsStr('/', value) then
       Delete(value, 1, 1)
     else if StartsStr('@', value) then
-      Delete(value, 1, 1)
+    begin
+      //@<file> reads an options file. The name is taken whole, so the colon of a drive does not split it.
+      InternalParseFile(Copy(value, 2, Length(value)), parseErrors);
+      continue;
+    end
 {$ENDIF}
     else if FUnamedIndex < TOptionsRegistry.RegisteredUnamedOptions.Count then
     begin
@@ -229,20 +237,7 @@ begin
         if not option.HasValue then
           value := key;
 
-        //TODO : should options file override other options or vica versa?
-        if not FileExists(value) then
-        begin
-          parseErrors.AddError(Format(SParameterFileDoesNotExist, [value]));
-          continue;
-        end;
-        try
-          InternalParseFile(value, parseErrors);
-        except
-          on e : Exception do
-          begin
-            parseErrors.AddError(Format(SErrorParsingParameterFile, [value]) + e.Message);
-          end;
-        end;
+        InternalParseFile(value, parseErrors);
       end
       else
       begin
@@ -271,12 +266,25 @@ procedure TCommandLineParser.InternalParseFile(const fileName : string; const pa
 var
   sList : TStringList;
 begin
-  sList := TStringList.Create;
+  //TODO : should options file override other options or vica versa?
+  if not FileExists(fileName) then
+  begin
+    parseErrors.AddError(Format(SParameterFileDoesNotExist, [fileName]));
+    exit;
+  end;
   try
-    sList.LoadFromFile(fileName);
-    InternalParse(sList, parseErrors);
-  finally
-    sList.Free;
+    sList := TStringList.Create;
+    try
+      sList.LoadFromFile(fileName);
+      InternalParse(sList, parseErrors);
+    finally
+      sList.Free;
+    end;
+  except
+    on e : Exception do
+    begin
+      parseErrors.AddError(Format(SErrorParsingParameterFile, [fileName]) + e.Message);
+    end;
   end;
 end;
 
