@@ -254,6 +254,9 @@ type
     procedure WillRaise_Without_Exception_Class_Will_Capture_Any_Exception;
 
     [Test]
+    procedure WillRaise_Of_The_Wrong_Class_Keeps_The_Message;
+
+    [Test]
     procedure WillRaiseWithMessage_Exception_And_Message_Will_Check_ExceptionClass_And_Exception_Message;
 
     [Test]
@@ -1047,6 +1050,51 @@ begin
     begin
       raise Exception.Create('Test')
     end);
+end;
+
+procedure TTestsAssert.WillRaise_Of_The_Wrong_Class_Keeps_The_Message;
+const
+  CALLER_MSG = 'the caller''s message';
+
+  function FailureMessage(const AAssert : TTestLocalMethod) : string;
+  begin
+    result := '(no failure)';
+    try
+      AAssert;
+    except
+      on e : ETestFailure do
+        result := e.Message;
+    end;
+  end;
+
+begin
+  Assert.Contains(FailureMessage(
+    procedure
+    begin
+      Assert.WillRaise(
+        procedure
+        begin
+          raise EAbort.Create('raised');
+        end, EConvertError, CALLER_MSG);
+    end), CALLER_MSG, false, 'WillRaise');
+  Assert.Contains(FailureMessage(
+    procedure
+    begin
+      Assert.WillRaiseDescendant(
+        procedure
+        begin
+          raise EAbort.Create('raised');
+        end, EConvertError, CALLER_MSG);
+    end), CALLER_MSG, false, 'WillRaiseDescendant');
+  Assert.Contains(FailureMessage(
+    procedure
+    begin
+      Assert.WillRaiseWithMessage(
+        procedure
+        begin
+          raise EAbort.Create('raised');
+        end, EConvertError, 'raised', CALLER_MSG);
+    end), CALLER_MSG, false, 'WillRaiseWithMessage');
 end;
 
 procedure TTestsAssert.AreEqualMemory_Throws_ETestFailure_When_Pointers_Are_NotEqual;
