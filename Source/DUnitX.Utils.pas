@@ -1871,25 +1871,17 @@ end;
 
 class procedure TArrayHelper.Delete<T>(var source : TArray<T>; index, count : integer);
 var
-  len, tailLen : integer;
-  i, tailStart : integer;
+  len : integer;
+  i : integer;
 begin
-  Len := Length(Source);
-  if (Index >= 1) and (Index <= Len) then
+  len := Length(source);
+  if (index >= 0) and (index < len) and (count > 0) then
   begin
-    if Count > 0 then
-    begin
-      TailLen := len - index;
-      tailStart := index + count;
-      if Count > tailLen then
-        Count := tailLen;
-      if (tailLen > 0) and (tailStart <= len - 1) then
-      begin
-        for i := 0 to tailLen - 1 do
-          source[index + i] := source[tailStart + i];
-      end;
-      SetLength(source, len - count);
-    end;
+    if count > len - index then
+      count := len - index;
+    for i := index to len - count - 1 do
+      source[i] := source[i + count];
+    SetLength(source, len - count);
   end;
 end;
 
