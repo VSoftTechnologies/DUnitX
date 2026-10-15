@@ -183,7 +183,8 @@ begin
 
   WriteXMLLine('<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>');
   WriteXMLLine(Format('<test-results name="%s" total="%d" errors="%d" failures="%d" ignored="%d" inconclusive="0" not-run="%d" skipped="0" invalid="0" date="%s" time="%s">',
-      [sExeName, totalTests, RunResults.ErrorCount, RunResults.FailureCount, RunResults.IgnoredCount, RunResults.IgnoredCount, sDate, sTime]));
+      [sExeName, totalTests, RunResults.ErrorCount, RunResults.FailureCount + RunResults.MemoryLeakCount, RunResults.IgnoredCount, RunResults.IgnoredCount, sDate, sTime]));
+  //A leaked test is written as result="Failure", so it is counted as one.
   sExeName := ExtractFileName(sExeName);
 
   if RunResults.AllPassed then
