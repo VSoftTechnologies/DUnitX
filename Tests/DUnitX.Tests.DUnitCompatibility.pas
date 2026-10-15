@@ -40,6 +40,7 @@ type
     procedure ATest;
     procedure CheckInherits_Passes_When_Actual_Descends_From_Expected;
     procedure CheckInherits_Fails_When_Expected_Descends_From_Actual;
+    procedure CheckIs_Fails_For_A_Nil_Object;
   end;
 
 {$M+}
@@ -84,6 +85,18 @@ begin
     begin
 {$WARN SYMBOL_DEPRECATED OFF}
       CheckInherits(TTestCase, TObject);
+{$WARN SYMBOL_DEPRECATED ON}
+    end, Assert.TestFailure);
+end;
+
+procedure TMyDUnitTest.CheckIs_Fails_For_A_Nil_Object;
+begin
+  //DUnit fails CheckIs for a nil object.
+  Assert.WillRaise(
+    procedure
+    begin
+{$WARN SYMBOL_DEPRECATED OFF}
+      CheckIs(nil, TObject);
 {$WARN SYMBOL_DEPRECATED ON}
     end, Assert.TestFailure);
 end;
