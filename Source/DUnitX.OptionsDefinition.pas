@@ -120,6 +120,13 @@ begin
     end);
   def.HasValue := false;
 
+  def := TOptionsRegistry.RegisterOption<boolean>('failonnotests', 'fnt', 'A run in which no test executes gives a non zero exit code',
+    procedure(value : boolean)
+    begin
+      TDUnitX.Options.FailOnNoTests := value;
+    end);
+  def.HasValue := false;
+
   TOptionsRegistry.RegisterOption<TDunitXConsoleMode>('consolemode', 'cm', 'Console mode - Off, Quiet, Verbose (default)',
     procedure(value : TDunitXConsoleMode)
     begin
