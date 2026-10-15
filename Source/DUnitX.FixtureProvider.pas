@@ -472,7 +472,7 @@ begin
                 for i := 1 to repeatCount do
                 begin
                   currentFixture.AddTestCase(method.Name, FormatCaseName(caseName, x), FormatTestName(method.Name, i, repeatCount), category, method,
-                    testEnabled, params);
+                    testEnabled, params, willRaise, willRaiseInherit);
                 end;
               end;
               iProvider := nil;
@@ -488,7 +488,7 @@ begin
               else
                 caseName := testCaseAttrib.CaseInfo.Name;
               currentFixture.AddTestCase(method.Name, caseName, FormatTestName(method.Name, i, repeatCount), category, method, testEnabled,
-                testCaseAttrib.CaseInfo.Values);
+                testCaseAttrib.CaseInfo.Values, willRaise, willRaiseInherit);
             end;
           end;
           // Add test case from test \case sources
@@ -503,7 +503,7 @@ begin
                   for i := 1 to repeatCount do
                   begin
                     currentFixture.AddTestCase(method.Name, TestCaseData.Name, FormatTestName(method.Name, i, repeatCount), category, method, testEnabled,
-                      TestCaseData.Values);
+                      TestCaseData.Values, willRaise, willRaiseInherit);
                   end;
                 end;
               end;

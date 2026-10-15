@@ -128,6 +128,9 @@ type
     FArgs : TValueArray;
     FRttiMethod : TRttiMethod;
     FInstance : TObject;
+    FExpectedException : ExceptClass;
+    FExceptionInheritance : TExceptionInheritance;
+    procedure InvokeMethod;
   protected
     function GetIsTestCase : boolean; override;
     function GetName : string; override;
@@ -136,7 +139,8 @@ type
   public
     constructor Create(const AInstance : TObject; const AFixture : ITestFixture; const AMethodName : string; const ACaseName : string; const AName : string;
       const ACategory : string; const AMethod : TRttiMethod;
-      const AEnabled : boolean; const AArgs : TValueArray); reintroduce;
+      const AEnabled : boolean; const AArgs : TValueArray; const AExpectedException : ExceptClass = nil;
+      const AExceptionInheritance : TExceptionInheritance = exExact); reintroduce;
     destructor Destroy; override;
   end;
 
@@ -347,7 +351,7 @@ end;
 
 constructor TDUnitXTestCase.Create(const AInstance : TObject; const AFixture : ITestFixture; const AMethodName : string; const ACaseName : string;
   const AName : string; const ACategory : string; const AMethod : TRttiMethod; const AEnabled : boolean;
-  const AArgs : TValueArray);
+  const AArgs : TValueArray; const AExpectedException : ExceptClass; const AExceptionInheritance : TExceptionInheritance);
 var
   len : integer;
   index : integer;
@@ -358,6 +362,8 @@ begin
   FInstance := AInstance;
   FRttiMethod := AMethod;
   FCaseName := ACaseName;
+  FExpectedException := AExpectedException;
+  FExceptionInheritance := AExceptionInheritance;
 
   parameters := FRttiMethod.GetParameters();
 
@@ -384,7 +390,12 @@ procedure TDUnitXTestCase.Execute(const context : ITestExecuteContext);
 begin
   FStartTime := Now();
   try
-    FRttiMethod.Invoke(FInstance, FArgs);
+    if FExpectedException = nil then
+      InvokeMethod
+    else if FExceptionInheritance = exDescendant then
+      Assert.WillRaiseDescendant(InvokeMethod, FExpectedException)
+    else
+      Assert.WillRaise(InvokeMethod, FExpectedException);
   finally
     FEndTime := Now();
     FDuration := TTimeSpan.Subtract(FEndTime, FStartTime);
@@ -408,6 +419,11 @@ begin
   else
     Result := FName;
 
+end;
+
+procedure TDUnitXTestCase.InvokeMethod;
+begin
+  FRttiMethod.Invoke(FInstance, FArgs);
 end;
 
 procedure TDUnitXTestCase.UpdateInstance(const fixtureInstance : TObject);
