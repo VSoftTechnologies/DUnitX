@@ -860,10 +860,16 @@ begin
           testResult := ExecuteErrorResult(context, threadId, test, e, FLogMessagesEx);
       end;
 
-      //If the tear down fails then we need to show this as the test result.
+      //If the tear down fails then we need to show this as the test result, unless the setup or the test has already
+      //failed: that failure is the one to diagnose, so it is kept and the tear down error is logged.
       if Assigned(fixture.TearDownMethod) and (not test.Ignored) then
         if not (ExecuteTestTearDown(context, threadId, fixture, test, tearDownResult, memoryAllocationProvider)) then
-          testResult := tearDownResult;
+        begin
+          if testResult.ResultType = TTestResultType.Pass then
+            testResult := tearDownResult
+          else
+            Log(TLogLevel.Error, Format(STearDownErrorAfterFailure, [test.Name, tearDownResult.Message]));
+        end;
 
       if (testResult.ResultType = TTestResultType.Pass) then
         if (not CheckMemoryAllocations(test, memoryAllocationResult, memoryAllocationProvider)) then

@@ -164,6 +164,7 @@ resourcestring
   SFixtureSetupError = 'Error in Fixture Setup. Fixture: %s Error: %s';
   SSkippingFixture  = 'Skipping Fixture.';
   SFixtureTeardownError = 'Error in Fixture TearDown. Fixture: %s Error: %s';
+  STearDownErrorAfterFailure = 'Error in TearDown after the test had failed. Test: %s Error: %s';
   SNoAssertions     = 'No assertions were made during the test';
   SITestExecuteNotSupported = '%s does not support ITestExecute';
 
