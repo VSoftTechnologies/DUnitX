@@ -55,8 +55,8 @@ type
     class var fOnAssert : TProc;
     class var fTestFailure : ExceptClass;
     class var fTestPass : ExceptClass;
-    class procedure CheckExceptionClass(E : Exception; const exceptionClass : ExceptClass);
-    class procedure CheckExceptionClassDescendant(E : Exception; const exceptionClass : ExceptClass);
+    class procedure CheckExceptionClass(E : Exception; const exceptionClass : ExceptClass; const msg : string);
+    class procedure CheckExceptionClassDescendant(E : Exception; const exceptionClass : ExceptClass; const msg : string);
     class function IsUnrequestedTestOutcome(E : Exception; const exceptionClass : ExceptClass) : boolean;
 {$IFDEF DELPHI_XE_UP}
     class function ValuesEqual<T>(const left, right : T) : boolean;
@@ -1238,7 +1238,7 @@ begin
     begin
       if IsUnrequestedTestOutcome(E, exceptionClass) then
         raise;
-      CheckExceptionClass(e, exceptionClass);
+      CheckExceptionClass(e, exceptionClass, msg);
       Exit;
     end;
   end;
@@ -1312,7 +1312,7 @@ begin
     begin
       if IsUnrequestedTestOutcome(E, exceptionClass) then
         raise;
-      CheckExceptionClassDescendant(e, exceptionClass);
+      CheckExceptionClassDescendant(e, exceptionClass, msg);
       Exit;
     end;
   end;
@@ -1339,7 +1339,7 @@ begin
     begin
       if IsUnrequestedTestOutcome(E, exceptionClass) then
         raise;
-      CheckExceptionClass(E, exceptionClass);
+      CheckExceptionClass(E, exceptionClass, msg);
       if (exceptionMsg <> '') and (not SameStr(E.Message, exceptionMsg)) then
         FailFmt(SUnexpectedExceptionMessage, [E.ClassName, E.Message, exceptionMsg, msg]);
       Exit;
@@ -1360,7 +1360,7 @@ begin
     begin
       if IsUnrequestedTestOutcome(E, exceptionClass) then
         raise;
-      CheckExceptionClass(E, exceptionClass);
+      CheckExceptionClass(E, exceptionClass, msg);
       if (exceptionMsgRegexPattern <> '') and (not PerformIsMatch(exceptionMsgRegexPattern, E.Message)) then
         FailFmt(SUnexpectedExceptionMessage, [E.ClassName, E.Message, exceptionMsgRegexPattern, msg]);
       Exit;
@@ -1387,24 +1387,24 @@ begin
     FailFmt(SNotEqualErrorStr, [expected, actual, message], ReturnAddress);
 end;
 
-class procedure Assert.CheckExceptionClass(E : Exception; const exceptionClass : ExceptClass);
+class procedure Assert.CheckExceptionClass(E : Exception; const exceptionClass : ExceptClass; const msg : string);
 begin
   DoAssert;
   if exceptionClass = nil then
     Exit;
 
   if E.ClassType <> exceptionClass then
-    FailFmt(SCheckExceptionClassError, [E.ClassName, exceptionClass.ClassName, E.message], ReturnAddress);
+    Fail(Format(SCheckExceptionClassError, [E.ClassName, exceptionClass.ClassName, E.message]) + AddLineBreak(msg), ReturnAddress);
 end;
 
-class procedure Assert.CheckExceptionClassDescendant(E : Exception; const exceptionClass : ExceptClass);
+class procedure Assert.CheckExceptionClassDescendant(E : Exception; const exceptionClass : ExceptClass; const msg : string);
 begin
   DoAssert;
   if exceptionClass = nil then
     Exit;
 
   if not (E is exceptionClass) then
-    FailFmt(SCheckExceptionClassDescError, [E.ClassName, exceptionClass.ClassName, E.message], ReturnAddress);
+    Fail(Format(SCheckExceptionClassDescError, [E.ClassName, exceptionClass.ClassName, E.message]) + AddLineBreak(msg), ReturnAddress);
 end;
 
 class function Assert.IsUnrequestedTestOutcome(E : Exception; const exceptionClass : ExceptClass) : boolean;
