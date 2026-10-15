@@ -282,14 +282,6 @@ begin
   result := FTestResults;
 end;
 
-function Max(const a, b : TDateTime) : TDateTime;
-begin
-  if a > b then
-    result := a
-  else
-    result := b;
-end;
-
 procedure TDUnitXFixtureResult.RecordTestResult(const AResult : ITestResult);
 begin
   Inc(FTotalCount);
@@ -346,8 +338,6 @@ begin
 
   if FChildren <> nil then
   begin
-    FDuration := TTimeSpan.Zero;
-    FFinishTime := FStartTime;
     for fixture in FChildren do
     begin
       (fixture as IFixtureResultBuilder).RollUpResults;
@@ -356,16 +346,13 @@ begin
       Inc(FIgnoredCount, fixture.IgnoredCount);
       Inc(FPassCount, fixture.PassCount);
       FAllPassed := FAllPassed and (not fixture.HasFailures);
-      FFinishTime := Max(FFinishTime, fixture.FinishTime);
-      FDuration := FDuration.Add(fixture.Duration);
     end;
-  end
-  else if (FFinishTime = UNDEFINED_DATETIME) then
-  begin
-    FFinishTime := Now;
-    FStopWatch.Stop;
-    FDuration := FStopWatch.Elapsed;
   end;
+
+  //The stopwatch started with the fixture, so it spans the fixture's own tests as well as its children.
+  FFinishTime := Now;
+  FStopWatch.Stop;
+  FDuration := FStopWatch.Elapsed;
 end;
 
 end.
