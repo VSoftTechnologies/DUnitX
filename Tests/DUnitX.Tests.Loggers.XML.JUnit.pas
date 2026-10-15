@@ -51,6 +51,10 @@ type
     //  [Test(false)]
   //    procedure OnTestingEnds_Fills_The_End_Of_The_Stream_With_Testing_Result_Info;
 {$IFDEF DELPHI_XE2_UP}
+    [Test]
+    procedure OnTestingEnds_Counts_A_Leak_As_An_Error_In_The_Testsuite;
+{$ENDIF}
+{$IFDEF DELPHI_XE2_UP}
     [Test(false)]
     procedure OnTestWarning_Adds_Warnings_To_Be_Written_Out_On_Next_Error;
     procedure OnTestWarning_Adds_Warnings_To_Be_Written_Out_On_Next_Success;
@@ -193,6 +197,67 @@ begin
 
   Assert.AreEqual(sAppName, sExpectedAppName);
 end;
+
+{$IFDEF DELPHI_XE2_UP}
+procedure TDUnitX_LoggerXMLJUnitTests.OnTestingEnds_Counts_A_Leak_As_An_Error_In_The_Testsuite;
+var
+  logger : ITestLogger;
+  stream : TStringStream;
+  categories : TList<string>;
+  mockFixture : TMock<ITestFixtureInfo>;
+  mockTest : TMock<ITestInfo>;
+  mockResult : TMock<ITestResult>;
+  runResults : TDUnitXRunResults;
+  runResultsIntf : IRunResults;
+  context : ITestExecuteContext;
+  fixtureResult : IFixtureResult;
+  xml : string;
+begin
+  categories := TList<string>.Create;
+  stream := TStringStream.Create('', TEncoding.UTF8);
+  try
+    mockFixture := TMock<ITestFixtureInfo>.Create;
+    mockFixture.Setup.WillReturn('AFixture').When.Name;
+    mockFixture.Setup.WillReturn('My.Namespace').When.NameSpace;
+    mockFixture.Setup.WillReturn('My.Namespace.AFixture').When.FullName;
+    mockFixture.Setup.WillReturn(TValue.From<TClass>(TStringList)).When.TestClass;
+    mockFixture.Setup.WillReturn(TValue.From<TList<string>>(categories)).When.Categories;
+
+    mockTest := TMock<ITestInfo>.Create;
+    mockTest.Setup.WillReturn('ATest').When.Name;
+    mockTest.Setup.WillReturn('My.Namespace.AFixture.ATest').When.FullName;
+    mockTest.Setup.WillReturn(TValue.From<TList<string>>(categories)).When.Categories;
+    mockTest.Setup.WillReturn(mockFixture.InstanceAsValue).When.Fixture;
+
+    mockResult := TMock<ITestResult>.Create;
+    mockResult.Setup.WillReturn(TValue.From<TTestResultType>(TTestResultType.MemoryLeak)).When.ResultType;
+    mockResult.Setup.WillReturn(mockTest.InstanceAsValue).When.Test;
+    mockResult.Setup.WillReturn(TValue.From<TTimeSpan>(TTimeSpan.FromMilliseconds(0))).When.Duration;
+    mockResult.Setup.WillReturn('result message').When.Message;
+    mockResult.Setup.WillReturn('result stack').When.StackTrace;
+
+    runResults := TDUnitXRunResults.Create;
+    runResultsIntf := runResults;
+    context := runResults;
+    fixtureResult := TDUnitXFixtureResult.Create(nil, mockFixture.Instance);
+    context.RecordFixture(fixtureResult);
+    context.RecordResult(fixtureResult, mockResult.Instance);
+    context.RollupResults;
+
+    logger := TDUnitXXMLJUnitLogger.Create(stream);
+    logger.OnTestingEnds(runResultsIntf);
+    xml := stream.DataString;
+
+    xml := Copy(xml, Pos('<testsuite name=', xml), MaxInt);
+    xml := Copy(xml, 1, Pos('>', xml));
+    Assert.Contains(xml, 'tests="1" disabled="0" errors="1" failures="0"');
+  finally
+    logger := nil;
+    stream.Free;
+    categories.Free;
+  end;
+end;
+{$ENDIF}
 
 {$IFDEF DELPHI_XE2_UP}
 procedure TDUnitX_LoggerXMLJUnitTests.OnTestWarning_Adds_Warnings_To_Be_Written_Out_On_Next_Error;
