@@ -96,7 +96,9 @@ begin
 {$IFNDEF NEXTGEN}
   if isCDATASection then
   begin
-    Result := StringReplace(Result, ']]>', ']>', [rfReplaceAll]);
+    //A CDATA section cannot contain ']]>', so the text is split there into two adjacent sections, which read back
+    //as the original text.
+    Result := StringReplace(Result, ']]>', ']]]]><![CDATA[>', [rfReplaceAll]);
     exit;
   end;
 
@@ -115,7 +117,7 @@ begin
 {$ELSE}
   if isCDATASection then
   begin
-    Result := Result.Replace(']]>', ']>', [rfReplaceAll]);
+    Result := Result.Replace(']]>', ']]]]><![CDATA[>', [rfReplaceAll]);
     exit;
   end;
 
