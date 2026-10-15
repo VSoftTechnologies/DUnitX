@@ -548,6 +548,7 @@ type
     FDontShowIgnored : boolean;
     FExitMode : TDUnitXExitMode;
     FFailOnIgnored : boolean;
+    FFailOnNoTests : boolean;
   public
     constructor Create;
     destructor Destroy; override;
@@ -587,6 +588,9 @@ type
 
     //Ignored tests make the exit code non zero
     property FailOnIgnored : boolean read FFailOnIgnored write FFailOnIgnored;
+
+    //A run in which no test executes (all filtered out or ignored) makes the exit code non zero
+    property FailOnNoTests : boolean read FFailOnNoTests write FFailOnNoTests;
   end;
 
   TDUnitX = class
@@ -611,7 +615,7 @@ type
     ///  Parses the command line options and applies them the the Options object.
     ///  Will throw exception if there are errors.
     class procedure CheckCommandLine;
-    ///  The process exit code for a run, according to Options.ExitMode and Options.FailOnIgnored.
+    ///  The process exit code for a run, according to Options.ExitMode, Options.FailOnIgnored and Options.FailOnNoTests.
     class function ExitCodeFor(const AResults : IRunResults) : integer;
     ///  The exit code for the given counts. Simple returns EXIT_OK or EXIT_ERRORS,
     ///  Bitmask returns the EXIT_BIT_* flags for the non zero counts.
@@ -661,6 +665,7 @@ const
   EXIT_BIT_FAILURES = $04; //Tests failed an assertion
   EXIT_BIT_LEAKS    = $08; //Tests leaked memory
   EXIT_BIT_IGNORED  = $10; //Tests were ignored, only with Options.FailOnIgnored
+  EXIT_BIT_NO_TESTS = $20; //No test was executed, only with Options.FailOnNoTests
 
 implementation
 
@@ -866,6 +871,13 @@ class function TDUnitX.ExitCodeFor(const AResults : IRunResults) : integer;
 begin
   result := CalcExitCode(FOptions.ExitMode, FOptions.FailOnIgnored,
     AResults.ErrorCount, AResults.FailureCount, AResults.MemoryLeakCount, AResults.IgnoredCount);
+  if FOptions.FailOnNoTests and (AResults.TestCount - AResults.IgnoredCount <= 0) then
+  begin
+    if FOptions.ExitMode = TDUnitXExitMode.Simple then
+      result := EXIT_ERRORS
+    else
+      result := result or EXIT_BIT_NO_TESTS;
+  end;
 end;
 
 class function TDUnitX.CurrentRunner : ITestRunner;
