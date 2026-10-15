@@ -125,6 +125,13 @@ type
     [Test]
     procedure TearDownFixture_Failure_Is_Reported_Once;
   end;
+
+  [TestFixture]
+  TFixtureResultDurationTests = class
+  public
+    [Test]
+    procedure Duration_Of_A_Fixture_With_Children_Includes_Its_Own_Tests;
+  end;
 {$M-}
 
   TRaisingDestructorClass = class
@@ -541,6 +548,34 @@ begin
   Assert.AreEqual(',PassesOne,PassesTwo,TearDownFixture,', testNames, 'the results and their tests');
 end;
 
+type
+  //Not a fixture: the class of the fixtures whose results the test below times.
+  TDurationFixtureClass = class
+  end;
+
+{ TFixtureResultDurationTests }
+
+procedure TFixtureResultDurationTests.Duration_Of_A_Fixture_With_Children_Includes_Its_Own_Tests;
+var
+  parentFixture : ITestFixture;
+  childFixture : ITestFixture;
+  parentResult : IFixtureResult;
+  childResult : IFixtureResult;
+begin
+  //A fixture's [RepeatTest] methods are child fixtures; its other tests are its own.
+  parentFixture := TDUnitXTestFixture.Create('AParentFixture', '', TDurationFixtureClass, 'AUnit') as ITestFixture;
+  childFixture := TDUnitXTestFixture.Create('AChildFixture', '', TDurationFixtureClass, 'AUnit') as ITestFixture;
+  parentResult := TDUnitXFixtureResult.Create(nil, parentFixture as ITestFixtureInfo);
+  //The fixture's own tests take this long.
+  Sleep(100);
+  childResult := TDUnitXFixtureResult.Create(parentResult, childFixture as ITestFixtureInfo);
+  (childResult as IFixtureResultBuilder).RollUpResults;
+  (parentResult as IFixtureResultBuilder).RollUpResults;
+  Assert.IsTrue(parentResult.Duration.TotalMilliseconds >= 90,
+    Format('the fixture''s duration is %.0f ms, its own tests took 100 ms', [parentResult.Duration.TotalMilliseconds]));
+  Assert.IsTrue(parentResult.FinishTime >= childResult.FinishTime, 'the fixture finishes after its children');
+end;
+
 initialization
   TDUnitX.RegisterTestFixture(TTestClassWithNonPublicSetup);
   TDUnitX.RegisterTestFixture(TTestClassWithTestSource);
@@ -548,6 +583,7 @@ initialization
   TDUnitX.RegisterTestFixture(TTestMaxTimeAttribute);
   TDUnitX.RegisterTestFixture(TDUnitXTestFixtureTests);
   TDUnitX.RegisterTestFixture(TTearDownFixtureFailureTests);
+  TDUnitX.RegisterTestFixture(TFixtureResultDurationTests);
 
 end.
 
