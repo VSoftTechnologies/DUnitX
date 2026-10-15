@@ -118,6 +118,12 @@ type
   end;
 {$M-}
 
+  TRaisingDestructorClass = class
+  public
+    destructor Destroy; override;
+    procedure TearDown;
+  end;
+
   TTestCaseAttribute = class
   public
     procedure ProcedureWithUntypedParameter(const Param1);
@@ -129,6 +135,8 @@ type
   public
     [Test]
     procedure WhenATestCaseHasAUntypedParameterCantRaiseAnyError;
+    [Test]
+    procedure RaisingDestructorTearDown_Runs_The_Destructor_Once;
     [Test]
     procedure FixtureResult_Namespace_Is_The_Fixture_Namespace;
   end;
@@ -154,6 +162,7 @@ var
   _TimesRun : Integer;
   _TimesRunAnyWay : Integer;
   _TimesRunTestCase : Integer;
+  _RaisingDestructorCalls : Integer;
 
   { TDUnitXTestFixtureTests }
 
@@ -295,6 +304,45 @@ begin
   fixture := TDUnitXTestFixture.Create('My.Namespace.AFixture', '', TTestCaseAttribute, 'AUnit') as ITestFixture;
   fixtureResult := TDUnitXFixtureResult.Create(nil, fixture as ITestFixtureInfo);
   Assert.AreEqual('My.Namespace', fixtureResult.Namespace);
+end;
+
+procedure TDUnitXTestFixtureTests.RaisingDestructorTearDown_Runs_The_Destructor_Once;
+var
+  fixture : ITestFixture;
+  instance : TRaisingDestructorClass;
+  calls : Integer;
+begin
+  _RaisingDestructorCalls := 0;
+  fixture := TDUnitXTestFixture.Create('ARaisingFixture', '', TRaisingDestructorClass, 'AUnit') as ITestFixture;
+  instance := fixture.FixtureInstance as TRaisingDestructorClass;
+  fixture.SetTearDownFixtureMethod('Destroy', instance.TearDown, true);
+
+  Assert.WillRaise(
+    procedure
+    begin
+      fixture.ExecuteFixtureTearDown;
+    end, EInvalidOpException);
+  fixture := nil;
+
+  calls := _RaisingDestructorCalls;
+  //A destructor that raises does not free the instance, so release its memory here.
+  if calls = 1 then
+    instance.FreeInstance;
+  Assert.AreEqual(1, calls);
+end;
+
+{ TRaisingDestructorClass }
+
+destructor TRaisingDestructorClass.Destroy;
+begin
+  Inc(_RaisingDestructorCalls);
+  if _RaisingDestructorCalls = 1 then
+    raise EInvalidOpException.Create('Destructor failed');
+  inherited;
+end;
+
+procedure TRaisingDestructorClass.TearDown;
+begin
 end;
 
 { TTestCaseAttribute }
