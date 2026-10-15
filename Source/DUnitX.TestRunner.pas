@@ -311,7 +311,8 @@ begin
   LTestMemoryAllocated := memoryAllocationProvider.TestMemoryAllocated;
   LTearDownMemoryAllocated := memoryAllocationProvider.TearDownMemoryAllocated;
 
-  if (LSetUpMemoryAllocated + LTestMemoryAllocated + LTearDownMemoryAllocated = 0) then
+  //Only net growth is a leak: a test may free memory that was allocated before it ran.
+  if (LSetUpMemoryAllocated + LTestMemoryAllocated + LTearDownMemoryAllocated <= 0) then
     Exit(True);
 
   if memoryAllocationProvider.QueryInterface(IMemoryLeakMonitor2, LMemoryAllocationProvider2) = 0 then
