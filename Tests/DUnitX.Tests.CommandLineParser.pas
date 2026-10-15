@@ -87,6 +87,9 @@ type
     procedure Will_Raise_For_Missing_Param_File;
 
     [Test]
+    procedure At_Prefix_Reads_An_Options_File;
+
+    [Test]
     procedure Can_Parse_Enum_Parameter;
 
     [Test]
@@ -110,6 +113,8 @@ implementation
 
 uses
   Classes,
+  SysUtils,
+  IOUtils,
   DUnitX.CommandLine.OptionDef,
   DUnitX.OptionsDefinition,
   DUnitX.RunResults;
@@ -411,6 +416,41 @@ begin
     sList.Free;
   end;
   Assert.IsTrue(parseResult.HasErrors);
+end;
+
+procedure TCommandLineParserTests.At_Prefix_Reads_An_Options_File;
+var
+  def : IOptionDefinition;
+  fromFile : boolean;
+  fileName : string;
+  parseResult : ICommandLineParseResult;
+  sList : TStringList;
+begin
+  def := TOptionsRegistry.RegisterOption<string>('options', 'o', nil);
+  def.IsOptionFile := true;
+  fromFile := false;
+  def := TOptionsRegistry.RegisterOption<boolean>('fromfile', 'ff',
+    procedure(value : boolean)
+    begin
+      fromFile := value;
+    end);
+  def.HasValue := False;
+
+  //A full path, so the name has a drive colon in it.
+  fileName := TPath.Combine(TPath.GetTempPath, 'DUnitX.Tests.At_Prefix_Options.txt');
+  sList := TStringList.Create;
+  try
+    sList.Add('--fromfile');
+    sList.SaveToFile(fileName);
+    sList.Clear;
+    sList.Add('@' + fileName);
+    parseResult := TOptionsRegistry.Parse(sList);
+  finally
+    sList.Free;
+    DeleteFile(fileName);
+  end;
+  Assert.IsFalse(parseResult.HasErrors, parseResult.ErrorText);
+  Assert.IsTrue(fromFile, 'the option in the file was not read');
 end;
 
 procedure TCommandLineParserTests.Will_Raise_On_Registering_Duplicate_Options;
