@@ -15,6 +15,14 @@ uses
 {$ENDIF}
 
 type
+  [TestFixture]
+  [Category('Utils')]
+  TArrayHelperTests = class
+  public
+    [Test]
+    procedure Delete_Removes_The_Given_Elements;
+  end;
+
   [TestFixture('TValueHelper')]
   [Category('Utils')]
   TValueHelperTests = class
@@ -131,6 +139,33 @@ uses
 {$ENDIF}
   DUnitX.Generics,
   DUnitX.Utils;
+
+{ TArrayHelperTests }
+
+procedure TArrayHelperTests.Delete_Removes_The_Given_Elements;
+var
+  values : TArray<Integer>;
+begin
+  SetLength(values, 5);
+  values[0] := 1;
+  values[1] := 2;
+  values[2] := 3;
+  values[3] := 4;
+  values[4] := 5;
+
+  TArrayHelper.Delete<Integer>(values, 0, 1);
+  Assert.AreEqual(4, Length(values), 'Length after deleting the first element');
+  Assert.AreEqual(2, values[0], 'First element after deleting the first element');
+
+  TArrayHelper.Delete<Integer>(values, 1, 2);
+  Assert.AreEqual(2, Length(values), 'Length after deleting from the middle');
+  Assert.AreEqual(2, values[0]);
+  Assert.AreEqual(5, values[1]);
+
+  TArrayHelper.Delete<Integer>(values, 1, 10);
+  Assert.AreEqual(1, Length(values), 'Length after deleting more than there is');
+  Assert.AreEqual(2, values[0]);
+end;
 
 { TValueHelperTests }
 
@@ -286,6 +321,7 @@ begin
 end;
 
 initialization
+  TDUnitX.RegisterTestFixture(TArrayHelperTests);
   TDUnitX.RegisterTestFixture(TValueHelperTests);
   TDUnitX.RegisterTestFixture(TDUnitXListTests);
 
