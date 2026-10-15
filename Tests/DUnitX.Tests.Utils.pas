@@ -112,6 +112,8 @@ type
   public
     [Test]
     procedure ToArray_Returns_The_Items;
+    [Test]
+    procedure NonGeneric_Enumerator_Yields_The_Objects;
   end;
 
 
@@ -283,6 +285,33 @@ begin
   Assert.AreEqual(3, items[0]);
   Assert.AreEqual(1, items[1]);
   Assert.AreEqual(2, items[2]);
+end;
+
+procedure TDUnitXListTests.NonGeneric_Enumerator_Yields_The_Objects;
+var
+  list : IList<TObject>;
+  first, second : TObject;
+  enumerable : IEnumerable;
+  enumerator : IEnumerator;
+begin
+  first := TObject.Create;
+  second := TObject.Create;
+  try
+    list := TDUnitXList<TObject>.Create;
+    list.Add(first);
+    list.Add(second);
+    enumerable := list;
+    enumerator := enumerable.GetEnumerator;
+    Assert.IsNotNull(enumerator, 'GetEnumerator');
+    Assert.IsTrue(enumerator.MoveNext, 'MoveNext 1');
+    Assert.AreSame(first, enumerator.Current, 'Current 1');
+    Assert.IsTrue(enumerator.MoveNext, 'MoveNext 2');
+    Assert.AreSame(second, enumerator.Current, 'Current 2');
+    Assert.IsFalse(enumerator.MoveNext, 'MoveNext 3');
+  finally
+    second.Free;
+    first.Free;
+  end;
 end;
 
 initialization
