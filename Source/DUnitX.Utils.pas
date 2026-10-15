@@ -3034,15 +3034,23 @@ begin
     tkClass :
       begin
         LObject := Value.AsObject;
-        Result := Format('%s($%x)', [StripUnitName(LObject.ClassName),
-            NativeInt(LObject)]);
+        if LObject = nil then
+          Result := 'nil'
+        else
+          Result := Format('%s($%x)', [StripUnitName(LObject.ClassName),
+              NativeInt(LObject)]);
       end;
     tkInterface :
       begin
         LInterface := Value.AsInterface;
-        LObject := LInterface as TObject;
-        Result := Format('%s($%x) as %s', [StripUnitName(LObject.ClassName),
-            NativeInt(LInterface), StripUnitName(GetTypeName(Value.TypeInfo))]);
+        if LInterface = nil then
+          Result := 'nil'
+        else
+        begin
+          LObject := LInterface as TObject;
+          Result := Format('%s($%x) as %s', [StripUnitName(LObject.ClassName),
+              NativeInt(LInterface), StripUnitName(GetTypeName(Value.TypeInfo))]);
+        end;
       end
   else
     Result := Value.ToString;

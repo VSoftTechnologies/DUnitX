@@ -42,6 +42,8 @@ type
 {$ENDIF}
     destructor Destroy; override;
     [Test]
+    procedure ToString_Formats_A_Nil_Object_Or_Interface;
+    [Test]
     [TestCase('EN-US local format', 'EN-US,06/22/2020')]
     [TestCase('EN-US iso8601 format', 'EN-US,2020-06-22')]
     [TestCase('EN-GB local format', 'EN-GB,22/06/2020')]
@@ -204,6 +206,25 @@ begin
 {$ELSE}
   FormatSettings := TFormatSettings.Create(locale);
 {$ENDIF}
+end;
+
+procedure TValueHelperTests.ToString_Formats_A_Nil_Object_Or_Interface;
+var
+  objectText : string;
+  interfaceText : string;
+begin
+  Assert.WillNotRaiseAny(
+    procedure
+    begin
+      objectText := TValue.ToString(TValue.From<TObject>(nil));
+    end, 'object');
+  Assert.AreEqual('nil', objectText, 'object');
+  Assert.WillNotRaiseAny(
+    procedure
+    begin
+      interfaceText := TValue.ToString(TValue.From<IInterface>(nil));
+    end, 'interface');
+  Assert.AreEqual('nil', interfaceText, 'interface');
 end;
 
 procedure TValueHelperTests.TestAlphaColorTestCase(const AColor : TAlphaColor;
