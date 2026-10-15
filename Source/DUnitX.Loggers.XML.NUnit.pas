@@ -405,7 +405,7 @@ begin
     WriteXMLLine('<categories>');
     Indent;
     for sCategory in ACategoryList do
-      WriteXMLLine(Format('<category name="%s" />', [sCategory]));
+      WriteXMLLine(Format('<category name="%s" />', [EscapeForXML(sCategory)]));
     Outdent;
     WriteXMLLine('</categories>');
     Outdent;
