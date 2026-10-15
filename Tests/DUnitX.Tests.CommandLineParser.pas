@@ -101,6 +101,9 @@ type
     [Test]
     procedure DontShowIgnored_Uses_Its_Value;
 
+    [Test]
+    procedure FailOnNoTests_Gives_A_Run_With_No_Tests_A_Non_Zero_Exit_Code;
+
   end;
 
 implementation
@@ -108,7 +111,8 @@ implementation
 uses
   Classes,
   DUnitX.CommandLine.OptionDef,
-  DUnitX.OptionsDefinition;
+  DUnitX.OptionsDefinition,
+  DUnitX.RunResults;
 
 { TCommandLineParserTests }
 
@@ -540,6 +544,38 @@ begin
   finally
     sList.Free;
     TDUnitX.Options.DontShowIgnored := oldValue;
+  end;
+end;
+
+procedure TCommandLineParserTests.FailOnNoTests_Gives_A_Run_With_No_Tests_A_Non_Zero_Exit_Code;
+var
+  sList : TStringList;
+  parseResult : ICommandLineParseResult;
+  oldExitMode : TDUnitXExitMode;
+  noTests : IRunResults;
+begin
+  oldExitMode := TDUnitX.Options.ExitMode;
+  noTests := TDUnitXRunResults.Create;
+  sList := TStringList.Create;
+  try
+    RegisterOptions;
+
+    TDUnitX.Options.ExitMode := TDUnitXExitMode.Simple;
+    Assert.AreEqual(EXIT_OK, TDUnitX.ExitCodeFor(noTests), 'by default a run with no tests still exits 0');
+
+    sList.Add('--failonnotests');
+    parseResult := TOptionsRegistry.Parse(sList);
+    Assert.IsFalse(parseResult.HasErrors, parseResult.ErrorText);
+    Assert.AreEqual(EXIT_ERRORS, TDUnitX.ExitCodeFor(noTests), 'Simple');
+
+    TDUnitX.Options.ExitMode := TDUnitXExitMode.Bitmask;
+    Assert.AreNotEqual(EXIT_OK, TDUnitX.ExitCodeFor(noTests), 'Bitmask');
+  finally
+    sList.Clear;
+    sList.Add('--failonnotests:false');
+    TOptionsRegistry.Parse(sList);
+    sList.Free;
+    TDUnitX.Options.ExitMode := oldExitMode;
   end;
 end;
 
