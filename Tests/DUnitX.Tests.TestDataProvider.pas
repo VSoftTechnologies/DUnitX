@@ -41,7 +41,42 @@ type
 
   end;
 
+  [TestFixture]
+  TWillRaiseTestCaseTests = class
+  public
+    [Test]
+    procedure WillRaise_Applies_To_TestCase_And_TestCaseProvider_Tests;
+  end;
+
 implementation
+
+uses
+  System.SysUtils,
+  DUnitX.Exceptions,
+  DUnitX.Extensibility,
+  DUnitX.InternalInterfaces,
+  DUnitX.TestFixture,
+  DUnitX.FixtureProvider;
+
+type
+  TFixtureProviderAccess = class(TDUnitXFixtureProvider);
+
+  //Not a fixture: the test below generates its tests and runs them itself.
+  TWillRaiseTestCases = class
+  public
+    [Test]
+    [TestCase('Zero', '0')]
+    [WillRaise(EAbort)]
+    procedure CaseDoesNotRaise(const value : integer);
+    [Test]
+    [TestCaseProvider('Sampleprovider')]
+    [WillRaise(EAbort)]
+    procedure ProviderCaseDoesNotRaise(const value1, value2 : integer; expected : boolean);
+    [Test]
+    [TestCase('Zero', '0')]
+    [WillRaise(EAbort)]
+    procedure CaseRaises(const value : integer);
+  end;
 
 { TSampleProvider }
 
@@ -134,8 +169,61 @@ begin
   Assert.AreEqual(expected, (value1 = value2), 'Ok');
 end;
 
+{ TWillRaiseTestCases }
+
+procedure TWillRaiseTestCases.CaseDoesNotRaise(const value : integer);
+begin
+end;
+
+procedure TWillRaiseTestCases.ProviderCaseDoesNotRaise(const value1, value2 : integer; expected : boolean);
+begin
+end;
+
+procedure TWillRaiseTestCases.CaseRaises(const value : integer);
+begin
+  raise EAbort.Create('expected');
+end;
+
+{ TWillRaiseTestCaseTests }
+
+procedure TWillRaiseTestCaseTests.WillRaise_Applies_To_TestCase_And_TestCaseProvider_Tests;
+var
+  fixture : ITestFixture;
+  provider : TDUnitXFixtureProvider;
+  providerIntf : IFixtureProvider;
+  test : ITest;
+  testExecute : ITestExecute;
+  count : integer;
+begin
+  fixture := TDUnitXTestFixture.Create('AWillRaiseTestCaseFixture', '', TWillRaiseTestCases, 'AUnit') as ITestFixture;
+  provider := TDUnitXFixtureProvider.Create;
+  providerIntf := provider;
+  TFixtureProviderAccess(provider).GenerateTests(nil, fixture);
+
+  count := 0;
+  for test in fixture.Tests do
+  begin
+    Inc(count);
+    testExecute := test as ITestExecute;
+    if test.MethodName = 'CaseRaises' then
+      Assert.WillNotRaiseAny(
+        procedure
+        begin
+          testExecute.Execute(nil);
+        end, test.Name + ' raises the expected exception')
+    else
+      Assert.WillRaise(
+        procedure
+        begin
+          testExecute.Execute(nil);
+        end, ETestFailure, test.Name + ' does not raise the expected exception, so it must fail');
+  end;
+  Assert.AreEqual(7, count, 'one [TestCase] test, five provider tests and one [TestCase] test');
+end;
+
 initialization
   TestDataProviderManager.RegisterProvider('Sampleprovider', TSampleProvider);
   TDUnitX.RegisterTestFixture(TestFixtureProviderTest);
+  TDUnitX.RegisterTestFixture(TWillRaiseTestCaseTests);
 end.
 

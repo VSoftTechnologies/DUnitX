@@ -137,7 +137,8 @@ type
       const AEnabled : boolean = true; const AIgnored : boolean = false; const AIgnoreReason : string = ''; const AMaxTime : cardinal = 0; const
       AExpectedException : ExceptClass = nil; const AExceptionInheritance : TExceptionInheritance = exExact) : ITest;
     function AddTestCase(const AMethodName : string; const ACaseName : string; const AName : string; const ACategory : string; const AMethod : TRttiMethod;
-      const AEnabled : boolean; const AArgs : TValueArray) : ITest;
+      const AEnabled : boolean; const AArgs : TValueArray; const AExpectedException : ExceptClass = nil;
+      const AExceptionInheritance : TExceptionInheritance = exExact) : ITest;
 
     function AddChildFixture(const ATestClass : TClass; const AName : string; const ACategory : string) : ITestFixture; overload;
     function AddChildFixture(const AInstance : TObject; const AName : string; const ACategory : string) : ITestFixture; overload;
