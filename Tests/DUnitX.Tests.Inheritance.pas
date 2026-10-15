@@ -68,10 +68,18 @@ type
     procedure RepeatTest_Gets_The_Setup_And_TearDown_Declared_After_It;
   end;
 
+  [TestFixture]
+  TOverriddenMethodTests = class
+  public
+    [Test]
+    procedure Overrides_Of_Attributed_Methods_Run_Once;
+  end;
+
 implementation
 
 uses
   DUnitX.Extensibility,
+  DUnitX.InternalInterfaces,
   DUnitX.TestFixture,
   DUnitX.FixtureProvider;
 
@@ -129,6 +137,61 @@ procedure TRepeatWithLaterSetup.TearDown;
 begin
 end;
 
+type
+  //Not fixtures: the test below generates their tests and runs them.
+  TVirtualBase = class
+  public
+    [Setup]
+    procedure Setup; virtual;
+    [Test]
+    procedure RunsTheOverride; virtual;
+    [Test]
+    procedure OverriddenInPublished; virtual;
+  end;
+
+  //Overrides the attributed methods without repeating the attributes.
+  TVirtualDerived = class(TVirtualBase)
+  public
+    procedure Setup; override;
+    procedure RunsTheOverride; override;
+  published
+    procedure OverriddenInPublished; override;
+  end;
+
+var
+  //What the methods of TVirtualBase and TVirtualDerived ran.
+  virtualCalls : string;
+
+procedure TVirtualBase.Setup;
+begin
+  virtualCalls := virtualCalls + 'TVirtualBase.Setup,';
+end;
+
+procedure TVirtualBase.RunsTheOverride;
+begin
+  virtualCalls := virtualCalls + 'TVirtualBase.RunsTheOverride,';
+end;
+
+procedure TVirtualBase.OverriddenInPublished;
+begin
+  virtualCalls := virtualCalls + 'TVirtualBase.OverriddenInPublished,';
+end;
+
+procedure TVirtualDerived.Setup;
+begin
+  virtualCalls := virtualCalls + 'TVirtualDerived.Setup,';
+end;
+
+procedure TVirtualDerived.RunsTheOverride;
+begin
+  virtualCalls := virtualCalls + 'TVirtualDerived.RunsTheOverride,';
+end;
+
+procedure TVirtualDerived.OverriddenInPublished;
+begin
+  virtualCalls := virtualCalls + 'TVirtualDerived.OverriddenInPublished,';
+end;
+
 //The repetitions of a [RepeatTest] method are the tests of a child fixture, which must run the fixture's Setup and TearDown.
 procedure CheckRepeatChildHasSetupAndTearDown(const AClass : TClass);
 var
@@ -166,6 +229,37 @@ end;
 procedure TRepeatTestSetupTests.RepeatTest_Gets_The_Setup_And_TearDown_Declared_After_It;
 begin
   CheckRepeatChildHasSetupAndTearDown(TRepeatWithLaterSetup);
+end;
+
+{ TOverriddenMethodTests }
+
+//An override that does not repeat the attributes of the method it overrides is what runs, and runs as one test.
+procedure TOverriddenMethodTests.Overrides_Of_Attributed_Methods_Run_Once;
+var
+  fixture : ITestFixture;
+  provider : TDUnitXFixtureProvider;
+  providerIntf : IFixtureProvider;
+  test : ITest;
+  testCount : integer;
+begin
+  fixture := TDUnitXTestFixture.Create(TVirtualDerived.ClassName, '', TVirtualDerived, 'AUnit') as ITestFixture;
+  provider := TDUnitXFixtureProvider.Create;
+  providerIntf := provider;
+  TFixtureProviderAccess(provider).GenerateTests(nil, fixture);
+
+  virtualCalls := '';
+  fixture.SetupMethod();
+  Assert.AreEqual('TVirtualDerived.Setup,', virtualCalls, 'the Setup that runs');
+
+  testCount := 0;
+  for test in fixture.Tests do
+  begin
+    Inc(testCount);
+    virtualCalls := '';
+    (test as ITestExecute).Execute(nil);
+    Assert.AreEqual('TVirtualDerived.' + test.Name + ',', virtualCalls, 'the code that runs for ' + test.Name);
+  end;
+  Assert.AreEqual(2, testCount, 'one test for each test method');
 end;
 
 constructor TMyBaseTestClass.Create;
@@ -216,6 +310,7 @@ end;
 initialization
   TDUnitX.RegisterTestFixture(TMyDerivedTest);
   TDUnitX.RegisterTestFixture(TRepeatTestSetupTests);
+  TDUnitX.RegisterTestFixture(TOverriddenMethodTests);
 
 end.
 

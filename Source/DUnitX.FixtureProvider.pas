@@ -293,6 +293,22 @@ var
   repeatCount : Cardinal;
   i : Integer;
   currentFixture : ITestFixture;
+  addedTestCode : TArray<Pointer>;
+
+  //An override declared as a test of its own (in a published section, or with [Test] again) and the attributed method
+  //it overrides both run the override, so the second is not added.
+  function IsAddedTestCode(const code : Pointer) : boolean;
+  var
+    added : Pointer;
+  begin
+    result := false;
+    for added in addedTestCode do
+      if added = code then
+        exit(true);
+    SetLength(addedTestCode, Length(addedTestCode) + 1);
+    addedTestCode[High(addedTestCode)] := code;
+  end;
+
 begin
   //  WriteLn('Generating Tests for : ' + fixture.FullName);
 
@@ -344,6 +360,10 @@ begin
     currentFixture := fixture;
 
     meth.Code := method.CodeAddress;
+    //Call a virtual method through the fixture class's virtual method table: an override does not inherit the attributes
+    //of the method it overrides, so it is the attributed ancestor method that is found, and it must run the override.
+    if method.DispatchKind = dkVtable then
+      meth.Code := PPointer(PByte(fixture.TestClass) + method.VirtualIndex * SizeOf(Pointer))^;
     meth.Data := fixture.FixtureInstance;
 
     //if the test has a category attribute then we'll use it to override the fixtures's category.
@@ -519,6 +539,8 @@ begin
 
     if isTestMethod and testEnabled then
     begin
+      if IsAddedTestCode(meth.Code) then
+        continue;
       for i := 1 to repeatCount do
       begin
         currentFixture.AddTest(method.Name, TTestMethod(meth), FormatTestName(method.Name, i, repeatCount), category, method, true, ignoredTest, ignoredReason,
@@ -530,6 +552,8 @@ begin
     //finally.. if it's a pulished method
     if (method.Visibility = TMemberVisibility.mvPublished) and (testEnabled) then
     begin
+      if IsAddedTestCode(meth.Code) then
+        continue;
       // Add Published Method that has no Attributes
       for i := 1 to repeatCount do
       begin
