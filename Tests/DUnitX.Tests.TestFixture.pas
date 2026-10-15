@@ -118,6 +118,15 @@ type
   end;
 {$M-}
 
+{$M+}
+  [TestFixture]
+  TTearDownFixtureFailureTests = class
+  public
+    [Test]
+    procedure TearDownFixture_Failure_Is_Reported_Once;
+  end;
+{$M-}
+
   TRaisingDestructorClass = class
   public
     destructor Destroy; override;
@@ -151,15 +160,19 @@ uses
   System.Math,
   System.SysUtils,
   System.Rtti,
+  System.Classes,
 {$ELSE}
   Math,
   SysUtils,
   Rtti,
+  Classes,
 {$ENDIF}
   DUnitX.Types,
   DUnitX.Extensibility,
   DUnitX.FixtureResult,
-  DUnitX.InternalInterfaces;
+  DUnitX.InternalInterfaces,
+  DUnitX.RunResults,
+  DUnitX.TestRunner;
 
 var
   _TimesRun : Integer;
@@ -180,6 +193,15 @@ type
   TWillRaiseClass = class
   public
     procedure RaisesAbort;
+  end;
+
+  TTearDownFixtureRunnerAccess = class(TDUnitXTestRunner);
+
+  TTearDownFixtureFails = class
+  public
+    procedure PassesOne;
+    procedure PassesTwo;
+    procedure TearDownFixture;
   end;
 
   { TDUnitXTestFixtureTests }
@@ -417,12 +439,115 @@ begin
   Assert.IsTrue(True);
 end;
 
+{ TTearDownFixtureFails }
+
+procedure TTearDownFixtureFails.PassesOne;
+begin
+  Assert.Pass;
+end;
+
+procedure TTearDownFixtureFails.PassesTwo;
+begin
+  Assert.Pass;
+end;
+
+procedure TTearDownFixtureFails.TearDownFixture;
+begin
+  raise EInvalidOpException.Create('TearDownFixture failed');
+end;
+
+{ TTearDownFixtureFailureTests }
+
+//Runs one fixture through a runner of its own. A runner registers itself for its thread, so it gets a thread of its own.
+//ATestNames lists the name of each result's test, read while the runner is alive, as ',name,name,'.
+function RunFixtureOnItsOwnThread(const AFixture : ITestFixture; out ATestNames : string) : IRunResults;
+var
+  thread : TThread;
+  results : IRunResults;
+  failure : string;
+  names : string;
+begin
+  results := nil;
+  failure := '';
+  names := ',';
+  thread := TThread.CreateAnonymousThread(
+    procedure
+    var
+      runner : TDUnitXTestRunner;
+      runnerIntf : ITestRunner;
+      fixtures : ITestFixtureList;
+      context : ITestExecuteContext;
+      testResult : ITestResult;
+    begin
+      try
+        runner := TDUnitXTestRunner.Create;
+        runnerIntf := runner;
+        fixtures := TTestFixtureList.Create;
+        fixtures.Add(AFixture);
+        results := TDUnitXRunResults.Create;
+        context := results as ITestExecuteContext;
+        TTearDownFixtureRunnerAccess(runner).ExecuteFixtures(nil, context, TThread.CurrentThread.ThreadID, fixtures);
+        context.RollupResults;
+        for testResult in results.GetAllTestResults do
+          if testResult.Test <> nil then
+            names := names + testResult.Test.Name + ','
+          else
+            names := names + '(no test),';
+      except
+        on e : Exception do
+          failure := e.ClassName + ': ' + e.Message;
+      end;
+    end);
+  thread.FreeOnTerminate := false;
+  try
+    thread.Start;
+    thread.WaitFor;
+  finally
+    thread.Free;
+  end;
+  Assert.AreEqual('', failure, 'the run itself raised');
+  ATestNames := names;
+  result := results;
+end;
+
+procedure TTearDownFixtureFailureTests.TearDownFixture_Failure_Is_Reported_Once;
+var
+  rttiContext : TRttiContext;
+  rttiType : TRttiType;
+  fixture : ITestFixture;
+  instance : TTearDownFixtureFails;
+  results : IRunResults;
+  testResult : ITestResult;
+  tearDownErrors : integer;
+  testNames : string;
+begin
+  rttiContext := TRttiContext.Create;
+  rttiType := rttiContext.GetType(TTearDownFixtureFails);
+  fixture := TDUnitXTestFixture.Create('ATearDownFixtureFails', '', TTearDownFixtureFails, 'AUnit') as ITestFixture;
+  instance := fixture.FixtureInstance as TTearDownFixtureFails;
+  fixture.AddTest('PassesOne', instance.PassesOne, 'PassesOne', '', rttiType.GetMethod('PassesOne'));
+  fixture.AddTest('PassesTwo', instance.PassesTwo, 'PassesTwo', '', rttiType.GetMethod('PassesTwo'));
+  fixture.SetTearDownFixtureMethod('TearDownFixture', instance.TearDownFixture, false);
+
+  results := RunFixtureOnItsOwnThread(fixture, testNames);
+
+  tearDownErrors := 0;
+  for testResult in results.GetAllTestResults do
+    if (testResult.ResultType = TTestResultType.Error) and (Pos('TearDownFixture failed', testResult.Message) > 0) then
+      Inc(tearDownErrors);
+  Assert.AreEqual(2, results.PassCount, 'both tests passed');
+  Assert.AreEqual(3, results.TestCount, 'two tests and one TearDownFixture error, no test reported twice');
+  Assert.AreEqual(1, tearDownErrors, 'the TearDownFixture failure is reported once');
+  Assert.AreEqual(',PassesOne,PassesTwo,TearDownFixture,', testNames, 'the results and their tests');
+end;
+
 initialization
   TDUnitX.RegisterTestFixture(TTestClassWithNonPublicSetup);
   TDUnitX.RegisterTestFixture(TTestClassWithTestSource);
   TDUnitX.RegisterTestFixture(TTestRepeatAttribute);
   TDUnitX.RegisterTestFixture(TTestMaxTimeAttribute);
   TDUnitX.RegisterTestFixture(TDUnitXTestFixtureTests);
+  TDUnitX.RegisterTestFixture(TTearDownFixtureFailureTests);
 
 end.
 
