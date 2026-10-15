@@ -35,6 +35,8 @@ uses
 
 //Defines the command line options for DUnitX. Add any new options definitions
 
+procedure RegisterOptions;
+
 implementation
 
 uses

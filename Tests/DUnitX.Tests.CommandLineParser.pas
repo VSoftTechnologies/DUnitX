@@ -98,13 +98,17 @@ type
     [Test]
     procedure Will_Generate_Error_For_Invalid_Set;
 
+    [Test]
+    procedure DontShowIgnored_Uses_Its_Value;
+
   end;
 
 implementation
 
 uses
   Classes,
-  DUnitX.CommandLine.OptionDef;
+  DUnitX.CommandLine.OptionDef,
+  DUnitX.OptionsDefinition;
 
 { TCommandLineParserTests }
 
@@ -508,6 +512,35 @@ begin
   end;
   Assert.IsTrue(parseResult.HasErrors);
 
+end;
+
+procedure TCommandLineParserTests.DontShowIgnored_Uses_Its_Value;
+var
+  sList : TStringList;
+  parseResult : ICommandLineParseResult;
+  oldValue : boolean;
+begin
+  oldValue := TDUnitX.Options.DontShowIgnored;
+  sList := TStringList.Create;
+  try
+    RegisterOptions;
+
+    TDUnitX.Options.DontShowIgnored := true;
+    sList.Add('--dontshowignored:false');
+    parseResult := TOptionsRegistry.Parse(sList);
+    Assert.IsFalse(parseResult.HasErrors, parseResult.ErrorText);
+    Assert.IsFalse(TDUnitX.Options.DontShowIgnored, '--dontshowignored:false');
+
+    TDUnitX.Options.DontShowIgnored := false;
+    sList.Clear;
+    sList.Add('--dontshowignored');
+    parseResult := TOptionsRegistry.Parse(sList);
+    Assert.IsFalse(parseResult.HasErrors, parseResult.ErrorText);
+    Assert.IsTrue(TDUnitX.Options.DontShowIgnored, '--dontshowignored');
+  finally
+    sList.Free;
+    TDUnitX.Options.DontShowIgnored := oldValue;
+  end;
 end;
 
 initialization
