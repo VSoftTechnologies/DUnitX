@@ -620,11 +620,9 @@ type
     function AsWord : Word;
 
     function ToObject : TObject;
-    function ToVarRec : TVarRec;
 
     class function ToString(const Value : TValue) : string; overload; static;
     class function ToString(const Values : array of TValue) : string; overload; static;
-    class function ToVarRecs(const Values : array of TValue) : TArray<TVarRec>; static;
     class function Equals(const Left, Right : TArray<TValue>) : Boolean; overload; static;
     class function Equals<T>(const Left, Right : T) : Boolean; overload; static;
 
@@ -3006,70 +3004,6 @@ begin
     else
       Result := Result + TValue.ToString(Values[i]);
   end;
-end;
-
-function TValueHelper.ToVarRec : TVarRec;
-begin
-  case Kind of
-    tkInteger :
-      begin
-        Result.VType := vtInteger;
-        Result.VInteger := AsInteger;
-      end;
-{$IFNDEF NEXTGEN}
-    tkChar :
-      begin
-        Result.VType := vtChar;
-        Result.VChar := AsType<AnsiChar>;
-      end;
-{$ENDIF}
-    tkEnumeration :
-      begin
-        if IsBoolean then
-        begin
-          Result.VType := vtBoolean;
-          Result.VBoolean := AsBoolean;
-        end
-        else
-        begin
-          Result.VType := vtInteger;
-          Result.VInteger := AsInteger;
-        end;
-      end;
-    tkFloat :
-      begin
-        if IsCurrency then
-        begin
-          Result.VType := vtCurrency;
-          Result.VCurrency := GetReferenceToRawData;
-        end
-        else
-        begin
-          Result.VType := vtExtended;
-          Result.VExtended := GetReferenceToRawData;
-        end;
-      end;
-    tkString, tkUString :
-      begin
-        Result.VType := vtUnicodeString;
-        Result.VUnicodeString := Pointer(AsString);
-      end;
-    tkClass, tkInterface :
-      begin
-        Result.VType := vtUnicodeString;
-        Result.VUnicodeString := Pointer(ToObject.ToString);
-      end;
-  end;
-end;
-
-class function TValueHelper.ToVarRecs(
-  const Values : array of TValue) : TArray<TVarRec>;
-var
-  i : Integer;
-begin
-  SetLength(Result, Length(Values));
-  for i := Low(Values) to High(Values) do
-    Result[i] := Values[i].ToVarRec;
 end;
 
 class function TValueHelper.ToString(const Value : TValue) : string;
