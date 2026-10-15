@@ -120,6 +120,8 @@ type
 
     procedure ExecuteTests(const context : ITestExecuteContext; const threadId : TThreadID; const fixture : ITestFixture; const fixtureResult :
       IFixtureResult);
+    //Starts the log that the next result carries.
+    procedure ClearLogMessages;
 
     function ExecuteTest(const context : ITestExecuteContext; const threadId : TThreadID; const test : ITest; const memoryAllocationProvider :
       IMemoryLeakMonitor) : ITestResult;
@@ -341,6 +343,12 @@ begin
     LMsg := Format(SSetupTestTeardownBytesLeaked, [LSetUpMemoryAllocated + LTestMemoryAllocated + LTearDownMemoryAllocated]) + LMsg;
     errorResult := TDUnitXTestResult.Create(testInfo, TTestResultType.MemoryLeak, LMsg);
   end;
+end;
+
+procedure TDUnitXTestRunner.ClearLogMessages;
+begin
+  FLogMessages.Clear;
+  SetLength(FLogMessagesEx, 0);
 end;
 
 constructor TDUnitXTestRunner.Create;
@@ -720,6 +728,7 @@ end;
 function TDUnitXTestRunner.ExecuteSetupFixtureMethod(const context : ITestExecuteContext; const threadId : TThreadID; const fixture : ITestFixture; const
   fixtureResult : IFixtureResult) : boolean;
 begin
+  ClearLogMessages;
   try
     Self.Loggers_SetupFixture(threadid, fixture as ITestFixtureInfo);
     fixture.SetupFixtureMethod;
@@ -753,6 +762,7 @@ var
   tearDownTest : ITest;
   tearDownResult : ITestResult;
 begin
+  ClearLogMessages;
   try
     Self.Loggers_TeardownFixture(threadId, fixture as ITestFixtureInfo);
     fixture.ExecuteFixtureTearDown;     //deals with destructors in a way that stops memory leak reporting from reporting bogus leaks.
@@ -782,8 +792,6 @@ var
 begin
   if Supports(test, ITestExecute, testExecute) then
   begin
-    FLogMessages.Clear;
-    SetLength(FLogMessagesEx, 0);
     FCurrentTestName := test.Name;
     try
       Self.Loggers_ExecuteTest(threadId, test as ITestInfo);
@@ -846,6 +854,8 @@ begin
     testResult := nil;
     tearDownResult := nil;
     memoryAllocationResult := nil;
+    //A result carries what was logged from its test's Setup on, and nothing from the test before it.
+    ClearLogMessages;
 
     Self.Loggers_BeginTest(threadId, test as ITestInfo);
 
