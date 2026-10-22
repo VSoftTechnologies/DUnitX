@@ -76,6 +76,24 @@ type
 {$ENDIF}
 
     [Test]
+    procedure AreEqual_Int64_Integer_Throws_No_Exception_When_Values_Are_Equal;
+
+    [Test]
+    procedure AreEqual_Integer_Int64_Throws_No_Exception_When_Values_Are_Equal;
+
+    [Test]
+    procedure AreEqual_Int64_Integer_Throws_ETestFailure_When_Values_Are_NotEqual;
+
+    [Test]
+    procedure AreEqual_Integer_Int64_Throws_ETestFailure_When_Values_Are_NotEqual;
+
+    [Test]
+    procedure AreEqual_Int64_Integer_Compares_All_64_Bits;
+
+    [Test]
+    procedure AreEqual_Integer_Int64_Compares_All_64_Bits;
+
+    [Test]
     procedure AreEqual_Cardinal_Reports_Large_Values_Unsigned;
 
     [Test]
@@ -1293,6 +1311,90 @@ begin
     end, ETestFailure, Format('[%d] is Not Equal to [%d] %s', [2, 1, '']));
 end;
 {$ENDIF}
+
+procedure TTestsAssert.AreEqual_Int64_Integer_Throws_No_Exception_When_Values_Are_Equal;
+begin
+  Assert.WillNotRaiseAny(
+    procedure
+    var
+      value : Double;
+      expected : Integer;
+    begin
+      value := 2.6;
+      expected := 3;
+      Assert.AreEqual(Round(value), expected);
+    end);
+end;
+
+procedure TTestsAssert.AreEqual_Integer_Int64_Throws_No_Exception_When_Values_Are_Equal;
+begin
+  Assert.WillNotRaiseAny(
+    procedure
+    var
+      value : Double;
+      expected : Integer;
+    begin
+      value := 2.6;
+      expected := 3;
+      Assert.AreEqual(expected, Round(value));
+    end);
+end;
+
+procedure TTestsAssert.AreEqual_Int64_Integer_Throws_ETestFailure_When_Values_Are_NotEqual;
+begin
+  Assert.WillRaise(
+    procedure
+    var
+      value : Double;
+      other : Integer;
+    begin
+      value := 2.6;
+      other := 2;
+      Assert.AreEqual(Round(value), other);
+    end, ETestFailure);
+end;
+
+procedure TTestsAssert.AreEqual_Integer_Int64_Throws_ETestFailure_When_Values_Are_NotEqual;
+begin
+  Assert.WillRaise(
+    procedure
+    var
+      value : Double;
+      other : Integer;
+    begin
+      value := 2.6;
+      other := 2;
+      Assert.AreEqual(other, Round(value));
+    end, ETestFailure);
+end;
+
+procedure TTestsAssert.AreEqual_Int64_Integer_Compares_All_64_Bits;
+begin
+  Assert.WillRaise(
+    procedure
+    var
+      wide : Int64;
+      narrow : Integer;
+    begin
+      wide := $100000001;
+      narrow := 1;
+      Assert.AreEqual(wide, narrow);
+    end, ETestFailure);
+end;
+
+procedure TTestsAssert.AreEqual_Integer_Int64_Compares_All_64_Bits;
+begin
+  Assert.WillRaise(
+    procedure
+    var
+      wide : Int64;
+      narrow : Integer;
+    begin
+      wide := $100000001;
+      narrow := 1;
+      Assert.AreEqual(narrow, wide);
+    end, ETestFailure);
+end;
 
 procedure TTestsAssert.AreEqual_Cardinal_Reports_Large_Values_Unsigned;
 var
