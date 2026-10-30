@@ -198,7 +198,7 @@ begin
     FExceptionMessage := FExceptionMessage + AThrownException.Message;
   FExceptionAddress := Addrs;
 
-  if FExceptionClass = ETestFailureStrCompare then
+  if AThrownException is ETestFailureStrCompare then
   begin
     StrCompareEx := AThrownException as ETestFailureStrCompare;
     FIsComparable := True;
