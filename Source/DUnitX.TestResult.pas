@@ -195,7 +195,11 @@ begin
 
   FExceptionMessage := FMessage;
   if FMessage <> AThrownException.Message then
+  begin
+    if (FExceptionMessage <> '') and (AThrownException.Message <> '') then
+      FExceptionMessage := FExceptionMessage + sLineBreak;
     FExceptionMessage := FExceptionMessage + AThrownException.Message;
+  end;
   FExceptionAddress := Addrs;
 
   if FExceptionClass = ETestFailureStrCompare then
