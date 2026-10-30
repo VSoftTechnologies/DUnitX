@@ -99,6 +99,92 @@ type
     procedure TestDateTimeConversion2(const locale : string; const text : string);
 
     [Test]
+    [TestCase('EN-US 01/02/2020, both readings agree', 'EN-US,01/02/2020,2020,1,2')]
+    [TestCase('EN-GB 01/02/2020, the readings disagree', 'EN-GB,01/02/2020,0,0,0')]
+    [TestCase('EN-GB 22/06/2020, only the locale reads it', 'EN-GB,22/06/2020,2020,6,22')]
+    [TestCase('DE 01/02/2020, only the invariant format reads it', 'DE,01/02/2020,2020,1,2')]
+    [TestCase('DE 22.06.2020', 'DE,22.06.2020,2020,6,22')]
+    [TestCase('NL 22-06-20 is not ISO 8601', 'nl-NL,22-06-20,2020,6,22')]
+    [TestCase('NL iso8601 format', 'nl-NL,2020-06-22,2020,6,22')]
+    [TestCase('JA 22/06/2020, not in the locale order', 'ja-JP,22/06/2020,0,0,0')]
+    procedure Date_Converts_Only_When_Its_Meaning_Is_Unambiguous(const locale : string; const text : string;
+      const year, month, day : Word);
+
+    [Test]
+    [TestCase('EN-US 01/02/2020 10:30, both readings agree', 'EN-US,01/02/2020 10:30,2020,1,2')]
+    [TestCase('EN-GB 01/02/2020 10:30, the readings disagree', 'EN-GB,01/02/2020 10:30,0,0,0')]
+    [TestCase('NL 22-06-20 10:30 is not ISO 8601', 'nl-NL,22-06-20 10:30,2020,6,22')]
+    [TestCase('NL iso8601 format, verbose', 'nl-NL,2020-06-22T10:30:00Z,2020,6,22')]
+    [TestCase('DE iso8601 format, verbose', 'DE,2020-06-22T10:30:00.000Z,2020,6,22')]
+    [TestCase('EN-GB iso8601, zone hh:mm', 'EN-GB,2020-06-22T10:30+02:00,2020,6,22')]
+    [TestCase('EN-GB iso8601, zone hhmm', 'EN-GB,2020-06-22T10:30:00-0500,2020,6,22')]
+    [TestCase('EN-GB iso8601, zone hh', 'EN-GB,2020-06-22 10:30:00.000-05,2020,6,22')]
+    [TestCase('JA 22/06/2020, the year is not an hour', 'ja-JP,22/06/2020,0,0,0')]
+    [TestCase('JA 22/06/2020 10:30, not in the locale order', 'ja-JP,22/06/2020 10:30,0,0,0')]
+    [TestCase('ZH 22/06/2020 10:30, not in the locale order', 'zh-CN,22/06/2020 10:30,0,0,0')]
+    [TestCase('SV 22-06-2020, the year is not an hour', 'sv-SE,22-06-2020,0,0,0')]
+    [TestCase('SV 1-2-2020, the year is not an hour', 'sv-SE,1-2-2020,0,0,0')]
+    procedure DateTime_Converts_Only_When_Its_Meaning_Is_Unambiguous(const locale : string; const text : string;
+      const year, month, day : Word);
+
+    [Test]
+    [TestCase('FI 10.30, only the locale reads it', 'fi-FI,10.30,10,30')]
+    [TestCase('EN-GB 10:30 pm', 'EN-GB,10:30 pm,22,30')]
+    [TestCase('DE iso8601 format', 'DE,10:30:00.000,10,30')]
+    procedure Time_Converts_In_Every_Locale(const locale : string; const text : string; const hour, minute : Word);
+
+    [Test]
+    [TestCase('EN-US', 'EN-US')]
+    [TestCase('EN-GB', 'EN-GB')]
+    [TestCase('DE', 'DE')]
+    [TestCase('NL', 'nl-NL')]
+    [TestCase('JA', 'ja-JP')]
+    [TestCase('ZH', 'zh-CN')]
+    [TestCase('FI', 'fi-FI')]
+    [TestCase('SV', 'sv-SE')]
+    [TestCase('KO, the afternoon marker before the time', 'ko-KR')]
+    procedure Date_And_Time_Formatted_In_The_Locale_Read_Back(const locale : string);
+
+    [Test]
+    procedure Unparseable_Date_Or_Time_Does_Not_Convert;
+
+    [Test]
+    [TestCase('Text inside', '2020-06-22 foo 18:36')]
+    [TestCase('Text after the time', '2020-06-22 18:36 extra')]
+    [TestCase('Text after a space', '2020-06-22 xyz')]
+    [TestCase('Text after the date', '2020-06-22X')]
+    [TestCase('One-digit month', '2020-6-22')]
+    [TestCase('Hour only', '2020-06-22 18')]
+    [TestCase('No such day', '2020-02-30')]
+    [TestCase('No such hour', '2020-06-22T25:00')]
+    [TestCase('One-digit zone', '2020-06-22T18:36+2')]
+    [TestCase('No digit after the point', '2020-06-22T18:36:00.')]
+    procedure Iso8601_Lookalike_Does_Not_Convert(const text : string);
+
+    [Test]
+    [TestCase('One digit', '2020-06-22T18:36:00.5,500')]
+    [TestCase('Two digits', '2020-06-22T18:36:00.25,250')]
+    [TestCase('Three digits', '2020-06-22T18:36:00.123,123')]
+    [TestCase('Six digits', '2020-06-22 18:36:00.123456,123')]
+    procedure Iso8601_Fraction_Is_A_Fraction_Of_A_Second(const text : string; const milliseconds : Word);
+
+    [Test]
+    [TestCase('Point', '18:36:00.5;500', ';')]
+    [TestCase('Comma', '18:36:00,25;250', ';')]
+    [TestCase('Zone', '18:36:00.5Z;500', ';')]
+    procedure Iso8601_Time_Fraction_Is_A_Fraction_Of_A_Second(const text : string; const milliseconds : Word);
+
+    [Test]
+    [TestCase('Point', '18:36:00.5;500', ';')]
+    [TestCase('Zone', '18:36:00.25Z;250', ';')]
+    procedure Iso8601_Time_As_DateTime_Fraction_Is_A_Fraction_Of_A_Second(const text : string; const milliseconds : Word);
+
+    [Test]
+    [TestCase('No such hour', '25:00')]
+    [TestCase('No such minute', '18:60')]
+    procedure Time_Out_Of_Range_Does_Not_Convert(const text : string);
+
+    [Test]
     [TestCase('claRed = xFFFF0000', 'claRed,xFFFF0000')]
     [TestCase('Red = xFFFF0000', 'Red,xFFFF0000')]
     [TestCase('red = xFFFF0000', 'red,xFFFF0000')]
@@ -218,6 +304,18 @@ begin
     result := 2057
   else if locale = 'DE' then
     result := 1031
+  else if locale = 'nl-NL' then
+    result := 1043
+  else if locale = 'fi-FI' then
+    result := 1035
+  else if locale = 'ja-JP' then
+    result := 1041
+  else if locale = 'zh-CN' then
+    result := 2052
+  else if locale = 'sv-SE' then
+    result := 1053
+  else if locale = 'ko-KR' then
+    result := 1042
   else
     raise Exception.Create('Unsupported locale passed to GetLCIDFromLocale function');
 end;
@@ -310,6 +408,175 @@ begin
   expected := (expectedDate + expectedTime);
   actual := StrToDateTime(text);
   Assert.IsSameDateTime(expected, actual, 'SameDateTime(..)');
+end;
+
+//A year of 0 means the value must not convert: the invariant format and the locale read it as different dates
+procedure TValueHelperTests.Date_Converts_Only_When_Its_Meaning_Is_Unambiguous(const locale, text : string;
+  const year, month, day : Word);
+var
+  asTValue : TValue;
+  converted : Boolean;
+begin
+  setFormatSettings(locale);
+  try
+    converted := TValue.From(text).TryConvert<TDate>(asTValue);
+  finally
+    revertFormatSettings();
+  end;
+  if year = 0 then
+    Assert.IsFalse(converted, 'An ambiguous or misread date must not convert')
+  else
+  begin
+    Assert.IsTrue(converted, 'TryConvert<TDate>');
+    Assert.IsSameDate(EncodeDate(year, month, day), asTValue.AsType<TDate>(), 'TDate');
+  end;
+end;
+
+//A year of 0 means the value must not convert; the time of every other case is 10:30
+procedure TValueHelperTests.DateTime_Converts_Only_When_Its_Meaning_Is_Unambiguous(const locale, text : string;
+  const year, month, day : Word);
+var
+  asTValue : TValue;
+  converted : Boolean;
+begin
+  setFormatSettings(locale);
+  try
+    converted := TValue.From(text).TryConvert<TDateTime>(asTValue);
+  finally
+    revertFormatSettings();
+  end;
+  if year = 0 then
+    Assert.IsFalse(converted, 'An ambiguous or misread date must not convert')
+  else
+  begin
+    Assert.IsTrue(converted, 'TryConvert<TDateTime>');
+    Assert.IsSameDateTime(EncodeDateTime(year, month, day, 10, 30, 0, 0), asTValue.AsType<TDateTime>(), 'TDateTime');
+  end;
+end;
+
+procedure TValueHelperTests.Time_Converts_In_Every_Locale(const locale, text : string; const hour, minute : Word);
+var
+  asTValue : TValue;
+  converted : Boolean;
+begin
+  setFormatSettings(locale);
+  try
+    converted := TValue.From(text).TryConvert<TTime>(asTValue);
+  finally
+    revertFormatSettings();
+  end;
+  Assert.IsTrue(converted, 'TryConvert<TTime>');
+  Assert.IsSameTime(EncodeTime(hour, minute, 0, 0), asTValue.AsType<TTime>(), 'TTime');
+end;
+
+//What the locale itself writes has to read back, as the same value
+procedure TValueHelperTests.Date_And_Time_Formatted_In_The_Locale_Read_Back(const locale : string);
+var
+  expected : TDateTime;
+  asTValue : TValue;
+begin
+  expected := EncodeDateTime(2020, 6, 22, 18, 36, 0, 0);
+  setFormatSettings(locale);
+  try
+    Assert.IsTrue(TValue.From(DateTimeToStr(expected)).TryConvert<TDateTime>(asTValue), DateTimeToStr(expected));
+    Assert.IsSameDateTime(expected, asTValue.AsType<TDateTime>(), DateTimeToStr(expected));
+    Assert.IsTrue(TValue.From(DateToStr(expected)).TryConvert<TDate>(asTValue), DateToStr(expected));
+    Assert.IsSameDate(expected, asTValue.AsType<TDate>(), DateToStr(expected));
+    Assert.IsTrue(TValue.From(TimeToStr(expected)).TryConvert<TTime>(asTValue), TimeToStr(expected));
+    Assert.IsSameTime(expected, asTValue.AsType<TTime>(), TimeToStr(expected));
+  finally
+    revertFormatSettings();
+  end;
+end;
+
+procedure TValueHelperTests.Unparseable_Date_Or_Time_Does_Not_Convert;
+var
+  asTValue : TValue;
+begin
+  //These used to convert to 0 (30/12/1899), so the test case ran with a date nobody wrote
+  Assert.IsFalse(TValue.From<string>('notadate').TryConvert<TDate>(asTValue), 'TDate');
+  Assert.IsFalse(TValue.From<string>('notadate').TryConvert<TDateTime>(asTValue), 'TDateTime');
+  Assert.IsFalse(TValue.From<string>('notatime').TryConvert<TTime>(asTValue), 'TTime');
+end;
+
+//Each starts with a four-digit year and '-' but is not ISO 8601, and no UK format reads it either: it must not convert,
+//rather than be read in part
+procedure TValueHelperTests.Iso8601_Lookalike_Does_Not_Convert(const text : string);
+var
+  asTValue : TValue;
+  dateConverted : Boolean;
+  dateTimeConverted : Boolean;
+begin
+  setFormatSettings('EN-GB');
+  try
+    dateConverted := TValue.From(text).TryConvert<TDate>(asTValue);
+    dateTimeConverted := TValue.From(text).TryConvert<TDateTime>(asTValue);
+  finally
+    revertFormatSettings();
+  end;
+  Assert.IsFalse(dateConverted, 'TDate');
+  Assert.IsFalse(dateTimeConverted, 'TDateTime');
+end;
+
+//The digits after the point are a decimal fraction of a second: '.5' is half a second, not 5 milliseconds
+procedure TValueHelperTests.Iso8601_Fraction_Is_A_Fraction_Of_A_Second(const text : string; const milliseconds : Word);
+var
+  asTValue : TValue;
+begin
+  Assert.IsTrue(TValue.From(text).TryConvert<TDateTime>(asTValue), 'TryConvert<TDateTime>');
+  Assert.AreEqual(Integer(milliseconds), Integer(MilliSecondOf(asTValue.AsType<TDateTime>())), 'Milliseconds');
+  Assert.IsSameDateTime(EncodeDateTime(2020, 6, 22, 18, 36, 0, milliseconds), asTValue.AsType<TDateTime>(), 'TDateTime');
+end;
+
+//The same for a time on its own
+procedure TValueHelperTests.Iso8601_Time_Fraction_Is_A_Fraction_Of_A_Second(const text : string;
+  const milliseconds : Word);
+var
+  asTValue : TValue;
+  converted : Boolean;
+begin
+  setFormatSettings('EN-GB');
+  try
+    converted := TValue.From(text).TryConvert<TTime>(asTValue);
+  finally
+    revertFormatSettings();
+  end;
+  Assert.IsTrue(converted, 'TryConvert<TTime>');
+  Assert.AreEqual(Integer(milliseconds), Integer(MilliSecondOf(asTValue.AsType<TTime>())), 'Milliseconds');
+  Assert.IsSameTime(EncodeTime(18, 36, 0, milliseconds), asTValue.AsType<TTime>(), 'TTime');
+end;
+
+//The same for a time on its own read as a date and time
+procedure TValueHelperTests.Iso8601_Time_As_DateTime_Fraction_Is_A_Fraction_Of_A_Second(const text : string;
+  const milliseconds : Word);
+var
+  asTValue : TValue;
+  converted : Boolean;
+begin
+  setFormatSettings('EN-GB');
+  try
+    converted := TValue.From(text).TryConvert<TDateTime>(asTValue);
+  finally
+    revertFormatSettings();
+  end;
+  Assert.IsTrue(converted, 'TryConvert<TDateTime>');
+  Assert.AreEqual(Integer(milliseconds), Integer(MilliSecondOf(asTValue.AsType<TDateTime>())), 'Milliseconds');
+  Assert.IsSameDateTime(EncodeTime(18, 36, 0, milliseconds), asTValue.AsType<TDateTime>(), 'TDateTime');
+end;
+
+//Used to convert to midnight
+procedure TValueHelperTests.Time_Out_Of_Range_Does_Not_Convert(const text : string);
+var
+  asTValue : TValue;
+  converted : Boolean;
+begin
+  setFormatSettings('EN-GB');
+  try
+    converted := TValue.From(text).TryConvert<TTime>(asTValue);
+  finally
+    revertFormatSettings();
+  end;
+  Assert.IsFalse(converted, 'TTime');
 end;
 
 procedure TValueHelperTests.TestTimeConversion(const locale, text : string);
