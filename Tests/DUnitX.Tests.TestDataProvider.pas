@@ -55,6 +55,15 @@ type
     procedure Unknown_Enum_Name_Errors_The_Test_Case;
   end;
 
+  [TestFixture]
+  TTestCaseValueCountTests = class
+  public
+    [Test]
+    procedure TestCase_With_Too_Many_Values_Errors_The_Test_Case;
+    [Test]
+    procedure Provider_Or_Source_With_More_Values_Than_Parameters_Still_Runs;
+  end;
+
 implementation
 
 uses
@@ -99,6 +108,38 @@ type
     [Test]
     [TestCase('Unknown', 'ctBogus')]
     procedure UnknownName(const value : TConversionTestEnum);
+  end;
+
+  //Not a fixture: the test below generates its tests and runs them itself.
+  TSeparatorTestCases = class
+  public
+    [Test]
+    [TestCase('OtherSeparator', '1,000', '|')]
+    procedure OtherSeparator(const value : string);
+    [Test]
+    [TestCase('SplitAtComma', '1,000')]
+    procedure SplitAtComma(const value : string);
+    [Test]
+    [TestCase('NoParameters', '1')]
+    procedure NoParameters;
+  end;
+
+  //Supplies one case with two values
+  TwoValuesSourceAttribute = class(CustomTestCaseSourceAttribute)
+  protected
+    function GetCaseInfoArray : TestCaseInfoArray; override;
+  end;
+
+  //Not a fixture: the test below generates its tests and runs them itself.  Each method takes fewer values than it is
+  //given, which a provider or a source may do.
+  TMoreValuesThanParametersCases = class
+  public
+    [Test]
+    [TestCaseProvider('Sampleprovider')]
+    procedure FromProvider(const value1 : integer);
+    [Test]
+    [TwoValuesSource]
+    procedure FromSource(const value1 : integer);
   end;
 
 { TSampleProvider }
@@ -299,10 +340,130 @@ begin
   Assert.AreEqual(3, count, 'three [TestCase] tests');
 end;
 
+{ TSeparatorTestCases }
+
+procedure TSeparatorTestCases.OtherSeparator(const value : string);
+begin
+  Assert.AreEqual('1,000', value);
+end;
+
+procedure TSeparatorTestCases.SplitAtComma(const value : string);
+begin
+  //Errors before it runs: '1,000' is split at the comma, into two values for one parameter
+end;
+
+procedure TSeparatorTestCases.NoParameters;
+begin
+  //Errors before it runs: one value for no parameters
+end;
+
+{ TwoValuesSourceAttribute }
+
+function TwoValuesSourceAttribute.GetCaseInfoArray : TestCaseInfoArray;
+begin
+  SetLength(Result, 1);
+  Result[0].Name := 'TwoValues';
+  SetLength(Result[0].Values, 2);
+  Result[0].Values[0] := 1;
+  Result[0].Values[1] := 2;
+end;
+
+{ TMoreValuesThanParametersCases }
+
+procedure TMoreValuesThanParametersCases.FromProvider(const value1 : integer);
+begin
+  Assert.IsTrue(value1 > 0, 'the first value of the case');
+end;
+
+procedure TMoreValuesThanParametersCases.FromSource(const value1 : integer);
+begin
+  Assert.AreEqual(1, value1, 'the first value of the case');
+end;
+
+{ TTestCaseValueCountTests }
+
+procedure TTestCaseValueCountTests.TestCase_With_Too_Many_Values_Errors_The_Test_Case;
+var
+  fixture : ITestFixture;
+  provider : TDUnitXFixtureProvider;
+  providerIntf : IFixtureProvider;
+  test : ITest;
+  testExecute : ITestExecute;
+  count : integer;
+begin
+  fixture := TDUnitXTestFixture.Create('ASeparatorFixture', '', TSeparatorTestCases, 'AUnit') as ITestFixture;
+  provider := TDUnitXFixtureProvider.Create;
+  providerIntf := provider;
+  TFixtureProviderAccess(provider).GenerateTests(nil, fixture);
+
+  count := 0;
+  for test in fixture.Tests do
+  begin
+    Inc(count);
+    testExecute := test as ITestExecute;
+    if test.MethodName = 'OtherSeparator' then
+      Assert.WillNotRaiseAny(
+        procedure
+        begin
+          testExecute.Execute(nil);
+        end, test.Name + ' keeps the comma in its value')
+    else if test.MethodName = 'SplitAtComma' then
+      Assert.WillRaiseWithMessage(
+        procedure
+        begin
+          testExecute.Execute(nil);
+        end, ETestFrameworkException, 'Too many values: 2 values for 1 parameter (does a value contain the separator?)',
+        test.Name + ' runs with a value it has no parameter for')
+    else
+      Assert.WillRaiseWithMessage(
+        procedure
+        begin
+          testExecute.Execute(nil);
+        end, ETestFrameworkException, 'Too many values: 1 value for 0 parameters (does a value contain the separator?)',
+        test.Name + ' runs with a value it has no parameter for');
+  end;
+  Assert.AreEqual(3, count, 'three [TestCase] tests');
+end;
+
+procedure TTestCaseValueCountTests.Provider_Or_Source_With_More_Values_Than_Parameters_Still_Runs;
+var
+  fixture : ITestFixture;
+  provider : TDUnitXFixtureProvider;
+  providerIntf : IFixtureProvider;
+  test : ITest;
+  testExecute : ITestExecute;
+  providerCount : integer;
+  sourceCount : integer;
+begin
+  fixture := TDUnitXTestFixture.Create('AMoreValuesFixture', '', TMoreValuesThanParametersCases, 'AUnit') as ITestFixture;
+  provider := TDUnitXFixtureProvider.Create;
+  providerIntf := provider;
+  TFixtureProviderAccess(provider).GenerateTests(nil, fixture);
+
+  providerCount := 0;
+  sourceCount := 0;
+  for test in fixture.Tests do
+  begin
+    if test.MethodName = 'FromProvider' then
+      Inc(providerCount)
+    else
+      Inc(sourceCount);
+    testExecute := test as ITestExecute;
+    Assert.WillNotRaiseAny(
+      procedure
+      begin
+        testExecute.Execute(nil);
+      end, test.Name + ' uses the values it has parameters for');
+  end;
+  Assert.IsTrue(providerCount > 0, 'provider tests');
+  Assert.AreEqual(1, sourceCount, 'source tests');
+end;
+
 initialization
   TestDataProviderManager.RegisterProvider('Sampleprovider', TSampleProvider);
   TDUnitX.RegisterTestFixture(TestFixtureProviderTest);
   TDUnitX.RegisterTestFixture(TWillRaiseTestCaseTests);
   TDUnitX.RegisterTestFixture(TEnumTestCaseConversionTests);
+  TDUnitX.RegisterTestFixture(TTestCaseValueCountTests);
 end.
 
