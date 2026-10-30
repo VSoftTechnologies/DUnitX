@@ -157,6 +157,8 @@ type
     procedure FixtureResult_Namespace_Is_The_Fixture_Namespace;
     [Test]
     procedure WillRaiseTest_Releases_The_Context_After_Execute;
+    [Test]
+    procedure TestError_Of_A_StrCompare_Descendant_Is_Comparable;
   end;
 {$M-}
 
@@ -175,10 +177,12 @@ uses
   Classes,
 {$ENDIF}
   DUnitX.Types,
+  DUnitX.Exceptions,
   DUnitX.Extensibility,
   DUnitX.FixtureResult,
   DUnitX.InternalInterfaces,
   DUnitX.RunResults,
+  DUnitX.TestResult,
   DUnitX.TestRunner;
 
 var
@@ -396,6 +400,36 @@ begin
   test.Execute(context);
   context := nil;
   Assert.IsTrue(_RaiseContextFreed, 'The [WillRaise] test still holds the context after Execute');
+end;
+
+type
+  //A custom string comparison failure, as a user's own assertion might raise.
+  ETestFailureStrCompareDescendant = class(ETestFailureStrCompare);
+
+procedure TDUnitXTestFixtureTests.TestError_Of_A_StrCompare_Descendant_Is_Comparable;
+var
+  rttiContext : TRttiContext;
+  fixture : ITestFixture;
+  instance : TTearDownFixtureFails;
+  testInfo : ITestInfo;
+  thrown : Exception;
+  error : ITestError;
+begin
+  rttiContext := TRttiContext.Create;
+  fixture := TDUnitXTestFixture.Create('ACompareFixture', '', TTearDownFixtureFails, 'AUnit') as ITestFixture;
+  instance := fixture.FixtureInstance as TTearDownFixtureFails;
+  testInfo := fixture.AddTest('PassesOne', instance.PassesOne, 'PassesOne', '',
+    rttiContext.GetType(TTearDownFixtureFails).GetMethod('PassesOne')) as ITestInfo;
+
+  thrown := ETestFailureStrCompareDescendant.Create('expected text', 'actual text', 'compare message', nil);
+  try
+    error := TDUnitXTestError.Create(testInfo, TTestResultType.Failure, thrown, nil, thrown.Message, nil);
+  finally
+    thrown.Free;
+  end;
+  Assert.IsTrue(error.IsComparable, 'a descendant of ETestFailureStrCompare is not comparable');
+  Assert.AreEqual('expected text', error.Expected, false, 'expected value not carried');
+  Assert.AreEqual('actual text', error.Actual, false, 'actual value not carried');
 end;
 
 { TRaiseContextSpy }
