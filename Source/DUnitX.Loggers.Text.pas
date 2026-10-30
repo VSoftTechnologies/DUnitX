@@ -59,7 +59,7 @@ type
       fOutput:   TStream;
       fOwnOut:   Boolean;
       fIndent:   Integer;
-      fIssues:   TStringList;
+      fIssues:   TList<TPair<string, string>>;
       fEncoding: TEncoding;
 
     function GetFixtureName(const Fixture : ITestFixtureInfo) : string;
@@ -109,7 +109,7 @@ implementation
 constructor TDunitXTextLogger.Create(const outputStream : TStream; const ownsStream : Boolean; encoding : TEncoding);
 begin
   inherited Create();
-  fIssues := TStringList.Create();
+  fIssues := TList<TPair<string, string>>.Create();
 
   fOutput := outputStream;
   fOwnOut := ownsStream;
@@ -192,21 +192,21 @@ procedure TDunitXTextLogger.OnTestError(const threadId : TThreadID; const Error 
 begin
   inherited;
   WriteLine('- Status: ERROR %s', [Error.Message]);
-  fIssues.Values[Error.Test.FullName] := Error.Message
+  fIssues.Add(TPair<string, string>.Create(Error.Test.FullName, Error.Message))
 end;
 
 procedure TDunitXTextLogger.OnTestFailure(const threadId : TThreadID; const Failure : ITestError);
 begin
   inherited;
   WriteLine('- Status: FAILURE %s', [Failure.Message]);
-  fIssues.Values[Failure.Test.FullName] := Failure.Message
+  fIssues.Add(TPair<string, string>.Create(Failure.Test.FullName, Failure.Message))
 end;
 
 procedure TDunitXTextLogger.OnTestIgnored(const threadId : TThreadID; const Ignored : ITestResult);
 begin
   inherited;
   WriteLine('- Status: IGNORED %s', [Ignored.Message]);
-  fIssues.Values[Ignored.Test.FullName] := Ignored.Message
+  fIssues.Add(TPair<string, string>.Create(Ignored.Test.FullName, Ignored.Message))
 end;
 
 procedure TDunitXTextLogger.OnTestingEnds(const RunResults : IRunResults);
@@ -225,9 +225,9 @@ begin
     IncIndent();
     for i := 0 to fIssues.Count - 1  do
       begin
-        WriteLine('%d %s', [i + 1, fIssues.Names[i]]);
+        WriteLine('%d %s', [i + 1, fIssues[i].Key]);
         IncIndent(2);
-        WriteLine(fIssues.ValueFromIndex[i]);
+        WriteLine(fIssues[i].Value);
         DecIndent(2)
       end;
     DecIndent();
@@ -274,7 +274,7 @@ procedure TDunitXTextLogger.OnTestMemoryLeak(const threadId : TThreadID; const T
 begin
   inherited;
   WriteLine('- Status: MEMORY LEAK %s', [TestResult.Message]);
-  fIssues.Values[TestResult.Test.FullName] := TestResult.Message
+  fIssues.Add(TPair<string, string>.Create(TestResult.Test.FullName, TestResult.Message))
 end;
 
 procedure TDunitXTextLogger.OnTestSuccess(const threadId : TThreadID; const TestResult : ITestResult);
