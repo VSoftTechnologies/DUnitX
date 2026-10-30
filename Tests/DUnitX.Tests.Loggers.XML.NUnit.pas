@@ -69,6 +69,15 @@ type
 {$ENDIF}
   end;
 
+{$IFDEF DELPHI_XE2_UP}
+  [TestFixture]
+  TDUnitX_LoggerTextTests = class
+  public
+    [Test]
+    procedure Issue_List_Keeps_Names_With_Equals_And_Empty_Messages;
+  end;
+{$ENDIF}
+
 implementation
 
 uses
@@ -91,6 +100,7 @@ uses
   DUnitX.Generics,
   DUnitX.FixtureResult,
   DUnitX.InternalInterfaces,
+  DUnitX.Loggers.Text,
   DUnitX.RunResults;
 
 const
@@ -560,7 +570,53 @@ begin
   end;
 end;
 
+{$IFDEF DELPHI_XE2_UP}
+procedure TDUnitX_LoggerTextTests.Issue_List_Keeps_Names_With_Equals_And_Empty_Messages;
+var
+  logger : ITestLogger;
+  stream : TStringStream;
+  mockTestA : TMock<ITestInfo>;
+  mockTestB : TMock<ITestInfo>;
+  mockFailure : TMock<ITestError>;
+  mockIgnored : TMock<ITestResult>;
+  runResults : IRunResults;
+  text : string;
+begin
+  stream := TStringStream.Create('', TEncoding.UTF8);
+  try
+    mockTestA := TMock<ITestInfo>.Create;
+    mockTestA.Setup.WillReturn('Fixture.Test(a=b)').When.FullName;
+    mockTestB := TMock<ITestInfo>.Create;
+    mockTestB.Setup.WillReturn('Fixture.Other').When.FullName;
+
+    mockFailure := TMock<ITestError>.Create;
+    mockFailure.Setup.WillReturn(mockTestA.InstanceAsValue).When.Test;
+    mockFailure.Setup.WillReturn('x=y').When.Message;
+    mockIgnored := TMock<ITestResult>.Create;
+    mockIgnored.Setup.WillReturn(mockTestB.InstanceAsValue).When.Test;
+    mockIgnored.Setup.WillReturn('').When.Message;
+
+    runResults := TDUnitXRunResults.Create;
+    logger := TDunitXTextLogger.Create(stream);
+    logger.OnTestFailure(0, mockFailure.Instance);
+    logger.OnTestIgnored(0, mockIgnored.Instance);
+    logger.OnTestingEnds(runResults);
+    text := stream.DataString;
+
+    Assert.Contains(text, '1 Fixture.Test(a=b)', False, 'a test name containing = was split');
+    Assert.Contains(text, 'x=y', False, 'the message was lost');
+    Assert.Contains(text, '2 Fixture.Other', False, 'an issue with an empty message was dropped');
+  finally
+    logger := nil;
+    stream.Free;
+  end;
+end;
+{$ENDIF}
+
 initialization
   TDUnitX.RegisterTestFixture(TDUnitX_LoggerXMLNUnitTests);
+{$IFDEF DELPHI_XE2_UP}
+  TDUnitX.RegisterTestFixture(TDUnitX_LoggerTextTests);
+{$ENDIF}
 end.
 
