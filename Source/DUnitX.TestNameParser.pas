@@ -66,7 +66,7 @@ begin
   nest := 0;
   result := -1;
 {$IFNDEF NEXTGEN}
-  while index < Length(arg) do
+  while index <= Length(arg) do
   begin
     case arg[index] of
       ',' :
@@ -87,7 +87,7 @@ begin
     Inc(index);
   end;
 {$ELSE}
-  while index < arg.Length - 1 do
+  while index < arg.Length do
   begin
     case arg.Chars[index] of
       ',' :
