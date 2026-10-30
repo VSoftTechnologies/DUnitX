@@ -126,6 +126,7 @@ type
   private
     FCaseName : string;
     FArgs : TValueArray;
+    FArgsError : string;
     FRttiMethod : TRttiMethod;
     FInstance : TObject;
     FExpectedException : ExceptClass;
@@ -157,6 +158,7 @@ uses
 {$IFDEF MSWINDOWS}
   DUnitX.Timeout,
 {$ENDIF}
+  DUnitX.Exceptions,
   DUnitX.Utils;
 
 { TDUnitXTest }
@@ -375,8 +377,15 @@ begin
     //Only keep as many arguments as there are params
     SetLength(FArgs, len);
     for index := 0 to Pred(len) do
-      if (index <= high(AArgs)) and Assigned(parameters[index].ParamType) and AArgs[index].TryConvert(parameters[index].ParamType.Handle, tmp) then
-        FArgs[index] := tmp;
+      if (index <= high(AArgs)) and Assigned(parameters[index].ParamType) then
+      begin
+        if AArgs[index].TryConvert(parameters[index].ParamType.Handle, tmp) then
+          FArgs[index] := tmp
+        else if FArgsError = '' then
+          //Reported when the case runs, so only this case errors
+          FArgsError := Format('Cannot convert ''%s'' to %s for parameter %s',
+            [AArgs[index].ToString, parameters[index].ParamType.Name, parameters[index].Name]);
+      end;
   end;
 end;
 
@@ -390,6 +399,10 @@ procedure TDUnitXTestCase.Execute(const context : ITestExecuteContext);
 begin
   FStartTime := Now();
   try
+    //Raised before [WillRaise] is applied, so an expected exception cannot hide it
+    if FArgsError <> '' then
+      raise ETestFrameworkException.Create(FArgsError);
+
     if FExpectedException = nil then
       InvokeMethod
     else if FExceptionInheritance = exDescendant then
