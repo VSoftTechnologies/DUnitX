@@ -1233,15 +1233,59 @@ begin
   Result := True;
 end;
 
-function ConvStr2Int(const ASource : TValue; ATarget : PTypeInfo; out AResult : TValue) : Boolean;
+//'$FF', '0xFF' and 'xFF', with a leading space or '+', as StrToInt64 reads them
+function IsHexLiteral(const AText : string) : Boolean;
+var
+  text : string;
 begin
-  if ATarget = TypeInfo(TAlphaColor) then
-    AResult := TValue.FromOrdinal(ATarget, StringToAlphaColor(ASource.AsString))
-  else if ATarget = TypeInfo(TColor) then
-    AResult := TValue.FromOrdinal(ATarget, StringToColor(ASource.AsString))
+  text := Trim(AText);
+  if (text <> '') and (text[1] = '+') then
+    Delete(text, 1, 1);
+  Result := (text <> '') and (CharInSet(text[1], ['$', 'x', 'X']) or
+    ((Length(text) > 1) and (text[1] = '0') and CharInSet(text[2], ['x', 'X'])));
+end;
+
+function ConvStr2Int(const ASource : TValue; ATarget : PTypeInfo; out AResult : TValue) : Boolean;
+var
+  lValue : Int64;
+  lTypeData : PTypeData;
+  lBits : Integer;
+begin
+  try
+    if ATarget = TypeInfo(TAlphaColor) then
+      lValue := StringToAlphaColor(ASource.AsString)
+    else if ATarget = TypeInfo(TColor) then
+      lValue := StringToColor(ASource.AsString)
+    else if not TryStrToInt64(ASource.AsString, lValue) then
+      Exit(False);
+  except
+    //StringToAlphaColor and StringToColor raise for a value they cannot read
+    on EConvertError do
+      Exit(False);
+  end;
+
+  lTypeData := GetTypeData(ATarget);
+
+  //A hex value that fits the type's width is its bit pattern, as it is in code: '$FFFFFFFF' is the Integer -1.  Only
+  //for a type that covers its whole width: in the subrange -10..10, '$FF' is 255, which does not fit
+  case lTypeData.OrdType of
+    otSByte : lBits := 8;
+    otSWord : lBits := 16;
+    otSLong : lBits := 32;
   else
-    AResult := TValue.FromOrdinal(ATarget, StrToInt64Def(ASource.AsString, 0));
-  Result := True;
+    lBits := 0;
+  end;
+  if (lBits > 0) and (lTypeData.MinValue = -(Int64(1) shl (lBits - 1))) and (lTypeData.MaxValue = (Int64(1) shl (lBits - 1)) - 1)
+    and (lValue > lTypeData.MaxValue) and (lValue < (Int64(1) shl lBits)) and IsHexLiteral(ASource.AsString) then
+    lValue := lValue - (Int64(1) shl lBits);
+
+  //FromOrdinal truncates a value outside the type's range ('300' would become the Byte 44)
+  if lTypeData.OrdType = otULong then
+    Result := (lValue >= Cardinal(lTypeData.MinValue)) and (lValue <= Cardinal(lTypeData.MaxValue))
+  else
+    Result := (lValue >= lTypeData.MinValue) and (lValue <= lTypeData.MaxValue);
+  if Result then
+    AResult := TValue.FromOrdinal(ATarget, lValue);
 end;
 
 function ConvStr2Ord(const ASource : TValue; ATarget : PTypeInfo; out AResult : TValue) : Boolean;
