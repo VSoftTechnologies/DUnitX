@@ -48,6 +48,13 @@ type
     procedure WillRaise_Applies_To_TestCase_And_TestCaseProvider_Tests;
   end;
 
+  [TestFixture]
+  TEnumTestCaseConversionTests = class
+  public
+    [Test]
+    procedure Unknown_Enum_Name_Errors_The_Test_Case;
+  end;
+
 implementation
 
 uses
@@ -76,6 +83,22 @@ type
     [TestCase('Zero', '0')]
     [WillRaise(EAbort)]
     procedure CaseRaises(const value : integer);
+  end;
+
+  //Not a fixture: the test below generates its tests and runs them itself.
+  TEnumConversionTestCases = class
+  public type
+    TConversionTestEnum = (ctOne, ctTwo);
+  public
+    [Test]
+    [TestCase('Known', 'ctTwo')]
+    procedure KnownName(const value : TConversionTestEnum);
+    [Test]
+    [TestCase('LongBoolTrue', 'True')]
+    procedure LongBoolTrue(const value : LongBool);
+    [Test]
+    [TestCase('Unknown', 'ctBogus')]
+    procedure UnknownName(const value : TConversionTestEnum);
   end;
 
 { TSampleProvider }
@@ -221,9 +244,65 @@ begin
   Assert.AreEqual(7, count, 'one [TestCase] test, five provider tests and one [TestCase] test');
 end;
 
+{ TEnumConversionTestCases }
+
+procedure TEnumConversionTestCases.KnownName(const value : TConversionTestEnum);
+begin
+  Assert.IsTrue(value = ctTwo, 'ctTwo converts to ctTwo');
+end;
+
+procedure TEnumConversionTestCases.LongBoolTrue(const value : LongBool);
+begin
+  //GetEnumValue returns -1 for True on LongBool, so -1 alone cannot mean "not found"
+  Assert.IsTrue(value, 'True converts to True');
+end;
+
+procedure TEnumConversionTestCases.UnknownName(const value : TConversionTestEnum);
+begin
+  Assert.Fail('A case with an unknown enum name must not run');
+end;
+
+{ TEnumTestCaseConversionTests }
+
+procedure TEnumTestCaseConversionTests.Unknown_Enum_Name_Errors_The_Test_Case;
+var
+  fixture : ITestFixture;
+  provider : TDUnitXFixtureProvider;
+  providerIntf : IFixtureProvider;
+  test : ITest;
+  testExecute : ITestExecute;
+  count : integer;
+begin
+  fixture := TDUnitXTestFixture.Create('AEnumConversionFixture', '', TEnumConversionTestCases, 'AUnit') as ITestFixture;
+  provider := TDUnitXFixtureProvider.Create;
+  providerIntf := provider;
+  TFixtureProviderAccess(provider).GenerateTests(nil, fixture);
+
+  count := 0;
+  for test in fixture.Tests do
+  begin
+    Inc(count);
+    testExecute := test as ITestExecute;
+    if test.MethodName = 'UnknownName' then
+      Assert.WillRaise(
+        procedure
+        begin
+          testExecute.Execute(nil);
+        end, ETestFrameworkException, test.Name + ' runs with an enum value that does not exist')
+    else
+      Assert.WillNotRaiseAny(
+        procedure
+        begin
+          testExecute.Execute(nil);
+        end, test.Name + ' converts its value');
+  end;
+  Assert.AreEqual(3, count, 'three [TestCase] tests');
+end;
+
 initialization
   TestDataProviderManager.RegisterProvider('Sampleprovider', TSampleProvider);
   TDUnitX.RegisterTestFixture(TestFixtureProviderTest);
   TDUnitX.RegisterTestFixture(TWillRaiseTestCaseTests);
+  TDUnitX.RegisterTestFixture(TEnumTestCaseConversionTests);
 end.
 
