@@ -152,6 +152,8 @@ type
     [Test]
     procedure WhenATestCaseHasAUntypedParameterCantRaiseAnyError;
     [Test]
+    procedure TestError_Separates_The_Result_And_Exception_Messages;
+    [Test]
     procedure RaisingDestructorTearDown_Runs_The_Destructor_Once;
     [Test]
     procedure FixtureResult_Namespace_Is_The_Fixture_Namespace;
@@ -355,6 +357,34 @@ begin
   fixture := TDUnitXTestFixture.Create('My.Namespace.AFixture', '', TTestCaseAttribute, 'AUnit') as ITestFixture;
   fixtureResult := TDUnitXFixtureResult.Create(nil, fixture as ITestFixtureInfo);
   Assert.AreEqual('My.Namespace', fixtureResult.Namespace);
+end;
+
+procedure TDUnitXTestFixtureTests.TestError_Separates_The_Result_And_Exception_Messages;
+var
+  rttiContext : TRttiContext;
+  fixture : ITestFixture;
+  instance : TTearDownFixtureFails;
+  testInfo : ITestInfo;
+  thrown : Exception;
+  error : ITestError;
+begin
+  rttiContext := TRttiContext.Create;
+  fixture := TDUnitXTestFixture.Create('AMessageFixture', '', TTearDownFixtureFails, 'AUnit') as ITestFixture;
+  instance := fixture.FixtureInstance as TTearDownFixtureFails;
+  testInfo := fixture.AddTest('PassesOne', instance.PassesOne, 'PassesOne', '',
+    rttiContext.GetType(TTearDownFixtureFails).GetMethod('PassesOne')) as ITestInfo;
+
+  thrown := Exception.Create('exception message');
+  try
+    error := TDUnitXTestError.Create(testInfo, TTestResultType.Error, thrown, nil, 'result message', nil);
+    Assert.AreEqual('result message' + sLineBreak + 'exception message', error.ExceptionMessage, 'two different messages');
+    error := TDUnitXTestError.Create(testInfo, TTestResultType.Error, thrown, nil, '', nil);
+    Assert.AreEqual('exception message', error.ExceptionMessage, 'no result message');
+    error := TDUnitXTestError.Create(testInfo, TTestResultType.Error, thrown, nil, thrown.Message, nil);
+    Assert.AreEqual('exception message', error.ExceptionMessage, 'the same message twice');
+  finally
+    thrown.Free;
+  end;
 end;
 
 procedure TDUnitXTestFixtureTests.RaisingDestructorTearDown_Runs_The_Destructor_Once;
