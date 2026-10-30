@@ -52,6 +52,8 @@ type
     [Test]
     procedure ToString_Formats_A_Nil_Object_Or_Interface;
     [Test]
+    procedure Unparseable_Float_Does_Not_Convert;
+    [Test]
     [TestCase('EN-US local format', 'EN-US,06/22/2020')]
     [TestCase('EN-US iso8601 format', 'EN-US,2020-06-22')]
     [TestCase('EN-GB local format', 'EN-GB,22/06/2020')]
@@ -260,6 +262,20 @@ begin
       interfaceText := TValue.ToString(TValue.From<IInterface>(nil));
     end, 'interface');
   Assert.AreEqual('nil', interfaceText, 'interface');
+end;
+
+procedure TValueHelperTests.Unparseable_Float_Does_Not_Convert;
+var
+  asTValue : TValue;
+begin
+  //These used to convert to 0
+  Assert.IsFalse(TValue.From<string>('abc').TryConvert<Double>(asTValue), '''abc'' to Double');
+  Assert.IsFalse(TValue.From<string>('1.5x').TryConvert<Double>(asTValue), '''1.5x'' to Double');
+
+  Assert.IsTrue(TValue.From<string>('1.5').TryConvert<Double>(asTValue), '''1.5'' to Double');
+  Assert.AreEqual(1.5, asTValue.AsExtended, 0, '''1.5'' to Double');
+  Assert.IsTrue(TValue.From<string>('-2.5E3').TryConvert<Single>(asTValue), '''-2.5E3'' to Single');
+  Assert.AreEqual(-2500, asTValue.AsExtended, 0, '''-2.5E3'' to Single');
 end;
 
 procedure TValueHelperTests.TestAlphaColorTestCase(const AColor : TAlphaColor;
