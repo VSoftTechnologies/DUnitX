@@ -111,6 +111,7 @@ resourcestring
   SErrorSettingOption = 'Error setting option : %s to %s : ';
   SUnknownCommandLineOption = 'Unknown command line option : ';
   SOptionNotSpecified = 'Required option [%s] was not specified';
+  SCategoryMissingParenthesis = 'Category expression [%s] has a "(" without its closing ")"';
 
   STestIgnoredRepeatSet = 'Repeat set to 0. Test ignored.';
 
