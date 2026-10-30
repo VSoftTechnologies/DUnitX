@@ -90,6 +90,9 @@ type
     procedure At_Prefix_Reads_An_Options_File;
 
     [Test]
+    procedure At_Prefix_In_An_Options_File_Is_Relative_To_That_File;
+
+    [Test]
     procedure Can_Parse_Enum_Parameter;
 
     [Test]
@@ -451,6 +454,43 @@ begin
   end;
   Assert.IsFalse(parseResult.HasErrors, parseResult.ErrorText);
   Assert.IsTrue(fromFile, 'the option in the file was not read');
+end;
+
+procedure TCommandLineParserTests.At_Prefix_In_An_Options_File_Is_Relative_To_That_File;
+var
+  def : IOptionDefinition;
+  fromFile : boolean;
+  folder : string;
+  parseResult : ICommandLineParseResult;
+  sList : TStringList;
+begin
+  fromFile := false;
+  def := TOptionsRegistry.RegisterOption<boolean>('fromfile', 'ff',
+    procedure(value : boolean)
+    begin
+      fromFile := value;
+    end);
+  def.HasValue := False;
+
+  //outer.txt names inner.txt without a folder; the current directory is not their folder.
+  folder := TPath.Combine(TPath.GetTempPath, TPath.GetGUIDFileName);
+  ForceDirectories(folder);
+  sList := TStringList.Create;
+  try
+    sList.Add('--fromfile');
+    sList.SaveToFile(TPath.Combine(folder, 'inner.txt'));
+    sList.Clear;
+    sList.Add('@inner.txt');
+    sList.SaveToFile(TPath.Combine(folder, 'outer.txt'));
+    sList.Clear;
+    sList.Add('@' + TPath.Combine(folder, 'outer.txt'));
+    parseResult := TOptionsRegistry.Parse(sList);
+  finally
+    sList.Free;
+    TDirectory.Delete(folder, true);
+  end;
+  Assert.IsFalse(parseResult.HasErrors, parseResult.ErrorText);
+  Assert.IsTrue(fromFile, 'the option in the nested file was not read');
 end;
 
 procedure TCommandLineParserTests.Will_Raise_On_Registering_Duplicate_Options;
