@@ -125,7 +125,7 @@ begin
   else
   begin
     result := Trim(Copy(arg, index, Length(arg)));
-    index := Length(arg);
+    index := Length(arg) + 1;
   end;
 {$ELSE}
   if sep > -1 then
@@ -136,7 +136,7 @@ begin
   else
   begin
     result := arg.Substring(index).Trim;
-    index := arg.Length - 1;
+    index := arg.Length;
   end;
 {$ENDIF}
 end;
@@ -153,10 +153,10 @@ begin
     begin
 {$IFNDEF NEXTGEN}
       i := 1;
-      while i < Length(arg) do
+      while i <= Length(arg) do
 {$ELSE}
       i := 0;
-      while i < arg.Length - 1 do
+      while i < arg.Length do
 {$ENDIF}
       begin
         sName := GetTestName(arg, i);
