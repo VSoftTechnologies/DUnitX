@@ -332,6 +332,9 @@ type
     procedure WillNotRaiseAny_Does_Not_Use_The_Message_As_A_Format_String;
 
     [Test]
+    procedure WillNotRaise_Method_With_Class_Lets_Another_Exception_Propagate;
+
+    [Test]
     procedure Test_Implements_Will_Fail_If_Not_Implemented;
 
     [Test]
@@ -725,7 +728,7 @@ end;
 
 procedure TTestsAssert.WillNotRaiseWithMessage_NilExceptionParam_NonMatchingExceptionMessage_WillNotRaise;
 begin
-  Assert.WillNotRaise(
+  Assert.WillRaiseWithMessage(
     procedure
     begin
       Assert.WillNotRaiseWithMessage(
@@ -733,7 +736,7 @@ begin
         begin
           raise Exception.Create('Test');
         end, nil, 'Different Exception Message');
-    end);
+    end, Exception, 'Test', 'The unasserted exception was swallowed instead of propagating');
 end;
 
 procedure TTestsAssert.WillNotRaiseWithMessage_MatchingExceptionParam_NoExceptionMessage_WillRaise;
@@ -764,7 +767,7 @@ end;
 
 procedure TTestsAssert.WillNotRaiseWithMessage_MatchingExceptionParam_NonMatchingExceptionMessage_WillNotRaise;
 begin
-  Assert.WillNotRaise(
+  Assert.WillRaiseWithMessage(
     procedure
     begin
       Assert.WillNotRaiseWithMessage(
@@ -772,12 +775,12 @@ begin
         begin
           raise TestExceptionOne.Create('Test');
         end, TestExceptionOne, 'Different Exception Message');
-    end);
+    end, TestExceptionOne, 'Test', 'The unasserted exception was swallowed instead of propagating');
 end;
 
 procedure TTestsAssert.WillNotRaiseWithMessage_NonMatchingExceptionParam_NoExceptionMessage_WillNotRaise;
 begin
-  Assert.WillNotRaise(
+  Assert.WillRaiseWithMessage(
     procedure
     begin
       Assert.WillNotRaiseWithMessage(
@@ -785,12 +788,12 @@ begin
         begin
           raise TestExceptionOne.Create('Test');
         end, TestExceptionTwo);
-    end);
+    end, TestExceptionOne, 'Test', 'The unasserted exception was swallowed instead of propagating');
 end;
 
 procedure TTestsAssert.WillNotRaiseWithMessage_NonMatchingExceptionParam_MatchingExceptionMessage_WillNotRaise;
 begin
-  Assert.WillNotRaise(
+  Assert.WillRaiseWithMessage(
     procedure
     begin
       Assert.WillNotRaiseWithMessage(
@@ -798,12 +801,12 @@ begin
         begin
           raise TestExceptionOne.Create('Test');
         end, TestExceptionTwo, 'Test');
-    end);
+    end, TestExceptionOne, 'Test', 'The unasserted exception was swallowed instead of propagating');
 end;
 
 procedure TTestsAssert.WillNotRaiseWithMessage_NonMatchingExceptionParam_NonMatchingExceptionMessage_WillNotRaise;
 begin
-  Assert.WillNotRaise(
+  Assert.WillRaiseWithMessage(
     procedure
     begin
       Assert.WillNotRaiseWithMessage(
@@ -811,7 +814,7 @@ begin
         begin
           raise TestExceptionOne.Create('Test');
         end, TestExceptionTwo, 'Different Exception Message');
-    end);
+    end, TestExceptionOne, 'Test', 'The unasserted exception was swallowed instead of propagating');
 end;
 
 procedure TTestsAssert.WillNotRaise_With_DescendingClass_Negative;
@@ -831,12 +834,16 @@ end;
 
 procedure TTestsAssert.WillNotRaise_With_DescendingClass_Positive;
 begin
-  Assert.WillNotRaiseDescendant(
+  Assert.WillRaiseWithMessage(
     procedure
     begin
-      raise Exception.Create('Test');
-    end,
-    EStreamError);
+      Assert.WillNotRaiseDescendant(
+        procedure
+        begin
+          raise Exception.Create('Test');
+        end,
+        EStreamError);
+    end, Exception, 'Test', 'The unasserted exception was swallowed instead of propagating');
 end;
 
 procedure TTestsAssert.WillNotRaise_With_ExactClass_Negative;
@@ -859,13 +866,17 @@ end;
 
 procedure TTestsAssert.WillNotRaise_With_ExactClass_Positive;
 begin
-  Assert.WillNotRaise(
+  Assert.WillRaiseWithMessage(
     procedure
     begin
-      // Don't raise an exception we are looking for.
-      raise Exception.Create('Error Message');
-    end,
-    EStreamError, '');
+      Assert.WillNotRaise(
+        procedure
+        begin
+          // Not the exception we are looking for, so it must propagate.
+          raise Exception.Create('Error Message');
+        end,
+        EStreamError, '');
+    end, Exception, 'Error Message', 'The unasserted exception was swallowed instead of propagating');
 end;
 
 procedure TTestsAssert.WillNotRaise_With_NoClass;
@@ -955,6 +966,16 @@ begin
       failMessage := E.Message;
   end;
   Assert.EndsWith('coverage 100%', failMessage, false);
+end;
+
+procedure TTestsAssert.WillNotRaise_Method_With_Class_Lets_Another_Exception_Propagate;
+begin
+  //WillNotRaise matches the class exactly, so the descendant EFilerError is not the one asserted against.
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      Assert.WillNotRaise(RaiseFilerError, EStreamError);
+    end, EFilerError, 'Test', 'The unasserted exception was swallowed instead of propagating');
 end;
 
 procedure TTestsAssert.WillRaiseAny;
