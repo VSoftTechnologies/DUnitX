@@ -10,9 +10,9 @@ type
   TTestNameParserTests = class
   public
     [TestCase('SingleName1', 'Test.Namespace.Fixture.Method')]
-    [TestCase('SingleName2', 'Test.Namespace.Fixture.Method,')]
+    [TestCase('SingleName2', 'Test.Namespace.Fixture.Method,', '|')]
     [TestCase('SingleName3', '  Test.Namespace.Fixture.Method  ')]
-    [TestCase('SingleName4', '  Test.Namespace.Fixture.Method  ,')]
+    [TestCase('SingleName4', '  Test.Namespace.Fixture.Method  ,', '|')]
     [TestCase('SingleName5', 'Test.Namespace.Fixture.Method()')]
     [TestCase('SingleName6', 'Test.Namespace.Fixture.Method(''string,argument'')')]
     [TestCase('SingleName7', 'Test.Namespace.Fixture.Method(1,2,3)')]
@@ -37,6 +37,20 @@ uses
 {$ENDIF}
   DUnitX.TestNameParser;
 
+// As NUnit's tests: name.Trim(' ', ',')
+function TrimSeparators(const name : string) : string;
+var
+  first, last : integer;
+begin
+  first := 1;
+  last := Length(name);
+  while (first <= last) and ((name[first] = ' ') or (name[first] = ',')) do
+    Inc(first);
+  while (last >= first) and ((name[last] = ' ') or (name[last] = ',')) do
+    Dec(last);
+  result := Copy(name, first, last - first + 1);
+end;
+
 { TTestNameParserTests }
 
 procedure TTestNameParserTests.SingleName(const name : string);
@@ -45,7 +59,7 @@ var
 begin
   names := TTestNameParser.Parse(name);
   Assert.AreEqual(1, Integer(Length(names)));
-  Assert.AreEqual(Trim(name), names[0]);
+  Assert.AreEqual(TrimSeparators(name), names[0]);
 end;
 
 procedure TTestNameParserTests.TwoNames(const name1, name2 : string);
@@ -54,8 +68,8 @@ var
 begin
   names := TTestNameParser.Parse(name1 + ',' + name2);
   Assert.AreEqual(2, Integer(Length(names)));
-  Assert.AreEqual(Trim(name1), names[0]);
-  Assert.AreEqual(Trim(name2), names[1]);
+  Assert.AreEqual(TrimSeparators(name1), names[0]);
+  Assert.AreEqual(TrimSeparators(name2), names[1]);
 end;
 
 initialization
