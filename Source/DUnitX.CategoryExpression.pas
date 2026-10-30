@@ -73,6 +73,8 @@ implementation
 
 uses
   DUnitX.Constants,
+  DUnitX.Exceptions,
+  DUnitX.ResStrs,
 {$IFDEF USE_NS}
   System.Character,
   System.SysUtils,
@@ -185,6 +187,8 @@ begin
   begin
     GetToken;                           // Skip (
     result := GetExpression;
+    if FToken <> ')' then
+      raise ECommandLineError.CreateFmt(SCategoryMissingParenthesis, [FText]);
     GetToken();                         // Skip ')'
     exit;
   end;
