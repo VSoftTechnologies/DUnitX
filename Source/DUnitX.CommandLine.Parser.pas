@@ -60,6 +60,8 @@ type
   TCommandLineParser = class(TInterfacedObject, ICommandLineParser)
   private
     FUnamedIndex : integer;
+    //the folder of the options file being read, so a relative name inside it is found beside it
+    FOptionsFileFolder : string;
   protected
     procedure InternalValidate(const parseErrors : IParseResultAddError);
 
@@ -265,25 +267,35 @@ end;
 procedure TCommandLineParser.InternalParseFile(const fileName : string; const parseErrors : IParseResultAddError);
 var
   sList : TStringList;
+  fullName : string;
+  savedFolder : string;
 begin
+  //a relative name inside an options file is relative to that file's folder, not the current directory.
+  if (FOptionsFileFolder <> '') and IsRelativePath(fileName) then
+    fullName := FOptionsFileFolder + fileName
+  else
+    fullName := fileName;
   //TODO : should options file override other options or vica versa?
-  if not FileExists(fileName) then
+  if not FileExists(fullName) then
   begin
-    parseErrors.AddError(Format(SParameterFileDoesNotExist, [fileName]));
+    parseErrors.AddError(Format(SParameterFileDoesNotExist, [fullName]));
     exit;
   end;
+  savedFolder := FOptionsFileFolder;
   try
     sList := TStringList.Create;
     try
-      sList.LoadFromFile(fileName);
+      sList.LoadFromFile(fullName);
+      FOptionsFileFolder := ExtractFilePath(ExpandFileName(fullName));
       InternalParse(sList, parseErrors);
     finally
+      FOptionsFileFolder := savedFolder;
       sList.Free;
     end;
   except
     on e : Exception do
     begin
-      parseErrors.AddError(Format(SErrorParsingParameterFile, [fileName]) + e.Message);
+      parseErrors.AddError(Format(SErrorParsingParameterFile, [fullName]) + e.Message);
     end;
   end;
 end;
