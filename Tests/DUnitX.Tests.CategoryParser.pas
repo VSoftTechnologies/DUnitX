@@ -36,6 +36,9 @@ type
     procedure PrecedenceTestWithParentheses;
 
     [Test]
+    procedure UnclosedParenthesisIsAnError;
+
+    [Test]
     procedure OrAndMinusCombined;
 
     [Test]
@@ -47,6 +50,9 @@ type
   end;
 
 implementation
+
+uses
+  DUnitX.Exceptions;
 
 { TCategoryParseTests }
 
@@ -241,6 +247,15 @@ begin
   Assert.AreEqual(catFilter.Categories[0], 'D');
   Assert.AreEqual(catFilter.Categories[1], 'E');
   Assert.AreEqual(catFilter.Categories[2], 'F');
+end;
+
+procedure TCategoryParseTests.UnclosedParenthesisIsAnError;
+begin
+  Assert.WillRaiseDescendant(
+    procedure
+    begin
+      TCategoryExpression.CreateFilter('(Slow|Integration');
+    end, ECommandLineError);
 end;
 
 procedure TCategoryParseTests.OperatorAsLastCharacter;
