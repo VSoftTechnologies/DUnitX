@@ -1120,9 +1120,16 @@ begin
 end;
 
 function ConvStr2Enum(const ASource : TValue; ATarget : PTypeInfo; out AResult : TValue) : Boolean;
+var
+  value : Integer;
+  typeData : PTypeData;
 begin
-  AResult := TValue.FromOrdinal(ATarget, GetEnumValue(ATarget, ASource.AsString));
-  Result := True;
+  value := GetEnumValue(ATarget, ASource.AsString);
+  //GetEnumValue returns -1 for an unknown name, but -1 is also True for LongBool, WordBool and ByteBool
+  typeData := GetTypeData(ATarget);
+  Result := (value >= typeData.MinValue) and (value <= typeData.MaxValue);
+  if Result then
+    AResult := TValue.FromOrdinal(ATarget, value);
 end;
 
 function StripIso8601TimeZone(const ASource : string) : string;
