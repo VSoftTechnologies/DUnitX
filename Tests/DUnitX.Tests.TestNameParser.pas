@@ -14,9 +14,9 @@ type
     [TestCase('SingleName3', '  Test.Namespace.Fixture.Method  ')]
     [TestCase('SingleName4', '  Test.Namespace.Fixture.Method  ,', '|')]
     [TestCase('SingleName5', 'Test.Namespace.Fixture.Method()')]
-    [TestCase('SingleName6', 'Test.Namespace.Fixture.Method(''string,argument'')')]
-    [TestCase('SingleName7', 'Test.Namespace.Fixture.Method(1,2,3)')]
-    [TestCase('SingleName8', 'Test.Namespace.Fixture.Method<int,int>()')]
+    [TestCase('SingleName6', 'Test.Namespace.Fixture.Method(''string,argument'')', '|')]
+    [TestCase('SingleName7', 'Test.Namespace.Fixture.Method(1,2,3)', '|')]
+    [TestCase('SingleName8', 'Test.Namespace.Fixture.Method<int,int>()', '|')]
     [TestCase('SingleName9', 'Test.Namespace.Fixture.Method(")")')]
     [TestCase('SingleName10', 'A')]
     procedure SingleName(const name : string);
