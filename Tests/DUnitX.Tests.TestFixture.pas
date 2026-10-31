@@ -152,6 +152,8 @@ type
     [Test]
     procedure WhenATestCaseHasAUntypedParameterCantRaiseAnyError;
     [Test]
+    procedure TestCase_With_Too_Few_Values_Errors;
+    [Test]
     procedure TestError_Separates_The_Result_And_Exception_Messages;
     [Test]
     procedure RaisingDestructorTearDown_Runs_The_Destructor_Once;
@@ -215,6 +217,15 @@ type
     procedure PassesOne;
     procedure PassesTwo;
     procedure TearDownFixture;
+  end;
+
+  TTooFewValuesClass = class
+  public type
+    TTooFewValuesEnum = (tfOne, tfTwo);
+  public
+    procedure TwoValues(const a : integer; const b : string);
+    procedure OneString(const value : string);
+    procedure OneEnum(const value : TTooFewValuesEnum);
   end;
 
   { TDUnitXTestFixtureTests }
@@ -347,6 +358,61 @@ begin
   TestFixture := nil;
 
   Context.Free;
+end;
+
+procedure TDUnitXTestFixtureTests.TestCase_With_Too_Few_Values_Errors;
+var
+  rttiContext : TRttiContext;
+  rttiType : TRttiType;
+  fixture : ITestFixture;
+  args : TValueArray;
+  test : ITestExecute;
+begin
+  rttiContext := TRttiContext.Create;
+  rttiType := rttiContext.GetType(TTooFewValuesClass);
+  fixture := TDUnitXTestFixture.Create('ATooFewValuesFixture', '', TTooFewValuesClass, 'AUnit') as ITestFixture;
+
+  SetLength(args, 2);
+  args[0] := '2';
+  args[1] := 'two';
+  test := fixture.AddTestCase('TwoValues', 'Two', 'TwoValues.Two', '', rttiType.GetMethod('TwoValues'), True, args) as ITestExecute;
+  Assert.WillNotRaiseAny(
+    procedure
+    begin
+      test.Execute(nil);
+    end, 'two values for two parameters');
+
+  SetLength(args, 1);
+  test := fixture.AddTestCase('TwoValues', 'One', 'TwoValues.One', '', rttiType.GetMethod('TwoValues'), True, args) as ITestExecute;
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      test.Execute(nil);
+    end, ETestFrameworkException, 'Too few values: 1 value for 2 parameters', 'one value for two parameters');
+
+  SetLength(args, 0);
+  test := fixture.AddTestCase('TwoValues', 'None', 'TwoValues.None', '', rttiType.GetMethod('TwoValues'), True, args) as ITestExecute;
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      test.Execute(nil);
+    end, ETestFrameworkException, 'Too few values: 0 values for 2 parameters', 'no values for two parameters');
+
+  //[TestCase('Name', '')] gives no values at all
+  test := fixture.AddTestCase('OneString', 'Empty', 'OneString.Empty', '', rttiType.GetMethod('OneString'), True, args) as ITestExecute;
+  Assert.WillNotRaiseAny(
+    procedure
+    begin
+      test.Execute(nil);
+    end, 'no values for one string parameter');
+
+  //...which is one empty value, and an empty value is not an enum name
+  test := fixture.AddTestCase('OneEnum', 'Empty', 'OneEnum.Empty', '', rttiType.GetMethod('OneEnum'), True, args) as ITestExecute;
+  Assert.WillRaise(
+    procedure
+    begin
+      test.Execute(nil);
+    end, ETestFrameworkException, 'no values for one enum parameter');
 end;
 
 procedure TDUnitXTestFixtureTests.FixtureResult_Namespace_Is_The_Fixture_Namespace;
@@ -508,6 +574,24 @@ end;
 procedure TTestCaseAttribute.ProcedureWithUntypedParameter(const Param1);
 begin
   Assert.IsTrue(True);
+end;
+
+{ TTooFewValuesClass }
+
+procedure TTooFewValuesClass.TwoValues(const a : integer; const b : string);
+begin
+  Assert.AreEqual(2, a, 'a');
+  Assert.AreEqual('two', b, 'b');
+end;
+
+procedure TTooFewValuesClass.OneString(const value : string);
+begin
+  Assert.AreEqual('', value, 'value');
+end;
+
+procedure TTooFewValuesClass.OneEnum(const value : TTooFewValuesEnum);
+begin
+  Assert.Fail('A case with no value for its enum parameter must not run');
 end;
 
 { TTearDownFixtureFails }
