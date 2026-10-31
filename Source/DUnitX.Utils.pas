@@ -1132,86 +1132,217 @@ begin
     AResult := TValue.FromOrdinal(ATarget, value);
 end;
 
-function StripIso8601TimeZone(const ASource : string) : string;
+//An ISO 8601 value reads the same on every machine, so it is read first, and strictly: only its own forms count.
+//Anything else is read with both the invariant format and the machine's locale: when only one of them reads it, or
+//both read the same value, that value is used.  When they read different values (01/02/2020 is 2 January in the
+//invariant format but 1 February on an en-GB machine) the value is ambiguous and is refused, as is one that neither
+//reads.
+function TryReadDigits(const ASource : string; AIndex : Integer; ACount : Integer; out AValue : Integer) : Boolean;
 var
   i : Integer;
-  len : Integer;
 begin
-  // TestCase values such as '1988-10-21T17:44:23.456Z' / '+02:30' are wall-clock
-  // timestamps; the suffix is not applied. StrToDateTimeDef rejects those suffixes
-  // and returns 0 (30.12.1899), which is what the ISO-8601 verbose tests hit.
-  Result := ASource;
-  len := Length(Result);
-  if len = 0 then
-    Exit;
-
-  if CharInSet(Result[len], ['Z', 'z']) then
+  AValue := 0;
+  Result := AIndex + ACount - 1 <= Length(ASource);
+  i := AIndex;
+  while Result and (i < AIndex + ACount) do
   begin
-    SetLength(Result, len - 1);
-    Exit;
+    Result := CharInSet(ASource[i], ['0'..'9']);
+    if Result then
+      AValue := AValue * 10 + Ord(ASource[i]) - Ord('0');
+    Inc(i);
   end;
+end;
 
-  // yyyy-mm-dd is 10 characters; any later '+' or '-' is a timezone offset.
-  for i := 11 to len do
+//hh:mm, hh:mm:ss, or hh:mm:ss followed by '.' or ',' and the digits of a decimal fraction of a second ('.5' is half a
+//second, where the RTL reads 5 milliseconds).  On success APosition is the position after the time.
+function TryReadIso8601Time(const ASource : string; var APosition : Integer; out ATime : TDateTime) : Boolean;
+var
+  hour : Integer;
+  minute : Integer;
+  second : Integer;
+  fraction : Double;
+  scale : Double;
+begin
+  second := 0;
+  fraction := 0;
+  Result := TryReadDigits(ASource, APosition, 2, hour) and (APosition + 2 <= Length(ASource)) and
+    (ASource[APosition + 2] = ':') and TryReadDigits(ASource, APosition + 3, 2, minute);
+  if not Result then
+    Exit;
+  Inc(APosition, 5);
+  if (APosition <= Length(ASource)) and (ASource[APosition] = ':') then
   begin
-    if CharInSet(Result[i], ['+', '-']) then
-    begin
-      SetLength(Result, i - 1);
+    Result := TryReadDigits(ASource, APosition + 1, 2, second);
+    if not Result then
       Exit;
+    Inc(APosition, 3);
+    if (APosition <= Length(ASource)) and CharInSet(ASource[APosition], ['.', ',']) then
+    begin
+      Inc(APosition);
+      Result := (APosition <= Length(ASource)) and CharInSet(ASource[APosition], ['0'..'9']);
+      scale := 0.1;
+      while (APosition <= Length(ASource)) and CharInSet(ASource[APosition], ['0'..'9']) do
+      begin
+        fraction := fraction + (Ord(ASource[APosition]) - Ord('0')) * scale;
+        scale := scale / 10;
+        Inc(APosition);
+      end;
     end;
   end;
+  Result := Result and TryEncodeTime(hour, minute, second, 0, ATime);
+  if Result then
+    ATime := ATime + fraction / SecsPerDay;
 end;
 
-function Str2DateTimeValue(const ASource : string) : TValue;
+//The rest of the text from APosition is 'Z', or '+' or '-' followed by hh, hhmm or hh:mm
+function IsIso8601TimeZone(const ASource : string; APosition : Integer) : Boolean;
+var
+  len : Integer;
+  hour : Integer;
+  minute : Integer;
+begin
+  len := Length(ASource) - APosition + 1;
+  if len = 1 then
+    Exit(CharInSet(ASource[APosition], ['Z', 'z']));
+  Result := ((len = 3) or (len = 5) or (len = 6)) and CharInSet(ASource[APosition], ['+', '-']) and
+    TryReadDigits(ASource, APosition + 1, 2, hour) and (hour <= 23);
+  if Result and (len > 3) then
+    Result := ((len = 5) or (ASource[APosition + 3] = ':')) and TryReadDigits(ASource, Length(ASource) - 1, 2, minute) and
+      (minute <= 59);
+end;
+
+//An ISO 8601 time and nothing else, optionally followed by a time zone, which is ignored as for a date and time
+function TryStrToIso8601Time(const ASource : string; out ATime : TDateTime) : Boolean;
+var
+  position : Integer;
+begin
+  position := 1;
+  Result := TryReadIso8601Time(ASource, position, ATime) and
+    ((position > Length(ASource)) or IsIso8601TimeZone(ASource, position));
+end;
+
+//yyyy-mm-dd, then (unless ADateOnly) optionally 'T' or a space and a time, then optionally a time zone.  The zone is
+//ignored, as before: the value is the time as written.
+function TryStrToIso8601DateTime(const ASource : string; ADateOnly : Boolean; out AValue : TDateTime) : Boolean;
+var
+  year : Integer;
+  month : Integer;
+  day : Integer;
+  position : Integer;
+  time : TDateTime;
+begin
+  Result := (Length(ASource) >= 10) and TryReadDigits(ASource, 1, 4, year) and (ASource[5] = '-') and
+    TryReadDigits(ASource, 6, 2, month) and (ASource[8] = '-') and TryReadDigits(ASource, 9, 2, day) and
+    TryEncodeDate(year, month, day, AValue);
+  if (not Result) or (Length(ASource) = 10) then
+    Exit;
+  position := 12;
+  Result := (not ADateOnly) and CharInSet(ASource[11], ['T', 't', ' ']) and TryReadIso8601Time(ASource, position, time) and
+    ((position > Length(ASource)) or IsIso8601TimeZone(ASource, position));
+  //Before 30/12/1899 a TDateTime is negative and its time is subtracted, as in TryStrToDateTime
+  if Result then
+    if AValue < 0 then
+      AValue := AValue - time
+    else
+      AValue := AValue + time;
+end;
+
+//TryStrToDateTime also reads a date in the wrong order when the last digits of its year can be taken for an hour:
+//'22/06/2020' under yyyy/mm/dd is 20 June 2022 at 20:00.  So a reading counts only when the text is a date, a time, or
+//a date, a space and a time that read the same value on their own.
+function TryStrToDateTimeExactly(const ASource : string; out AValue : TDateTime;
+  const AFormatSettings : TFormatSettings) : Boolean;
+var
+  i : Integer;
+  datePart : TDateTime;
+  timePart : TDateTime;
+begin
+  Result := TryStrToDateTime(ASource, AValue, AFormatSettings);
+  if not Result then
+    Exit;
+  if TryStrToDate(ASource, datePart, AFormatSettings) then
+    Exit(datePart = AValue);
+  if TryStrToTime(ASource, timePart, AFormatSettings) then
+    Exit(timePart = AValue);
+  for i := Length(ASource) downto 2 do
+    if (ASource[i] = ' ') and TryStrToDate(Copy(ASource, 1, i - 1), datePart, AFormatSettings) then
+      //For a date before 1899 the time is subtracted, as TryStrToDateTime does.  Compared to within half a millisecond,
+      //because Win32 adds in extended precision; a misread differs by hours or days.
+      Exit(TryStrToTime(Copy(ASource, i + 1, MaxInt), timePart, AFormatSettings) and
+        (Abs(Abs(AValue) - (Abs(datePart) + timePart)) < 0.5 / MSecsPerDay));
+  Result := False;
+end;
+
+function ChooseUnambiguous(AInvariantRead : Boolean; const AInvariantValue : TDateTime; ALocaleRead : Boolean;
+  const ALocaleValue : TDateTime; out AValue : TDateTime) : Boolean;
+begin
+  if AInvariantRead then
+  begin
+    AValue := AInvariantValue;
+    Result := (not ALocaleRead) or (ALocaleValue = AInvariantValue);
+  end
+  else
+  begin
+    AValue := ALocaleValue;
+    Result := ALocaleRead;
+  end;
+end;
+
+function Str2DateTimeValue(const ASource : string; out AResult : TValue) : Boolean;
 var
   dateTime : TDateTime;
-  iso8601 : TFormatSettings;
+  invariantDateTime : TDateTime;
+  localeDateTime : TDateTime;
+  invariantRead : Boolean;
+  localeRead : Boolean;
 begin
-  if (not TryStrToDateTime(ASource, dateTime)) then
+  Result := TryStrToIso8601DateTime(ASource, False, dateTime) or TryStrToIso8601Time(ASource, dateTime);
+  if not Result then
   begin
-    iso8601 := TFormatSettings.Invariant();
-    iso8601.ShortDateFormat := 'yyyy/mm/dd';
-    iso8601.DateSeparator := '-';
-    iso8601.ShortTimeFormat := 'hh:nn:ss\.nnn';
-    iso8601.TimeSeparator := ':';
-
-    dateTime := StrToDateTimeDef(StripIso8601TimeZone(ASource), 0, iso8601);
+    invariantRead := TryStrToDateTimeExactly(ASource, invariantDateTime, TFormatSettings.Invariant());
+    localeRead := TryStrToDateTimeExactly(ASource, localeDateTime, FormatSettings);
+    Result := ChooseUnambiguous(invariantRead, invariantDateTime, localeRead, localeDateTime, dateTime);
   end;
-
-  Result := TValue.From<TDateTime>(dateTime);
+  if Result then
+    AResult := TValue.From<TDateTime>(dateTime);
 end;
 
-function Str2TimeValue(const ASource : string) : TValue;
+function Str2TimeValue(const ASource : string; out AResult : TValue) : Boolean;
 var
   time : TDateTime;
-  iso8601 : TFormatSettings;
+  invariantTime : TDateTime;
+  localeTime : TDateTime;
+  invariantRead : Boolean;
+  localeRead : Boolean;
 begin
-  if (not TryStrToTime(ASource, time)) then
+  Result := TryStrToIso8601Time(ASource, time);
+  if not Result then
   begin
-    iso8601 := TFormatSettings.Invariant();
-    iso8601.ShortTimeFormat := 'hh:nn:ss\.nnn';
-    iso8601.TimeSeparator := ':';
-
-    time := StrToTimeDef(ASource, 0, iso8601);
+    invariantRead := TryStrToTime(ASource, invariantTime, TFormatSettings.Invariant());
+    localeRead := TryStrToTime(ASource, localeTime);
+    Result := ChooseUnambiguous(invariantRead, invariantTime, localeRead, localeTime, time);
   end;
-
-  Result := TValue.From<TDateTime>(time);
+  if Result then
+    AResult := TValue.From<TDateTime>(time);
 end;
 
-function Str2DateValue(const ASource : string) : TValue;
+function Str2DateValue(const ASource : string; out AResult : TValue) : Boolean;
 var
   date : TDateTime;
-  iso8601 : TFormatSettings;
+  invariantDate : TDateTime;
+  localeDate : TDateTime;
+  invariantRead : Boolean;
+  localeRead : Boolean;
 begin
-  if (not TryStrToDate(ASource, date)) then
+  Result := TryStrToIso8601DateTime(ASource, True, date);
+  if not Result then
   begin
-    iso8601 := TFormatSettings.Invariant();
-    iso8601.ShortDateFormat := 'yyyy/mm/dd';
-    iso8601.DateSeparator := '-';
-
-    date := StrToDateDef(ASource, Default(TDate), iso8601);
+    invariantRead := TryStrToDate(ASource, invariantDate, TFormatSettings.Invariant());
+    localeRead := TryStrToDate(ASource, localeDate);
+    Result := ChooseUnambiguous(invariantRead, invariantDate, localeRead, localeDate, date);
   end;
-  Result := TValue.From<TDate>(date);
+  if Result then
+    AResult := TValue.From<TDate>(date);
 end;
 
 function ConvStr2Float(const ASource : TValue; ATarget : PTypeInfo; out AResult : TValue) : Boolean;
@@ -1222,11 +1353,11 @@ begin
   lValue := StringReplace(ASource.AsString, ',', '.', [rfReplaceAll]);
 
   if ATarget = TypeInfo(TDate) then
-    AResult := Str2DateValue(lValue)
+    Exit(Str2DateValue(lValue, AResult))
   else if ATarget = TypeInfo(TDateTime) then
-    AResult := Str2DateTimeValue(lValue)
+    Exit(Str2DateTimeValue(lValue, AResult))
   else if ATarget = TypeInfo(TTime) then
-    AResult := Str2TimeValue(lValue)
+    Exit(Str2TimeValue(lValue, AResult))
   else
   begin
     if not TryStrToFloat(lValue, lFloat, TFormatSettings.Invariant()) then
