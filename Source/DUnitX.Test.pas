@@ -361,6 +361,9 @@ var
   index : integer;
   parameters : TArray<TRttiParameter>;
   tmp : TValue;
+  args : TValueArray;
+const
+  PLURAL : array[Boolean] of string = ('s', '');
 begin
   inherited Create(AFixture, AMethodName, AName, ACategory, nil, AEnabled);
   FInstance := AInstance;
@@ -378,15 +381,25 @@ begin
   begin
     //Only keep as many arguments as there are params
     SetLength(FArgs, len);
+    args := AArgs;
+    //[TestCase('Name', '')] gives no values at all, which is one empty value for a single parameter
+    if (len = 1) and (Length(args) = 0) then
+    begin
+      SetLength(args, 1);
+      args[0] := TValue.From<string>('');
+    end;
+    if Length(args) < len then
+      FArgsError := Format('Too few values: %d value%s for %d parameter%s',
+        [Length(args), PLURAL[Length(args) = 1], len, PLURAL[len = 1]]);
     for index := 0 to Pred(len) do
-      if (index <= high(AArgs)) and Assigned(parameters[index].ParamType) then
+      if (index <= high(args)) and Assigned(parameters[index].ParamType) then
       begin
-        if AArgs[index].TryConvert(parameters[index].ParamType.Handle, tmp) then
+        if args[index].TryConvert(parameters[index].ParamType.Handle, tmp) then
           FArgs[index] := tmp
         else if FArgsError = '' then
           //Reported when the case runs, so only this case errors
           FArgsError := Format('Cannot convert ''%s'' to %s for parameter %s',
-            [AArgs[index].ToString, parameters[index].ParamType.Name, parameters[index].Name]);
+            [args[index].ToString, parameters[index].ParamType.Name, parameters[index].Name]);
       end;
   end;
 end;
