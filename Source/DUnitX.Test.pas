@@ -143,6 +143,8 @@ type
       const AEnabled : boolean; const AArgs : TValueArray; const AExpectedException : ExceptClass = nil;
       const AExceptionInheritance : TExceptionInheritance = exExact); reintroduce;
     destructor Destroy; override;
+    //Set when the case cannot run with its values; the case raises it when it runs, so only that case errors
+    property ArgsError : string read FArgsError write FArgsError;
   end;
 
 implementation

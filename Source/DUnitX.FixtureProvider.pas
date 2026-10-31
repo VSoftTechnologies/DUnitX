@@ -80,12 +80,22 @@ uses
   SysUtils,
 {$ENDIF}
   DUnitX.Attributes,
+  DUnitX.Test,
   DUnitX.Utils,
   DUnitX.TestFramework,
   DUnitX.ResStrs,
   DUnitX.InternalInterfaces,
   DUnitX.InternalDataProvider,
   DUnitX.ServiceLocator;
+
+//A [TestCase] value that contains the separator is split at it, which gives the case more values than parameters
+function TooManyValuesMessage(const AValueCount, AParameterCount : Integer) : string;
+const
+  PLURAL : array[Boolean] of string = ('s', '');
+begin
+  Result := Format('Too many values: %d value%s for %d parameter%s (does a value contain the separator?)',
+    [AValueCount, PLURAL[AValueCount = 1], AParameterCount, PLURAL[AParameterCount = 1]]);
+end;
 
 { TDUnitXFixtureProvider }
 
@@ -282,6 +292,7 @@ var
   count, x : integer;
   Params : TValueArray;
   caseName : string;
+  test : ITest;
 
   category : string;
   ignoredTest : boolean;
@@ -505,8 +516,13 @@ begin
                 caseName := '(' + AutoNameTestCaseAttribute(testCaseAttrib).ValuesText + ')'
               else
                 caseName := testCaseAttrib.CaseInfo.Name;
-              currentFixture.AddTestCase(method.Name, caseName, FormatTestName(method.Name, i, repeatCount), category, method, testEnabled,
-                testCaseAttrib.CaseInfo.Values, willRaise, willRaiseInherit);
+              test := currentFixture.AddTestCase(method.Name, caseName, FormatTestName(method.Name, i, repeatCount), category, method,
+                testEnabled, testCaseAttrib.CaseInfo.Values, willRaise, willRaiseInherit);
+              //Only [TestCase] is checked: a provider or a source may supply more values than the method takes
+              if (testCaseAttrib is TestCaseAttribute) and ((test as TObject) is TDUnitXTestCase) and
+                (Length(testCaseAttrib.CaseInfo.Values) > Length(method.GetParameters())) then
+                TDUnitXTestCase(test as TObject).ArgsError := TooManyValuesMessage(Length(testCaseAttrib.CaseInfo.Values),
+                  Length(method.GetParameters()));
             end;
           end;
           // Add test case from test \case sources
