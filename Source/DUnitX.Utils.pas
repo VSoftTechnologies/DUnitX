@@ -1216,10 +1216,9 @@ end;
 
 function ConvStr2Float(const ASource : TValue; ATarget : PTypeInfo; out AResult : TValue) : Boolean;
 var
-  lFormatSettings : TFormatSettings;
+  lFloat : Extended;
   lValue : string;
 begin
-  lFormatSettings.DecimalSeparator := '.';
   lValue := StringReplace(ASource.AsString, ',', '.', [rfReplaceAll]);
 
   if ATarget = TypeInfo(TDate) then
@@ -1229,7 +1228,11 @@ begin
   else if ATarget = TypeInfo(TTime) then
     AResult := Str2TimeValue(lValue)
   else
-    AResult := TValue.FromFloat(ATarget, StrToFloatDef(lValue, 0, lFormatSettings));
+  begin
+    if not TryStrToFloat(lValue, lFloat, TFormatSettings.Invariant()) then
+      Exit(False);
+    AResult := TValue.FromFloat(ATarget, lFloat);
+  end;
   Result := True;
 end;
 
