@@ -477,6 +477,24 @@ type
     procedure WillRaise_Without_Class_Does_Not_Swallow_Assert_Pass;
 
     [Test]
+    procedure WillRaise_Does_Not_Swallow_A_Runtime_Ignore;
+
+    [Test]
+    procedure WillNotRaiseAny_Does_Not_Report_A_Runtime_Ignore_As_Unexpected;
+
+    [Test]
+    procedure WillRaiseAny_Does_Not_Swallow_A_Runtime_Ignore;
+
+    [Test]
+    procedure WillRaiseDescendant_Does_Not_Swallow_A_Runtime_Ignore;
+
+    [Test]
+    procedure WillNotRaise_Does_Not_Report_A_Runtime_Ignore_As_Unexpected;
+
+    [Test]
+    procedure WillNotRaiseDescendant_Does_Not_Report_A_Runtime_Ignore_As_Unexpected;
+
+    [Test]
     procedure WillRaiseDescendant_Exception_Does_Not_Swallow_A_Failing_Assert;
   end;
 
@@ -1926,6 +1944,84 @@ begin
           Assert.Pass('inner pass');
         end);
     end, ETestPass, 'inner pass');
+end;
+
+procedure TTestsAssert.WillRaise_Does_Not_Swallow_A_Runtime_Ignore;
+begin
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      Assert.WillRaise(
+        procedure
+        begin
+          raise ETestIgnored.Create('inner ignore');
+        end, EConvertError);
+    end, ETestIgnored, 'inner ignore');
+end;
+
+procedure TTestsAssert.WillNotRaiseAny_Does_Not_Report_A_Runtime_Ignore_As_Unexpected;
+begin
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      Assert.WillNotRaiseAny(
+        procedure
+        begin
+          raise ETestIgnored.Create('inner ignore');
+        end);
+    end, ETestIgnored, 'inner ignore');
+end;
+
+procedure TTestsAssert.WillRaiseAny_Does_Not_Swallow_A_Runtime_Ignore;
+begin
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      Assert.WillRaiseAny(
+        procedure
+        begin
+          raise ETestIgnored.Create('inner ignore');
+        end);
+    end, ETestIgnored, 'inner ignore');
+end;
+
+procedure TTestsAssert.WillRaiseDescendant_Does_Not_Swallow_A_Runtime_Ignore;
+begin
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      Assert.WillRaiseDescendant(
+        procedure
+        begin
+          raise ETestIgnored.Create('inner ignore');
+        end, EConvertError);
+    end, ETestIgnored, 'inner ignore');
+end;
+
+procedure TTestsAssert.WillNotRaise_Does_Not_Report_A_Runtime_Ignore_As_Unexpected;
+begin
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      Assert.WillNotRaise(
+        procedure
+        begin
+          raise ETestIgnored.Create('inner ignore');
+        end);
+    end, ETestIgnored, 'inner ignore');
+end;
+
+procedure TTestsAssert.WillNotRaiseDescendant_Does_Not_Report_A_Runtime_Ignore_As_Unexpected;
+begin
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      Assert.WillNotRaiseDescendant(
+        procedure
+        begin
+          raise ETestIgnored.Create('inner ignore');
+        end, Exception);
+    end, ETestIgnored, 'inner ignore');
 end;
 
 procedure TTestsAssert.WillRaiseDescendant_Exception_Does_Not_Swallow_A_Failing_Assert;
