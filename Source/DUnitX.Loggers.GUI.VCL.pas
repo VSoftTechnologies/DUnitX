@@ -63,7 +63,7 @@ uses
   System.Generics.Defaults,
   System.Generics.Collections,
   System.IniFiles,
-  System.Actions,                       //IDE keeps adding this at the end even if it's in the infdef'd section. make sure it's not there when committing!
+  System.Actions, //IDE keeps adding this at the end even if it's in the infdef'd section. make sure it's not there when committing!
 {$ELSE}
   Windows,
   Messages,
@@ -98,7 +98,7 @@ uses
   DUnitX.ComparableFormat,
   DUnitX.ComparableFormat.Xml,
   DUnitX.ComparableFormat.Csv,
-  DUnitX.Loggers.GUI.VCL.RichEdit, System.ImageList, System.Actions;
+  DUnitX.Loggers.GUI.VCL.RichEdit;
 
 const
   WM_LOAD_TESTS     = WM_USER + 123;
