@@ -1180,7 +1180,10 @@ begin
       if exceptionClass <> nil then
       begin
         if e is exceptionClass then
-          Fail(SMethodRaisedException + e.ClassName + sLineBreak + e.Message + AddLineBreak(msg), ReturnAddress);
+          Fail(SMethodRaisedException + e.ClassName + sLineBreak + e.Message + AddLineBreak(msg), ReturnAddress)
+        else
+          //Not the exception asserted against: let it propagate, so the test reports an error instead of passing.
+          raise;
       end
       else
         FailFmt(SUnexpectedException, [e.ClassName, e.message + AddLineBreak(msg)], ReturnAddress);
@@ -1210,7 +1213,10 @@ begin
         raise;
       if ((exceptionMsg = '') or SameStr(e.Message, exceptionMsg)) and
         (((exceptionClass <> nil) and (e.ClassType = exceptionClass)) or (exceptionClass = nil)) then
-        FailFmt(SMethodRaisedExceptionMessage, [e.ClassName, e.Message, AddLineBreak(msg)], ReturnAddress);
+        FailFmt(SMethodRaisedExceptionMessage, [e.ClassName, e.Message, AddLineBreak(msg)], ReturnAddress)
+      else
+        //Not the exception asserted against: let it propagate, so the test reports an error instead of passing.
+        raise;
     end;
   end;
 end;
@@ -1255,7 +1261,10 @@ begin
       if exceptionClass <> nil then
       begin
         if e.ClassType = exceptionClass then
-          Fail(SMethodRaisedException + exceptionClass.ClassName + sLineBreak + e.Message + AddLineBreak(msg), ReturnAddress);
+          Fail(SMethodRaisedException + exceptionClass.ClassName + sLineBreak + e.Message + AddLineBreak(msg), ReturnAddress)
+        else
+          //Not the exception asserted against: let it propagate, so the test reports an error instead of passing.
+          raise;
       end
       else
         FailFmt(SUnexpectedException, [e.ClassName, e.message], ReturnAddress);
