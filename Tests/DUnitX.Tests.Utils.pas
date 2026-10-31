@@ -23,6 +23,9 @@ type
     procedure Delete_Removes_The_Given_Elements;
   end;
 
+  //A signed type that does not cover its whole width
+  TSignedSubrange = -10..10;
+
   [TestFixture('TValueHelper')]
   [Category('Utils')]
   TValueHelperTests = class
@@ -114,6 +117,12 @@ type
     [TestCase('$00FF0000 = $00FF0000', '$00FF0000,$00FF0000')]
     [TestCase('$000000FF = $000000FF', '$000000FF,$000000FF')]
     procedure TestColorTestCase(const AColor : TColor; const AColorOrd : Integer);
+
+    [Test]
+    procedure Unparseable_Or_Out_Of_Range_Integer_Does_Not_Convert;
+
+    [Test]
+    procedure Hex_Integer_Is_Read_As_A_Bit_Pattern_Of_Its_Type;
   end;
 
   [TestFixture]
@@ -272,6 +281,53 @@ procedure TValueHelperTests.TestColorTestCase(const AColor : TColor;
   const AColorOrd : Integer);
 begin
   Assert.AreEqual(AColorOrd, AColor);
+end;
+
+procedure TValueHelperTests.Unparseable_Or_Out_Of_Range_Integer_Does_Not_Convert;
+var
+  asTValue : TValue;
+begin
+  //'abc' used to convert to 0, and '300' to the Byte 44
+  Assert.IsFalse(TValue.From<string>('abc').TryConvert<Integer>(asTValue), '''abc'' to Integer');
+  Assert.IsFalse(TValue.From<string>('300').TryConvert<Byte>(asTValue), '''300'' to Byte');
+  Assert.IsFalse(TValue.From<string>('-1').TryConvert<Cardinal>(asTValue), '''-1'' to Cardinal');
+  Assert.IsFalse(TValue.From<string>('2147483648').TryConvert<Integer>(asTValue), '''2147483648'' to Integer');
+  Assert.IsFalse(TValue.From<string>('$100').TryConvert<Byte>(asTValue), '''$100'' to Byte');
+  Assert.IsFalse(TValue.From<string>('$100').TryConvert<ShortInt>(asTValue), '''$100'' to ShortInt');
+  Assert.IsFalse(TValue.From<string>('11').TryConvert<TSignedSubrange>(asTValue), '''11'' to -10..10');
+  Assert.IsFalse(TValue.From<string>('$FF').TryConvert<TSignedSubrange>(asTValue), '''$FF'' to -10..10');
+  Assert.IsFalse(TValue.From<string>('notacolour').TryConvert<TColor>(asTValue), '''notacolour'' to TColor');
+
+  Assert.IsTrue(TValue.From<string>('255').TryConvert<Byte>(asTValue), '''255'' to Byte');
+  Assert.AreEqual(255, asTValue.AsInteger, '''255'' to Byte');
+  Assert.IsTrue(TValue.From<string>('4294967295').TryConvert<Cardinal>(asTValue), '''4294967295'' to Cardinal');
+  Assert.AreEqual(Int64(4294967295), asTValue.AsInt64, '''4294967295'' to Cardinal');
+end;
+
+procedure TValueHelperTests.Hex_Integer_Is_Read_As_A_Bit_Pattern_Of_Its_Type;
+var
+  asTValue : TValue;
+begin
+  //As in code: a hex value that fits the type's width is its bit pattern
+  Assert.IsTrue(TValue.From<string>('$FFFFFFFF').TryConvert<Integer>(asTValue), '''$FFFFFFFF'' to Integer');
+  Assert.AreEqual(-1, asTValue.AsInteger, '''$FFFFFFFF'' to Integer');
+  Assert.IsTrue(TValue.From<string>('$FF').TryConvert<ShortInt>(asTValue), '''$FF'' to ShortInt');
+  Assert.AreEqual(-1, asTValue.AsInteger, '''$FF'' to ShortInt');
+  Assert.IsTrue(TValue.From<string>('0xFFFF').TryConvert<SmallInt>(asTValue), '''0xFFFF'' to SmallInt');
+  Assert.AreEqual(-1, asTValue.AsInteger, '''0xFFFF'' to SmallInt');
+  Assert.IsTrue(TValue.From<string>('x7F').TryConvert<ShortInt>(asTValue), '''x7F'' to ShortInt');
+  Assert.AreEqual(127, asTValue.AsInteger, '''x7F'' to ShortInt');
+  Assert.IsTrue(TValue.From<string>('$FF').TryConvert<Byte>(asTValue), '''$FF'' to Byte');
+  Assert.AreEqual(255, asTValue.AsInteger, '''$FF'' to Byte');
+  Assert.IsTrue(TValue.From<string>('$FFFFFFFF').TryConvert<Cardinal>(asTValue), '''$FFFFFFFF'' to Cardinal');
+  Assert.AreEqual(Int64(4294967295), asTValue.AsInt64, '''$FFFFFFFF'' to Cardinal');
+  Assert.IsTrue(TValue.From<string>(' $FFFFFFFF').TryConvert<Integer>(asTValue), ''' $FFFFFFFF'' to Integer');
+  Assert.AreEqual(-1, asTValue.AsInteger, ''' $FFFFFFFF'' to Integer');
+  Assert.IsTrue(TValue.From<string>('+$FFFFFFFF').TryConvert<Integer>(asTValue), '''+$FFFFFFFF'' to Integer');
+  Assert.AreEqual(-1, asTValue.AsInteger, '''+$FFFFFFFF'' to Integer');
+  //A subrange does not cover its type's width, so its hex values are only range-checked
+  Assert.IsTrue(TValue.From<string>('$A').TryConvert<TSignedSubrange>(asTValue), '''$A'' to -10..10');
+  Assert.AreEqual(10, asTValue.AsInteger, '''$A'' to -10..10');
 end;
 
 procedure TValueHelperTests.TestDateConversion(const locale, text : string);
