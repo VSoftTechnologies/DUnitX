@@ -3,14 +3,6 @@
 	<template name="dxtc" invoke="auto">
 		<description>Create test case attribute</description>
 		<author>DUnitX Group</author>
-        <point name="testcasename">
-            <text>
-                TestCaseName
-            </text>
-            <hint>
-                Name of the test case
-            </hint>
-        </point>
         <point name="testcaseparams">
             <text>
                 TestCaseParams
@@ -20,7 +12,7 @@
             </hint>
         </point>
 		<code language="Delphi" context="memberdecl" delimiter="|" >
-			<![CDATA[[TestCase('|testcasename|', '|testcaseparams|')]|end|]]>
+			<![CDATA[[TestCase('|testcaseparams|')]|end|]]>
 		</code>
 	</template>
 </codetemplate>

@@ -86,10 +86,13 @@ type
   TestCaseInfoArray = DUnitX.Attributes.TestCaseInfoArray;
 
   CustomTestCaseAttribute = DUnitX.Attributes.CustomTestCaseAttribute;
-  CustomTestCaseSourceAttribute = DUnitX.Attributes.CustomTestCaseSourceAttribute;
+  CustomTestCaseGeneratorAttribute = DUnitX.Attributes.CustomTestCaseGeneratorAttribute;
   TestCaseAttribute = DUnitX.Attributes.TestCaseAttribute;
-  AutoNameTestCaseAttribute = DUnitX.Attributes.AutoNameTestCaseAttribute;
+  NamedTestCaseAttribute = DUnitX.Attributes.NamedTestCaseAttribute;
   TestCaseProviderAttribute = DUnitX.Attributes.TestCaseProviderAttribute;
+  TestCaseSourceAttribute = DUnitX.Attributes.TestCaseSourceAttribute;
+  AutoNameTestCaseAttribute = DUnitX.Attributes.TestCaseAttribute deprecated 'Use TestCase, which now names its cases from their values';
+  CustomTestCaseSourceAttribute = DUnitX.Attributes.CustomTestCaseGeneratorAttribute deprecated 'Use CustomTestCaseGeneratorAttribute';
 
   TExceptionInheritance = DUnitX.Types.TExceptionInheritance;
 

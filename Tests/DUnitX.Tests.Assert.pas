@@ -145,69 +145,69 @@ type
     procedure AreEqual_TClass_Throws_ETestFailure_When_Classes_Are_NotEqual;
 
     [Test]
-    [TestCase('Empty', ',,false')]
-    [TestCase('CR', #13','#13',false')]
-    [TestCase('Simple', 'abc,abc,false')]
-    [TestCase('Ignore case simple', 'abc,ABC,true')]
-    [TestCase('Ignore case complex', 'LoReM iPsUm DoLoR sIt AmEt,lOrEm IpSuM dOlOr SiT aMeT,true')]
+    [NamedTestCase('Empty', ',,false')]
+    [NamedTestCase('CR', #13','#13',false')]
+    [NamedTestCase('Simple', 'abc,abc,false')]
+    [NamedTestCase('Ignore case simple', 'abc,ABC,true')]
+    [NamedTestCase('Ignore case complex', 'LoReM iPsUm DoLoR sIt AmEt,lOrEm IpSuM dOlOr SiT aMeT,true')]
     procedure NoDiff_Throws_No_Exception_When_Strings_Are_Equal(const A, B : string; AIgnoreCase : boolean = false);
 
-    [TestCase('Length',
+    [NamedTestCase('Length',
         '  '#8',' +
         ' ,' +
         'Difference at position 2: [''  ''#8] does not match ['' ''],',
         ',', false)]
-    [TestCase('First Char',
+    [NamedTestCase('First Char',
         'lorem ipsum,' +
         '1orem ipsum,' +
         'Difference at position 1: [''lorem ''] does not match [''1orem ''],',
         ',', false)]
-    [TestCase('Last Char',
+    [NamedTestCase('Last Char',
         'Lorem ipsum,' +
         'Lorem ipsuw,' +
         'Difference at position 11: ['' ipsum''] does not match ['' ipsuw''],',
         ',', false)]
-    [TestCase('Leading Space',
+    [NamedTestCase('Leading Space',
         ' Lorem ipsum,' +
         'Lorem ipsum ,' +
         'Difference at position 1: ['' Lorem''] does not match [''Lorem ''],',
         ',', false)]
-    [TestCase('Trailing Space',
+    [NamedTestCase('Trailing Space',
         'Lorem ipsum,' +
         'Lorem ipsum ,' +
         'Difference at position 12: [''ipsum''] does not match [''ipsum ''],',
         ',', false)]
-    [TestCase('A sub B',
+    [NamedTestCase('A sub B',
         'Lorem ip,' +
         'Lorem ipsum,' +
         'Difference at position 9: [''em ip''] does not match [''em ipsum''],',
         ',', false)]
-    [TestCase('B sub A',
+    [NamedTestCase('B sub A',
         'Lorem ipsum,' +
         'Lorem ip,' +
         'Difference at position 9: [''em ipsum''] does not match [''em ip''],',
         ',', false)]
-    [TestCase('Different Spaces',
+    [NamedTestCase('Different Spaces',
         'lorem ipsum,' +
         'lorem  ipsum,' +
         'Difference at position 7: [''orem ipsum''] does not match [''orem  ipsu''],',
         ',', false)]
-    [TestCase('Capitalization',
+    [NamedTestCase('Capitalization',
         'lorem ipsum,' +
         'lorem Ipsum,' +
         'Difference at position 7: [''orem ipsum''] does not match [''orem Ipsum''],',
         ',', false)]
-    [TestCase('CR vs LF',
+    [NamedTestCase('CR vs LF',
         #13',' +
         #10',' +
         'Difference at position 1: [#13] does not match [#10] Linebreak style,Linebreak style',
         ',', false)]
-    [TestCase('Space vs TAB',
+    [NamedTestCase('Space vs TAB',
         'lorem ipsum,' +
         'lorem'#9'ipsum,' +
         'Difference at position 6: [''lorem ipsu''] does not match [''lorem''#9''ipsu''],',
         ',', false)]
-    [TestCase('TAB vs Space',
+    [NamedTestCase('TAB vs Space',
         'lorem'#9'ipsum,' +
         'lorem ipsum,' +
         'Difference at position 6: [''lorem''#9''ipsu''] does not match [''lorem ipsu''],',
@@ -376,44 +376,44 @@ type
     procedure DoesNotContain_String_Failure_Message;
 
     [Test]
-    [TestCase('ignoring case', 'true')]
-    [TestCase('case sensitive', 'false')]
+    [NamedTestCase('ignoring case', 'true')]
+    [NamedTestCase('case sensitive', 'false')]
     procedure Contains_And_DoesNotContain_Fail_For_An_Empty_SubString(const ignoreCase : boolean);
 
     [Test]
-    [TestCase('substring', 'a str,a string,false')]
-    [TestCase('substring - case sensitive', 'a str,a string,true')]
+    [NamedTestCase('substring', 'a str,a string,false')]
+    [NamedTestCase('substring - case sensitive', 'a str,a string,true')]
     procedure StartsWith_SubString_Is_At_The_Start_Of_String(const subString, theString : string; caseSensitive : boolean);
 
     [Test]
-    [TestCase('empty substring', ',a string,false')]
-    [TestCase('empty substring - case sensitive', ',a string,true')]
-    [TestCase('empty string', 'substring,,false')]
-    [TestCase('empty string - case sensitive', 'substring,,true')]
-    [TestCase('at end of string', 'substring,at the end if the substring,false')]
-    [TestCase('at end of string - case sensitive', 'substring,at the end if the substring,true')]
-    [TestCase('in the middle of string', 'substring,the substring is in the middle,false')]
-    [TestCase('in the middle of string - case sensitive', 'substring,the substring is in the middle,true')]
-    [TestCase('not in the string', 'something else,the substring is not here,false')]
-    [TestCase('not in the string - case sensitive', 'something else,the substring is not here,true')]
+    [NamedTestCase('empty substring', ',a string,false')]
+    [NamedTestCase('empty substring - case sensitive', ',a string,true')]
+    [NamedTestCase('empty string', 'substring,,false')]
+    [NamedTestCase('empty string - case sensitive', 'substring,,true')]
+    [NamedTestCase('at end of string', 'substring,at the end if the substring,false')]
+    [NamedTestCase('at end of string - case sensitive', 'substring,at the end if the substring,true')]
+    [NamedTestCase('in the middle of string', 'substring,the substring is in the middle,false')]
+    [NamedTestCase('in the middle of string - case sensitive', 'substring,the substring is in the middle,true')]
+    [NamedTestCase('not in the string', 'something else,the substring is not here,false')]
+    [NamedTestCase('not in the string - case sensitive', 'something else,the substring is not here,true')]
     procedure StartsWith_SubString_Is_Not_At_Start(const subString, theString : string; caseSensitive : boolean);
 
     [Test]
-    [TestCase('substring', 'ing,a string,false')]
-    [TestCase('substring - case sensitive', 'ing,a string,true')]
+    [NamedTestCase('substring', 'ing,a string,false')]
+    [NamedTestCase('substring - case sensitive', 'ing,a string,true')]
     procedure EndsWith_SubString_Is_At_The_End_Of_String(const subString, theString : string; caseSensitive : boolean);
 
     [Test]
-    [TestCase('empty substring', ',a string,false')]
-    [TestCase('empty substring - case sensitive', ',a string,true')]
-    [TestCase('empty string', 'substring,,false')]
-    [TestCase('empty string - case sensitive', 'substring,,true')]
-    [TestCase('at start of string', 'at the,at the end if the substring,false')]
-    [TestCase('at start of string - case sensitive', 'at the,at the end if the substring,true')]
-    [TestCase('in the middle of string', 'substring,the substring is in the middle,false')]
-    [TestCase('in the middle of string - case sensitive', 'substring,the substring is in the middle,true')]
-    [TestCase('not in the string', 'something else,the substring is not here,false')]
-    [TestCase('not in the string - case sensitive', 'something else,the substring is not here,true')]
+    [NamedTestCase('empty substring', ',a string,false')]
+    [NamedTestCase('empty substring - case sensitive', ',a string,true')]
+    [NamedTestCase('empty string', 'substring,,false')]
+    [NamedTestCase('empty string - case sensitive', 'substring,,true')]
+    [NamedTestCase('at start of string', 'at the,at the end if the substring,false')]
+    [NamedTestCase('at start of string - case sensitive', 'at the,at the end if the substring,true')]
+    [NamedTestCase('in the middle of string', 'substring,the substring is in the middle,false')]
+    [NamedTestCase('in the middle of string - case sensitive', 'substring,the substring is in the middle,true')]
+    [NamedTestCase('not in the string', 'something else,the substring is not here,false')]
+    [NamedTestCase('not in the string - case sensitive', 'something else,the substring is not here,true')]
     procedure EndsWith_SubString_Is_Not_At_End(const subString, theString : string; caseSensitive : boolean);
 
     [Test]
@@ -421,13 +421,13 @@ type
 
 {$IFDEF SUPPORTS_REGEX}
     [Test]
-    [TestCase('GUID with dash', '[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12},C687683F-F25B-4F9A-A231-31C52253B6A1')]
-    [TestCase('GUID without dash', '[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12},C687683FF25B4F9AA23131C52253B6A1')]
+    [NamedTestCase('GUID with dash', '[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12},C687683F-F25B-4F9A-A231-31C52253B6A1')]
+    [NamedTestCase('GUID without dash', '[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12},C687683FF25B4F9AA23131C52253B6A1')]
     procedure IsMatch_True_Will_Not_Raise(const regexPattern, theString : string);
 
     [Test]
-    [TestCase('GUID with dash', '[0-9A-F]{8}[-]([0-9A-F]{4}[-]){3}[0-9A-F]{12},C687683F-F25B-4F9A-A231-31C52253B6A#')]
-    [TestCase('GUID without dash', '[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12},C687683FF25B4F9AA23131C52253B6A#')]
+    [NamedTestCase('GUID with dash', '[0-9A-F]{8}[-]([0-9A-F]{4}[-]){3}[0-9A-F]{12},C687683F-F25B-4F9A-A231-31C52253B6A#')]
+    [NamedTestCase('GUID without dash', '[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12},C687683FF25B4F9AA23131C52253B6A#')]
     procedure IsMatch_False_Will_Raise_ETestFailure(const regexPattern, theString : string);
 
     [Test]

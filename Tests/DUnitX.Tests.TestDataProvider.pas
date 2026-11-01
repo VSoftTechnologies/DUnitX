@@ -118,7 +118,7 @@ type
   TWillRaiseTestCases = class
   public
     [Test]
-    [TestCase('Zero', '0')]
+    [NamedTestCase('Zero', '0')]
     [WillRaise(EAbort)]
     procedure CaseDoesNotRaise(const value : integer);
     [Test]
@@ -126,7 +126,7 @@ type
     [WillRaise(EAbort)]
     procedure ProviderCaseDoesNotRaise(const value1, value2 : integer; expected : boolean);
     [Test]
-    [TestCase('Zero', '0')]
+    [NamedTestCase('Zero', '0')]
     [WillRaise(EAbort)]
     procedure CaseRaises(const value : integer);
   end;
@@ -137,13 +137,13 @@ type
     TConversionTestEnum = (ctOne, ctTwo);
   public
     [Test]
-    [TestCase('Known', 'ctTwo')]
+    [NamedTestCase('Known', 'ctTwo')]
     procedure KnownName(const value : TConversionTestEnum);
     [Test]
-    [TestCase('LongBoolTrue', 'True')]
+    [NamedTestCase('LongBoolTrue', 'True')]
     procedure LongBoolTrue(const value : LongBool);
     [Test]
-    [TestCase('Unknown', 'ctBogus')]
+    [NamedTestCase('Unknown', 'ctBogus')]
     procedure UnknownName(const value : TConversionTestEnum);
   end;
 
@@ -151,18 +151,18 @@ type
   TSeparatorTestCases = class
   public
     [Test]
-    [TestCase('OtherSeparator', '1,000', '|')]
+    [NamedTestCase('OtherSeparator', '1,000', '|')]
     procedure OtherSeparator(const value : string);
     [Test]
-    [TestCase('SplitAtComma', '1,000')]
+    [NamedTestCase('SplitAtComma', '1,000')]
     procedure SplitAtComma(const value : string);
     [Test]
-    [TestCase('NoParameters', '1')]
+    [NamedTestCase('NoParameters', '1')]
     procedure NoParameters;
   end;
 
   //Supplies one case with two values
-  TwoValuesSourceAttribute = class(CustomTestCaseSourceAttribute)
+  TwoValuesSourceAttribute = class(CustomTestCaseGeneratorAttribute)
   protected
     function GetCaseInfoArray : TestCaseInfoArray; override;
   end;
