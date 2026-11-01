@@ -28,6 +28,8 @@ unit DUnitX.Tests.ParallelFixtures;
 
 interface
 
+{$I DUnitX.inc}
+
 uses
   DUnitX.TestFramework;
 
@@ -55,6 +57,10 @@ type
     procedure NUnit_Xml_Is_The_Same_As_A_Serial_Run;
     [Test]
     procedure JUnit_Xml_Is_The_Same_As_A_Serial_Run;
+    [Test]
+    procedure Leak_Checks_Are_Suspended_For_Every_Runner;
+    [Test]
+    procedure Worker_Failure_Is_Raised_After_The_Run;
     [Test]
     procedure Parallelism_0_Runs_On_The_Runner_Thread;
     [Test]
@@ -103,6 +109,15 @@ type
     procedure LogsItsOwnName;
     procedure AssertsMany;
     procedure MakesNoAssert;
+    procedure MeetsAnother;
+    procedure FinishesLast;
+    procedure SeesLeakChecksSuspended;
+  end;
+
+  //Fails every test, to stop the worker threads with an error that is not a test result.
+  TRaisingLogger = class(TDUnitXNullLogger)
+  protected
+    procedure OnEndTest(const threadId : TThreadID; const Test : ITestResult); override;
   end;
 
   //Counts its callers inside it at once, to show that the runner never calls a logger from two threads at the same time.
@@ -136,6 +151,10 @@ var
   probeTearDowns : TDictionary<string, integer>;
   probeThreads : TDictionary<string, TThreadID>;
   probeGate : TCountdownEvent;
+  probeMet : integer;
+  probePair : TEvent;
+  probeLastDone : TEvent;
+  probeLeakChecks : TDictionary<string, boolean>;
 
 procedure ResetProbes(const AGateCount : integer);
 begin
@@ -144,6 +163,10 @@ begin
     probeSetups.Clear;
     probeTearDowns.Clear;
     probeThreads.Clear;
+    probeLeakChecks.Clear;
+    probeMet := 0;
+    probePair.ResetEvent;
+    probeLastDone.ResetEvent;
     FreeAndNil(probeGate);
     if AGateCount > 0 then
       probeGate := TCountdownEvent.Create(AGateCount);
@@ -263,6 +286,55 @@ begin
   Sleep(20);
 end;
 
+procedure TParallelProbe.MeetsAnother;
+var
+  met : integer;
+begin
+  //The first two fixtures to get here wait for each other, so at least two run at once.
+  RecordProbeThread(Tag + '.MeetsAnother');
+  MonitorEnter(probeLock);
+  try
+    Inc(probeMet);
+    met := probeMet;
+  finally
+    MonitorExit(probeLock);
+  end;
+  if met >= 2 then
+    probePair.SetEvent;
+  Assert.IsTrue(probePair.WaitFor(10000) = wrSignaled, Tag + ' never had another fixture running alongside it');
+end;
+
+procedure TParallelProbe.FinishesLast;
+begin
+  //Probe1 starts first and finishes after the last probe, so the fixtures finish out of order.
+  if Tag = 'Probe1' then
+    Assert.IsTrue(probeLastDone.WaitFor(10000) = wrSignaled, 'the last probe never ran while Probe1 waited')
+  else
+  begin
+    if Tag = Format('Probe%d', [PROBE_FIXTURES]) then
+      probeLastDone.SetEvent;
+    Assert.IsTrue(True);
+  end;
+end;
+
+procedure TParallelProbe.SeesLeakChecksSuspended;
+begin
+  MonitorEnter(probeLock);
+  try
+    probeLeakChecks.AddOrSetValue(Tag, TParallelRunnerAccess.LeakChecksSuspended);
+  finally
+    MonitorExit(probeLock);
+  end;
+  Assert.IsTrue(True);
+end;
+
+{ TRaisingLogger }
+
+procedure TRaisingLogger.OnEndTest(const threadId : TThreadID; const Test : ITestResult);
+begin
+  raise EProbeError.Create('the logger failed');
+end;
+
 { TOverlapLogger }
 
 procedure TOverlapLogger.Enter(const threadId : TThreadID);
@@ -372,14 +444,18 @@ end;
 
 //Runs the fixtures as Execute does, through a runner of its own.  A runner registers itself for its thread, so it gets a
 //thread of its own.
-function RunProbes(const AFixtures : ITestFixtureList; const AMaxThreads : integer; const AFailsOnNoAsserts : boolean; const ALoggers :
-  TArray<ITestLogger>) : TProbeRun;
+function RunProbesAllowingFailure(const AFixtures : ITestFixtureList; const AMaxThreads : integer; const AFailsOnNoAsserts : boolean; const
+  ALoggers : TArray<ITestLogger>; out AFailure : string) : TProbeRun;
 var
   thread : TThread;
   results : IRunResults;
   runnerThread : TThreadID;
   failure : string;
 begin
+{$IFNDEF PARALLEL_FIXTURES}
+  if AMaxThreads > 1 then
+    Assert.Ignore('Fixtures run in parallel from Delphi 11 on');
+{$ENDIF}
   results := nil;
   runnerThread := 0;
   failure := '';
@@ -418,9 +494,18 @@ begin
   finally
     thread.Free;
   end;
-  Assert.AreEqual('', failure, 'the run itself raised');
+  AFailure := failure;
   result.Results := results;
   result.RunnerThread := runnerThread;
+end;
+
+function RunProbes(const AFixtures : ITestFixtureList; const AMaxThreads : integer; const AFailsOnNoAsserts : boolean; const ALoggers :
+  TArray<ITestLogger>) : TProbeRun;
+var
+  failure : string;
+begin
+  result := RunProbesAllowingFailure(AFixtures, AMaxThreads, AFailsOnNoAsserts, ALoggers, failure);
+  Assert.AreEqual('', failure, 'the run itself raised');
 end;
 
 function ResultsOfType(const AResults : IRunResults; const AType : TTestResultType) : string;
@@ -433,13 +518,13 @@ begin
       result := result + testResult.Test.FullName + ': ' + testResult.Message + '; ';
 end;
 
-function FullNames(const AResults : IRunResults) : string;
+function FixtureAndTestNames(const AResults : IRunResults) : string;
 var
   testResult : ITestResult;
 begin
   result := '';
   for testResult in AResults.GetAllTestResults do
-    result := result + testResult.Test.FullName + #13#10;
+    result := result + testResult.Test.Fixture.Name + '.' + testResult.Test.Name + #13#10;
 end;
 
 //What the XML loggers write, without the times and dates that differ from run to run.
@@ -501,8 +586,8 @@ var
   checked : integer;
 begin
   ResetProbes(0);
-  run := RunProbes(BuildProbes(PROBE_FIXTURES, ['LogsItsOwnName', 'AssertsMany']), 4, false, nil);
-  Assert.AreEqual(2 * PROBE_FIXTURES, run.Results.PassCount, ResultsOfType(run.Results, TTestResultType.Failure) +
+  run := RunProbes(BuildProbes(PROBE_FIXTURES, ['MeetsAnother', 'LogsItsOwnName', 'AssertsMany']), 4, false, nil);
+  Assert.AreEqual(3 * PROBE_FIXTURES, run.Results.PassCount, ResultsOfType(run.Results, TTestResultType.Failure) +
     ResultsOfType(run.Results, TTestResultType.Error));
   Assert.IsTrue(DistinctProbeThreads > 1, 'the fixtures ran on more than one thread');
   checked := 0;
@@ -525,17 +610,17 @@ var
   testResult : ITestResult;
 begin
   ResetProbes(0);
-  run := RunProbes(BuildProbes(PROBE_FIXTURES, ['AssertsMany', 'MakesNoAssert']), 4, true, nil);
+  run := RunProbes(BuildProbes(PROBE_FIXTURES, ['MeetsAnother', 'AssertsMany', 'MakesNoAssert']), 4, true, nil);
   Assert.IsTrue(DistinctProbeThreads > 1, 'the fixtures ran on more than one thread');
   for testResult in run.Results.GetAllTestResults do
   begin
-    if testResult.Test.Name = 'AssertsMany' then
+    if testResult.Test.Name <> 'MakesNoAssert' then
       Assert.AreEqual(Ord(TTestResultType.Pass), Ord(testResult.ResultType), testResult.Test.FullName + ': ' + testResult.Message)
     else
       Assert.AreEqual(Ord(TTestResultType.Failure), Ord(testResult.ResultType), testResult.Test.FullName +
         ' made no assertion, whatever other threads asserted');
   end;
-  Assert.AreEqual(2 * PROBE_FIXTURES, run.Results.TestCount);
+  Assert.AreEqual(3 * PROBE_FIXTURES, run.Results.TestCount);
 end;
 
 procedure TParallelFixtureTests.Run_Totals_Match_The_Results;
@@ -597,8 +682,8 @@ begin
   ResetProbes(0);
   logger := TOverlapLogger.Create;
   loggerIntf := logger;
-  run := RunProbes(BuildProbes(PROBE_FIXTURES, ['LogsItsOwnName', 'AssertsMany']), 4, false, [loggerIntf]);
-  Assert.AreEqual(2 * PROBE_FIXTURES, run.Results.PassCount);
+  run := RunProbes(BuildProbes(PROBE_FIXTURES, ['MeetsAnother', 'LogsItsOwnName', 'AssertsMany']), 4, false, [loggerIntf]);
+  Assert.AreEqual(3 * PROBE_FIXTURES, run.Results.PassCount);
   Assert.IsTrue(DistinctProbeThreads > 1, 'the fixtures ran on more than one thread');
   Assert.IsTrue(logger.FCalls > 0, 'the logger was called');
   Assert.AreEqual(0, logger.FOverlaps, 'no logger call overlapped another');
@@ -607,15 +692,18 @@ end;
 
 procedure TParallelFixtureTests.Results_Are_In_The_Serial_Order;
 var
-  serial : string;
-  parallel : string;
+  run : TProbeRun;
+  expected : string;
+  i : integer;
 begin
+  //Probe1 finishes after the last probe, so its results are recorded late; they must still be listed first.
   ResetProbes(0);
-  serial := FullNames(RunProbes(BuildProbes(PROBE_FIXTURES, ['Passes', 'Fails', 'LogsItsOwnName']), 0, false, nil).Results);
-  ResetProbes(0);
-  parallel := FullNames(RunProbes(BuildProbes(PROBE_FIXTURES, ['Passes', 'Fails', 'LogsItsOwnName']), 4, false, nil).Results);
-  Assert.AreEqual(3 * PROBE_FIXTURES, CountOf(#13#10, serial));
-  Assert.AreEqual(serial, parallel, false, 'a parallel run lists its results in the order a serial run does');
+  run := RunProbes(BuildProbes(PROBE_FIXTURES, ['Passes', 'FinishesLast']), 4, false, nil);
+  Assert.AreEqual(2 * PROBE_FIXTURES, run.Results.PassCount, ResultsOfType(run.Results, TTestResultType.Failure));
+  expected := '';
+  for i := 1 to PROBE_FIXTURES do
+    expected := expected + Format('Probe%d.Passes'#13#10'Probe%d.FinishesLast'#13#10, [i, i]);
+  Assert.AreEqual(expected, FixtureAndTestNames(run.Results), false, 'a parallel run lists its results in the order a serial run does');
 end;
 
 procedure TParallelFixtureTests.NUnit_Xml_Is_The_Same_As_A_Serial_Run;
@@ -658,6 +746,33 @@ begin
     Assert.AreEqual(run.RunnerThread, threadId, 'every test ran on the runner''s thread');
 end;
 
+procedure TParallelFixtureTests.Leak_Checks_Are_Suspended_For_Every_Runner;
+var
+  i : integer;
+  suspended : boolean;
+begin
+  //A leak monitor measures the whole process, so while fixtures run in parallel no runner may check leaks: not only the
+  //parallel runner, but also one created inside a test, which the probes stand in for by asking from a fixture.
+  ResetProbes(0);
+  RunProbes(BuildProbes(PROBE_FIXTURES, ['MeetsAnother', 'SeesLeakChecksSuspended']), 4, false, nil);
+  Assert.AreEqual(PROBE_FIXTURES, probeLeakChecks.Count);
+  for i := 1 to PROBE_FIXTURES do
+    Assert.IsTrue(probeLeakChecks.TryGetValue(Format('Probe%d', [i]), suspended) and suspended, Format('Probe%d saw leak checks suspended', [i]));
+end;
+
+procedure TParallelFixtureTests.Worker_Failure_Is_Raised_After_The_Run;
+var
+  failure : string;
+  logger : ITestLogger;
+begin
+  //An error that is not a test result, here a logger raising, stops a worker; the run then raises it.
+  ResetProbes(0);
+  logger := TRaisingLogger.Create;
+  RunProbesAllowingFailure(BuildProbes(PROBE_FIXTURES, ['Passes']), 4, false, [logger], failure);
+  Assert.AreEqual(1, Pos('ETestFrameworkException: ', failure), failure);
+  Assert.IsTrue(Pos('the logger failed', failure) > 0, failure);
+end;
+
 procedure TParallelFixtureTests.Parallelism_0_Runs_On_The_Runner_Thread;
 begin
   CheckRunsOnTheRunnerThread(0);
@@ -673,10 +788,16 @@ initialization
   probeSetups := TDictionary<string, integer>.Create;
   probeTearDowns := TDictionary<string, integer>.Create;
   probeThreads := TDictionary<string, TThreadID>.Create;
+  probeLeakChecks := TDictionary<string, boolean>.Create;
+  probePair := TEvent.Create(nil, true, false, '');
+  probeLastDone := TEvent.Create(nil, true, false, '');
   TDUnitX.RegisterTestFixture(TParallelFixtureTests);
 
 finalization
   probeGate.Free;
+  probeLastDone.Free;
+  probePair.Free;
+  probeLeakChecks.Free;
   probeThreads.Free;
   probeTearDowns.Free;
   probeSetups.Free;
