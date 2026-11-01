@@ -60,8 +60,12 @@ type
   public
     [Test]
     procedure TestCase_With_Too_Many_Values_Errors_The_Test_Case;
+    //A provider or a generator that supplies more values than the method takes errors the case, as [TestCase] does
     [Test]
-    procedure Provider_Or_Source_With_More_Values_Than_Parameters_Still_Runs;
+    procedure Provider_Or_Generator_With_More_Values_Than_Parameters_Errors_The_Case;
+    //A provider or a generator that supplies as many values as the method takes still runs
+    [Test]
+    procedure Provider_Or_Generator_With_Matching_Values_Runs;
   end;
 
   [TestFixture]
@@ -167,8 +171,14 @@ type
     function GetCaseInfoArray : TestCaseInfoArray; override;
   end;
 
-  //Not a fixture: the test below generates its tests and runs them itself.  Each method takes fewer values than it is
-  //given, which a provider or a source may do.
+  //Supplies one case, named Two, with two values
+  TwoValuesCaseAttribute = class(CustomTestCaseAttribute)
+  protected
+    function GetCaseInfo : TestCaseInfo; override;
+  end;
+
+  //Not a fixture: the tests below generate its tests and run them themselves.  The first three methods take fewer values
+  //than they are given, the last two as many.
   TMoreValuesThanParametersCases = class
   public
     [Test]
@@ -177,6 +187,15 @@ type
     [Test]
     [TwoValuesSource]
     procedure FromSource(const value1 : integer);
+    [Test]
+    [TwoValuesCase]
+    procedure FromCustomCase(const value1 : integer);
+    [Test]
+    [TestCaseProvider('Sampleprovider')]
+    procedure FromProviderMatching(const value1, value2 : integer; expected : boolean);
+    [Test]
+    [TwoValuesSource]
+    procedure FromSourceMatching(const value1, value2 : integer);
   end;
 
   //Not a fixture: the tests below generate its tests and run them themselves.
@@ -620,6 +639,32 @@ begin
   Assert.AreEqual(1, value1, 'the first value of the case');
 end;
 
+procedure TMoreValuesThanParametersCases.FromCustomCase(const value1 : integer);
+begin
+  Assert.AreEqual(1, value1, 'the first value of the case');
+end;
+
+{ TwoValuesCaseAttribute }
+
+function TwoValuesCaseAttribute.GetCaseInfo : TestCaseInfo;
+begin
+  Result.Name := 'Two';
+  SetLength(Result.Values, 2);
+  Result.Values[0] := 1;
+  Result.Values[1] := 2;
+end;
+
+procedure TMoreValuesThanParametersCases.FromProviderMatching(const value1, value2 : integer; expected : boolean);
+begin
+  Assert.AreEqual(value1 = value2, expected, 'the values of the case');
+end;
+
+procedure TMoreValuesThanParametersCases.FromSourceMatching(const value1, value2 : integer);
+begin
+  Assert.AreEqual(1, value1, 'the first value of the case');
+  Assert.AreEqual(2, value2, 'the second value of the case');
+end;
+
 { TTestCaseValueCountTests }
 
 procedure TTestCaseValueCountTests.TestCase_With_Too_Many_Values_Errors_The_Test_Case;
@@ -665,38 +710,27 @@ begin
   Assert.AreEqual(3, count, 'three [TestCase] tests');
 end;
 
-procedure TTestCaseValueCountTests.Provider_Or_Source_With_More_Values_Than_Parameters_Still_Runs;
+procedure TTestCaseValueCountTests.Provider_Or_Generator_With_More_Values_Than_Parameters_Errors_The_Case;
 var
   fixture : ITestFixture;
-  provider : TDUnitXFixtureProvider;
-  providerIntf : IFixtureProvider;
-  test : ITest;
-  testExecute : ITestExecute;
-  providerCount : integer;
-  sourceCount : integer;
 begin
-  fixture := TDUnitXTestFixture.Create('AMoreValuesFixture', '', TMoreValuesThanParametersCases, 'AUnit') as ITestFixture;
-  provider := TDUnitXFixtureProvider.Create;
-  providerIntf := provider;
-  TFixtureProviderAccess(provider).GenerateTests(nil, fixture);
+  fixture := GenerateCases(TMoreValuesThanParametersCases);
+  Assert.AreEqual(5, Length(TestNames(fixture, 'FromProvider').Split(['|'])), 'one test per provider case');
+  CheckErrors(fixture, 'FromProvider.Comparetest (00)', 'Too many values: 3 values for 1 parameter');
+  CheckErrors(fixture, 'FromProvider.Comparetest (04)', 'Too many values: 3 values for 1 parameter');
+  CheckErrors(fixture, 'FromSource.TwoValues', 'Too many values: 2 values for 1 parameter');
+  //A test case attribute of another kind is checked as a generator is
+  CheckErrors(fixture, 'FromCustomCase.Two', 'Too many values: 2 values for 1 parameter');
+end;
 
-  providerCount := 0;
-  sourceCount := 0;
-  for test in fixture.Tests do
-  begin
-    if test.MethodName = 'FromProvider' then
-      Inc(providerCount)
-    else
-      Inc(sourceCount);
-    testExecute := test as ITestExecute;
-    Assert.WillNotRaiseAny(
-      procedure
-      begin
-        testExecute.Execute(nil);
-      end, test.Name + ' uses the values it has parameters for');
-  end;
-  Assert.IsTrue(providerCount > 0, 'provider tests');
-  Assert.AreEqual(1, sourceCount, 'source tests');
+procedure TTestCaseValueCountTests.Provider_Or_Generator_With_Matching_Values_Runs;
+var
+  fixture : ITestFixture;
+begin
+  fixture := GenerateCases(TMoreValuesThanParametersCases);
+  CheckRuns(fixture, 'FromProviderMatching.Comparetest (00)');
+  CheckRuns(fixture, 'FromProviderMatching.Comparetest (04)');
+  CheckRuns(fixture, 'FromSourceMatching.TwoValues');
 end;
 
 { TAutoNamedCases }
