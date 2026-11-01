@@ -6,6 +6,20 @@ Changes in behaviour that can make an existing test suite report differently aft
 Next major version
 ------------------
 
+### `[MaxTime]` no longer interrupts the test
+
+A test that ran past its `[MaxTime]` was stopped by a watchdog thread, which suspended the test thread, rewrote its instruction pointer to jump into a `raise ETimedOut` and resumed it.  On Win64 that crashed: the code address was truncated to 32 bits, so the thread jumped to an unmapped address and the test errored with an access violation instead of failing.  Correcting the address would not have made it safe, because x64 exception handling unwinds from tables that an injected frame has no entry in.
+
+The test is now timed, and checked once it returns.  These things change:
+
+- A test that runs over its `[MaxTime]` is not interrupted: it runs to its end, then fails with "Operation Timed Out".  Code after the point where it used to be stopped now runs.
+- A test that never returns is no longer stopped by `[MaxTime]`, so the run waits for it.
+- A test cannot catch the timeout itself (`except on ETimedOut`), as the example `TestMaxTime` did, because it is raised after the test returns.
+- An overrun that ends in `Assert.Pass` fails.  An overrun that ends in a failed assertion or another exception reports that, as it would without `[MaxTime]`.  The timeout is checked only when the test ends normally or with `Assert.Pass`, so a `[WillRaise]` test that overruns and then raises the exception it expects passes.  (As before, a `[WillRaise]` test expecting `EAbort`, or `Exception` with `exDescendant`, takes the timeout's `ETimedOut` for its exception.)
+- The test fails when its elapsed time, in whole milliseconds, is more than its `[MaxTime]`: a test taking exactly its `[MaxTime]` passes, as the attribute's documentation says.  The watchdog checked every 20 ms, so an overrun of up to 20 ms or so could pass.
+- On Win64 an overrunning test fails with the timeout instead of erroring with an access violation.
+- `[MaxTime]` no longer needs Windows, so it now applies on every platform; it was ignored elsewhere.
+
 ### `[TestCase]` names its cases from their values; `[NamedTestCase]` takes a name (#532)
 
 Thinking up a name for every case is tedious when there are many, so `[TestCase]` now takes only the values and names each case from them, as `[AutoNameTestCase]` did: `[TestCase('1,2')]` on `Add` is the test `Add(1,2)`.  A case that needs a name of its own uses the new `[NamedTestCase]`, which takes the arguments `[TestCase]` used to take.

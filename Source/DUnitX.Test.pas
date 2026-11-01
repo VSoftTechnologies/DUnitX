@@ -157,9 +157,7 @@ uses
   Generics.Defaults,
   StrUtils,
 {$ENDIF}
-{$IFDEF MSWINDOWS}
   DUnitX.Timeout,
-{$ENDIF}
   DUnitX.Exceptions,
   DUnitX.Utils;
 
@@ -204,18 +202,37 @@ begin
 end;
 
 procedure TDUnitXTest.Execute(const context : ITestExecuteContext);
-{$IFDEF MSWINDOWS}
 var
   timeout : ITimeout;
-{$ENDIF}
+
+  //The test has returned: stop timing before anything else runs, then fail it if it overran.
+  procedure CheckTimeout;
+  begin
+    if timeout <> nil then
+    begin
+      timeout.Stop;
+      FTimedOut := timeout.TimedOut;
+      timeout.RaiseIfTimedOut;
+    end;
+  end;
+
 begin
   FStartTime := Now();
+  FTimedOut := false;
   try
-{$IFDEF MSWINDOWS}
     if FMaxTime > 0 then
       timeout := InitialiseTimeOut(FMaxTime);
-{$ENDIF}
-    FMethod();
+    try
+      FMethod();
+    except
+      //Assert.Pass ends the test early by raising ETestPass; an overrun before it is still a failure.
+      on ETestPass do
+      begin
+        CheckTimeout;
+        raise;
+      end;
+    end;
+    CheckTimeout;
   finally
     FEndTime := Now();
 
