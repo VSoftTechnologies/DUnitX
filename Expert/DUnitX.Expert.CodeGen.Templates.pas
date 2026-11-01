@@ -165,9 +165,10 @@ resourcestring
     '    [Test]'#13#10 +
     '    procedure Test1;'#13#10 +
     '    // Test with TestCase Attribute to supply parameters.'#13#10 +
+    '    // Each case is named from its values; NamedTestCase gives it a name.'#13#10 +
     '    [Test]'#13#10 +
-    '    [TestCase(''TestA'',''1,2'')]'#13#10 +
-    '    [TestCase(''TestB'',''3,4'')]'#13#10 +
+    '    [TestCase(''1,2'')]'#13#10 +
+    '    [NamedTestCase(''TestB'',''3,4'')]'#13#10 +
     '    procedure Test2(const AValue1 : Integer;const AValue2 : Integer);'#13#10;
 
   // 0 - Class Name

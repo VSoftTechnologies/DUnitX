@@ -9,23 +9,23 @@ type
   [TestFixture]
   TTestNameParserTests = class
   public
-    [TestCase('SingleName1', 'Test.Namespace.Fixture.Method')]
-    [TestCase('SingleName2', 'Test.Namespace.Fixture.Method,', '|')]
-    [TestCase('SingleName3', '  Test.Namespace.Fixture.Method  ')]
-    [TestCase('SingleName4', '  Test.Namespace.Fixture.Method  ,', '|')]
-    [TestCase('SingleName5', 'Test.Namespace.Fixture.Method()')]
-    [TestCase('SingleName6', 'Test.Namespace.Fixture.Method(''string,argument'')', '|')]
-    [TestCase('SingleName7', 'Test.Namespace.Fixture.Method(1,2,3)', '|')]
-    [TestCase('SingleName8', 'Test.Namespace.Fixture.Method<int,int>()', '|')]
-    [TestCase('SingleName9', 'Test.Namespace.Fixture.Method(")")')]
-    [TestCase('SingleName10', 'A')]
+    [NamedTestCase('SingleName1', 'Test.Namespace.Fixture.Method')]
+    [NamedTestCase('SingleName2', 'Test.Namespace.Fixture.Method,', '|')]
+    [NamedTestCase('SingleName3', '  Test.Namespace.Fixture.Method  ')]
+    [NamedTestCase('SingleName4', '  Test.Namespace.Fixture.Method  ,', '|')]
+    [NamedTestCase('SingleName5', 'Test.Namespace.Fixture.Method()')]
+    [NamedTestCase('SingleName6', 'Test.Namespace.Fixture.Method(''string,argument'')', '|')]
+    [NamedTestCase('SingleName7', 'Test.Namespace.Fixture.Method(1,2,3)', '|')]
+    [NamedTestCase('SingleName8', 'Test.Namespace.Fixture.Method<int,int>()', '|')]
+    [NamedTestCase('SingleName9', 'Test.Namespace.Fixture.Method(")")')]
+    [NamedTestCase('SingleName10', 'A')]
     procedure SingleName(const name : string);
 
-    [TestCase('TwoNames1', 'Test.Namespace.Fixture.Method1|Test.Namespace.Fixture.Method2', '|')]
-    [TestCase('TwoNames2', 'Test.Namespace.Fixture.Method1|Test.Namespace.Fixture.Method2,', '|')]
-    [TestCase('TwoNames3', 'Test.Namespace.Fixture.Method1(1,2)|Test.Namespace.Fixture.Method2(3,4)', '|')]
-    [TestCase('TwoNames4', 'Test.Namespace.Fixture.Method1("(")|Test.Namespace.Fixture.Method2("<")', '|')]
-    [TestCase('TwoNames5', 'Ab|C', '|')]
+    [NamedTestCase('TwoNames1', 'Test.Namespace.Fixture.Method1|Test.Namespace.Fixture.Method2', '|')]
+    [NamedTestCase('TwoNames2', 'Test.Namespace.Fixture.Method1|Test.Namespace.Fixture.Method2,', '|')]
+    [NamedTestCase('TwoNames3', 'Test.Namespace.Fixture.Method1(1,2)|Test.Namespace.Fixture.Method2(3,4)', '|')]
+    [NamedTestCase('TwoNames4', 'Test.Namespace.Fixture.Method1("(")|Test.Namespace.Fixture.Method2("<")', '|')]
+    [NamedTestCase('TwoNames5', 'Ab|C', '|')]
     procedure TwoNames(const name1 : string; const name2 : string);
   end;
 

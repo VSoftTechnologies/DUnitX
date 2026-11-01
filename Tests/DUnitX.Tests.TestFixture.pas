@@ -52,7 +52,7 @@ type
   end;
 {$M-}
 
-  MockTestSourceAttribute = class(CustomTestCaseSourceAttribute)
+  MockTestSourceAttribute = class(CustomTestCaseGeneratorAttribute)
   protected
     function GetCaseInfoArray : TestCaseInfoArray; override;
   end;
@@ -83,7 +83,7 @@ type
 
     [RepeatTest(TIMES_RUN_TEST_CASE)]
     [Test]
-    [TestCase('Sum Case', '1,2,3')]
+    [NamedTestCase('Sum Case', '1,2,3')]
     procedure Sum(const A, B, Expected : Integer);
 
     [Test]
@@ -423,7 +423,7 @@ begin
       test.Execute(nil);
     end, ETestFrameworkException, 'Too few values: 0 values for 2 parameters', 'no values for two parameters');
 
-  //[TestCase('Name', '')] gives no values at all
+  //[NamedTestCase('Name', '')] gives no values at all
   test := fixture.AddTestCase('OneString', 'Empty', 'OneString.Empty', '', rttiType.GetMethod('OneString'), True, args) as ITestExecute;
   Assert.WillNotRaiseAny(
     procedure

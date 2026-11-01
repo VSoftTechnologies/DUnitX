@@ -53,7 +53,7 @@ type
   public
     //Run the same test with mulitiple parameters.
     //ideally we would like to implement this using
-    //[TestCase('Case 1',[1,3,4])]
+    //[NamedTestCase('Case 1',[1,3,4])]
     //but the delphi compiler will not accept arrays of
     //TValue as parameters to attributes, so we have to use
     //a string constant.. the attribute will split the string
@@ -64,43 +64,43 @@ type
     //TODO: Add TestCase where the params are over and under the actually name to pass.
     //TODO: Make sure that each test case is passed and run only once, currently run multiple times. Actually its X*X times where X is the number of test cases in the fixture.
     [Test]
-    [TestCase('Case 1', '1,2')]
-    [TestCase('Case 2', '3,4')]
-    [TestCase('Case 3', '5,6')]
+    [NamedTestCase('Case 1', '1,2')]
+    [NamedTestCase('Case 2', '3,4')]
+    [NamedTestCase('Case 3', '5,6')]
     procedure TestOne(param1 : integer; param2 : integer);
 
     [Test]
     procedure TestUint64Max;
 
-    [TestCase('Case 3', 'Blah,1')]
+    [NamedTestCase('Case 3', 'Blah,1')]
     procedure AnotherTestMethod(const a : string; const b : integer);
 
     [Test]
-    [TestCase('Date, space, time', '1988-10-21 17:44:23.456')]
-    [TestCase('Date, T, time', '1988-10-21T17:44:23.456')]
-    [TestCase('Date, T, time, Z', '1988-10-21T17:44:23.456Z')]
-    [TestCase('Date, T, time, offset (1)', '1988-10-21T17:44:23.456+02:30')]
-    [TestCase('Date, T, time, offset (2)', '1988-10-21T17:44:23.456+0230')]
+    [NamedTestCase('Date, space, time', '1988-10-21 17:44:23.456')]
+    [NamedTestCase('Date, T, time', '1988-10-21T17:44:23.456')]
+    [NamedTestCase('Date, T, time, Z', '1988-10-21T17:44:23.456Z')]
+    [NamedTestCase('Date, T, time, offset (1)', '1988-10-21T17:44:23.456+02:30')]
+    [NamedTestCase('Date, T, time, offset (2)', '1988-10-21T17:44:23.456+0230')]
     procedure TestDateTimeArgument(dateTime : TDateTime);
 
     [Test]
-    [TestCase('Just date', '1988-10-21')]
+    [NamedTestCase('Just date', '1988-10-21')]
     procedure TestDateArgument(const date : TDate);
 
     [Test]
-    [TestCase('time with ms', '17:44:23.456')]
-    [TestCase('time without ms', '17:44:23')]
+    [NamedTestCase('time with ms', '17:44:23.456')]
+    [NamedTestCase('time without ms', '17:44:23')]
     procedure TestTimeArgument(time : TTime);
 
     [Test]
-    [TestCase('Set []', '[]|0', '|')]
-    [TestCase('Set [teOne]', '[teOne]|1', '|')]
-    [TestCase('Set [teTwo]', '[teTwo]|2', '|')]
-    [TestCase('Set [teThree]', '[teThree]|4', '|')]
-    [TestCase('Set [teOne,teTwo]', '[teOne,teTwo]|3', '|')]
-    [TestCase('Set [teOne,teThree]', '[teOne,teThree]|5', '|')]
-    [TestCase('Set [teOne,teTwo,teThree]', '[teOne,teTwo,teThree]|7', '|')]
-    [TestCase('Set [teThree,teTwo,teOne]', '[teThree,teTwo,teOne]|7', '|')]
+    [NamedTestCase('Set []', '[]|0', '|')]
+    [NamedTestCase('Set [teOne]', '[teOne]|1', '|')]
+    [NamedTestCase('Set [teTwo]', '[teTwo]|2', '|')]
+    [NamedTestCase('Set [teThree]', '[teThree]|4', '|')]
+    [NamedTestCase('Set [teOne,teTwo]', '[teOne,teTwo]|3', '|')]
+    [NamedTestCase('Set [teOne,teThree]', '[teOne,teThree]|5', '|')]
+    [NamedTestCase('Set [teOne,teTwo,teThree]', '[teOne,teTwo,teThree]|7', '|')]
+    [NamedTestCase('Set [teThree,teTwo,teOne]', '[teThree,teTwo,teOne]|7', '|')]
     procedure TestSetArgument(aset : TTestEnums; ExpectedAsInteger : UInt8);
 
     [Test]

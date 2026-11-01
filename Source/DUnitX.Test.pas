@@ -382,7 +382,7 @@ begin
     //Only keep as many arguments as there are params
     SetLength(FArgs, len);
     args := AArgs;
-    //[TestCase('Name', '')] gives no values at all, which is one empty value for a single parameter
+    //[TestCase('')] gives no values at all, which is one empty value for a single parameter
     if (len = 1) and (Length(args) = 0) then
     begin
       SetLength(args, 1);
