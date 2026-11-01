@@ -31,13 +31,8 @@ interface
 {$I DUnitX.inc}
 
 uses
-{$IFDEF USE_NS}
   System.SysUtils,
   System.Classes,
-{$ELSE}
-  SysUtils,
-  Classes,
-{$ENDIF}
 {$IFDEF USE_MADEXCEPT5}
   madStackTrace,
 {$ENDIF}
@@ -88,17 +83,7 @@ end;
 initialization
 {$IFDEF USE_MADEXCEPT5}
 
-{$IFDEF DELPHI_XE_UP}
   TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider, TMadExcept5StackTraceProvider>(true);
-{$ELSE}
-  //D2010 bug prevents using above method.
-  TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider>(true,
-    function : IStacktraceProvider
-    begin
-      result := TMadExcept5StackTraceProvider.Create;
-    end
-    );
-{$ENDIF}
 {$ENDIF}
 
 end.

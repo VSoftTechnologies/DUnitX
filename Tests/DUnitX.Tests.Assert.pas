@@ -226,7 +226,6 @@ type
     [Test]
     procedure AreEqual_TStrings_Throws_ETestFailure_When_Strings_Are_NotEqual;
 
-{$IFDEF DELPHI_XE2_UP}
     [Test]
     procedure AreEqual_T_Throws_No_Exception_When_Interfaces_Are_Equal;
 
@@ -250,8 +249,6 @@ type
 
     [Test]
     procedure AreEqual_Array_T_Throws_ETestFailure_When_Arrays_Are_Not_Equal;
-
-{$ENDIF}
 
     [Test]
     procedure AreEqualMemory_Throws_No_Exception_When_Pointers_Are_Equal;
@@ -355,7 +352,6 @@ type
     [Test]
     procedure Test_AreNotSameOnSameObjectWithDifferentInterfaces_Throws_Exception;
 
-{$IFDEF DELPHI_XE_UP}
     [Test]
     procedure Contains_ArrayOfT_Throws_No_Exception_When_Value_In_Array;
 
@@ -367,7 +363,6 @@ type
 
     [Test]
     procedure DoesNotContain_ArrayOfT_Throws_Exception_When_Value_In_Array;
-{$ENDIF}
 
     [Test]
     procedure AreEqual_Currency_Failure_Message;
@@ -419,7 +414,6 @@ type
     [Test]
     procedure IgnoreCaseDefault;
 
-{$IFDEF SUPPORTS_REGEX}
     [Test]
     [NamedTestCase('GUID with dash', '[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12},C687683F-F25B-4F9A-A231-31C52253B6A1')]
     [NamedTestCase('GUID without dash', '[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12},C687683FF25B4F9AA23131C52253B6A1')]
@@ -432,7 +426,6 @@ type
 
     [Test]
     procedure WillRaiseWithMessageRegex;
-{$ENDIF}
 
     procedure WillNotRaiseWithMessage_NilExceptionParam_NoExceptionMessage_WillRaise;
     procedure WillNotRaiseWithMessage_MatchingExceptionParam_MatchingExceptionMessage_WillRaise;
@@ -465,7 +458,6 @@ type
     procedure WillNotRaiseDescendant_Fails_Cleanly_With_A_Nil_Class;
     [Test]
     procedure WillNotRaiseDescendant_Names_The_Raised_Class;
-{$IFDEF DELPHI_XE2_UP}
     [Test]
     procedure AreEqual_T_Double_Fails_When_Actual_Is_NaN;
 
@@ -477,7 +469,6 @@ type
 
     [Test]
     procedure AreEqual_T_Passes_For_Type_Without_RTTI;
-{$ENDIF}
 
     [Test]
     procedure WillRaiseAny_Does_Not_Swallow_A_Failing_Assert;
@@ -510,18 +501,11 @@ type
 implementation
 
 uses
-{$IFDEF USE_NS}
   System.SysUtils,
   System.Classes,
   System.Generics.Collections,
   System.Variants,
   System.Math,
-{$ELSE}
-  SysUtils,
-  Classes,
-  Variants,
-  Math,
-{$ENDIF}
   DUnitX.Exceptions,
   DUnitX.Assert;
 
@@ -1685,7 +1669,6 @@ begin
   end;
 end;
 
-{$IFDEF DELPHI_XE2_UP}
 procedure TTestsAssert.AreEqual_T_Throws_ETestFailure_When_Interfaces_Are_NotEqual;
 var
   mock : IInterface;
@@ -1828,7 +1811,6 @@ begin
       Assert.AreEqual<real>(TArray<real>.Create(3.14, 3.15), TArray<real>.Create(3.14, 3.15));
     end, ETestFailure);
 end;
-{$ENDIF}
 
 procedure TTestsAssert.Test_AreSameOnSameObjectWithDifferentInterfaces_No_Exception;
 var
@@ -1928,7 +1910,6 @@ begin
   Assert.Contains(failureMessage, 'EFilerError');
 end;
 
-{$IFDEF DELPHI_XE2_UP}
 procedure TTestsAssert.AreEqual_T_Double_Fails_When_Actual_Is_NaN;
 begin
   Assert.WillRaise(
@@ -1964,7 +1945,6 @@ begin
       Assert.AreEqual<TEnumWithoutRtti>(ewrSecond, ewrSecond);
     end);
 end;
-{$ENDIF}
 
 procedure TTestsAssert.WillRaiseAny_Does_Not_Swallow_A_Failing_Assert;
 begin
@@ -2160,7 +2140,6 @@ begin
     end, ETestFailure);
 end;
 
-{$IFDEF DELPHI_XE_UP}
 procedure TTestsAssert.Contains_ArrayOfT_Throws_No_Exception_When_Value_In_Array;
 begin
   Assert.WillNotRaise(
@@ -2196,7 +2175,6 @@ begin
       Assert.DoesNotContain<string>(['x', 'y', 'z'], 'x');
     end, ETestFailure);
 end;
-{$ENDIF}
 
 procedure TTestsAssert.AreEqual_Currency_Failure_Message;
 const
@@ -2270,7 +2248,6 @@ begin
     end, ETestFailure);
 end;
 
-{$IFDEF SUPPORTS_REGEX}
 procedure TTestsAssert.IsMatch_True_Will_Not_Raise(const regexPattern, theString : string);
 begin
   Assert.WillNotRaiseAny(
@@ -2324,8 +2301,6 @@ begin
     end,
     ETestFailure);
 end;
-
-{$ENDIF}
 
 initialization
   TDUnitX.RegisterTestFixture(TTestsAssert);

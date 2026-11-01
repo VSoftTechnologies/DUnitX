@@ -32,11 +32,7 @@ type
 implementation
 
 uses
-{$IFDEF USE_NS}
   System.SysUtils,
-{$ELSE}
-  SysUtils,
-{$ENDIF}
   DUnitX.TestNameParser;
 
 // As NUnit's tests: name.Trim(' ', ',')

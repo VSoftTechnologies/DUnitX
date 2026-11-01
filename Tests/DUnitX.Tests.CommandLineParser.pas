@@ -146,9 +146,7 @@ begin
     sList.Free;
   end;
   Assert.IsFalse(parseResult.HasErrors);
-{$IFDEF DELPHI_XE2_UP}
   Assert.AreEqual<TExampleEnum>(enTwo, test);
-{$ENDIF}
 end;
 
 procedure TCommandLineParserTests.Can_Parse_Multiple_Unnamed_Parameters;
@@ -246,9 +244,7 @@ begin
     sList.Free;
   end;
   Assert.IsFalse(parseResult.HasErrors);
-{$IFDEF DELPHI_XE2_UP}
   Assert.AreEqual<TExampleSet>(test, [enOne, enThree]);
-{$ENDIF}
 end;
 
 procedure TCommandLineParserTests.Can_Parse_Unnamed_Parameter;

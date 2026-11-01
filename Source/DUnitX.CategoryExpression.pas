@@ -75,15 +75,9 @@ uses
   DUnitX.Constants,
   DUnitX.Exceptions,
   DUnitX.ResStrs,
-{$IFDEF USE_NS}
   System.Character,
   System.SysUtils,
   System.StrUtils;
-{$ELSE}
-  Character,
-  SysUtils,
-  StrUtils;
-{$ENDIF}
 
 const
   Operators         : array[1..7] of Char = (',', ';', '-', '|', '+', '(', ')');

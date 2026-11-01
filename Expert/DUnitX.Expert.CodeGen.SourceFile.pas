@@ -31,15 +31,9 @@ interface
 {$I DUnitX.inc}
 
 uses
-{$IFDEF USE_NS}
   System.SysUtils,
   System.Classes,
   ToolsAPI;
-{$ELSE}
-  SysUtils,
-  Classes,
-  ToolsAPI;
-{$ENDIF}
 
 type
   TSourceFile = class(TInterfacedObject, IOTAFile)

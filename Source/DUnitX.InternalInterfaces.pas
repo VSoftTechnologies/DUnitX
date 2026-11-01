@@ -31,11 +31,7 @@ interface
 {$I DUnitX.inc}
 
 uses
-{$IFDEF USE_NS}
   System.TimeSpan,
-{$ELSE}
-  TimeSpan,
-{$ENDIF}
   DUnitX.Types,
   DUnitX.Generics,
   DUnitX.Extensibility,

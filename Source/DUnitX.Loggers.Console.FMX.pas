@@ -30,7 +30,6 @@ interface
 {$I DUnitX.inc}
 
 uses
-{$IFDEF USE_NS}
   System.Classes,
   System.SysUtils,
   System.UITypes,
@@ -42,18 +41,6 @@ uses
   FMX.Memo,
   FMX.Objects,
   FMX.Controls.Presentation,
-{$ELSE}
-  Classes,
-  SysUtils,
-  UITypes,
-  FMX.Types,
-  FMX.Graphics,
-  FMX.Controls,
-  FMX.Forms,
-  FMX.StdCtrls,
-  FMX.Memo,
-  FMX.Objects,
-{$ENDIF}
   DUnitX.TestFramework,
   DUnitX.ResStrs;
 

@@ -26,7 +26,7 @@
 
  //Basic Version of Compiler Supported
 {$IFDEF CONDITIONALEXPRESSIONS}  //Started being defined with D2009
-   {$IF CompilerVersion < 21.0} // Before RAD Studio 2010
+   {$IF CompilerVersion < 23.0} // Before XE2
       {$DEFINE UNSUPPORTED_COMPILER_VERSION}
    {$IFEND}
   {$IF CompilerVersion > 24.0 } //XE4 or later
@@ -37,30 +37,16 @@
 {$ENDIF}
 
 {$IFDEF UNSUPPORTED_COMPILER_VERSION}
-  Unsupported Compiler Version (Delphi 2010 or later required!)
+  Unsupported Compiler Version (Delphi XE2 or later required!)
 {$ENDIF}
 
 
-{$IF CompilerVersion = 21.0} // 2010
-  {$DEFINE DELPHI_2010}
-{$IFEND}
-
-
-{$IF CompilerVersion > 21.0} // XE up
-  {$DEFINE DELPHI_XE_UP}
-  {$DEFINE SUPPORTS_TARRAY}
-{$IFEND}
-
-
-{$IF CompilerVersion > 22.0} // XE2 up
-  {$DEFINE DELPHI_XE2_UP}
-  {$DEFINE USE_NS}
-  {$DEFINE SUPPORTS_REGEX}
-{$IFEND}
-
-{$IF CompilerVersion < 23.0} // XE down
-  {$DEFINE CPUX86} //only defined in XE2 or later
-{$IFEND}
+// Always true from XE2 on.  DUnitX no longer tests them; kept for code that includes this file and does.
+{$DEFINE DELPHI_XE_UP}
+{$DEFINE SUPPORTS_TARRAY}
+{$DEFINE DELPHI_XE2_UP}
+{$DEFINE USE_NS}
+{$DEFINE SUPPORTS_REGEX}
 
 {$IF CompilerVersion > 23.0 } //XE3 or later
   {$DEFINE DELPHI_XE3_UP}

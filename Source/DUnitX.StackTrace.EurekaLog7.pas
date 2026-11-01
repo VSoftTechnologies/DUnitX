@@ -31,13 +31,8 @@ interface
 {$I DUnitX.inc}
 
 uses
-{$IFDEF USE_NS}
   System.Classes,
   System.SysUtils,
-{$ELSE}
-  Classes,
-  SysUtils,
-{$ENDIF}
 {$IFDEF USE_EUREKALOG7}
   ECallStack,
   EDebugInfo,
@@ -98,17 +93,7 @@ end;
 initialization
 {$IFDEF USE_EUREKALOG7}
 
-{$IFDEF DELPHI_XE_UP}
   TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider, TEurekaLog7StackTraceProvider>(true);
-{$ELSE}
-  //D2010 bug prevents using above method.
-  TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider>(true,
-    function : IStacktraceProvider
-    begin
-      result := TEurekaLog7StackTraceProvider.Create;
-    end
-    );
-{$ENDIF}
 {$ENDIF}
 
 end.

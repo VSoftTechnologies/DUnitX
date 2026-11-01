@@ -36,7 +36,6 @@ interface
 // file outside of the IDE...  The units are: System.ImageList and System.Actions
 
 uses
-{$IFDEF USE_NS}
   Winapi.Windows,
   Winapi.Messages,
   System.SysUtils,
@@ -64,33 +63,6 @@ uses
   System.Generics.Collections,
   System.IniFiles,
   System.Actions, //IDE keeps adding this at the end even if it's in the infdef'd section. make sure it's not there when committing!
-{$ELSE}
-  Windows,
-  Messages,
-  SysUtils,
-  Variants,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  ActnList,
-  StdActns,
-  ActnCtrls,
-  ToolWin,
-  ActnMan,
-  ActnMenus,
-  ImgList,
-  PlatformDefaultStyleActnCtrls,
-  ExtCtrls,
-  ComCtrls,
-  StdCtrls,
-  Menus,
-  ActnPopup,
-  Generics.Defaults,
-  Generics.Collections,
-  IniFiles,
-{$ENDIF}
   DUnitX.TestFrameWork,
   DUnitX.Extensibility,
   DUnitX.InternalInterfaces,
@@ -294,17 +266,10 @@ implementation
 {$R *.dfm}
 
 uses
-{$IFDEF USE_NS}
   System.IOUtils,
   System.StrUtils,
   System.Math,
   Vcl.Clipbrd,
-{$ELSE}
-  IOUtils,
-  StrUtils,
-  Math,
-  Clipbrd,
-{$ENDIF}
   DUnitX.Filters,
   DUnitX.Exceptions;
 

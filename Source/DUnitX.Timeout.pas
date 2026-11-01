@@ -31,11 +31,7 @@ interface
 {$I DUnitX.inc}
 
 uses
-{$IFDEF USE_NS}
   System.Classes;
-{$ELSE}
-  Classes;
-{$ENDIF}
 
 //TODO : This is currently only supported on Windows, need to investigate osx etc.
 
@@ -50,15 +46,9 @@ function InitialiseTimeout(const ATime : cardinal) : ITimeout;
 implementation
 
 uses
-{$IFDEF USE_NS}
   WinAPI.Windows,
   System.Diagnostics,
   System.SysUtils,
-{$ELSE}
-  Windows,
-  Diagnostics,
-  SysUtils,
-{$ENDIF}
   DUnitX.ResStrs,
   DUnitX.TestFramework,
   DUnitX.Exceptions;

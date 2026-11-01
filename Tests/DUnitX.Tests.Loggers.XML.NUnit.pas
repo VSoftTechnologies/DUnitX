@@ -31,11 +31,7 @@ interface
 {$I DUnitX.inc}
 
 uses
-{$IFDEF USE_NS}
   System.Classes,
-{$ELSE}
-  Classes,
-{$ENDIF}
   DUnitX.TestFramework,
   DUnitX.Loggers.XML.NUnit;
 
@@ -48,17 +44,12 @@ type
     procedure FileLogger_Accepts_A_Bare_File_Name;
     [Test(false)]
     procedure OnTestingStarts_Fills_The_Start_Of_The_Stream_With_Header_Info;
-{$IFDEF DELPHI_XE2_UP}
     [Test]
     procedure OnTestingEnds_Escapes_Category_Names;
-{$ENDIF}
     //  [Test(false)]
   //    procedure OnTestingEnds_Fills_The_End_Of_The_Stream_With_Testing_Result_Info;
-{$IFDEF DELPHI_XE2_UP}
     [Test]
     procedure OnTestingEnds_Writes_The_Assembly_Time_As_A_Duration;
-{$ENDIF}
-{$IFDEF DELPHI_XE2_UP}
     [Test(false)]
     procedure OnTestWarning_Adds_Warnings_To_Be_Written_Out_On_Next_Error;
     procedure OnTestWarning_Adds_Warnings_To_Be_Written_Out_On_Next_Success;
@@ -66,37 +57,24 @@ type
     procedure OnTestingEnds_Reports_An_Errored_Fixture_As_Failed;
     [Test]
     procedure OnTestingEnds_Counts_A_Leak_As_A_Failure_In_The_Header;
-{$ENDIF}
   end;
 
-{$IFDEF DELPHI_XE2_UP}
   [TestFixture]
   TDUnitX_LoggerTextTests = class
   public
     [Test]
     procedure Issue_List_Keeps_Names_With_Equals_And_Empty_Messages;
   end;
-{$ENDIF}
 
 implementation
 
 uses
-{$IFDEF USE_NS}
   System.Rtti,
   System.SysUtils,
   System.Generics.Collections,
   System.TimeSpan,
   System.DateUtils,
-{$ELSE}
-  Rtti,
-  SysUtils,
-  Generics.Collections,
-  TimeSpan,
-  DateUtils,
-{$ENDIF}
-{$IFDEF DELPHI_XE2_UP}
   Delphi.Mocks,
-{$ENDIF}
   DUnitX.Generics,
   DUnitX.FixtureResult,
   DUnitX.InternalInterfaces,
@@ -214,7 +192,6 @@ begin
   Assert.AreEqual(sAppName, sExpectedAppName);
 end;
 
-{$IFDEF DELPHI_XE2_UP}
 procedure TDUnitX_LoggerXMLNUnitTests.OnTestingEnds_Writes_The_Assembly_Time_As_A_Duration;
 var
   logger : ITestLogger;
@@ -276,9 +253,7 @@ begin
     categories.Free;
   end;
 end;
-{$ENDIF}
 
-{$IFDEF DELPHI_XE2_UP}
 procedure TDUnitX_LoggerXMLNUnitTests.OnTestWarning_Adds_Warnings_To_Be_Written_Out_On_Next_Error;
 var
   logger : ITestLogger;
@@ -363,9 +338,7 @@ begin
   Assert.IsTrue(iPositionOfWarning > 0);
   Assert.AreEqual(Copy(mockStream.DataString, iPositionOfWarning, Length(sExceptedWarning)), sExceptedWarning);
 end;
-{$ENDIF}
 
-{$IFDEF DELPHI_XE2_UP}
 procedure TDUnitX_LoggerXMLNUnitTests.OnTestingEnds_Escapes_Category_Names;
 var
   logger : ITestLogger;
@@ -426,9 +399,7 @@ begin
     categories.Free;
   end;
 end;
-{$ENDIF}
 
-{$IFDEF DELPHI_XE2_UP}
 procedure TDUnitX_LoggerXMLNUnitTests.OnTestingEnds_Reports_An_Errored_Fixture_As_Failed;
 var
   logger : ITestLogger;
@@ -483,9 +454,7 @@ begin
     categories.Free;
   end;
 end;
-{$ENDIF}
 
-{$IFDEF DELPHI_XE2_UP}
 procedure TDUnitX_LoggerXMLNUnitTests.OnTestingEnds_Counts_A_Leak_As_A_Failure_In_The_Header;
 var
   logger : ITestLogger;
@@ -544,7 +513,6 @@ begin
     categories.Free;
   end;
 end;
-{$ENDIF}
 
 procedure TDUnitX_LoggerXMLNUnitTests.FileLogger_Accepts_A_Bare_File_Name;
 const
@@ -570,7 +538,6 @@ begin
   end;
 end;
 
-{$IFDEF DELPHI_XE2_UP}
 procedure TDUnitX_LoggerTextTests.Issue_List_Keeps_Names_With_Equals_And_Empty_Messages;
 var
   logger : ITestLogger;
@@ -611,12 +578,9 @@ begin
     stream.Free;
   end;
 end;
-{$ENDIF}
 
 initialization
   TDUnitX.RegisterTestFixture(TDUnitX_LoggerXMLNUnitTests);
-{$IFDEF DELPHI_XE2_UP}
   TDUnitX.RegisterTestFixture(TDUnitX_LoggerTextTests);
-{$ENDIF}
 end.
 

@@ -32,11 +32,7 @@ interface
 
 uses
   DUnitX.TestFramework,
-{$IFDEF USE_NS}
   System.SysUtils;
-{$ELSE}
-  SysUtils;
-{$ENDIF}
 
 type
   TTestEnum = (
@@ -172,11 +168,7 @@ type
   public
     // Testing constructor/destructor as fixture setup/teardown
     // Delphi 2010 does support calling of constructor
-{$IFDEF DELPHI_XE_UP}
     constructor Create;
-{$ELSE}
-    procedure AfterConstruction; override;
-{$ENDIF}
     destructor Destroy; override;
 
     [SetupFixture]
@@ -191,12 +183,7 @@ uses
   DUnitX.DUnitCompatibility,
   DUnitX.Exceptions,
   System.Diagnostics,
-{$IFDEF USE_NS}
   System.DateUtils;
-{$ELSE}
-  Diagnostics,
-  DateUtils;
-{$ENDIF}
 
 procedure TMyExampleTests.DontCallMe;
 begin
@@ -382,12 +369,8 @@ begin
   Assert.IsTrue(FSetupCalled);
 end;
 
-{$IFDEF DELPHI_XE_UP}
 constructor TExampleFixture3.Create;
 
-{$ELSE}
-procedure TExampleFixture3.AfterConstruction;
-{$ENDIF}
 begin
   FSetupCalled := True;
 end;

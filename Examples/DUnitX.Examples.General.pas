@@ -79,9 +79,6 @@ type
     procedure TestError;
 
     [Test]
-    {$IFDEF DELPHI_2010}
-    [Ignore('MaxTime does not work in D2010')]
-    {$ENDIF}
     [MaxTime(2000)]
     procedure TooLong;
 
@@ -193,17 +190,8 @@ type
 implementation
 
 uses
-  {$IFDEF USE_NS}
   System.SysUtils,
   System.Classes,
-  {$ELSE}
-  SysUtils,
-  Classes,
-  {$IFDEF DELPHI_2010}
-  //D2010 doesn't have TThread.Sleep
-  Windows,
-  {$ENDIF}
-  {$ENDIF}
   DUnitX.DUnitCompatibility;
 
 { TMyExampleTests }
@@ -275,29 +263,20 @@ begin
 end;
 
 procedure TMyExampleTests.TestTwo;
-{$IFDEF DELPHI_XE_UP}
 var
   x : TStringList;
-{$ENDIF}
 begin
   TDUnitX.CurrentRunner.Status('TestTwo called');
   TDUnitX.CurrentRunner.Status('hello world');
 
-  //No longer compatible for Delphi2010
-{$IFDEF DELPHI_XE_UP}
   x := TStringList.Create;
   Assert.IsType<TObject>(x); /// a bit pointless since it's strongly typed.
   x.Free;
-{$ENDIF}
 end;
 
 procedure TMyExampleTests.TooLong;
 begin
-  {$IFDEF DELPHI_XE_UP}
     TThread.Sleep(5000);
-  {$ELSE}
-    Windows.Sleep(5000);
-  {$ENDIF}
 end;
 
 { TExampleFixture2 }

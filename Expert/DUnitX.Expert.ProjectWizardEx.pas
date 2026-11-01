@@ -32,11 +32,7 @@ interface
 
 uses
   ToolsApi,
-{$IFDEF USE_NS}
   VCL.Graphics,
-{$ELSE}
-  Graphics,
-{$ENDIF}
 {$IFDEF DELPHI_XE103_UP}
   PlatformConst
 {$ELSE}
@@ -54,17 +50,10 @@ implementation
 
 uses
   DccStrs,
-{$IFDEF USE_NS}
   Vcl.Controls,
   Vcl.Forms,
   WinApi.Windows,
   System.SysUtils,
-{$ELSE}
-  Controls,
-  Forms,
-  Windows,
-  SysUtils,
-{$ENDIF}
   DUnitX.Expert.Forms.NewProjectWizard,
   DUnitX.Expert.CodeGen.NewTestProject,
   DUnitX.Expert.CodeGen.NewTestUnit,

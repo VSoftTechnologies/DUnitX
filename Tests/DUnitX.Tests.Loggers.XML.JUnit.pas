@@ -31,11 +31,7 @@ interface
 {$I DUnitX.inc}
 
 uses
-{$IFDEF USE_NS}
   System.Classes,
-{$ELSE}
-  Classes,
-{$ENDIF}
   DUnitX.TestFramework,
   DUnitX.Loggers.XML.JUnit;
 
@@ -50,11 +46,8 @@ type
     procedure OnTestingStarts_Fills_The_Start_Of_The_Stream_With_Header_Info;
     //  [Test(false)]
   //    procedure OnTestingEnds_Fills_The_End_Of_The_Stream_With_Testing_Result_Info;
-{$IFDEF DELPHI_XE2_UP}
     [Test]
     procedure OnTestingEnds_Counts_A_Leak_As_An_Error_In_The_Testsuite;
-{$ENDIF}
-{$IFDEF DELPHI_XE2_UP}
     [Test(false)]
     procedure OnTestWarning_Adds_Warnings_To_Be_Written_Out_On_Next_Error;
     procedure OnTestWarning_Adds_Warnings_To_Be_Written_Out_On_Next_Success;
@@ -62,28 +55,17 @@ type
     procedure OnTestingEnds_Writes_An_ISO_8601_Timestamp;
     [Test]
     procedure OnTestingEnds_Counts_A_Leak_As_An_Error_In_The_Header;
-{$ENDIF}
   end;
 
 implementation
 
 uses
-{$IFDEF USE_NS}
   System.Rtti,
   System.SysUtils,
   System.Generics.Collections,
   System.TimeSpan,
   System.DateUtils,
-{$ELSE}
-  Rtti,
-  SysUtils,
-  Generics.Collections,
-  TimeSpan,
-  DateUtils,
-{$ENDIF}
-{$IFDEF DELPHI_XE2_UP}
   Delphi.Mocks,
-{$ENDIF}
   DUnitX.Generics,
   DUnitX.FixtureResult,
   DUnitX.InternalInterfaces,
@@ -200,7 +182,6 @@ begin
   Assert.AreEqual(sAppName, sExpectedAppName);
 end;
 
-{$IFDEF DELPHI_XE2_UP}
 procedure TDUnitX_LoggerXMLJUnitTests.OnTestingEnds_Counts_A_Leak_As_An_Error_In_The_Testsuite;
 var
   logger : ITestLogger;
@@ -259,9 +240,7 @@ begin
     categories.Free;
   end;
 end;
-{$ENDIF}
 
-{$IFDEF DELPHI_XE2_UP}
 procedure TDUnitX_LoggerXMLJUnitTests.OnTestWarning_Adds_Warnings_To_Be_Written_Out_On_Next_Error;
 var
   logger : ITestLogger;
@@ -346,9 +325,7 @@ begin
   Assert.IsTrue(iPositionOfWarning > 0);
   Assert.AreEqual(Copy(mockStream.DataString, iPositionOfWarning, Length(sExceptedWarning)), sExceptedWarning);
 end;
-{$ENDIF}
 
-{$IFDEF DELPHI_XE2_UP}
 procedure TDUnitX_LoggerXMLJUnitTests.OnTestingEnds_Writes_An_ISO_8601_Timestamp;
 var
   logger : ITestLogger;
@@ -414,9 +391,7 @@ begin
     categories.Free;
   end;
 end;
-{$ENDIF}
 
-{$IFDEF DELPHI_XE2_UP}
 procedure TDUnitX_LoggerXMLJUnitTests.OnTestingEnds_Counts_A_Leak_As_An_Error_In_The_Header;
 var
   logger : ITestLogger;
@@ -475,7 +450,6 @@ begin
     categories.Free;
   end;
 end;
-{$ENDIF}
 
 procedure TDUnitX_LoggerXMLJUnitTests.FileLogger_Accepts_A_Bare_File_Name;
 const

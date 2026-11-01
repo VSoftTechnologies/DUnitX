@@ -42,13 +42,8 @@ type
 implementation
 
 uses
-{$IFDEF USE_NS}
   System.Classes,
   System.SysUtils,
-{$ELSE}
-  Classes,
-  SysUtils,
-{$ENDIF}
   DUnitX.CategoryExpression,
   DUnitX.TestNameParser,
   DUnitX.Exceptions;

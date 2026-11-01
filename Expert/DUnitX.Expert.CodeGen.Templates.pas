@@ -45,11 +45,7 @@ resourcestring
     '{$STRONGLINKTYPES ON}'#13#10 +
     'uses'#13#10 +
     '%1:s' +
-{$IFDEF USE_NS}
   '  System.SysUtils,'#13#10 +
-{$ELSE}
-  '  SysUtils,'#13#10 +
-{$ENDIF}
   '{$IFDEF TESTINSIGHT}'#13#10 +
     '  TestInsight.DUnitX,'#13#10 +
     '{$ENDIF}'#13#10 +

@@ -64,21 +64,12 @@ interface
 {$I DUnitX.inc}
 
 uses
-{$IFDEF USE_NS}
   System.Generics.Collections,
   System.TimeSpan,
   System.Rtti,
   System.SysUtils,
   System.Types,
   System.TypInfo;
-{$ELSE}
-  Generics.Collections,
-  TimeSpan,
-  Rtti,
-  SysUtils,
-  Types,
-  TypInfo;
-{$ENDIF}
 
 type
   TCustomAttributeClass = class of TCustomAttribute;
@@ -91,17 +82,6 @@ type
       var attribute : TCustomAttribute; const startIndex : integer = 0) : integer; overload;
     class function FindAttributes(const attributes : TArray<TCustomAttribute>; const AttributeClass : TCustomAttributeClass) : TArray<TCustomAttribute>;
   end;
-
-{$IFDEF DELPHI_2010}
-const
-  TicksPerMillisecond = 10000;
-
-type
-  TTimeSpanHelper = record helper for TTimeSpan
-  public
-    class function Subtract(const D1, D2 : TDateTime) : TTimeSpan; static;
-  end;
-{$ENDIF}
 
 type
   TStrUtils = class
@@ -306,9 +286,6 @@ type
 {$ENDREGION}
     function TryGetType(out AType : TRttiType) : Boolean;
 
-{$IF CompilerVersion < 23}
-    class function QualifiedClassName : string;
-{$IFEND}
   end;
 
 {$REGION 'Documentation'}
@@ -333,23 +310,6 @@ type
     function TryGetValue(Instance : Pointer; out Value : TValue) : Boolean;
   end;
 
-{$IF CompilerVersion < 23}
-
-{$REGION 'Documentation'}
-  ///	<summary>
-  ///	  Extends <see cref="Rtti.TRttiInstanceTypeHelper">TRttiInstanceTypeHelper</see>
-  ///	  for easier RTTI use.
-  ///	</summary>
-{$ENDREGION}
-  TRttiInstanceTypeHelper = class helper for TRttiInstanceType
-  public
-    function GetDeclaredImplementedInterfaces : TArray<TRttiInterfaceType>;
-    function GetImplementedInterfaces : TArray<TRttiInterfaceType>;
-  end;
-{$IFEND}
-
-{$IFDEF DELPHI_XE2_UP}
-
 {$REGION 'Documentation'}
   ///	<summary>
   ///	  Extends <see cref="System.Rtti.TRttiInvokableType">TRttiInvokableType</see>
@@ -362,7 +322,6 @@ type
   public
     property ParameterCount : Integer read GetParameterCount;
   end;
-{$ENDIF}
 
 {$REGION 'Documentation'}
   ///	<summary>
@@ -580,7 +539,7 @@ type
     property MethodCount : Integer read GetMethodCount;
   end;
 
-  TValue = {$IFDEF USE_NS}System.{$ENDIF}Rtti.TValue;
+  TValue = System.Rtti.TValue;
 
 {$REGION 'Documentation'}
   ///	<summary>
@@ -715,9 +674,6 @@ type
     class function Concat<T>(const Arrays : array of TArray<T>) : TArray<T>; static;
     class function Create<T>(const a : T; const b : T) : TArray<T>; static;
     class procedure Delete<T>(var source : TArray<T>; index, count : integer); static;
-{$IFDEF DELPHI_2010}
-    class function ToArray<T>(Enumerable : TEnumerable<T>; Count : Integer) : TArray<T>; static;
-{$ENDIF}
   end;
 
 {$IFNDEF DELPHI_XE8_UP }
@@ -755,31 +711,18 @@ function SameValue(const Left, Right : TValue) : Boolean;
 
 function StripUnitName(const s : string) : string;
 
-{$IFDEF DELPHI_2010}
-function SplitString(const S : string; const Delimiters : string) : TStringDynArray;
-{$ENDIF}
-
 function Supports(const Instance : TValue; const IID : TGUID; out Intf) : Boolean; overload;
 
 implementation
 
 uses
   DUnitX.Helpers,
-{$IFDEF USE_NS}
   System.Classes,
   System.Generics.Defaults,
   System.Math,
   System.StrUtils,
   System.UIConsts,
   System.UITypes;
-{$ELSE}
-  Classes,
-  Generics.Defaults,
-  Math,
-  StrUtils,
-  UIConsts,
-  UITypes;
-{$ENDIF}
 
 var
   Context : TRttiContext;
@@ -1832,43 +1775,6 @@ begin
   Result := ReplaceText(s, 'System.', '');
 end;
 
-{$IFDEF DELPHI_2010}
-function SplitString(const S : string; const Delimiters : string) : TStringDynArray;
-var
-  StartIdx : Integer;
-  FoundIdx : Integer;
-  SplitPoints : Integer;
-  CurrentSplit : Integer;
-  i : Integer;
-begin
-  Result := nil;
-
-  if S <> '' then
-  begin
-    SplitPoints := 0;
-    for i := 1 to Length(S) do
-      if IsDelimiter(Delimiters, S, i) then
-        Inc(SplitPoints);
-
-    SetLength(Result, SplitPoints + 1);
-
-    StartIdx := 1;
-    CurrentSplit := 0;
-    repeat
-      FoundIdx := FindDelimiter(Delimiters, S, StartIdx);
-      if FoundIdx <> 0 then
-      begin
-        Result[CurrentSplit] := Copy(S, StartIdx, FoundIdx - StartIdx);
-        Inc(CurrentSplit);
-        StartIdx := FoundIdx + 1;
-      end;
-    until CurrentSplit = SplitPoints;
-
-    Result[SplitPoints] := Copy(S, StartIdx, Length(S) - StartIdx + 1);
-  end;
-end;
-{$ENDIF}
-
 function Supports(const Instance : TValue; const IID : TGUID; out Intf) : Boolean; overload;
 begin
   if Instance.Kind in [tkClass, tkInterface] then
@@ -1885,15 +1791,15 @@ function CompareValue(const Left, Right : TValue) : Integer;
 begin
   if Left.IsOrdinal and Right.IsOrdinal then
   begin
-    Result := {$IFDEF USE_NS}System.Math.{$ENDIF}CompareValue(Left.AsOrdinal, Right.AsOrdinal);
+    Result := System.Math.CompareValue(Left.AsOrdinal, Right.AsOrdinal);
   end
   else if Left.IsFloat and Right.IsFloat then
   begin
-    Result := {$IFDEF USE_NS}System.Math.{$ENDIF}CompareValue(Left.AsFloat, Right.AsFloat);
+    Result := System.Math.CompareValue(Left.AsFloat, Right.AsFloat);
   end
   else if Left.IsString and Right.IsString then
   begin
-    Result := {$IFDEF USE_NS}System.SysUtils.{$ENDIF}CompareStr(Left.AsString, Right.AsString);
+    Result := System.SysUtils.CompareStr(Left.AsString, Right.AsString);
   end
   else
   begin
@@ -1913,72 +1819,72 @@ begin
       end
       else if Right.IsSingle then
       begin
-        Result := {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(Left.AsOrdinal, Right.AsSingle);
+        Result := System.Math.SameValue(Left.AsOrdinal, Right.AsSingle);
       end
       else if Right.IsDouble then
       begin
-        Result := {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(Left.AsOrdinal, Right.AsDouble);
+        Result := System.Math.SameValue(Left.AsOrdinal, Right.AsDouble);
       end
       else
       begin
-        Result := {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(Left.AsOrdinal, Right.AsExtended);
+        Result := System.Math.SameValue(Left.AsOrdinal, Right.AsExtended);
       end;
     end
     else if Left.IsSingle then
     begin
       if Right.IsOrdinal then
       begin
-        Result := {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(Left.AsSingle, Right.AsOrdinal);
+        Result := System.Math.SameValue(Left.AsSingle, Right.AsOrdinal);
       end
       else if Right.IsSingle then
       begin
-        Result := {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(Left.AsSingle, Right.AsSingle);
+        Result := System.Math.SameValue(Left.AsSingle, Right.AsSingle);
       end
       else if Right.IsDouble then
       begin
-        Result := {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(Left.AsSingle, Right.AsDouble);
+        Result := System.Math.SameValue(Left.AsSingle, Right.AsDouble);
       end
       else
       begin
-        Result := {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(Left.AsSingle, Right.AsExtended);
+        Result := System.Math.SameValue(Left.AsSingle, Right.AsExtended);
       end;
     end
     else if Left.IsDouble then
     begin
       if Right.IsOrdinal then
       begin
-        Result := {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(Left.AsDouble, Right.AsOrdinal);
+        Result := System.Math.SameValue(Left.AsDouble, Right.AsOrdinal);
       end
       else if Right.IsSingle then
       begin
-        Result := {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(Left.AsDouble, Right.AsSingle);
+        Result := System.Math.SameValue(Left.AsDouble, Right.AsSingle);
       end
       else if Right.IsDouble then
       begin
-        Result := {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(Left.AsDouble, Right.AsDouble);
+        Result := System.Math.SameValue(Left.AsDouble, Right.AsDouble);
       end
       else
       begin
-        Result := {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(Left.AsDouble, Right.AsExtended);
+        Result := System.Math.SameValue(Left.AsDouble, Right.AsExtended);
       end;
     end
     else
     begin
       if Right.IsOrdinal then
       begin
-        Result := {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(Left.AsExtended, Right.AsOrdinal);
+        Result := System.Math.SameValue(Left.AsExtended, Right.AsOrdinal);
       end
       else if Right.IsSingle then
       begin
-        Result := {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(Left.AsExtended, Right.AsSingle);
+        Result := System.Math.SameValue(Left.AsExtended, Right.AsSingle);
       end
       else if Right.IsDouble then
       begin
-        Result := {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(Left.AsExtended, Right.AsDouble);
+        Result := System.Math.SameValue(Left.AsExtended, Right.AsDouble);
       end
       else
       begin
-        Result := {$IFDEF USE_NS}System.Math.{$ENDIF}SameValue(Left.AsExtended, Right.AsExtended);
+        Result := System.Math.SameValue(Left.AsExtended, Right.AsExtended);
       end;
     end;
   end
@@ -2032,21 +1938,6 @@ begin
     end;
   end;
 end;
-
-{$IFDEF DELPHI_2010}
-class function TArrayHelper.ToArray<T>(Enumerable : TEnumerable<T>; Count : Integer) : TArray<T>;
-var
-  LItem : T;
-begin
-  SetLength(Result, Count);
-  Count := 0;
-  for LItem in Enumerable do
-  begin
-    Result[Count] := LItem;
-    Inc(Count);
-  end;
-end;
-{$ENDIF}
 
 class function TArrayHelper.Create<T>(const a, b : T) : TArray<T>;
 begin
@@ -2180,19 +2071,6 @@ begin
   Result := GetProperty(AName) <> nil;
 end;
 
-{$IF CompilerVersion < 23}
-class function TObjectHelper.QualifiedClassName : string;
-var
-  LUnitName : string;
-begin
-  LUnitName := UnitName;
-  if LUnitName = '' then
-    Result := ClassName
-  else
-    Result := LUnitName + '.' + ClassName;
-end;
-{$IFEND}
-
 function TObjectHelper.TryGetField(const AName : string;
   out AField : TRttiField) : Boolean;
 begin
@@ -2254,64 +2132,12 @@ end;
 
 { TRttiInstanceTypeHelper }
 
-{$IF CompilerVersion < 23}
-function TRttiInstanceTypeHelper.GetDeclaredImplementedInterfaces : TArray<TRttiInterfaceType>;
-var
-  LInterfaceTable : PInterfaceTable;
-  p : PPointer;
-  i : Integer;
-  LTypeInfo : PTypeInfo;
-begin
-  LInterfaceTable := PPointer(PByte(MetaclassType) + vmtIntfTable)^;
-
-  if Assigned(LInterfaceTable) then
-  begin
-    p := @LInterfaceTable.Entries[LInterfaceTable.EntryCount];
-    SetLength(Result, LInterfaceTable.EntryCount);
-
-    for i := 0 to LInterfaceTable.EntryCount - 1 do
-    begin
-      LTypeInfo := PPTypeInfo(p^)^;
-      Result[i] := GetRttiType(LTypeInfo) as TRttiInterfaceType;
-      Inc(p);
-    end;
-  end;
-end;
-
-function TRttiInstanceTypeHelper.GetImplementedInterfaces : TArray<TRttiInterfaceType>;
-var
-  LCount : Integer;
-  LInterfaces : TArray<TArray<TRttiInterfaceType>>;
-  LType : TRttiInstanceType;
-begin
-  LCount := 0;
-  LType := Self;
-  repeat
-    Inc(LCount);
-    LType := LType.BaseType.AsInstance;
-  until not Assigned(LType);
-
-  SetLength(LInterfaces, LCount);
-  LCount := 0;
-  LType := Self;
-  repeat
-    LInterfaces[LCount] := LType.GetDeclaredImplementedInterfaces;
-    Inc(LCount);
-    LType := LType.BaseType.AsInstance;
-  until not Assigned(LType);
-
-  Result := TArrayHelper.Concat<TRttiInterfaceType>(LInterfaces);
-end;
-{$IFEND}
-
 { TRttiInvokableTypeHelper }
 
-{$IFDEF DELPHI_XE2_UP}
 function TRttiInvokableTypeHelper.GetParameterCount : Integer;
 begin
   Result := Length(GetParameters());
 end;
-{$ENDIF}
 
 { TRttiMemberHelper }
 
@@ -3265,29 +3091,6 @@ begin
     begin
       case Kind of
         tkRecord : Result := ConvNullable2Any(Self, ATypeInfo, AResult);
-{$IFDEF VER210}
-        // workaround for bug in RTTI.pas (fixed in XE)
-        tkUnknown :
-          begin
-            case ATypeInfo.Kind of
-              tkInteger, tkEnumeration, tkChar, tkWChar, tkInt64 :
-                begin
-                  AResult := TValue.FromOrdinal(ATypeInfo, 0);
-                  Result := True;
-                end;
-              tkFloat :
-                begin
-                  AResult := TValue.From<Extended>(0);
-                  Result := True;
-                end;
-              tkUString :
-                begin
-                  AResult := TValue.FromString('');
-                  Result := True;
-                end;
-            end;
-          end;
-{$ENDIF}
       end;
       case ATypeInfo.Kind of
         tkRecord : Result := ConvAny2Nullable(Self, ATypeInfo, AResult);
@@ -3532,13 +3335,6 @@ begin
 end;
 
 {TTimeSpanHelper}
-{$IFDEF DELPHI_2010}
-class function TTimeSpanHelper.Subtract(const D1, D2 : TDateTime) : TTimeSpan;
-begin
-  Result := TTimeSpan.Create(Trunc(TimeStampToMSecs(DateTimeToTimeStamp(D1)) - TimeStampToMSecs(DateTimeToTimeStamp(D2))) *
-    TicksPerMillisecond);
-end;
-{$ENDIF}
 
 class function TStrUtils.SplitString(const S, Delimiters : string) : TArray<string>;
 var

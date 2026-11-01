@@ -57,11 +57,7 @@ type
 implementation
 
 uses
-{$IFDEF USE_NS}
   System.SysUtils,
-{$ELSE}
-  SysUtils,
-{$ENDIF}
   DUnitX.ResStrs,
   DUnitX.Exceptions;
 
