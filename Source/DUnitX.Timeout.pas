@@ -61,17 +61,22 @@ uses
 const
   TIMEOUT_RUNNING = 0;
   TIMEOUT_STOPPED = 1;
-  TIMEOUT_FIRED = 2;
+  //How long after an interruption the test is interrupted again, if it has not stopped the timeout by then.
+  REINTERRUPT_INTERVAL = 1000;
 
 type
   TTimeoutThread = class(TThread)
   private
     procedure TimeoutThread;
+    procedure WaitUntil(const AStopwatch : TStopwatch; const AElapsed : Int64);
   public
     ThreadHandle : THandle;
     Timeout : Cardinal;
-    //TIMEOUT_RUNNING until either the test stops the timeout or the timeout fires; only one of them can move it on.
+    //TIMEOUT_RUNNING until the test stops the timeout.  Read only while the test thread is suspended, so the test cannot
+    //stop the timeout while an interruption is decided.
     State : Integer;
+    //Set once the test thread has been redirected to raise ETimedOut.
+    Interrupted : Boolean;
     procedure Execute; override;
   end;
 
@@ -161,9 +166,7 @@ var
   //GetThreadContext needs the context 16-byte aligned on Win64, which a local record is not always.
   CtxBuffer : array [0 .. SizeOf(_CONTEXT) + 15] of Byte;
   Ctx : PTimeoutContext;
-  Redirected : Boolean;
 begin
-  Redirected := False;
   Ctx := PTimeoutContext((NativeUInt(@CtxBuffer) + 15) and not NativeUInt(15));
   if SuspendThread(ThreadHandle) = Cardinal(-1) then
     exit;
@@ -172,13 +175,19 @@ begin
     //Also waits until the thread is actually suspended, so it cannot stop the timeout while State is checked below.
     if not GetThreadContext(ThreadHandle, Ctx^) then
       exit;
-    //If the test stopped the timeout first, it finished in time: leave it alone.
-    if InterlockedCompareExchange(State, TIMEOUT_FIRED, TIMEOUT_RUNNING) <> TIMEOUT_RUNNING then
+    //If the test stopped the timeout first, it finished: leave it alone.  (A fenced read.)
+    if InterlockedCompareExchange(State, TIMEOUT_RUNNING, TIMEOUT_RUNNING) <> TIMEOUT_RUNNING then
       exit;
 {$IFDEF CPUX86}
+    //Still blocked where the last interruption left it: it raises when it runs.
+    if Ctx^.Eip = Cardinal(@RaiseTimeOutException) then
+      exit;
     Ctx^.Eip := Cardinal(@RaiseTimeOutException);
 {$ELSE}
 {$IFDEF CPUX64}
+    //Still blocked where the last interruption left it: it faults when it runs.
+    if Ctx^.Rip = NativeUInt(_TimeoutFaultAddress) then
+      exit;
     //Making the thread call a raise does not work on Win64: unwinding needs a return address and the stack aligned for
     //a call, and a thread stopped inside a system call has neither.  Instead it is made to fault, as if it had called
     //_TimeoutFaultAddress from where it stopped; Windows unwinds from a fault, and TimeoutExceptObjProc makes it
@@ -194,16 +203,17 @@ begin
 {$ENDIF}
     if not SetThreadContext(ThreadHandle, Ctx^) then
       exit;
-    Redirected := True;
+    Interrupted := True;
     //A thread blocked in the kernel only reaches the raise when the call returns, so end the call.  The wake-up is
     //queued while the thread is still suspended, so only a wait it is already in is ended.
     QueueUserAPC(@WakeAlertableWait, ThreadHandle, 0);
   finally
     ResumeThread(ThreadHandle);
   end;
-  //CancelSynchronousIo waits for the call to end, so the thread must be running.  It is called at once, so the read or
-  //write ended is the one the thread was blocked in, not one in the code handling the timeout.
-  if Redirected and Assigned(_CancelSynchronousIo) then
+  //Reached only once the thread is redirected: every exit above skips it.  CancelSynchronousIo waits for the call to
+  //end, so the thread must be running.  It is called at once, so the read or write ended is the one the thread was
+  //blocked in, not one in the code handling the timeout.
+  if Assigned(_CancelSynchronousIo) then
     _CancelSynchronousIo(ThreadHandle);
 end;
 
@@ -211,7 +221,7 @@ end;
 
 procedure TTimeout.Stop;
 begin
-  InterlockedCompareExchange(FTimeoutThread.State, TIMEOUT_STOPPED, TIMEOUT_RUNNING);
+  InterlockedExchange(FTimeoutThread.State, TIMEOUT_STOPPED);
   FTimeoutThread.Terminate;
 end;
 
@@ -232,7 +242,7 @@ begin
   CloseHandle(FTimeoutThread.ThreadHandle);
   //Runs the wake-up queued to this (the test's) thread if no alertable wait has, so it cannot cut short one in the next
   //test.  Any other user APC already queued to the thread runs here too.
-  if FTimeoutThread.State = TIMEOUT_FIRED then
+  if FTimeoutThread.Interrupted then
     SleepEx(0, True);
   FTimeoutThread.Free;
   inherited;
@@ -242,29 +252,30 @@ end;
 
 procedure TTimeoutThread.Execute;
 var
-  elapsedTime : Int64;
   stopwatch : TStopWatch;
+  nextInterrupt : Int64;
 begin
   inherited;
   stopwatch := TStopWatch.Create;
-  stopwatch.Reset;
   stopwatch.Start;
-{$IFNDEF DELPHI_XE101_UP}               // <- H2077 Value assigned to 'elapsedTime' never used 10.1 Berlin and up
-  elapsedTime := 0;
-{$ENDIF}
-  if Terminated then
-    exit;
-  repeat
+  nextInterrupt := Timeout;
+  WaitUntil(stopwatch, nextInterrupt);
+  //Until the test stops the timeout: a test that caught the interruption and then hung again is interrupted again.
+  while not Terminated do
+  begin
+    TimeoutThread;
+    //Counted from now, so that a stall (a debugger stopped on the interruption) is not followed by a burst of them.
+    nextInterrupt := stopwatch.ElapsedMilliseconds + REINTERRUPT_INTERVAL;
+    WaitUntil(stopwatch, nextInterrupt);
+  end;
+end;
+
+//Returns once AStopwatch reads AElapsed milliseconds, or as soon as the test stops the timeout.
+procedure TTimeoutThread.WaitUntil(const AStopwatch : TStopwatch; const AElapsed : Int64);
+begin
+  while not Terminated and (AStopwatch.ElapsedMilliseconds < AElapsed) do
     //Give some time back to the system to process the test.
     Sleep(20);
-    if Terminated then
-      Break;
-    elapsedTime := stopwatch.ElapsedMilliseconds;
-  until (elapsedTime >= Timeout);
-
-  //If we haven't been terminated then we have timed out.
-  if not Terminated then
-    TimeoutThread;
 end;
 
 initialization
