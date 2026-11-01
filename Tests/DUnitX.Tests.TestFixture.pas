@@ -107,7 +107,7 @@ type
     [MaxTime(0)]
     procedure MaxTimeIsZero;
 
-    //Ignored, as a timeout fails the test itself.  TMaxTimeTests runs an overrunning test through a runner of its own instead.
+    //Ignored, as a timeout fails the test itself.  TMaxTimeTests runs timed-out tests through a runner of its own instead.
     [Test, Ignore]
     [MaxTime(100)]
     procedure TestTimeout;
@@ -155,18 +155,28 @@ type
     [Test]
     procedure Ignored_At_Run_Time_Is_Written_As_Ignored_By_The_XML_Loggers;
   end;
+{$M-}
 
+{$IFDEF MSWINDOWS}
+{$M+}
   [TestFixture]
   TMaxTimeTests = class
   public
     [Test]
-    procedure Overrun_Fails_With_The_Timeout_After_The_Test_Ends;
+    procedure Overrun_In_A_Busy_Loop_Is_Interrupted_And_Fails;
     [Test]
-    procedure Overrun_Ending_In_Assert_Pass_Still_Fails;
+    procedure Overrun_In_A_Sleep_Loop_Is_Interrupted_And_Fails;
+    [Test]
+    procedure Blocked_In_A_Synchronous_Read_Is_Interrupted_And_Fails;
+    [Test]
+    procedure Blocked_In_An_Alertable_Wait_Is_Interrupted_And_Fails;
+    [Test]
+    procedure The_Next_Test_Runs_And_Its_Alertable_Wait_Is_Not_Cut_Short;
     [Test]
     procedure Within_Its_MaxTime_Passes;
   end;
 {$M-}
+{$ENDIF}
 
   TRaisingDestructorClass = class
   public
@@ -204,11 +214,17 @@ implementation
 
 uses
 {$IFDEF USE_NS}
+{$IFDEF MSWINDOWS}
+  WinAPI.Windows,
+{$ENDIF}
   System.Math,
   System.SysUtils,
   System.Rtti,
   System.Classes,
 {$ELSE}
+{$IFDEF MSWINDOWS}
+  Windows,
+{$ENDIF}
   Math,
   SysUtils,
   Rtti,
@@ -1083,40 +1099,90 @@ begin
   end;
 end;
 
+{$IFDEF MSWINDOWS}
 const
-  //The [MaxTime] of the overrunning tests, and how long they take: well over it, so the result does not depend on timing.
-  MAX_TIME_LIMIT = 50;
-  MAX_TIME_TAKEN = 250;
+  //The [MaxTime] of the tests that should be interrupted.
+  MAX_TIME_LIMIT = 100;
+  //How long those tests would take if they were not interrupted.  A test stopped in under half of it was interrupted;
+  //one that took longer ran on until its wait or loop ended, which is not stopping a hung test.
+  MAX_TIME_UNINTERRUPTED = 3000;
   //The [MaxTime] of the test that should pass: far more than it takes, however slow the machine.
   MAX_TIME_GENEROUS = 10000;
 
 var
   _MaxTimeTestRanToTheEnd : Boolean;
+  _MaxTimeAlertableWaitResult : Cardinal;
+  _MaxTimePipeRead : THandle;
+  _MaxTimePipeWrite : THandle;
+  _MaxTimeStopBusyLoop : Boolean;
 
 type
   //Not a fixture: the class of the fixtures TMaxTimeTests runs through a runner of its own.
   TMaxTimeClass = class
   public
-    procedure Overruns;
-    procedure OverrunsThenPasses;
+    procedure BusyLoop;
+    procedure SleepLoop;
+    procedure SynchronousRead;
+    procedure AlertableWait;
+    procedure WaitsAlertably;
     procedure Passes;
   end;
 
-  TMaxTimeTest = (mttOverruns, mttOverrunsThenPasses, mttPasses);
-
 { TMaxTimeClass }
 
-procedure TMaxTimeClass.Overruns;
+//Stores its parameter in its home slot, at the top of the caller's stack.
+procedure LeaveJunkAtTheTopOfTheStack(AJunk : NativeInt);
+var
+  junk : NativeInt;
 begin
-  Sleep(MAX_TIME_TAKEN);
+  junk := AJunk;
+  if junk = 0 then
+    _MaxTimeStopBusyLoop := True;
+end;
+
+//Loops without calling anything, so it is interrupted in its own code, with junk rather than a return address at the
+//top of its stack (on Win64 the interruption must supply the return address itself).
+procedure TMaxTimeClass.BusyLoop;
+begin
+  LeaveJunkAtTheTopOfTheStack(NativeInt($DEAD0BAD));
+  while not _MaxTimeStopBusyLoop do
+    ;
   _MaxTimeTestRanToTheEnd := True;
 end;
 
-procedure TMaxTimeClass.OverrunsThenPasses;
+//Spends its time inside Sleep, so it is interrupted inside a system call, as a test polling a connection would be.
+procedure TMaxTimeClass.SleepLoop;
+var
+  start : Cardinal;
 begin
-  Sleep(MAX_TIME_TAKEN);
+  start := GetTickCount;
+  repeat
+    Sleep(10);
+  until GetTickCount - start >= MAX_TIME_UNINTERRUPTED;
   _MaxTimeTestRanToTheEnd := True;
-  Assert.Pass;
+end;
+
+//Blocked reading a pipe nothing is written to until MAX_TIME_UNINTERRUPTED has passed.
+procedure TMaxTimeClass.SynchronousRead;
+var
+  buffer : Byte;
+  bytesRead : Cardinal;
+begin
+  ReadFile(_MaxTimePipeRead, buffer, 1, bytesRead, nil);
+  _MaxTimeTestRanToTheEnd := True;
+end;
+
+//Blocked in an alertable wait, as a blocking Winsock call is.
+procedure TMaxTimeClass.AlertableWait;
+begin
+  SleepEx(MAX_TIME_UNINTERRUPTED, True);
+  _MaxTimeTestRanToTheEnd := True;
+end;
+
+//Runs after an interrupted test, on the same thread: an alertable wait must last its full time.
+procedure TMaxTimeClass.WaitsAlertably;
+begin
+  _MaxTimeAlertableWaitResult := SleepEx(200, True);
 end;
 
 procedure TMaxTimeClass.Passes;
@@ -1124,32 +1190,74 @@ begin
   _MaxTimeTestRanToTheEnd := True;
 end;
 
-//A fixture of the one test, with the given [MaxTime].
-function CreateMaxTimeFixture(const ATest : TMaxTimeTest; const AMaxTime : cardinal) : ITestFixture;
+//A fixture of the named tests of TMaxTimeClass, in order, each with the [MaxTime] at the same index.
+function CreateMaxTimeFixture(const ATestNames : array of string; const AMaxTimes : array of cardinal) : ITestFixture;
 var
   rttiContext : TRttiContext;
   rttiType : TRttiType;
+  rttiMethod : TRttiMethod;
   instance : TMaxTimeClass;
+  method : TMethod;
+  i : Integer;
 begin
   _MaxTimeTestRanToTheEnd := False;
   rttiContext := TRttiContext.Create;
   rttiType := rttiContext.GetType(TMaxTimeClass);
   result := TDUnitXTestFixture.Create('AMaxTimeFixture', '', TMaxTimeClass, 'AUnit') as ITestFixture;
   instance := result.FixtureInstance as TMaxTimeClass;
-  case ATest of
-    mttOverruns :
-      result.AddTest('Overruns', instance.Overruns, 'Overruns', '', rttiType.GetMethod('Overruns'), True, False, '', AMaxTime);
-    mttOverrunsThenPasses :
-      result.AddTest('OverrunsThenPasses', instance.OverrunsThenPasses, 'OverrunsThenPasses', '', rttiType.GetMethod('OverrunsThenPasses'), True,
-        False, '', AMaxTime);
-    mttPasses :
-      result.AddTest('Passes', instance.Passes, 'Passes', '', rttiType.GetMethod('Passes'), True, False, '', AMaxTime);
+  for i := 0 to High(ATestNames) do
+  begin
+    rttiMethod := rttiType.GetMethod(ATestNames[i]);
+    method.Code := rttiMethod.CodeAddress;
+    method.Data := instance;
+    result.AddTest(ATestNames[i], TTestMethod(method), ATestNames[i], '', rttiMethod, True, False, '', AMaxTimes[i]);
   end;
 end;
 
-//Checks that AResults holds the one test, failed with the timeout (not errored, as an access violation would be), that
-//it ran to the end rather than being interrupted, and that the test records it timed out.
-procedure CheckReportedTimedOut(const AFixture : ITestFixture; const AResults : IRunResults);
+//Runs the fixture and returns how long it took, in milliseconds.  If a test is not interrupted, a thread ends its loop or
+//its read once MAX_TIME_UNINTERRUPTED has passed, so a failure is reported instead of the run hanging.
+function RunMaxTimeFixture(const AFixture : ITestFixture; out AResults : IRunResults; out ATestNames : string) : Cardinal;
+var
+  start : Cardinal;
+  stopSafetyNet : THandle;
+  safetyNet : TThread;
+begin
+  _MaxTimeStopBusyLoop := False;
+  if not CreatePipe(_MaxTimePipeRead, _MaxTimePipeWrite, nil, 0) then
+    RaiseLastOSError;
+  stopSafetyNet := CreateEvent(nil, True, False, nil);
+  safetyNet := TThread.CreateAnonymousThread(
+    procedure
+    var
+      buffer : Byte;
+      bytesWritten : Cardinal;
+    begin
+      if WaitForSingleObject(stopSafetyNet, MAX_TIME_UNINTERRUPTED) = WAIT_TIMEOUT then
+      begin
+        _MaxTimeStopBusyLoop := True;
+        buffer := 0;
+        WriteFile(_MaxTimePipeWrite, buffer, 1, bytesWritten, nil);
+      end;
+    end);
+  safetyNet.FreeOnTerminate := False;
+  try
+    safetyNet.Start;
+    start := GetTickCount;
+    AResults := RunFixtureOnItsOwnThread(AFixture, ATestNames);
+    result := GetTickCount - start;
+  finally
+    SetEvent(stopSafetyNet);
+    safetyNet.WaitFor;
+    safetyNet.Free;
+    CloseHandle(stopSafetyNet);
+    CloseHandle(_MaxTimePipeWrite);
+    CloseHandle(_MaxTimePipeRead);
+  end;
+end;
+
+//Checks that the one test in AResults failed with the timeout (not errored, as an access violation would be), and that
+//it was stopped promptly rather than running on to its end.
+procedure CheckInterrupted(const AResults : IRunResults; const AElapsed : Cardinal);
 var
   testResult : ITestResult;
   resultMessage : string;
@@ -1162,47 +1270,77 @@ begin
   Assert.AreEqual(0, AResults.PassCount, 'the overrun passed');
   Assert.AreEqual(1, AResults.FailureCount, 'the overrun did not fail');
   Assert.AreEqual(SOperationTimedOut, resultMessage, false, 'the failure is not the timeout');
-  Assert.IsTrue(_MaxTimeTestRanToTheEnd, 'the test was interrupted instead of running to the end');
-  Assert.IsTrue(AFixture.Tests[0].TimedOut, 'the test does not record that it timed out');
+  Assert.IsFalse(_MaxTimeTestRanToTheEnd, 'the test ran to its end instead of being interrupted');
+  Assert.IsTrue(AElapsed < MAX_TIME_UNINTERRUPTED div 2, Format('the test was stopped after %d ms, not soon after its [MaxTime] of %d ms',
+    [AElapsed, MAX_TIME_LIMIT]));
 end;
 
 { TMaxTimeTests }
 
-procedure TMaxTimeTests.Overrun_Fails_With_The_Timeout_After_The_Test_Ends;
+procedure TMaxTimeTests.Overrun_In_A_Busy_Loop_Is_Interrupted_And_Fails;
 var
-  fixture : ITestFixture;
   results : IRunResults;
   testNames : string;
+  elapsed : Cardinal;
 begin
-  fixture := CreateMaxTimeFixture(mttOverruns, MAX_TIME_LIMIT);
-  results := RunFixtureOnItsOwnThread(fixture, testNames);
-  CheckReportedTimedOut(fixture, results);
+  elapsed := RunMaxTimeFixture(CreateMaxTimeFixture(['BusyLoop'], [MAX_TIME_LIMIT]), results, testNames);
+  CheckInterrupted(results, elapsed);
 end;
 
-procedure TMaxTimeTests.Overrun_Ending_In_Assert_Pass_Still_Fails;
+procedure TMaxTimeTests.Overrun_In_A_Sleep_Loop_Is_Interrupted_And_Fails;
 var
-  fixture : ITestFixture;
+  results : IRunResults;
+  testNames : string;
+  elapsed : Cardinal;
+begin
+  elapsed := RunMaxTimeFixture(CreateMaxTimeFixture(['SleepLoop'], [MAX_TIME_LIMIT]), results, testNames);
+  CheckInterrupted(results, elapsed);
+end;
+
+procedure TMaxTimeTests.Blocked_In_A_Synchronous_Read_Is_Interrupted_And_Fails;
+var
+  results : IRunResults;
+  testNames : string;
+  elapsed : Cardinal;
+begin
+  elapsed := RunMaxTimeFixture(CreateMaxTimeFixture(['SynchronousRead'], [MAX_TIME_LIMIT]), results, testNames);
+  CheckInterrupted(results, elapsed);
+end;
+
+procedure TMaxTimeTests.Blocked_In_An_Alertable_Wait_Is_Interrupted_And_Fails;
+var
+  results : IRunResults;
+  testNames : string;
+  elapsed : Cardinal;
+begin
+  elapsed := RunMaxTimeFixture(CreateMaxTimeFixture(['AlertableWait'], [MAX_TIME_LIMIT]), results, testNames);
+  CheckInterrupted(results, elapsed);
+end;
+
+procedure TMaxTimeTests.The_Next_Test_Runs_And_Its_Alertable_Wait_Is_Not_Cut_Short;
+var
   results : IRunResults;
   testNames : string;
 begin
-  fixture := CreateMaxTimeFixture(mttOverrunsThenPasses, MAX_TIME_LIMIT);
-  results := RunFixtureOnItsOwnThread(fixture, testNames);
-  CheckReportedTimedOut(fixture, results);
+  _MaxTimeAlertableWaitResult := WAIT_FAILED;
+  RunMaxTimeFixture(CreateMaxTimeFixture(['BusyLoop', 'WaitsAlertably'], [MAX_TIME_LIMIT, MAX_TIME_GENEROUS]), results, testNames);
+  Assert.AreEqual(',BusyLoop,WaitsAlertably,', testNames, 'the tests run, in order');
+  Assert.AreEqual(1, results.FailureCount, 'the interrupted test did not fail');
+  Assert.AreEqual(1, results.PassCount, 'the test after the interrupted one did not pass');
+  Assert.AreEqual(Cardinal(0), _MaxTimeAlertableWaitResult, 'SleepEx in the next test ended early (WAIT_IO_COMPLETION is 192)');
 end;
 
 procedure TMaxTimeTests.Within_Its_MaxTime_Passes;
 var
-  fixture : ITestFixture;
   results : IRunResults;
   testNames : string;
 begin
-  fixture := CreateMaxTimeFixture(mttPasses, MAX_TIME_GENEROUS);
-  results := RunFixtureOnItsOwnThread(fixture, testNames);
+  RunMaxTimeFixture(CreateMaxTimeFixture(['Passes'], [MAX_TIME_GENEROUS]), results, testNames);
   Assert.AreEqual(1, results.TestCount, 'the number of tests');
   Assert.AreEqual(1, results.PassCount, 'a test within its [MaxTime] did not pass');
   Assert.IsTrue(_MaxTimeTestRanToTheEnd, 'the test did not run');
-  Assert.IsFalse(fixture.Tests[0].TimedOut, 'a test within its [MaxTime] records that it timed out');
 end;
+{$ENDIF}
 
 initialization
   TDUnitX.RegisterTestFixture(TTestClassWithNonPublicSetup);
@@ -1213,7 +1351,9 @@ initialization
   TDUnitX.RegisterTestFixture(TTearDownFixtureFailureTests);
   TDUnitX.RegisterTestFixture(TFixtureResultDurationTests);
   TDUnitX.RegisterTestFixture(TRuntimeIgnoreTests);
+{$IFDEF MSWINDOWS}
   TDUnitX.RegisterTestFixture(TMaxTimeTests);
+{$ENDIF}
 
 end.
 
