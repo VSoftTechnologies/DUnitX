@@ -109,6 +109,13 @@ begin
     TDUnitXTestCase(ATest as TObject).ArgsError := AMessage;
 end;
 
+//Data from a provider or a generator is written for the method, so a value it has no parameter for is a mistake
+procedure CheckNotTooManyValues(const ATest : ITest; const AValues : TValueArray; const AMethod : TRttiMethod);
+begin
+  if Length(AValues) > Length(AMethod.GetParameters()) then
+    SetArgsError(ATest, TooManyValuesMessage(Length(AValues), Length(AMethod.GetParameters()), false));
+end;
+
 //A TArray<TValue> holds its values as TValues that hold TValues
 function Unwrapped(const AValue : TValue) : TValue;
 begin
@@ -672,8 +679,9 @@ begin
                 params := iProvider.GetCaseParams(method.name, x);
                 for i := 1 to repeatCount do
                 begin
-                  currentFixture.AddTestCase(method.Name, FormatCaseName(caseName, x), FormatTestName(method.Name, i, repeatCount), category, method,
-                    testEnabled, params, willRaise, willRaiseInherit);
+                  test := currentFixture.AddTestCase(method.Name, FormatCaseName(caseName, x), FormatTestName(method.Name, i, repeatCount), category,
+                    method, testEnabled, params, willRaise, willRaiseInherit);
+                  CheckNotTooManyValues(test, params, method);
                 end;
               end;
               iProvider := nil;
@@ -691,15 +699,16 @@ begin
             begin
               test := currentFixture.AddTestCase(method.Name, caseName, FormatTestName(method.Name, i, repeatCount), category, method,
                 testEnabled, testCaseAttrib.CaseInfo.Values, willRaise, willRaiseInherit);
-              //Only [TestCase], [NamedTestCase] and [TestCaseSource] are checked: a provider or a generator may supply more
-              //values than the method takes
+              //Values split from text get the separator hint; another kind of test case is checked as a generator is
               if testCaseAttrib is TestCaseAttribute then
               begin
                 if TestCaseAttribute(testCaseAttrib).ValuesError <> '' then
                   SetArgsError(test, TestCaseAttribute(testCaseAttrib).ValuesError)
                 else if Length(testCaseAttrib.CaseInfo.Values) > Length(method.GetParameters()) then
                   SetArgsError(test, TooManyValuesMessage(Length(testCaseAttrib.CaseInfo.Values), Length(method.GetParameters())));
-              end;
+              end
+              else
+                CheckNotTooManyValues(test, testCaseAttrib.CaseInfo.Values, method);
             end;
           end;
           // Add test cases from test case sources
@@ -716,8 +725,9 @@ begin
                 begin
                   for i := 1 to repeatCount do
                   begin
-                    currentFixture.AddTestCase(method.Name, TestCaseData.Name, FormatTestName(method.Name, i, repeatCount), category, method, testEnabled,
-                      TestCaseData.Values, willRaise, willRaiseInherit);
+                    test := currentFixture.AddTestCase(method.Name, TestCaseData.Name, FormatTestName(method.Name, i, repeatCount), category, method,
+                      testEnabled, TestCaseData.Values, willRaise, willRaiseInherit);
+                    CheckNotTooManyValues(test, TestCaseData.Values, method);
                   end;
                 end;
               end;
