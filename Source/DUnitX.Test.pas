@@ -214,8 +214,16 @@ begin
 {$IFDEF MSWINDOWS}
     if FMaxTime > 0 then
       timeout := InitialiseTimeOut(FMaxTime);
+    try
 {$ENDIF}
-    FMethod();
+      FMethod();
+{$IFDEF MSWINDOWS}
+    finally
+      //Stop it here, not when it is released: once stopped it cannot interrupt the test.
+      if timeout <> nil then
+        timeout.Stop;
+    end;
+{$ENDIF}
   finally
     FEndTime := Now();
 
