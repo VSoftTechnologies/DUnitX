@@ -33,13 +33,8 @@ interface
 {$I DUnitX.inc}
 
 uses
-{$IFDEF USE_NS}
   System.Classes,
   System.Generics.Collections,
-{$ELSE}
-  Classes,
-  Generics.Collections,
-{$ENDIF}
   DUnitX.Extensibility;
 
 type
@@ -193,15 +188,9 @@ type
 implementation
 
 uses
-{$IFDEF USE_NS}
   System.Generics.Defaults,
   System.StrUtils,
   System.SysUtils;
-{$ELSE}
-  Generics.Defaults,
-  StrUtils,
-  SysUtils;
-{$ENDIF}
 
 { TTestFilter }
 

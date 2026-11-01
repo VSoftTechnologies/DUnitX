@@ -31,13 +31,8 @@ interface
 {$I DUnitX.inc}
 
 uses
-{$IFDEF USE_NS}
   System.Rtti,
   System.SysUtils,
-{$ELSE}
-  Rtti,
-  SysUtils,
-{$ENDIF}
   DUnitX.Types,
   DUnitX.InternalDataProvider;
 
@@ -364,13 +359,8 @@ type
 implementation
 
 uses
-{$IFDEF USE_NS}
   System.Types,
   System.StrUtils,
-{$ELSE}
-  Types,
-  StrUtils,
-{$ENDIF}
   DUnitX.Utils;
 
 { TestFixture }

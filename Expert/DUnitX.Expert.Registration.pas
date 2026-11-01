@@ -37,11 +37,7 @@ implementation
 
 uses
   ToolsApi,
-{$IFDEF USE_NS}
   Vcl.Dialogs,
-{$ELSE}
-  Dialogs,
-{$ENDIF}
 {$IFDEF DELPHIX_SEATTLE_UP}
   DUnitX.Expert.ProjectWizardEx,
   DUnitX.Expert.NewUnitWizardEx;

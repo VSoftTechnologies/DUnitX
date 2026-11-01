@@ -31,7 +31,6 @@ interface
 {$I DUnitX.inc}
 
 uses
-{$IFDEF USE_NS}
   WinAPI.Windows,
   WinAPI.Messages,
   System.SysUtils,
@@ -42,18 +41,6 @@ uses
   VCL.Forms,
   VCL.Dialogs,
   VCL.StdCtrls;
-{$ELSE}
-  Windows,
-  Messages,
-  SysUtils,
-  Variants,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  StdCtrls;
-{$ENDIF}
 
 type
   TfrmDunitXNewUnit = class(TForm)

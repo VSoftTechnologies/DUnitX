@@ -31,17 +31,10 @@ interface
 {$I DUnitX.inc}
 
 uses
-{$IFDEF USE_NS}
   System.Classes,
   System.SysUtils,
   System.Rtti,
   System.Generics.Collections,
-{$ELSE}
-  Classes,
-  SysUtils,
-  Rtti,
-  Generics.Collections,
-{$ENDIF}
   DUnitX.TestFramework,
   DUnitX.Extensibility,
   DUnitX.InternalInterfaces,
@@ -185,15 +178,9 @@ type
 implementation
 
 uses
-{$IFDEF USE_NS}
   System.TypInfo,
   System.StrUtils,
   System.Types,
-{$ELSE}
-  TypInfo,
-  StrUtils,
-  Types,
-{$ENDIF}
   DUnitX.Attributes,
   DUnitX.CommandLine.Options,
   DUnitX.TestFixture,
@@ -930,7 +917,7 @@ begin
       //A setup that ignores the test (Assert.Ignore) ignores it, rather than erroring it.
       on e : ETestIgnored do
         errorResult := ExecuteIgnoredResult(context, threadId, test, e.Message);
-      on e : {$IFDEF USE_NS}System.SysUtils.{$ENDIF}Exception do
+      on e : System.SysUtils.Exception do
       begin
         errorResult := ExecuteErrorResult(context, threadId, test, e, FLogMessagesEx);
       end;
@@ -957,7 +944,7 @@ begin
     Self.Loggers_EndTeardownTest(threadId, test as ITestInfo);
     result := true;
   except
-    on e : {$IFDEF USE_NS}System.SysUtils.{$ENDIF}Exception do
+    on e : System.SysUtils.Exception do
     begin
       errorResult := ExecuteErrorResult(context, threadId, test, e, FLogMessagesEx);
     end;

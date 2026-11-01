@@ -55,13 +55,8 @@ type
 implementation
 
 uses
-{$IFDEF USE_NS}
   System.SysUtils,
   VCL.Dialogs,
-{$ELSE}
-  SysUtils,
-  Dialogs,
-{$ENDIF}
   DUnitX.Expert.CodeGen.Templates,
   DUnitX.Expert.CodeGen.SourceFile;
 

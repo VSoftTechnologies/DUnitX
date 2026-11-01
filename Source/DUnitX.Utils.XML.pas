@@ -37,11 +37,7 @@ function EscapeForXML(const value : string; const isAttribute : boolean = True; 
 implementation
 
 uses
-{$IFDEF USE_NS}
   System.SysUtils;
-{$ELSE}
-  SysUtils;
-{$ENDIF}
 
 function IsValidXMLChar(const wc : WideChar) : Boolean;
 begin

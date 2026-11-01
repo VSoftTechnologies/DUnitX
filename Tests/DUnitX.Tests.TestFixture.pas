@@ -213,7 +213,6 @@ type
 implementation
 
 uses
-{$IFDEF USE_NS}
 {$IFDEF MSWINDOWS}
   WinAPI.Windows,
 {$ENDIF}
@@ -221,15 +220,6 @@ uses
   System.SysUtils,
   System.Rtti,
   System.Classes,
-{$ELSE}
-{$IFDEF MSWINDOWS}
-  Windows,
-{$ENDIF}
-  Math,
-  SysUtils,
-  Rtti,
-  Classes,
-{$ENDIF}
   DUnitX.Types,
   DUnitX.Exceptions,
   DUnitX.Extensibility,

@@ -6,13 +6,8 @@ interface
 
 uses
   DUnitX.TestFramework,
-{$IFDEF USE_NS}
   System.SysUtils,
   System.UITypes;
-{$ELSE}
-  SysUtils,
-  UITypes;
-{$ENDIF}
 
 type
   [TestFixture]
@@ -30,27 +25,16 @@ type
   [Category('Utils')]
   TValueHelperTests = class
   private var
-{$IFDEF DELPHI_XE_UP}
     originalFormatSettings : TFormatSettings;
-{$ELSE}
-    originalLCID : Integer;
-{$ENDIF}
   protected var
     expectedDate : TDate;
     expectedTime : TTime;
   protected
     procedure setFormatSettings(const locale : string);
     procedure revertFormatSettings();
-{$IFDEF DELPHI_2010}
-    function GetLCIDFromLocale(const locale : string) : integer;
-{$ENDIF}
   public
     // Delphi 2010 does support calling of constructor
-{$IFDEF DELPHI_XE_UP}
     constructor Create;
-{$ELSE}
-    procedure AfterConstruction; override;
-{$ENDIF}
     destructor Destroy; override;
     [Test]
     procedure ToString_Formats_A_Nil_Object_Or_Interface;
@@ -229,15 +213,9 @@ implementation
 
 uses
 
-{$IFDEF USE_NS}
   System.DateUtils,
   System.Rtti,
   WinApi.Windows,
-{$ELSE}
-  DateUtils,
-  Rtti,
-  Windows,
-{$ENDIF}
   DUnitX.Generics,
   DUnitX.Utils;
 
@@ -270,19 +248,11 @@ end;
 
 { TValueHelperTests }
 
-{$IFDEF DELPHI_XE_UP}
 constructor TValueHelperTests.Create;
 
-{$ELSE}
-procedure TValueHelperTests.AfterConstruction;
-{$ENDIF}
 begin
   inherited;
-{$IFDEF DELPHI_XE_UP}
-  originalFormatSettings := {$IFDEF USE_NS}System.{$ENDIF}SysUtils.FormatSettings;
-{$ELSE}
-  originalLCID := GetThreadLocale;
-{$ENDIF}
+  originalFormatSettings := System.SysUtils.FormatSettings;
 
   expectedDate := EncodeDate(2020, 06, 22);
   expectedTime := EncodeTime(18, 36, 00, 000);
@@ -296,41 +266,8 @@ end;
 
 procedure TValueHelperTests.revertFormatSettings();
 begin
-{$IFDEF DELPHI_XE_UP}
-{$IFDEF USE_NS}System.{$ENDIF}SysUtils.FormatSettings := originalFormatSettings;
-{$ELSE}
-  SetThreadLocale(originalLCID);
-  GetFormatSettings;
-{$ENDIF}
+  System.SysUtils.FormatSettings := originalFormatSettings;
 end;
-
-{$IFDEF DELPHI_2010}
-// I could not find a better way than hardcode them for D2010..
-// Full list: https://docs.microsoft.com/en-us/openspecs/office_standards/ms-oe376/6c085406-a698-4e12-9d4d-c3b0ee3dbc4a
-function TValueHelperTests.GetLCIDFromLocale(const locale : string) : integer;
-begin
-  if locale = 'EN-US' then
-    result := 1033
-  else if locale = 'EN-GB' then
-    result := 2057
-  else if locale = 'DE' then
-    result := 1031
-  else if locale = 'nl-NL' then
-    result := 1043
-  else if locale = 'fi-FI' then
-    result := 1035
-  else if locale = 'ja-JP' then
-    result := 1041
-  else if locale = 'zh-CN' then
-    result := 2052
-  else if locale = 'sv-SE' then
-    result := 1053
-  else if locale = 'ko-KR' then
-    result := 1042
-  else
-    raise Exception.Create('Unsupported locale passed to GetLCIDFromLocale function');
-end;
-{$ENDIF}
 
 procedure TValueHelperTests.setFormatSettings(const locale : string);
 {$IFNDEF DELPHI_XE3_UP}
@@ -339,14 +276,8 @@ var
 {$ENDIF}
 begin
 {$IFNDEF DELPHI_XE3_UP}
-{$IFDEF DELPHI_2010}
-  _lcid := GetLCIDFromLocale(locale);
-  SetThreadLocale(_lcid);
-  GetFormatSettings;
-{$ELSE}
   _lcid := LocaleNameToLCID(PChar(locale), 0);
   GetLocaleFormatSettings(_lcid, FormatSettings);
-{$ENDIF}
 {$ELSE}
   FormatSettings := TFormatSettings.Create(locale);
 {$ENDIF}

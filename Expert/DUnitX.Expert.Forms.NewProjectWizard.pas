@@ -31,7 +31,6 @@ interface
 {$I DUnitX.inc}
 
 uses
-{$IFDEF USE_NS}
   WinAPI.Windows,
   WinAPI.Messages,
   System.SysUtils,
@@ -43,19 +42,6 @@ uses
   VCL.Dialogs,
   VCL.StdCtrls,
   Vcl.ExtCtrls,
-{$ELSE}
-  Windows,
-  Messages,
-  SysUtils,
-  Variants,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  StdCtrls,
-  ExtCtrls,
-{$ENDIF}
   DUnitX.Expert.CodeGen.NewTestProject;
 
 type

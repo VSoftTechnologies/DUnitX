@@ -35,11 +35,7 @@ This unit should not ne included in your project, it works on windows only
 {$ENDIF}
 
 uses
-{$IFDEF USE_NS}
   System.Classes,
-{$ELSE}
-  Classes,
-{$ENDIF}
   DUnitX.ConsoleWriter.Base;
 
 type
@@ -66,11 +62,7 @@ implementation
 
 uses
 {$IFDEF MSWINDOWS}
-{$IFDEF USE_NS}
   WinAPI.Windows,                       // Delphi XE2 (CompilerVersion 23) added scopes in front of unit names
-{$ELSE}
-  Windows,
-{$ENDIF}
 {$ENDIF}
   DUnitX.Utils,
   DUnitX.ServiceLocator;

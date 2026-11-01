@@ -31,13 +31,8 @@ interface
 {$I DUnitX.inc}
 
 uses
-{$IFDEF USE_NS}
   System.SysUtils,
   System.Classes,
-{$ELSE}
-  SysUtils,
-  Classes,
-{$ENDIF}
 {$IFDEF USE_JCL}
   JclDebug,
 {$ENDIF}
@@ -116,17 +111,7 @@ end;
 initialization
 {$IFDEF USE_JCL}
 
-{$IFDEF DELPHI_XE_UP}
   TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider, TJCLStackTraceProvider>(true);
-{$ELSE}
-  //D2010 bug prevents using above method.
-  TDUnitXServiceLocator.DefaultContainer.RegisterType<IStacktraceProvider>(true,
-    function : IStacktraceProvider
-    begin
-      result := TJCLStackTraceProvider.Create;
-    end
-    );
-{$ENDIF}
 {$ENDIF}
 
 end.

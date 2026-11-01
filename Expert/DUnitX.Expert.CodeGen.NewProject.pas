@@ -34,9 +34,7 @@ interface
 {$I DUnitX.inc}
 
 uses
-{$IFDEF DELPHI_XE2_UP}
   PlatformAPI,
-{$ENDIF}
   ToolsAPI;
 
 type
@@ -87,11 +85,7 @@ type
 implementation
 
 uses
-{$IFDEF USE_NS}
   System.SysUtils;
-{$ELSE}
-  SysUtils;
-{$ENDIF}
 
 { TNewProject }
 

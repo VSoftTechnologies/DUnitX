@@ -31,17 +31,10 @@ interface
 {$I DUnitX.inc}
 
 uses
-{$IFDEF USE_NS}
   System.Classes,
   System.TimeSpan,
   System.Diagnostics,
   System.Generics.Collections,
-{$ELSE}
-  Classes,
-  TimeSpan,
-  Diagnostics,
-  Generics.Collections,
-{$ENDIF}
   DUnitX.TestFramework,
   DUnitX.InternalInterfaces,
   DUnitX.Generics;
@@ -98,13 +91,8 @@ implementation
 
 uses
   DUnitX.ResStrs,
-{$IFDEF USE_NS}
   System.DateUtils,
   System.SysUtils;
-{$ELSE}
-  DateUtils,
-  SysUtils;
-{$ENDIF}
 
 { TDUnitXTestResults }
 

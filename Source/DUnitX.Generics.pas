@@ -31,13 +31,8 @@ interface
 {$I DUnitX.inc}
 
 uses
-{$IFDEF USE_NS}
   System.Generics.Defaults,
   System.Generics.Collections;
-{$ELSE}
-  Generics.Defaults,
-  Generics.Collections;
-{$ENDIF}
 
 type
   //Delphi does not have reference counted collection types.. so we created one here.
@@ -196,11 +191,7 @@ type
 implementation
 
 uses
-{$IFDEF USE_NS}
   System.TypInfo;
-{$ELSE}
-  TypInfo;
-{$ENDIF}
 
 { TListFactory }
 

@@ -31,13 +31,8 @@ interface
 {$I DUnitX.inc}
 
 uses
-{$IFDEF USE_NS}
   System.Rtti,
   System.Generics.Collections,
-{$ELSE}
-  Rtti,
-  Generics.Collections,
-{$ENDIF}
   DUnitX.Extensibility,
   DUnitX.Types,
   DUnitX.TestDataProvider;
@@ -66,19 +61,11 @@ type
 implementation
 
 uses
-{$IFDEF USE_NS}
   System.TypInfo,
   System.Classes,
   System.Types,
   System.StrUtils,
   System.SysUtils,
-{$ELSE}
-  TypInfo,
-  Classes,
-  Types,
-  StrUtils,
-  SysUtils,
-{$ENDIF}
   DUnitX.Attributes,
   DUnitX.Test,
   DUnitX.Utils,
@@ -581,7 +568,6 @@ begin
       continue;
     end;
 
-{$IFDEF DELPHI_XE_UP}
     //if there is a Destructor then we will use it as the fixture
     //Teardown method.
     if (not Assigned(tearDownFixtureMethod)) and method.IsDestructor and (Length(method.GetParameters) = 0) then
@@ -591,7 +577,6 @@ begin
       tearDownFixtureIsDestructor := true;
       continue;
     end;
-{$ENDIF}
 
     //if we had previously assigned a destructor as the teardownfixturemethod, then we can still override that with an attributed one.
     if ((not Assigned(tearDownFixtureMethod)) or tearDownFixtureIsDestructor) and method.TryGetAttributeOfType<TearDownFixtureAttribute>(tearDownFixtureAttrib)

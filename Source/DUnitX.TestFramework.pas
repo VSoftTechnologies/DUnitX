@@ -35,7 +35,6 @@ interface
 {$I DUnitX.inc}
 
 uses
-{$IFDEF USE_NS}
   System.Classes,
   System.SysUtils,
   System.SyncObjs,
@@ -43,15 +42,6 @@ uses
   System.Rtti,
   System.TimeSpan,
   System.Generics.Collections,
-{$ELSE}
-  Classes,
-  SysUtils,
-  SyncObjs,
-  TypInfo,
-  Rtti,
-  TimeSpan,
-  Generics.Collections,
-{$ENDIF}
   DUnitX.Assert,
   DUnitX.Assert.Ex,
   DUnitX.Attributes,
@@ -115,10 +105,6 @@ type
 
   TLogMessageArray = array of TLogMessage;
 
-{$IFDEF DELPHI_2010}
-  TThreadID = Cardinal;
-{$ENDIF}
-
 const
   TLogLevelDesc     : array[TLogLevel] of string = ('Info', 'Warn', 'Err');
 
@@ -126,7 +112,6 @@ const
   exDescendant      = DUnitX.Types.exDescendant;
 
 type
-{$IFDEF DELPHI_XE2_UP}
   ///	<summary>
   ///	  This helper class is intended to redirect the writeln method to a test
   ///	  runner so that it is logged correctly.
@@ -141,7 +126,6 @@ type
     procedure WriteLn(const msg : string); overload;
     procedure WriteLn; overload;
   end;
-{$ENDIF}
 
   // inherit because redeclaration raises ICE
   Assert = class(DUnitX.Assert.Ex.Assert);
@@ -673,20 +657,12 @@ const
 implementation
 
 uses
-{$IFDEF USE_NS}
   System.Variants,
   System.Math,
   System.StrUtils,
   System.Types,
   System.RegularExpressions,
   System.Generics.Defaults,
-{$ELSE}
-  Variants,
-  Math,
-  StrUtils,
-  Types,
-  Generics.Defaults,
-{$ENDIF}
   DUnitX.ResStrs,
   DUnitX.ConsoleWriter.Base,
   DUnitX.Banner,
@@ -941,8 +917,6 @@ begin
     RegisteredFixtures.Add(AClass, sName);
 end;
 
-{$IFDEF DELPHI_XE2_UP}
-
 { TTestFixtureHelper }
 
 procedure TTestFixtureHelper.Log(const msg : string);
@@ -981,7 +955,6 @@ procedure TTestFixtureHelper.WriteLn(const msg : string);
 begin
   Self.Log(TLogLevel.Information, msg);
 end;
-{$ENDIF}
 
 procedure InitAssert;
 begin

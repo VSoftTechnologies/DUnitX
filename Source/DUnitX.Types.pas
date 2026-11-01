@@ -35,18 +35,10 @@ unit DUnitX.Types;
 interface
 
 uses
-{$IFDEF USE_NS}
   System.Rtti;
-{$ELSE}
-  Rtti;
-{$ENDIF}
 
 type
-{$IFDEF SUPPORTS_TARRAY}
   TValueArray = TArray<TValue>;
-{$ELSE}
-  TValueArray = array of TValue;
-{$ENDIF}
 
   TExceptionInheritance = (
     exExact,

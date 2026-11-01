@@ -31,13 +31,8 @@ interface
 {$I DUnitX.inc}
 
 uses
-{$IFDEF USE_NS}
   System.SysUtils,
   System.Timespan,
-{$ELSE}
-  SysUtils,
-  Timespan,
-{$ENDIF}
   DUnitX.TestFramework,
   DUnitX.WeakReference,
   DUnitX.InternalInterfaces,
@@ -182,10 +177,8 @@ end;
 
 constructor TDUnitXTestError.Create(const ATestInfo : ITestInfo; const AType : TTestResultType; const AThrownException : Exception; const Addrs : Pointer; const
   AMessage : string; const AMessageExList : TLogMessageArray);
-{$IFDEF DELPHI_XE_UP}
 var
   stackTraceProvider : IStacktraceProvider;
-{$ENDIF}
 var
   StrCompareEx : ETestFailureStrCompare;
 begin
@@ -213,12 +206,10 @@ begin
   else
     FIsComparable := False;
 
-{$IFDEF DELPHI_XE_UP}
   stackTraceProvider := TDUnitXServiceLocator.DefaultContainer.Resolve<IStacktraceProvider>();
 
   if stackTraceProvider <> nil then
     FStackTrace := stackTraceProvider.GetStackTrace(AThrownException, Addrs);
-{$ENDIF}
 end;
 
 function TDUnitXTestError.GetActual : string;
@@ -232,17 +223,13 @@ begin
 end;
 
 function TDUnitXTestError.GetExceptionAddressInfo : string;
-{$IFDEF DELPHI_XE_UP}
 var
   stackTraceProvider : IStacktraceProvider;
-{$ENDIF}
 begin
-{$IFDEF DELPHI_XE_UP}
   stackTraceProvider := TDUnitXServiceLocator.DefaultContainer.Resolve<IStacktraceProvider>();
   if stackTraceProvider <> nil then
     Result := stackTraceProvider.PointerToAddressInfo(FExceptionAddress)
   else
-{$ENDIF}
     Result := '';
 end;
 
@@ -252,17 +239,13 @@ begin
 end;
 
 function TDUnitXTestError.GetExceptionLocationInfo : string;
-{$IFDEF DELPHI_XE_UP}
 var
   stackTraceProvider : IStacktraceProvider;
-{$ENDIF}
 begin
-{$IFDEF DELPHI_XE_UP}
   stackTraceProvider := TDUnitXServiceLocator.DefaultContainer.Resolve<IStacktraceProvider>();
   if stackTraceProvider <> nil then
     Result := stackTraceProvider.PointerToLocationInfo(FExceptionAddress)
   else
-{$ENDIF}
     Result := '';
 end;
 

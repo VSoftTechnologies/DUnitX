@@ -56,11 +56,7 @@ implementation
 uses
   DUnitX.Expert.CodeGen.SourceFile,
   DunitX.Expert.CodeGen.Templates,
-{$IFDEF USE_NS}
   System.SysUtils;
-{$ELSE}
-  SysUtils;
-{$ENDIF}
 
 const
   REPORT_LEAK_DECLARATION : array[TReportLeakOptions] of string = ('', '  FastMM4,'#13#10'  DUnitX.MemoryLeakMonitor.FastMM4,'#13#10,

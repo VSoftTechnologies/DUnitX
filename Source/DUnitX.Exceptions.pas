@@ -31,11 +31,7 @@ interface
 {$I DUnitX.inc}
 
 uses
-{$IFDEF USE_NS}
   System.SysUtils,
-{$ELSE}
-  SysUtils,
-{$ENDIF}
 
   DUnitX.ComparableFormat;
 
@@ -84,7 +80,7 @@ begin
   FActual := aActual;
   FMsg := aMessage;
   FFormat := aFormat;
-  inherited Create({$IFDEF USE_NS}System.{$ENDIF}SysUtils.Format(SNotEqualErrorStr, [aExpected, aActual, aMessage]));
+  inherited Create(System.SysUtils.Format(SNotEqualErrorStr, [aExpected, aActual, aMessage]));
 end;
 
 end.

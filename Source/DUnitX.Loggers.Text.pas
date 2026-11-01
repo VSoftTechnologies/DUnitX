@@ -31,19 +31,11 @@ interface
 {$I DUnitX.inc}
 
 uses
-{$IFDEF USE_NS}   // since Delphi XE2
   WinAPI.Windows,
   System.SysUtils,
   System.Classes,
   System.TimeSpan,
   System.Generics.Collections,
-{$ELSE}
-  Windows,
-  SysUtils,
-  Classes,
-  TimeSpan,
-  Generics.Collections,
-{$ENDIF}
   DUnitX.TestFramework,
   DUnitX.Loggers.Null;
 

@@ -31,15 +31,9 @@ interface
 {$I DUnitX.inc}
 
 uses
-{$IFDEF USE_NS}
   System.Classes,
   System.SysUtils,
   System.Generics.Collections,
-{$ELSE}
-  Classes,
-  SysUtils,
-  Generics.Collections,
-{$ENDIF}
   DUnitX.TestFramework,
   DUnitX.Loggers.Null;
 
@@ -76,46 +70,23 @@ implementation
 
 uses
   DUnitX.Utils.XML,
-{$IFDEF USE_NS}
   System.TypInfo;
-{$ELSE}
-  TypInfo;
-{$ENDIF}
 
 { TDUnitXXMLJUnitLogger }
 
 constructor TDUnitXXMLJUnitLogger.Create(const AOutputStream : TStream; const AOwnsStream : boolean = false);
 var
   preamble : TBytes;
-{$IFNDEF DELPHI_XE_UP}
-  oldThousandSeparator : Char;
-  oldDecimalSeparator : Char;
-{$ENDIF}
 begin
   inherited Create;
-{$IFDEF DELPHI_XE_UP }
   FFormatSettings := TFormatSettings.Create;
-{$ENDIF}
   FFormatSettings.ThousandSeparator := ',';
   FFormatSettings.DecimalSeparator := '.';
-{$IFNDEF DELPHI_XE_UP}
-  oldThousandSeparator := {$IFDEF USE_NS}System.{$ENDIF}SysUtils.ThousandSeparator;
-  oldDecimalSeparator := {$IFDEF USE_NS}System.{$ENDIF}DecimalSeparator;
-  try
-    SysUtils.ThousandSeparator := ',';
-    SysUtils.DecimalSeparator := '.';
-{$ENDIF}
-    FOutputStream := AOutputStream;
-    FOwnsStream := AOwnsStream;
+  FOutputStream := AOutputStream;
+  FOwnsStream := AOwnsStream;
 
-    Preamble := TEncoding.UTF8.GetPreamble;
-    FOutputStream.WriteBuffer(preamble[0], Length(preamble));
-{$IFNDEF DELPHI_XE_UP}
-  finally
-{$IFDEF USE_NS}System.{$ENDIF}SysUtils.ThousandSeparator := oldThousandSeparator;
-{$IFDEF USE_NS}System.{$ENDIF}SysUtils.DecimalSeparator := oldDecimalSeparator;
-  end;
-{$ENDIF}
+  Preamble := TEncoding.UTF8.GetPreamble;
+  FOutputStream.WriteBuffer(preamble[0], Length(preamble));
 
 end;
 
@@ -128,7 +99,7 @@ end;
 
 function TDUnitXXMLJUnitLogger.Format(const Format : string; const Args : array of const) : string;
 begin
-  Result := {$IFDEF USE_NS}System.{$ENDIF}SysUtils.Format(Format, Args, FFormatSettings);
+  Result := System.SysUtils.Format(Format, Args, FFormatSettings);
 end;
 
 procedure TDUnitXXMLJUnitLogger.Indent;

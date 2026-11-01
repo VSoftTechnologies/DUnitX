@@ -31,11 +31,7 @@ interface
 {$I DUnitX.inc}
 
 uses
-{$IFDEF USE_NS}
   System.Classes;
-{$ELSE}
-  Classes;
-{$ENDIF}
 
 type
   TConsoleColour = (
@@ -102,15 +98,9 @@ implementation
 { TDUnitXConsoleWriterBase }
 
 uses
-{$IFDEF USE_NS}
   System.Types,
   System.StrUtils,
   System.SysUtils;
-{$ELSE}
-  Types,
-  StrUtils,
-  SysUtils;
-{$ENDIF}
 
 const
   DEFAULT_CONSOLE_WIDTH = 80;

@@ -37,17 +37,10 @@ unit DUnitX.ServiceLocator;
 interface
 
 uses
-{$IFDEF USE_NS}
   System.Generics.Collections,
   System.TypInfo,
   System.Rtti,
   System.SysUtils;
-{$ELSE}
-  Generics.Collections,
-  TypInfo,
-  Rtti,
-  SysUtils;
-{$ENDIF}
 
 type
   TActivatorDelegate<TInterface : IInterface> = reference to function : TInterface;

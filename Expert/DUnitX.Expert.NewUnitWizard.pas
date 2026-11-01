@@ -32,11 +32,7 @@ interface
 
 uses
   ToolsApi,
-  {$IFDEF USE_NS}
   VCL.Graphics;
-  {$ELSE}
-  Graphics;
-  {$ENDIF}
 
 type
   TDUnitXNewUnitWizard = class(TNotifierObject, IOTAWizard,

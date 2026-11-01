@@ -31,17 +31,10 @@ interface
 {$I DUnitX.inc}
 
 uses
-{$IFDEF USE_NS}
   System.TimeSpan,
   System.Rtti,
   System.Generics.Collections,
   System.SysUtils,
-{$ELSE}
-  TimeSpan,
-  Rtti,
-  Generics.Collections,
-  SysUtils,
-{$ENDIF}
   DUnitX.Types,
   DUnitX.Generics;
 
@@ -216,11 +209,7 @@ type
 implementation
 
 uses
-{$IFDEF USE_NS}
   System.Generics.Defaults
-{$ELSE}
-  Generics.Defaults
-{$ENDIF}
   ;
 
 { TTestFixtureList }

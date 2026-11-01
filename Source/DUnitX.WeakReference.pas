@@ -48,11 +48,7 @@ interface
 {$I DUnitX.inc}
 
 uses
-{$IFDEF USE_NS}
   System.Generics.Collections;
-{$ELSE}
-  Generics.Collections;
-{$ENDIF}
 
 type
   /// Implemented by our weak referenced object base class
@@ -114,62 +110,10 @@ implementation
 
 uses
   DUnitX.ResStrs,
-{$IFDEF USE_NS}
   System.TypInfo,
   System.Classes,
   System.Sysutils,
   System.SyncObjs;
-{$ELSE}
-  TypInfo,
-  classes,
-  SysUtils,
-  SyncObjs;
-{$ENDIF}
-
-{$IFNDEF DELPHI_XE2_UP}
-type
-  TInterlocked = class
-  public
-    class function Increment(var Target : Integer) : Integer; static; inline;
-    class function Decrement(var Target : Integer) : Integer; static; inline;
-    class function Add(var Target : Integer; Increment : Integer) : Integer; static;
-    class function CompareExchange(var Target : Integer; Value, Comparand : Integer) : Integer; static;
-  end;
-
-class function TInterlocked.Decrement(var Target : Integer) : Integer;
-begin
-  result := Add(Target, -1);
-end;
-
-class function TInterlocked.Increment(var Target : Integer) : Integer;
-begin
-  result := Add(Target, 1);
-end;
-
-class function TInterlocked.Add(var Target : Integer; Increment : Integer) : Integer;
-{$IFNDEF CPUX86}
-asm
-  .NOFRAME
-  MOV  EAX,EDX
-  LOCK XADD [RCX].Integer,EAX
-  ADD  EAX,EDX
-end;
-{$ELSE CPUX86}
-asm
-  MOV  ECX,EDX
-  XCHG EAX,EDX
-  LOCK XADD [EDX],EAX
-  ADD  EAX,ECX
-end;
-{$ENDIF}
-
-class function TInterlocked.CompareExchange(var Target : Integer; Value, Comparand : Integer) : Integer;
-asm
-  XCHG EAX,EDX
-  XCHG EAX,ECX
-  LOCK CMPXCHG [EDX],ECX
-end;
-{$ENDIF DELPHI_XE2_UPE2}
 
 //MonitorTryEnter doesn't do a nil check!
 function SafeMonitorTryEnter(const AObject : TObject) : Boolean;
