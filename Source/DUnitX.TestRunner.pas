@@ -44,6 +44,19 @@ uses
   DUnitX.Exceptions;
 
 type
+  ///  What the runner keeps for the test that a thread is running.  When fixtures run in parallel, each fixture has its
+  ///  own, so that tests on different threads never share a log.
+  TDUnitXTestThreadState = class
+  public
+    LogMessages : TStringList;
+    LogMessagesEx : TLogMessageArray;
+    CurrentTestName : string;
+    //The results recorded while a fixture runs in parallel, in the order they were recorded; nil otherwise.
+    Results : TList<ITestResult>;
+    constructor Create(const ACollectResults : boolean);
+    destructor Destroy; override;
+  end;
+
   ///  Note - we rely on the fact that there will only ever be 1 testrunner
   ///  per thread, if this changes then handling of WriteLn will need to change
   TDUnitXTestRunner = class(TWeakReferencedObject, ITestRunner)
@@ -59,14 +72,28 @@ type
     FFixtureClasses : TDictionary<TClass, string>;
 
     FFixtureList : ITestFixtureList;
-    FLogMessages : TStringList;
-    FLogMessagesEx : TLogMessageArray;
 
     FFailsOnNoAsserts : boolean;
-    FCurrentTestName : string;
     //The results of failed fixture teardowns hold their tests weakly, so the runner keeps the tests.
     FTearDownFixtureTests : TList<ITest>;
+
+    FUseThreadPool : boolean;
+    FMaxThreads : integer;
+    //True while fixtures are running in parallel.
+    FRunningInParallel : boolean;
+    //While fixtures run in parallel, the fixtures to run (a TList<TParallelFixture>) and the index of the last one taken.
+    FParallelFixtures : TObject;
+    FLastParallelFixture : integer;
+    //The state of the test running on the runner's own thread; see State.
+    FMainState : TObject;
+    //Serialises the calls to the loggers, so that a logger is never called from two threads at once.
+    FLoggersLock : TObject;
+    //Serialises recording results, which fixtures running in parallel share.
+    FResultsLock : TObject;
   protected
+    //The log and test name of the test running on the calling thread.  The runner's own thread uses FMainState; a
+    //worker thread uses the state of the fixture it is running.
+    function State : TDUnitXTestThreadState;
     procedure CountAndFilterTests(const fixtureList : ITestFixtureList; var count, active : Cardinal);
     //Logger calls - sequence ordered
     procedure Loggers_TestingStarts(const threadId : TThreadID; testCount, testActiveCount : Cardinal);
@@ -106,6 +133,13 @@ type
 
     procedure ExecuteFixtures(const parentFixtureResult : IFixtureResult; const context : ITestExecuteContext; const threadId : TThreadID; const fixtures :
       ITestFixtureList);
+    procedure ExecuteFixture(const context : ITestExecuteContext; const threadId : TThreadID; const fixture : ITestFixture; const fixtureResult :
+      IFixtureResult);
+{$IFDEF PARALLEL_FIXTURES}
+    procedure ExecuteFixturesInParallel(const context : ITestExecuteContext; const threadId : TThreadID; const fixtures : ITestFixtureList);
+    function ParallelWorker(const context : ITestExecuteContext; const runnerRef : IWeakReference<ITestRunner>) : TProc;
+    procedure ExecuteParallelFixtures(const context : ITestExecuteContext; const runnerRef : IWeakReference<ITestRunner>);
+{$ENDIF}
     function ExecuteSetupFixtureMethod(const context : ITestExecuteContext; const threadId : TThreadID; const fixture : ITestFixture; const fixtureResult :
       IFixtureResult) : boolean;
     function ExecuteTestSetupMethod(const context : ITestExecuteContext; const threadId : TThreadID; const fixture : ITestFixture; const test : ITest; out
@@ -140,11 +174,18 @@ type
 
     procedure RecordResult(const context : ITestExecuteContext; const threadId : TThreadID; const fixtureResult : IFixtureResult; const testResult :
       ITestResult);
+    procedure RecordResultInContext(const context : ITestExecuteContext; const fixtureResult : IFixtureResult; const testResult : ITestResult);
 
     function GetUseRTTI : Boolean;
     procedure SetUseRTTI(const value : Boolean);
     function GetFailsOnNoAsserts : boolean;
     procedure SetFailsOnNoAsserts(const value : boolean);
+
+    function GetUseThreadPool : boolean;
+    procedure SetUseThreadPool(value : boolean);
+
+    function GetMaxThreads : integer;
+    procedure SetMaxThreads(value : integer);
 
     procedure Log(const logType : TLogLevel; const msg : string); overload;
     procedure Log(const msg : string); overload;
@@ -181,6 +222,7 @@ uses
   System.TypInfo,
   System.StrUtils,
   System.Types,
+  System.SyncObjs,
   DUnitX.Attributes,
   DUnitX.CommandLine.Options,
   DUnitX.TestFixture,
@@ -193,6 +235,28 @@ uses
   DUnitX.FixtureBuilder,
   DUnitX.Test;
 
+threadvar
+  //The runner whose fixture this worker thread is running, and that fixture's state (see TDUnitXTestRunner.State).
+  WorkerThreadRunner : Pointer;
+  WorkerThreadState : Pointer;
+
+{ TDUnitXTestThreadState }
+
+constructor TDUnitXTestThreadState.Create(const ACollectResults : boolean);
+begin
+  inherited Create;
+  LogMessages := TStringList.Create;
+  if ACollectResults then
+    Results := TList<ITestResult>.Create;
+end;
+
+destructor TDUnitXTestThreadState.Destroy;
+begin
+  Results.Free;
+  LogMessages.Free;
+  inherited;
+end;
+
 { TDUnitXTestRunner }
 
 procedure TDUnitXTestRunner.Log(const msg : string);
@@ -204,9 +268,14 @@ procedure TDUnitXTestRunner.Loggers_AddError(const threadId : TThreadID; const E
 var
   logger : ITestLogger;
 begin
-  for logger in FLoggers do
-  begin
-    logger.OnTestError(threadId, Error);
+  MonitorEnter(FLoggersLock);
+  try
+    for logger in FLoggers do
+    begin
+      logger.OnTestError(threadId, Error);
+    end;
+  finally
+    MonitorExit(FLoggersLock);
   end;
 end;
 
@@ -214,9 +283,14 @@ procedure TDUnitXTestRunner.Loggers_AddFailure(const threadId : TThreadID; const
 var
   logger : ITestLogger;
 begin
-  for logger in FLoggers do
-  begin
-    logger.OnTestFailure(threadId, Failure);
+  MonitorEnter(FLoggersLock);
+  try
+    for logger in FLoggers do
+    begin
+      logger.OnTestFailure(threadId, Failure);
+    end;
+  finally
+    MonitorExit(FLoggersLock);
   end;
 end;
 
@@ -224,9 +298,14 @@ procedure TDUnitXTestRunner.Loggers_AddIgnored(const threadId : TThreadID; const
 var
   logger : ITestLogger;
 begin
-  for logger in FLoggers do
-  begin
-    logger.OnTestIgnored(threadId, AIgnored);
+  MonitorEnter(FLoggersLock);
+  try
+    for logger in FLoggers do
+    begin
+      logger.OnTestIgnored(threadId, AIgnored);
+    end;
+  finally
+    MonitorExit(FLoggersLock);
   end;
 end;
 
@@ -234,9 +313,14 @@ procedure TDUnitXTestRunner.Loggers_AddMemoryLeak(const threadId : TThreadID; co
 var
   logger : ITestLogger;
 begin
-  for logger in FLoggers do
-  begin
-    logger.OnTestMemoryLeak(threadId, Test);
+  MonitorEnter(FLoggersLock);
+  try
+    for logger in FLoggers do
+    begin
+      logger.OnTestMemoryLeak(threadId, Test);
+    end;
+  finally
+    MonitorExit(FLoggersLock);
   end;
 end;
 
@@ -250,9 +334,14 @@ procedure TDUnitXTestRunner.Loggers_AddSuccess(const threadId : TThreadID; const
 var
   logger : ITestLogger;
 begin
-  for logger in FLoggers do
-  begin
-    logger.OnTestSuccess(threadId, Test);
+  MonitorEnter(FLoggersLock);
+  try
+    for logger in FLoggers do
+    begin
+      logger.OnTestSuccess(threadId, Test);
+    end;
+  finally
+    MonitorExit(FLoggersLock);
   end;
 end;
 
@@ -327,9 +416,12 @@ begin
 end;
 
 procedure TDUnitXTestRunner.ClearLogMessages;
+var
+  threadState : TDUnitXTestThreadState;
 begin
-  FLogMessages.Clear;
-  SetLength(FLogMessagesEx, 0);
+  threadState := State;
+  threadState.LogMessages.Clear;
+  SetLength(threadState.LogMessagesEx, 0);
 end;
 
 constructor TDUnitXTestRunner.Create;
@@ -338,8 +430,13 @@ begin
   FLoggers := TList<ITestLogger>.Create;
   FFixtureClasses := TDictionary<TClass, string>.Create;
   FUseRTTI := False;
-  FLogMessages := TStringList.Create;
+  FMainState := TDUnitXTestThreadState.Create(false);
+  FLoggersLock := TObject.Create;
+  FResultsLock := TObject.Create;
   FTearDownFixtureTests := TList<ITest>.Create;
+  //Defaulting to using the options here to make working with existing code/testinsight easier.
+  FMaxThreads := TDUnitX.Options.MaxDegreeOfParallelism;
+  FUseThreadPool := FMaxThreads > 1;
   MonitorEnter(TDUnitXTestRunner.FActiveRunners);
   try
     TDUnitXTestRunner.FActiveRunners.Add(TThread.CurrentThread.ThreadID, TWeakReference<ITestRunner>.Create(Self));
@@ -365,7 +462,7 @@ end;
 
 function TDUnitXTestRunner.CurrentTestName : string;
 begin
-  result := FCurrentTestName;
+  result := State.CurrentTestName;
 end;
 
 destructor TDUnitXTestRunner.Destroy;
@@ -382,7 +479,9 @@ begin
   end;
 
   FTearDownFixtureTests.Free;
-  FLogMessages.Free;
+  FResultsLock.Free;
+  FLoggersLock.Free;
+  FMainState.Free;
   FLoggers.Free;
   FFixtureClasses.Free;
   inherited;
@@ -400,35 +499,51 @@ begin
   case testResult.ResultType of
     TTestResultType.Pass :
       begin
-        context.RecordResult(fixtureResult, testResult);
+        RecordResultInContext(context, fixtureResult, testResult);
         Self.Loggers_AddSuccess(threadId, testResult);
       end;
     TTestResultType.Failure :
       begin
         Log(TLogLevel.Error, STestFailed + testResult.Test.Name + ' : ' + testResult.Message);
-        context.RecordResult(fixtureResult, testResult);
+        RecordResultInContext(context, fixtureResult, testResult);
         Self.Loggers_AddFailure(threadId, ITestError(testResult));
       end;
     TTestResultType.Error :
       begin
         Log(TLogLevel.Error, STestError + testResult.Test.Name + ' : ' + testResult.Message);
-        context.RecordResult(fixtureResult, testResult);
+        RecordResultInContext(context, fixtureResult, testResult);
         Self.Loggers_AddError(threadId, ITestError(testResult));
       end;
     TTestResultType.Ignored :
       begin
         Log(TLogLevel.Error, STestIgnored + testResult.Test.Name + ' : ' + testResult.Message);
-        context.RecordResult(fixtureResult, testResult);
+        RecordResultInContext(context, fixtureResult, testResult);
         Self.Loggers_AddIgnored(threadId, testResult);
       end;
     TTestResultType.MemoryLeak :
       begin
         Log(TLogLevel.Error, STestLeaked + testResult.Test.Name + ' : ' + testResult.Message);
-        context.RecordResult(fixtureResult, testResult);
+        RecordResultInContext(context, fixtureResult, testResult);
         Self.Loggers_AddMemoryLeak(threadId, testResult);
       end;
 
   end;
+end;
+
+procedure TDUnitXTestRunner.RecordResultInContext(const context : ITestExecuteContext; const fixtureResult : IFixtureResult; const testResult :
+  ITestResult);
+var
+  results : TList<ITestResult>;
+begin
+  MonitorEnter(FResultsLock);
+  try
+    context.RecordResult(fixtureResult, testResult);
+  finally
+    MonitorExit(FResultsLock);
+  end;
+  results := State.Results;
+  if results <> nil then
+    results.Add(testResult);
 end;
 
 procedure TDUnitXTestRunner.RTTIDiscoverFixtureClasses;
@@ -466,66 +581,94 @@ procedure TDUnitXTestRunner.Loggers_EndSetupFixture(const threadId : TThreadID; 
 var
   logger : ITestLogger;
 begin
-  for logger in FLoggers do
-    logger.OnEndSetupFixture(threadId, fixture);
+  MonitorEnter(FLoggersLock);
+  try
+    for logger in FLoggers do
+      logger.OnEndSetupFixture(threadId, fixture);
+  finally
+    MonitorExit(FLoggersLock);
+  end;
 end;
 
 procedure TDUnitXTestRunner.Loggers_EndSetupTest(const threadId : TThreadID; const Test : ITestInfo);
 var
   logger : ITestLogger;
 begin
-  for logger in FLoggers do
-  begin
-    try
-      logger.OnEndSetupTest(threadid, Test);
-    except
-      //Hmmmm what to do with errors here. This kinda smells.
-      on e : Exception do
-      begin
-        try
-          logger.OnLog(TLogLevel.Error, SOnEndSetupEventError + e.Message);
-        except
-          on e : Exception do
-            System.Write(SOnEndSetupTestLogError + e.Message);
+  MonitorEnter(FLoggersLock);
+  try
+    for logger in FLoggers do
+    begin
+      try
+        logger.OnEndSetupTest(threadid, Test);
+      except
+        //Hmmmm what to do with errors here. This kinda smells.
+        on e : Exception do
+        begin
+          try
+            logger.OnLog(TLogLevel.Error, SOnEndSetupEventError + e.Message);
+          except
+            on e : Exception do
+              System.Write(SOnEndSetupTestLogError + e.Message);
+          end;
         end;
       end;
     end;
+  finally
+    MonitorExit(FLoggersLock);
   end;
-
 end;
 
 procedure TDUnitXTestRunner.Loggers_EndTearDownFixture(const aThreadId : TThreadID; const aFixture : ITestFixtureInfo);
 var
   lLogger : ITestLogger;
 begin
-  for lLogger in FLoggers do
-    lLogger.OnEndTearDownFixture(aThreadId, aFixture);
+  MonitorEnter(FLoggersLock);
+  try
+    for lLogger in FLoggers do
+      lLogger.OnEndTearDownFixture(aThreadId, aFixture);
+  finally
+    MonitorExit(FLoggersLock);
+  end;
 end;
 
 procedure TDUnitXTestRunner.Loggers_EndTeardownTest(const aThreadId : TThreadID; const aTest : ITestInfo);
 var
   lLogger : ITestLogger;
 begin
-  for lLogger in FLoggers do
-    lLogger.OnEndTeardownTest(aThreadId, aTest);
+  MonitorEnter(FLoggersLock);
+  try
+    for lLogger in FLoggers do
+      lLogger.OnEndTeardownTest(aThreadId, aTest);
+  finally
+    MonitorExit(FLoggersLock);
+  end;
 end;
 
 procedure TDUnitXTestRunner.Loggers_EndTest(const threadId : TThreadID; const Test : ITestResult);
 var
   logger : ITestLogger;
 begin
-  for logger in FLoggers do
-    logger.OnEndTest(threadId, Test);
-
+  MonitorEnter(FLoggersLock);
+  try
+    for logger in FLoggers do
+      logger.OnEndTest(threadId, Test);
+  finally
+    MonitorExit(FLoggersLock);
+  end;
 end;
 
 procedure TDUnitXTestRunner.Loggers_EndTestFixture(const threadId : TThreadID; const results : IFixtureResult);
 var
   logger : ITestLogger;
 begin
-  for logger in FLoggers do
-  begin
-    logger.OnEndTestFixture(threadId, results);
+  MonitorEnter(FLoggersLock);
+  try
+    for logger in FLoggers do
+    begin
+      logger.OnEndTestFixture(threadId, results);
+    end;
+  finally
+    MonitorExit(FLoggersLock);
   end;
 end;
 
@@ -533,8 +676,13 @@ procedure TDUnitXTestRunner.Loggers_ExecuteTest(const threadId : TThreadID; cons
 var
   logger : ITestLogger;
 begin
-  for logger in FLoggers do
-    logger.OnExecuteTest(threadId, Test);
+  MonitorEnter(FLoggersLock);
+  try
+    for logger in FLoggers do
+      logger.OnExecuteTest(threadId, Test);
+  finally
+    MonitorExit(FLoggersLock);
+  end;
 end;
 
 procedure TDUnitXTestRunner.CountAndFilterTests(const fixtureList : ITestFixtureList; var count : Cardinal; var active : Cardinal);
@@ -623,8 +771,14 @@ var
   ref : IWeakReference<ITestRunner>;
 begin
   result := nil;
-  if FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId, ref) then
-    result := ref.Data;
+  MonitorEnter(FActiveRunners);
+  try
+    if not FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId, ref) then
+      exit;
+  finally
+    MonitorExit(FActiveRunners);
+  end;
+  result := ref.Data;
 end;
 
 class function TDUnitXTestRunner.GetCurrentTestName : string;
@@ -656,8 +810,15 @@ procedure TDUnitXTestRunner.ExecuteFixtures(const parentFixtureResult : IFixture
 var
   fixture : ITestFixture;
   fixtureResult : IFixtureResult;
-  setupOk : boolean;
 begin
+{$IFDEF PARALLEL_FIXTURES}
+  //Fixtures run in parallel from the top of the tree; a fixture's own children then run on its thread.
+  if (parentFixtureResult = nil) and FUseThreadPool and (FMaxThreads > 1) and (not FRunningInParallel) then
+  begin
+    ExecuteFixturesInParallel(context, threadId, fixtures);
+    exit;
+  end;
+{$ENDIF}
   for fixture in fixtures do
   begin
     if not fixture.Enabled then
@@ -666,44 +827,239 @@ begin
     if (not fixture.HasTests) and (not fixture.HasChildTests) then
       System.Continue;
 
-    setupOk := True;
     fixtureResult := TDUnitXFixtureResult.Create(parentFixtureResult, fixture as ITestFixtureInfo);
     if parentFixtureResult = nil then
       context.RecordFixture(fixtureResult);
 
-    Self.Loggers_StartTestFixture(threadId, fixture as ITestFixtureInfo);
-    try
-      //Initialize the fixture as it may have been destroyed in a previous run (when using gui runner).
-      if fixture.HasTests then
-        fixture.InitFixtureInstance;
-      //only run the setup method if there are actually tests
-      if fixture.HasActiveTests and Assigned(fixture.SetupFixtureMethod) then
-        //returns false if an exception happens in the setup.
-        setupOk := ExecuteSetupFixtureMethod(context, threadId, fixture, fixtureResult);
+    ExecuteFixture(context, threadId, fixture, fixtureResult);
+  end;
+end;
 
-      if setupOk and fixture.HasTests then
-        ExecuteTests(context, threadId, fixture, fixtureResult);
+procedure TDUnitXTestRunner.ExecuteFixture(const context : ITestExecuteContext; const threadId : TThreadID; const fixture : ITestFixture; const
+  fixtureResult : IFixtureResult);
+var
+  setupOk : boolean;
+begin
+  setupOk := True;
+  Self.Loggers_StartTestFixture(threadId, fixture as ITestFixtureInfo);
+  try
+    //Initialize the fixture as it may have been destroyed in a previous run (when using gui runner).
+    if fixture.HasTests then
+      fixture.InitFixtureInstance;
+    //only run the setup method if there are actually tests
+    if fixture.HasActiveTests and Assigned(fixture.SetupFixtureMethod) then
+      //returns false if an exception happens in the setup.
+      setupOk := ExecuteSetupFixtureMethod(context, threadId, fixture, fixtureResult);
 
-      if fixture.HasChildFixtures then
-        ExecuteFixtures(fixtureResult, context, threadId, fixture.Children);
+    if setupOk and fixture.HasTests then
+      ExecuteTests(context, threadId, fixture, fixtureResult);
 
-      // teardown will not run if the fixture setup errored.
-      if setupOk and fixture.HasActiveTests and Assigned(fixture.TearDownFixtureMethod) then
-        //TODO: Tricker yet each test above us requires errors that occur here
-        ExecuteTearDownFixtureMethod(context, threadId, fixture, fixtureResult);
+    if fixture.HasChildFixtures then
+      ExecuteFixtures(fixtureResult, context, threadId, fixture.Children);
 
-      //rollup durations - needs to be done here to ensure correct timing.
-      (fixtureResult as IFixtureResultBuilder).RollUpResults;
-    finally
-      Self.Loggers_EndTestFixture(threadId, fixtureResult);
+    // teardown will not run if the fixture setup errored.
+    if setupOk and fixture.HasActiveTests and Assigned(fixture.TearDownFixtureMethod) then
+      //TODO: Tricker yet each test above us requires errors that occur here
+      ExecuteTearDownFixtureMethod(context, threadId, fixture, fixtureResult);
+
+    //rollup durations - needs to be done here to ensure correct timing.
+    (fixtureResult as IFixtureResultBuilder).RollUpResults;
+  finally
+    Self.Loggers_EndTestFixture(threadId, fixtureResult);
+  end;
+end;
+
+{$IFDEF PARALLEL_FIXTURES}
+
+type
+  TParallelFixture = record
+    Fixture : ITestFixture;
+    FixtureResult : IFixtureResult;
+    State : TDUnitXTestThreadState;
+  end;
+
+//Walks the fixtures as ExecuteFixtures does, creating their results in the same order.  A fixture with no tests of its
+//own and no fixture setup or teardown to run, such as a namespace, goes to AContainers and its children are walked in turn;
+//every other fixture goes to AUnits, and later runs on a worker thread with its children, as ExecuteFixture runs it.
+procedure CollectParallelFixtures(const ARunner : TDUnitXTestRunner; const AParentResult : IFixtureResult; const AContext : ITestExecuteContext;
+  const AThreadId : TThreadID; const AFixtures : ITestFixtureList; const AContainers, AUnits : TList<TParallelFixture>);
+var
+  fixture : ITestFixture;
+  item : TParallelFixture;
+begin
+  for fixture in AFixtures do
+  begin
+    if not fixture.Enabled then
+      System.Continue;
+
+    if (not fixture.HasTests) and (not fixture.HasChildTests) then
+      System.Continue;
+
+    item.Fixture := fixture;
+    item.FixtureResult := TDUnitXFixtureResult.Create(AParentResult, fixture as ITestFixtureInfo);
+    item.State := nil;
+    if AParentResult = nil then
+      AContext.RecordFixture(item.FixtureResult);
+
+    if (not fixture.HasTests) and fixture.HasChildFixtures and
+      not (fixture.HasActiveTests and (Assigned(fixture.SetupFixtureMethod) or Assigned(fixture.TearDownFixtureMethod))) then
+    begin
+      ARunner.Loggers_StartTestFixture(AThreadId, fixture as ITestFixtureInfo);
+      AContainers.Add(item);
+      CollectParallelFixtures(ARunner, item.FixtureResult, AContext, AThreadId, fixture.Children, AContainers, AUnits);
+    end
+    else
+    begin
+      item.State := TDUnitXTestThreadState.Create(true);
+      AUnits.Add(item);
     end;
   end;
 end;
 
+procedure TDUnitXTestRunner.ExecuteFixturesInParallel(const context : ITestExecuteContext; const threadId : TThreadID; const fixtures : ITestFixtureList);
+var
+  containers : TList<TParallelFixture>;
+  units : TList<TParallelFixture>;
+  item : TParallelFixture;
+  i : integer;
+  workers : TList<TThread>;
+  worker : TThread;
+  runnerRef : IWeakReference<ITestRunner>;
+  orderedResults : TList<ITestResult>;
+  workerError : string;
+begin
+  workerError := '';
+  containers := TList<TParallelFixture>.Create;
+  units := TList<TParallelFixture>.Create;
+  try
+    try
+      CollectParallelFixtures(Self, nil, context, threadId, fixtures, containers, units);
+      //no point in threads for one fixture.
+      if units.Count = 1 then
+        ExecuteFixture(context, threadId, units[0].Fixture, units[0].FixtureResult)
+      else if units.Count > 1 then
+      begin
+        //Worker threads register this runner for themselves through one reference, made here on the runner's thread.
+        runnerRef := TWeakReference<ITestRunner>.Create(Self);
+        FParallelFixtures := units;
+        FLastParallelFixture := -1;
+        FRunningInParallel := True;
+        workers := TList<TThread>.Create;
+        try
+          //Each worker takes the next fixture not yet taken until none are left, so at most MaxThreads run at once.
+          for i := 1 to FMaxThreads do
+          begin
+            if i > units.Count then
+              Break;
+            worker := TThread.CreateAnonymousThread(ParallelWorker(context, runnerRef));
+            worker.FreeOnTerminate := false;
+            workers.Add(worker);
+            worker.Start;
+          end;
+          for worker in workers do
+          begin
+            worker.WaitFor;
+            if (worker.FatalException is Exception) and (workerError = '') then
+              workerError := Exception(worker.FatalException).ClassName + ': ' + Exception(worker.FatalException).Message;
+          end;
+        finally
+          for worker in workers do
+            worker.Free;
+          workers.Free;
+          FRunningInParallel := False;
+          FParallelFixtures := nil;
+        end;
+
+        //The results were recorded as the fixtures finished; list them in the order a serial run records them.
+        if (context as TObject) is TDUnitXRunResults then
+        begin
+          orderedResults := TList<ITestResult>.Create;
+          try
+            for item in units do
+              orderedResults.AddRange(item.State.Results);
+            TDUnitXRunResults(context as TObject).ReorderLastResults(orderedResults.ToArray);
+          finally
+            orderedResults.Free;
+          end;
+        end;
+      end;
+    finally
+      for i := containers.Count - 1 downto 0 do
+      begin
+        (containers[i].FixtureResult as IFixtureResultBuilder).RollUpResults;
+        Self.Loggers_EndTestFixture(threadId, containers[i].FixtureResult);
+      end;
+      for item in units do
+        item.State.Free;
+    end;
+  finally
+    units.Free;
+    containers.Free;
+  end;
+
+  //A fixture's own failures are its results; this is an error in the runner or a logger, which stopped a worker.
+  if workerError <> '' then
+    raise ETestFrameworkException.Create(workerError);
+end;
+
+function TDUnitXTestRunner.ParallelWorker(const context : ITestExecuteContext; const runnerRef : IWeakReference<ITestRunner>) : TProc;
+begin
+  result := procedure
+    begin
+      ExecuteParallelFixtures(context, runnerRef);
+    end;
+end;
+
+procedure TDUnitXTestRunner.ExecuteParallelFixtures(const context : ITestExecuteContext; const runnerRef : IWeakReference<ITestRunner>);
+var
+  units : TList<TParallelFixture>;
+  index : integer;
+  workerThreadId : TThreadID;
+  registered : boolean;
+begin
+  units := TList<TParallelFixture>(FParallelFixtures);
+  workerThreadId := TThread.Current.ThreadID;
+  //Register the runner for this thread, so that TDUnitX.CurrentRunner, Log and the assert counters find it.
+  MonitorEnter(TDUnitXTestRunner.FActiveRunners);
+  try
+    registered := not TDUnitXTestRunner.FActiveRunners.ContainsKey(workerThreadId);
+    if registered then
+      TDUnitXTestRunner.FActiveRunners.Add(workerThreadId, runnerRef);
+  finally
+    MonitorExit(TDUnitXTestRunner.FActiveRunners);
+  end;
+  WorkerThreadRunner := Self;
+  try
+    index := TInterlocked.Increment(FLastParallelFixture);
+    while index < units.Count do
+    begin
+      WorkerThreadState := units[index].State;
+      //The result was made when the fixtures were collected; time the fixture from when it starts.
+      TDUnitXFixtureResult(units[index].FixtureResult as TObject).RestartTiming;
+      ExecuteFixture(context, workerThreadId, units[index].Fixture, units[index].FixtureResult);
+      index := TInterlocked.Increment(FLastParallelFixture);
+    end;
+  finally
+    WorkerThreadRunner := nil;
+    WorkerThreadState := nil;
+    if registered then
+    begin
+      MonitorEnter(TDUnitXTestRunner.FActiveRunners);
+      try
+        TDUnitXTestRunner.FActiveRunners.Remove(workerThreadId);
+      finally
+        MonitorExit(TDUnitXTestRunner.FActiveRunners);
+      end;
+    end;
+  end;
+end;
+
+{$ENDIF}
+
 function TDUnitXTestRunner.ExecuteIgnoredResult(const context : ITestExecuteContext; const threadId : TThreadID; const test : ITest; const ignoreReason :
   string) : ITestResult;
 begin
-  result := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Ignored, ignoreReason, FLogMessagesEx);
+  result := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Ignored, ignoreReason, State.LogMessagesEx);
 end;
 
 function TDUnitXTestRunner.ExecuteSetupFixtureMethod(const context : ITestExecuteContext; const threadId : TThreadID; const fixture : ITestFixture; const
@@ -758,9 +1114,14 @@ begin
       //The fixture's tests have already run and been recorded, so the failure is recorded once, as a result of its own.
       tearDownTest := TDUnitXTest.Create(fixture, fixture.TearDownFixtureMethodName, fixture.TearDownFixtureMethodName, '', fixture.TearDownFixtureMethod,
         true);
-      FTearDownFixtureTests.Add(tearDownTest);
+      MonitorEnter(FResultsLock);
+      try
+        FTearDownFixtureTests.Add(tearDownTest);
+      finally
+        MonitorExit(FResultsLock);
+      end;
       Self.Loggers_BeginTest(threadId, tearDownTest as ITestInfo);
-      tearDownResult := ExecuteErrorResult(context, threadId, tearDownTest, e, FLogMessagesEx);
+      tearDownResult := ExecuteErrorResult(context, threadId, tearDownTest, e, State.LogMessagesEx);
       RecordResult(context, threadId, fixtureResult, tearDownResult);
       Self.Loggers_EndTest(threadId, tearDownResult);
       Log(TLogLevel.Error, Format(SFixtureTeardownError, [fixture.Name, e.Message]));
@@ -777,7 +1138,7 @@ var
 begin
   if Supports(test, ITestExecute, testExecute) then
   begin
-    FCurrentTestName := test.Name;
+    State.CurrentTestName := test.Name;
     try
       Self.Loggers_ExecuteTest(threadId, test as ITestInfo);
       assertBeforeCount := 0;           //to shut the compiler up;
@@ -797,11 +1158,10 @@ begin
           raise ENoAssertionsMade.Create(SNoAssertions);
       end;
 
-      Result := ExecuteSuccessfulResult(context, threadId, test, FLogMessages.Text, FLogMessagesEx);
-      FLogMessages.Clear;
-      SetLength(FLogMessagesEx, 0);
+      Result := ExecuteSuccessfulResult(context, threadId, test, State.LogMessages.Text, State.LogMessagesEx);
+      ClearLogMessages;
     finally
-      FCurrentTestName := '';
+      State.CurrentTestName := '';
     end;
   end
   else
@@ -862,13 +1222,13 @@ begin
         on e : ETestIgnored do
           testResult := ExecuteIgnoredResult(context, threadId, test, e.Message);
         on e : ETestPass do
-          testResult := ExecuteSuccessfulResult(context, threadId, test, e.Message, FLogMessagesEx);
+          testResult := ExecuteSuccessfulResult(context, threadId, test, e.Message, State.LogMessagesEx);
         on e : ETestFailure do
-          testResult := ExecuteFailureResult(context, threadId, test, e, FLogMessagesEx);
+          testResult := ExecuteFailureResult(context, threadId, test, e, State.LogMessagesEx);
         on e : ETimedOut do
-          testResult := ExecuteTimedOutResult(context, threadId, test, e, FLogMessagesEx);
+          testResult := ExecuteTimedOutResult(context, threadId, test, e, State.LogMessagesEx);
         on e : Exception do
-          testResult := ExecuteErrorResult(context, threadId, test, e, FLogMessagesEx);
+          testResult := ExecuteErrorResult(context, threadId, test, e, State.LogMessagesEx);
       end;
 
       //If the tear down fails then we need to show this as the test result, unless the setup or the test has already
@@ -883,7 +1243,9 @@ begin
             Log(TLogLevel.Error, Format(STearDownErrorAfterFailure, [test.Name, tearDownResult.Message]));
         end;
 
-      if (testResult.ResultType = TTestResultType.Pass) then
+      //A leak monitor measures the whole process, so it cannot tell a test's allocations from those of the tests running
+      //alongside it: leaks are not checked while fixtures run in parallel.
+      if (testResult.ResultType = TTestResultType.Pass) and (not FRunningInParallel) then
         if (not CheckMemoryAllocations(test, memoryAllocationResult, memoryAllocationProvider)) then
           testResult := memoryAllocationResult;
     finally
@@ -919,7 +1281,7 @@ begin
         errorResult := ExecuteIgnoredResult(context, threadId, test, e.Message);
       on e : System.SysUtils.Exception do
       begin
-        errorResult := ExecuteErrorResult(context, threadId, test, e, FLogMessagesEx);
+        errorResult := ExecuteErrorResult(context, threadId, test, e, State.LogMessagesEx);
       end;
     end;
   end;
@@ -946,7 +1308,7 @@ begin
   except
     on e : System.SysUtils.Exception do
     begin
-      errorResult := ExecuteErrorResult(context, threadId, test, e, FLogMessagesEx);
+      errorResult := ExecuteErrorResult(context, threadId, test, e, State.LogMessagesEx);
     end;
   end;
 end;
@@ -977,7 +1339,7 @@ begin
     if aException is ETestIgnored then
       lTestResult := ExecuteIgnoredResult(aContext, aThreadId, lTest, aException.Message)
     else
-      lTestResult := ExecuteErrorResult(aContext, aThreadId, lTest, aException, FLogMessagesEx);
+      lTestResult := ExecuteErrorResult(aContext, aThreadId, lTest, aException, State.LogMessagesEx);
     RecordResult(aContext, aThreadId, aFixtureResult, lTestResult);
     Self.Loggers_EndTest(aThreadId, lTestResult);
   end;
@@ -986,6 +1348,34 @@ end;
 procedure TDUnitXTestRunner.SetFailsOnNoAsserts(const value : boolean);
 begin
   FFailsOnNoAsserts := value;
+end;
+
+function TDUnitXTestRunner.State : TDUnitXTestThreadState;
+begin
+  if (WorkerThreadRunner <> nil) and (WorkerThreadRunner = Pointer(Self)) then
+    result := TDUnitXTestThreadState(WorkerThreadState)
+  else
+    result := TDUnitXTestThreadState(FMainState);
+end;
+
+function TDUnitXTestRunner.GetUseThreadPool : boolean;
+begin
+  result := FUseThreadPool;
+end;
+
+procedure TDUnitXTestRunner.SetUseThreadPool(value : boolean);
+begin
+  FUseThreadPool := value;
+end;
+
+function TDUnitXTestRunner.GetMaxThreads : integer;
+begin
+  result := FMaxThreads;
+end;
+
+procedure TDUnitXTestRunner.SetMaxThreads(value : integer);
+begin
+  FMaxThreads := value;
 end;
 
 procedure TDUnitXTestRunner.SetUseRTTI(const value : Boolean);
@@ -1012,81 +1402,128 @@ procedure TDUnitXTestRunner.Loggers_SetupFixture(const threadId : TThreadID; con
 var
   logger : ITestLogger;
 begin
-  for logger in FLoggers do
-    logger.OnSetupFixture(threadId, fixture);
+  MonitorEnter(FLoggersLock);
+  try
+    for logger in FLoggers do
+      logger.OnSetupFixture(threadId, fixture);
+  finally
+    MonitorExit(FLoggersLock);
+  end;
 end;
 
 procedure TDUnitXTestRunner.Loggers_SetupTest(const threadId : TThreadID; const Test : ITestInfo);
 var
   logger : ITestLogger;
 begin
-  for logger in FLoggers do
-    logger.OnSetupTest(threadId, Test);
+  MonitorEnter(FLoggersLock);
+  try
+    for logger in FLoggers do
+      logger.OnSetupTest(threadId, Test);
+  finally
+    MonitorExit(FLoggersLock);
+  end;
 end;
 
 procedure TDUnitXTestRunner.Loggers_BeginTest(const threadId : TThreadID; const Test : ITestInfo);
 var
   logger : ITestLogger;
 begin
-  for logger in FLoggers do
-    logger.OnBeginTest(threadId, Test);
+  MonitorEnter(FLoggersLock);
+  try
+    for logger in FLoggers do
+      logger.OnBeginTest(threadId, Test);
+  finally
+    MonitorExit(FLoggersLock);
+  end;
 end;
 
 procedure TDUnitXTestRunner.Loggers_StartTestFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
 var
   logger : ITestLogger;
 begin
-  for logger in FLoggers do
-    logger.OnStartTestFixture(threadId, fixture);
+  MonitorEnter(FLoggersLock);
+  try
+    for logger in FLoggers do
+      logger.OnStartTestFixture(threadId, fixture);
+  finally
+    MonitorExit(FLoggersLock);
+  end;
 end;
 
 procedure TDUnitXTestRunner.Loggers_TeardownFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
 var
   logger : ITestLogger;
 begin
-  for logger in FLoggers do
-    logger.OnTearDownFixture(threadId, fixture);
+  MonitorEnter(FLoggersLock);
+  try
+    for logger in FLoggers do
+      logger.OnTearDownFixture(threadId, fixture);
+  finally
+    MonitorExit(FLoggersLock);
+  end;
 end;
 
 procedure TDUnitXTestRunner.Loggers_TeardownTest(const threadId : TThreadID; const Test : ITestInfo);
 var
   logger : ITestLogger;
 begin
-  for logger in FLoggers do
-    logger.OnTeardownTest(threadId, Test);
+  MonitorEnter(FLoggersLock);
+  try
+    for logger in FLoggers do
+      logger.OnTeardownTest(threadId, Test);
+  finally
+    MonitorExit(FLoggersLock);
+  end;
 end;
 
 procedure TDUnitXTestRunner.Loggers_TestingEnds(const RunResults : IRunResults);
 var
   logger : ITestLogger;
 begin
-  for logger in FLoggers do
-    logger.OnTestingEnds(RunResults);
+  MonitorEnter(FLoggersLock);
+  try
+    for logger in FLoggers do
+      logger.OnTestingEnds(RunResults);
+  finally
+    MonitorExit(FLoggersLock);
+  end;
 end;
 
 procedure TDUnitXTestRunner.Loggers_TestingStarts(const threadId : TThreadID; testCount, testActiveCount : Cardinal);
 var
   logger : ITestLogger;
 begin
-  for logger in FLoggers do
-    logger.OnTestingStarts(threadId, testCount, testActiveCount);
+  MonitorEnter(FLoggersLock);
+  try
+    for logger in FLoggers do
+      logger.OnTestingStarts(threadId, testCount, testActiveCount);
+  finally
+    MonitorExit(FLoggersLock);
+  end;
 end;
 
 procedure TDUnitXTestRunner.Log(const logType : TLogLevel; const msg : string);
 var
   logger : ITestLogger;
   NewIdx : integer;
+  threadState : TDUnitXTestThreadState;
 begin
   if logType >= TDUnitX.Options.LogLevel then
   begin
     //TODO : Need to get this to the current test result.
-    FLogMessages.Add(msg);
-    NewIdx := Length(FLogMessagesEx);
-    SetLength(FLogMessagesEx, NewIdx + 1);
-    FLogMessagesEx[NewIdx].Level := logType;
-    FLogMessagesEx[NewIdx].Msg := msg;
-    for logger in FLoggers do
-      logger.OnLog(logType, msg);
+    threadState := State;
+    threadState.LogMessages.Add(msg);
+    NewIdx := Length(threadState.LogMessagesEx);
+    SetLength(threadState.LogMessagesEx, NewIdx + 1);
+    threadState.LogMessagesEx[NewIdx].Level := logType;
+    threadState.LogMessagesEx[NewIdx].Msg := msg;
+    MonitorEnter(FLoggersLock);
+    try
+      for logger in FLoggers do
+        logger.OnLog(logType, msg);
+    finally
+      MonitorExit(FLoggersLock);
+    end;
   end;
 end;
 

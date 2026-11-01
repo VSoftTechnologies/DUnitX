@@ -518,6 +518,18 @@ type
     property UseRTTI : boolean read GetUseRTTI write SetUseRTTI;
 
     property FailsOnNoAsserts : boolean read GetFailsOnNoAsserts write SetFailsOnNoAsserts;
+
+    function GetUseThreadPool : boolean;
+    procedure SetUseThreadPool(value : boolean);
+
+    function GetMaxThreads : integer;
+    procedure SetMaxThreads(value : integer);
+
+    //when true, and MaxThreads is above 1, fixtures are run in parallel, on up to MaxThreads threads of their own.
+    //Loggers are then called from those threads, one call at a time.
+    property UseThreadPool : boolean read GetUseThreadPool write SetUseThreadPool;
+
+    property MaxThreads : integer read GetMaxThreads write SetMaxThreads;
   end;
 
   TDUnitXOptions = class
@@ -536,6 +548,7 @@ type
     FExitMode : TDUnitXExitMode;
     FFailOnIgnored : boolean;
     FFailOnNoTests : boolean;
+    FMaxDegreeOfParallelism : integer;
   public
     constructor Create;
     destructor Destroy; override;
@@ -578,6 +591,10 @@ type
 
     //A run in which no test executes (all filtered out or ignored) makes the exit code non zero
     property FailOnNoTests : boolean read FFailOnNoTests write FFailOnNoTests;
+
+    //The most fixtures run at once, each on a thread of its own.  0 or 1 (the default is 0) runs them one at a time on
+    //the runner's thread.
+    property MaxDegreeOfParallelism : integer read FMaxDegreeOfParallelism write FMaxDegreeOfParallelism;
   end;
 
   TDUnitX = class
@@ -689,6 +706,7 @@ begin
   FLogLevel := TLogLevel.Information;
   FExitBehavior := TDUnitXExitBehavior.Continue;
   FConsoleMode := TDUnitXConsoleMode.Verbose;
+  FMaxDegreeOfParallelism := 0; //don't use threads by default.
 end;
 
 destructor TDUnitXOptions.Destroy;
@@ -862,8 +880,16 @@ end;
 class function TDUnitX.CurrentRunner : ITestRunner;
 var
   ref : IWeakReference<ITestRunner>;
+  found : boolean;
 begin
-  if not TDUnitXTestRunner.FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId, ref) then
+  //Fixtures running in parallel register the runner for their threads, so read the list under its lock.
+  MonitorEnter(TDUnitXTestRunner.FActiveRunners);
+  try
+    found := TDUnitXTestRunner.FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId, ref);
+  finally
+    MonitorExit(TDUnitXTestRunner.FActiveRunners);
+  end;
+  if not found then
     raise Exception.Create(SNoRunner);
   result := ref.Data;
 
@@ -928,8 +954,15 @@ procedure TTestFixtureHelper.Log(const logType : TLogLevel; const msg : string);
 var
   runner : ITestRunner;
   ref : IWeakReference<ITestRunner>;
+  found : boolean;
 begin
-  if TDUnitXTestRunner.FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId, ref) then
+  MonitorEnter(TDUnitXTestRunner.FActiveRunners);
+  try
+    found := TDUnitXTestRunner.FActiveRunners.TryGetValue(TThread.CurrentThread.ThreadId, ref);
+  finally
+    MonitorExit(TDUnitXTestRunner.FActiveRunners);
+  end;
+  if found then
   begin
     runner := ref.Data;
     if runner <> nil then

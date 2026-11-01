@@ -60,3 +60,18 @@ A suite that does not raise `ETestIgnored` is not affected.
 ### A test that catches a `[MaxTime]` interruption is still reported as timed out (#538)
 
 When `[MaxTime]` interrupts a test, the test fails with `ETimedOut` even if the interruption was caught on its way out: by the test's own `except`, by `Assert.WillRaise`, or by `[WillRaise]`.  It used to report whatever replaced the interruption: a pass (`Assert.Pass`, or the test returning), its own failure, an error (its handler raising another exception), or `expected X, got ETimedOut`.  `Assert.Ignore` is still reported as ignored.  A test that expects to time out says so with `[WillRaise(ETimedOut)]`, and passes; `[WillRaise(Exception, exDescendant)]` does not count, as it expects any exception.
+
+### Fixtures can run in parallel (#532)
+
+The new option `TDUnitX.Options.MaxDegreeOfParallelism`, set on the command line with `-m:x` (`--mdof:x`), runs up to x fixtures at once, each on a thread of its own.  It defaults to 0, and 0 or 1 runs the fixtures one at a time on the runner's thread exactly as before.  It needs Delphi 11 or later; earlier compilers ignore it.
+
+- **`ITestRunner` has new members:** `UseThreadPool` and `MaxThreads`, with their `Get`/`Set` methods.  A class of your own that implements `ITestRunner` no longer compiles until it adds them.  A suite that only uses the runner `TDUnitX.CreateRunner` returns is not affected.
+- **Every runner reads the option.**  `TDUnitXTestRunner` takes `MaxThreads` from `TDUnitX.Options.MaxDegreeOfParallelism` when it is created, so with `-m:x` a runner created by a GUI or IDE runner, or inside a test, runs its fixtures in parallel too.  Set its `UseThreadPool` to false to keep one serial.
+
+With x above 1:
+
+- **Fixtures must not share unguarded state.**  Fixtures, and their `SetupFixture`, `TearDownFixture`, `Setup` and `TearDown`, run at the same time as other fixtures.  Tests within one fixture, and its child fixtures, still run one at a time on one thread.  Fixtures that share globals, files, ports or a database need a lock, or need running without `-m`.
+- **Loggers are called from the worker threads.**  The runner calls one logger method at a time, so a logger never sees two calls at once, but a logger that assumes the main thread (a VCL GUI logger) must not be used with `-m`.  The `threadId` passed to each event is the thread that runs the fixture.  Events from different fixtures interleave, and a namespace fixture's `OnStartTestFixture` and `OnEndTestFixture` come before and after all of its children's events.
+- **Verbose console output interleaves** between fixtures, so its indentation no longer follows the fixture tree.  Use `-cm:quiet` with `-m`.
+- **Memory leaks are not checked.**  A leak monitor measures the whole process, so it cannot tell one test's allocations from those of the tests running alongside it.
+- **Results keep the serial order.**  `IRunResults`, the fixture results and the NUnit and JUnit XML list the fixtures and tests in the order a serial run does; only times and durations differ.
