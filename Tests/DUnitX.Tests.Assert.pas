@@ -47,6 +47,15 @@ type
     procedure Pass_Throws_ETestPass_Exception_With_Message;
 
     [Test]
+    procedure Ignore_Throws_ETestIgnored_Exception;
+
+    [Test]
+    procedure Ignore_Throws_ETestIgnored_Exception_With_Message;
+
+    [Test]
+    procedure Ignore_Is_Not_Counted_As_An_Assert;
+
+    [Test]
     procedure Fail_Throws_ETestFailure_Exception;
 
     [Test]
@@ -688,6 +697,43 @@ begin
     begin
       Assert.Pass(EXPECTED_EXCEPTION_MSG);
     end, ETestPass, EXPECTED_EXCEPTION_MSG);
+end;
+
+procedure TTestsAssert.Ignore_Throws_ETestIgnored_Exception;
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.Ignore;
+    end, ETestIgnored);
+end;
+
+procedure TTestsAssert.Ignore_Throws_ETestIgnored_Exception_With_Message;
+const
+  EXPECTED_EXCEPTION_MSG = 'Ignoring Message';
+begin
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      Assert.Ignore(EXPECTED_EXCEPTION_MSG);
+    end, ETestIgnored, EXPECTED_EXCEPTION_MSG);
+end;
+
+procedure TTestsAssert.Ignore_Is_Not_Counted_As_An_Assert;
+var
+  assertsBefore : Cardinal;
+  assertsAfter : Cardinal;
+begin
+  //Otherwise a test that only ignores itself would satisfy FailsOnNoAsserts.
+  assertsBefore := TDUnitX.GetAssertCount(TThread.CurrentThread.ThreadID);
+  assertsAfter := assertsBefore + 1;
+  try
+    Assert.Ignore('not an assert');
+  except
+    on ETestIgnored do
+      assertsAfter := TDUnitX.GetAssertCount(TThread.CurrentThread.ThreadID);
+  end;
+  Assert.IsTrue(assertsBefore = assertsAfter, 'Assert.Ignore did not raise ETestIgnored, or was counted as an assert');
 end;
 
 procedure TTestsAssert.Test_Implements_Will_Fail_If_Not_Implemented;

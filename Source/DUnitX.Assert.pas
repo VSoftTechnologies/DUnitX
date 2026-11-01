@@ -55,6 +55,7 @@ type
     class var fOnAssert : TProc;
     class var fTestFailure : ExceptClass;
     class var fTestPass : ExceptClass;
+    class var fTestIgnored : ExceptClass;
     class procedure CheckExceptionClass(E : Exception; const exceptionClass : ExceptClass; const msg : string);
     class procedure CheckExceptionClassDescendant(E : Exception; const exceptionClass : ExceptClass; const msg : string);
     class function IsUnrequestedTestOutcome(E : Exception; const exceptionClass : ExceptClass) : boolean;
@@ -67,6 +68,13 @@ type
     class procedure DoAssert; inline;
   public
     class procedure Pass(const message : string = '');
+    /// <summary>
+    ///   Stops the test and reports it as ignored, with message as the reason. For a test that finds at run time that it
+    ///   cannot run (a resource it needs is missing); the [Ignore] attribute ignores a test before it runs. Called from
+    ///   Setup, it ignores the test without running it; from SetupFixture, every test in the fixture. TearDown still
+    ///   runs, and an error in it is reported instead. It is not counted as an assert.
+    /// </summary>
+    class procedure Ignore(const message : string = '');
     class procedure Fail(const message : string = ''; const errorAddrs : pointer = nil);
     class procedure FailFmt(const message : string; const args : array of const; const errorAddrs : pointer = nil);
 
@@ -298,6 +306,7 @@ type
     class property OnAssert : TProc read fOnAssert write fOnAssert;
     class property TestFailure : ExceptClass read fTestFailure write fTestFailure;
     class property TestPass : ExceptClass read fTestPass write fTestPass;
+    class property TestIgnored : ExceptClass read fTestIgnored write fTestIgnored;
     class property IgnoreCaseDefault : boolean read fIgnoreCaseDefault write fIgnoreCaseDefault;
 
     class constructor Create;
@@ -790,6 +799,12 @@ end;
 class procedure Assert.Pass(const message : string);
 begin
   raise fTestPass.Create(message);
+end;
+
+class procedure Assert.Ignore(const message : string);
+begin
+  //Not DoAssert: a test that only ignores itself has not asserted anything.
+  raise fTestIgnored.Create(message);
 end;
 
 class procedure Assert.StartsWith(const subString, theString, message : string);
@@ -1415,9 +1430,10 @@ end;
 
 class function Assert.IsUnrequestedTestOutcome(E : Exception; const exceptionClass : ExceptClass) : boolean;
 begin
-  //A failure or pass raised by an assert inside the method is the test's own outcome, not the exception being
+  //A failure, pass or ignore raised by an assert inside the method is the test's own outcome, not the exception being
   //tested for, unless the caller explicitly asked for it (e.g. WillRaise(..., ETestFailure)).
-  result := (((fTestFailure <> nil) and (E is fTestFailure)) or ((fTestPass <> nil) and (E is fTestPass))) and
+  result := (((fTestFailure <> nil) and (E is fTestFailure)) or ((fTestPass <> nil) and (E is fTestPass)) or
+    ((fTestIgnored <> nil) and (E is fTestIgnored))) and
     not ((exceptionClass <> nil) and (exceptionClass <> Exception) and (E is exceptionClass));
 end;
 

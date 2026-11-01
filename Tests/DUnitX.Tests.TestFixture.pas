@@ -139,6 +139,8 @@ type
     [Test]
     procedure Ignored_At_Run_Time_Is_Reported_Ignored_With_Its_Reason;
     [Test]
+    procedure Assert_Ignore_Is_Reported_Ignored_With_Its_Reason;
+    [Test]
     procedure Ignored_At_Run_Time_Keeps_What_The_Test_Logged;
     [Test]
     procedure Ignored_In_Setup_Is_Reported_Ignored_And_The_Test_Does_Not_Run;
@@ -687,13 +689,14 @@ type
     procedure IgnoresItself;
     procedure IgnoresItselfInsideWillRaise;
     procedure IgnoresAfterLogging;
+    procedure IgnoresWithAssertIgnore;
     procedure Passes;
   end;
 
   ERuntimeIgnoreExpected = class(Exception);
 
   TRuntimeIgnoreTest = (ritIgnoresItself, ritIgnoresItselfInsideWillRaise, ritIgnoresItselfInsideWillRaiseDescendant,
-    ritIgnoresAfterLogging, ritPasses);
+    ritIgnoresAfterLogging, ritIgnoresWithAssertIgnore, ritPasses);
 
   TRuntimeIgnoreOption = (rioSetupIgnores, rioTearDownRaises, rioSetupFixtureIgnores);
   TRuntimeIgnoreOptions = set of TRuntimeIgnoreOption;
@@ -759,6 +762,13 @@ begin
   IgnoreThisTest(RUNTIME_IGNORE_REASON);
 end;
 
+procedure TRuntimeIgnoreClass.IgnoresWithAssertIgnore;
+begin
+  _RuntimeIgnoreTestRan := True;
+  Assert.Ignore(RUNTIME_IGNORE_REASON);
+  _RuntimeIgnoreCodeAfterIgnoreRan := True;
+end;
+
 procedure TRuntimeIgnoreClass.Passes;
 begin
   _RuntimeIgnoreTestRan := True;
@@ -780,6 +790,9 @@ begin
         ARttiType.GetMethod('IgnoresItselfInsideWillRaise'), True, False, '', 0, ERuntimeIgnoreExpected, exDescendant);
     ritIgnoresAfterLogging :
       AFixture.AddTest('IgnoresAfterLogging', instance.IgnoresAfterLogging, 'IgnoresAfterLogging', '', ARttiType.GetMethod('IgnoresAfterLogging'));
+    ritIgnoresWithAssertIgnore :
+      AFixture.AddTest('IgnoresWithAssertIgnore', instance.IgnoresWithAssertIgnore, 'IgnoresWithAssertIgnore', '',
+        ARttiType.GetMethod('IgnoresWithAssertIgnore'));
     ritPasses :
       AFixture.AddTest('Passes', instance.Passes, 'Passes', '', ARttiType.GetMethod('Passes'));
   end;
@@ -852,6 +865,18 @@ begin
   Assert.IsTrue(_RuntimeIgnoreTestRan, 'the test ran up to the ignore');
   Assert.IsFalse(_RuntimeIgnoreCodeAfterIgnoreRan, 'the test ran on after it was ignored');
   Assert.IsTrue(_RuntimeIgnoreTearDownRan, 'the tear down still runs for a test ignored at run time');
+end;
+
+procedure TRuntimeIgnoreTests.Assert_Ignore_Is_Reported_Ignored_With_Its_Reason;
+var
+  results : IRunResults;
+  testNames : string;
+begin
+  results := RunFixtureOnItsOwnThread(CreateRuntimeIgnoreFixture([ritIgnoresWithAssertIgnore], []), testNames);
+  CheckReportedIgnored(results);
+  Assert.IsTrue(_RuntimeIgnoreTestRan, 'the test ran up to Assert.Ignore');
+  Assert.IsFalse(_RuntimeIgnoreCodeAfterIgnoreRan, 'the test ran on after Assert.Ignore');
+  Assert.IsTrue(_RuntimeIgnoreTearDownRan, 'the tear down still runs after Assert.Ignore');
 end;
 
 procedure TRuntimeIgnoreTests.Ignored_At_Run_Time_Keeps_What_The_Test_Logged;

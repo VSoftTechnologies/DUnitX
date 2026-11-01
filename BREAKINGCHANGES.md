@@ -25,3 +25,15 @@ Until now, a `[TestCase]` value that could not be converted to its parameter's t
 ### `Assert.WillNotRaise` lets another exception through (#526)
 
 `Assert.WillNotRaise( method, SomeClass )` (and `WillNotRaiseWithMessage`) passed when the method raised an exception of a class it was not asked about, which was swallowed.  That exception now propagates, so the test errors with the real exception's class and message.  A test that relied on the swallowing should either name the class it expects or not raise.
+
+### A test that ignores itself at run time is reported ignored (#396)
+
+A test can ignore itself at run time with the new `Assert.Ignore(reason)`, or, since #386, by raising `ETestIgnored`.  For a test that raises `ETestIgnored` itself, these things change:
+
+- The result carries the exception's message as the reason, and what the test logged.  The reason used to be empty, and the log was dropped.
+- An error in `TearDown` after it is reported as the test's error, as after a pass.  It used to be logged as an error "after the test had failed", and the test stayed ignored.
+- Raised from `Setup`, it ignores the test, which does not run.  It used to error the test.
+- Raised from `SetupFixture`, it ignores every test in the fixture, none of which runs; `TearDownFixture` does not run, as after a `SetupFixture` error.  It used to error every test.
+- Raised inside `Assert.WillRaise`, `WillRaiseAny`, `WillRaiseDescendant`, `WillNotRaise`, `WillNotRaiseAny`, `WillNotRaiseDescendant` or a `[WillRaise]` test, it is the test's outcome, as `Assert.Pass` already is, unless the class they expect is `ETestIgnored` or one of its ancestors (other than `Exception`).  An exact-class `WillRaise` form expecting an ancestor reports a class mismatch, as it does for `Assert.Pass`'s `ETestPass`.  It used to be taken for the exception being checked, so the test failed, or passed when any exception was expected.
+
+A suite that does not raise `ETestIgnored` is not affected.
