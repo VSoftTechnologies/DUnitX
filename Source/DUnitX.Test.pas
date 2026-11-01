@@ -200,18 +200,40 @@ begin
   FStartTime := Now();
   try
 {$IFDEF MSWINDOWS}
+    FTimedOut := False;
     if FMaxTime > 0 then
       timeout := InitialiseTimeOut(FMaxTime);
-    try
+    if timeout <> nil then
+    begin
+      try
+        try
+          FMethod();
+        finally
+          //Stop it here, not when it is released: once stopped it cannot interrupt the test.
+          timeout.Stop;
+        end;
+      except
+        on E : Exception do
+        begin
+          //Again: an interruption that came as the test returned, in the finally above, skipped it.
+          timeout.Stop;
+          FTimedOut := timeout.Interrupted;
+          //An interruption caught and replaced on its way out (the test's own except failing, or Assert.Pass) is
+          //still the timeout, not what replaced it.  Assert.Ignore is the test's own choice, so it stands.
+          if FTimedOut and not (E is ETimedOut) and not (E is ETestIgnored) then
+            RaiseTimedOut
+          else
+            raise;
+        end;
+      end;
+      FTimedOut := timeout.Interrupted;
+      //So is one the test caught and then returned from.
+      if FTimedOut then
+        RaiseTimedOut;
+    end
+    else
 {$ENDIF}
       FMethod();
-{$IFDEF MSWINDOWS}
-    finally
-      //Stop it here, not when it is released: once stopped it cannot interrupt the test.
-      if timeout <> nil then
-        timeout.Stop;
-    end;
-{$ENDIF}
   finally
     FEndTime := Now();
 
@@ -478,10 +500,27 @@ procedure TDUnitXExceptionTest.Execute(const context : ITestExecuteContext);
 begin
   FRaiseContext := context;
   try
-    if FExceptionInheritance = exDescendant then
-      Assert.WillRaiseDescendant(RaiseMethod, FExpectedException)
-    else
-      Assert.WillRaise(RaiseMethod, FExpectedException);
+{$IFDEF MSWINDOWS}
+    try
+{$ENDIF}
+      if FExceptionInheritance = exDescendant then
+        Assert.WillRaiseDescendant(RaiseMethod, FExpectedException)
+      else
+        Assert.WillRaise(RaiseMethod, FExpectedException);
+{$IFDEF MSWINDOWS}
+    except
+      //The expected-exception check replaces the timeout with "expected X, got ETimedOut".
+      on E : Exception do
+        if FTimedOut and not (E is ETimedOut) and not (E is ETestIgnored) then
+          RaiseTimedOut
+        else
+          raise;
+    end;
+    //Or takes it for the expected exception, as [WillRaise(Exception, exDescendant)] does.  [WillRaise(ETimedOut)]
+    //expects the timeout, so it passes.
+    if FTimedOut and not FExpectedException.InheritsFrom(ETimedOut) then
+      RaiseTimedOut;
+{$ENDIF}
   finally
     //Only RaiseMethod needs it; keeping it would hold the run's results, and through them this test, alive.
     FRaiseContext := nil;

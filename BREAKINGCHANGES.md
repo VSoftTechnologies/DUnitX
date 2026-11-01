@@ -56,3 +56,7 @@ A test can ignore itself at run time with the new `Assert.Ignore(reason)`, or, s
 - Raised inside `Assert.WillRaise`, `WillRaiseAny`, `WillRaiseDescendant`, `WillNotRaise`, `WillNotRaiseAny`, `WillNotRaiseDescendant` or a `[WillRaise]` test, it is the test's outcome, as `Assert.Pass` already is, unless the class they expect is `ETestIgnored` or one of its ancestors (other than `Exception`).  An exact-class `WillRaise` form expecting an ancestor reports a class mismatch, as it does for `Assert.Pass`'s `ETestPass`.  It used to be taken for the exception being checked, so the test failed, or passed when any exception was expected.
 
 A suite that does not raise `ETestIgnored` is not affected.
+
+### A test that catches a `[MaxTime]` interruption is still reported as timed out (#538)
+
+When `[MaxTime]` interrupts a test, the test fails with `ETimedOut` even if the interruption was caught on its way out: by the test's own `except`, by `Assert.WillRaise`, or by `[WillRaise]`.  It used to report whatever replaced the interruption: a pass (`Assert.Pass`, or the test returning), its own failure, an error (its handler raising another exception), or `expected X, got ETimedOut`.  `Assert.Ignore` is still reported as ignored.  A test that expects to time out says so with `[WillRaise(ETimedOut)]`, and passes; `[WillRaise(Exception, exDescendant)]` does not count, as it expects any exception.
