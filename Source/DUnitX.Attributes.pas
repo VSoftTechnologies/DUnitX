@@ -120,13 +120,16 @@ type
   end;
 
   ///	<summary>
-  ///	  Marks a test method to fail if it takes longer than the time specified.
+  ///	  Marks a test method to fail after the time specified.
+  ///  Currently only support on Win32 & Win64
   ///	</summary>
   ///	<remarks>
   ///	  If [MaxTime(1000)] used then the test will fail if the
-  ///   test takes longer than 1000ms.  The time is checked once the test
-  ///   returns: the test is not interrupted, so one that never returns is
-  ///   not stopped.
+  ///   test takes longer than 1000ms.  The test is interrupted wherever
+  ///   it is, so a lock it holds then (the memory manager's included)
+  ///   stays taken, which can hang a later test.  A test blocked in a
+  ///   wait that never ends (Sleep(INFINITE), or WaitForSingleObject
+  ///   with INFINITE) is not interrupted.
   ///	</remarks>
   MaxTimeAttribute = class(TCustomAttribute)
   private

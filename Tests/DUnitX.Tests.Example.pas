@@ -189,6 +189,7 @@ implementation
 
 uses
   DUnitX.DUnitCompatibility,
+  DUnitX.Exceptions,
   System.Diagnostics,
 {$IFDEF USE_NS}
   System.DateUtils;
@@ -271,18 +272,24 @@ var
   elapsedTime : Int64;
   stopwatch : TStopWatch;
 begin
-  //[MaxTime] is checked once the test returns, so the test cannot catch the timeout itself.  A test that takes longer
-  //than its [MaxTime] fails with ETimedOut; this one stays within it, and passes.
   stopwatch := TStopWatch.Create;
   stopwatch.Reset;
   stopwatch.Start;
-  repeat
-    //Give some time back to the system to process the test.
-    Sleep(20);
+  try
+    repeat
+      //Give some time back to the system to process the test.
+      Sleep(20);
 
-    elapsedTime := stopwatch.ElapsedMilliseconds;
-  until (elapsedTime >= 100);
-  Assert.Pass('completed within its MaxTime');
+      elapsedTime := stopwatch.ElapsedMilliseconds;
+    until (elapsedTime >= 2000);
+    Assert.Fail('Timeout did not work');
+  except
+    on e : ETimedOut do
+    begin
+      Assert.Pass('timed out as expected');
+
+    end;
+  end;
 end;
 
 procedure TMyExampleTests.TestMeAnyway;
