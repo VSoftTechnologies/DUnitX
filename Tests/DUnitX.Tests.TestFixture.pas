@@ -174,6 +174,8 @@ type
     procedure The_Next_Test_Runs_And_Its_Alertable_Wait_Is_Not_Cut_Short;
     [Test]
     procedure Within_Its_MaxTime_Passes;
+    [Test]
+    procedure A_Caught_Interruption_Is_Followed_By_Another;
   end;
 {$M-}
 {$ENDIF}
@@ -1105,6 +1107,7 @@ var
   _MaxTimePipeRead : THandle;
   _MaxTimePipeWrite : THandle;
   _MaxTimeStopBusyLoop : Boolean;
+  _MaxTimeInterruptionsCaught : Integer;
 
 type
   //Not a fixture: the class of the fixtures TMaxTimeTests runs through a runner of its own.
@@ -1116,6 +1119,7 @@ type
     procedure AlertableWait;
     procedure WaitsAlertably;
     procedure Passes;
+    procedure CatchesTheInterruptionThenHangsAgain;
   end;
 
 { TMaxTimeClass }
@@ -1177,6 +1181,26 @@ end;
 
 procedure TMaxTimeClass.Passes;
 begin
+  _MaxTimeTestRanToTheEnd := True;
+end;
+
+//Loops until the safety net ends it.
+procedure LoopUntilStopped;
+begin
+  while not _MaxTimeStopBusyLoop do
+    ;
+end;
+
+//Catches the first interruption, as a test retrying a connection might, then hangs again.
+procedure TMaxTimeClass.CatchesTheInterruptionThenHangsAgain;
+begin
+  try
+    LoopUntilStopped;
+  except
+    on ETimedOut do
+      Inc(_MaxTimeInterruptionsCaught);
+  end;
+  LoopUntilStopped;
   _MaxTimeTestRanToTheEnd := True;
 end;
 
@@ -1247,7 +1271,8 @@ end;
 
 //Checks that the one test in AResults failed with the timeout (not errored, as an access violation would be), and that
 //it was stopped promptly rather than running on to its end.
-procedure CheckInterrupted(const AResults : IRunResults; const AElapsed : Cardinal);
+procedure CheckInterrupted(const AResults : IRunResults; const AElapsed : Cardinal;
+  const AStoppedWithin : Cardinal = MAX_TIME_UNINTERRUPTED div 2);
 var
   testResult : ITestResult;
   resultMessage : string;
@@ -1261,7 +1286,7 @@ begin
   Assert.AreEqual(1, AResults.FailureCount, 'the overrun did not fail');
   Assert.AreEqual(SOperationTimedOut, resultMessage, false, 'the failure is not the timeout');
   Assert.IsFalse(_MaxTimeTestRanToTheEnd, 'the test ran to its end instead of being interrupted');
-  Assert.IsTrue(AElapsed < MAX_TIME_UNINTERRUPTED div 2, Format('the test was stopped after %d ms, not soon after its [MaxTime] of %d ms',
+  Assert.IsTrue(AElapsed < AStoppedWithin, Format('the test was stopped after %d ms, not soon after its [MaxTime] of %d ms',
     [AElapsed, MAX_TIME_LIMIT]));
 end;
 
@@ -1329,6 +1354,20 @@ begin
   Assert.AreEqual(1, results.TestCount, 'the number of tests');
   Assert.AreEqual(1, results.PassCount, 'a test within its [MaxTime] did not pass');
   Assert.IsTrue(_MaxTimeTestRanToTheEnd, 'the test did not run');
+end;
+
+procedure TMaxTimeTests.A_Caught_Interruption_Is_Followed_By_Another;
+var
+  results : IRunResults;
+  testNames : string;
+  elapsed : Cardinal;
+begin
+  _MaxTimeInterruptionsCaught := 0;
+  elapsed := RunMaxTimeFixture(CreateMaxTimeFixture(['CatchesTheInterruptionThenHangsAgain'], [MAX_TIME_LIMIT]), results,
+    testNames);
+  Assert.AreEqual(1, _MaxTimeInterruptionsCaught, 'the test did not catch the first interruption');
+  //Interrupted again about a second after the first: well before the safety net ends the loop.
+  CheckInterrupted(results, elapsed, MAX_TIME_UNINTERRUPTED - 500);
 end;
 {$ENDIF}
 
