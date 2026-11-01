@@ -107,7 +107,7 @@ type
     [MaxTime(0)]
     procedure MaxTimeIsZero;
 
-    //We ignore the timeout test for the moment. We require a way to test timeout without calling it to fail the test itself.
+    //Ignored, as a timeout fails the test itself.  TMaxTimeTests runs an overrunning test through a runner of its own instead.
     [Test, Ignore]
     [MaxTime(100)]
     procedure TestTimeout;
@@ -154,6 +154,17 @@ type
     procedure Ignored_In_A_WillRaise_Descendant_Test_Is_Reported_Ignored;
     [Test]
     procedure Ignored_At_Run_Time_Is_Written_As_Ignored_By_The_XML_Loggers;
+  end;
+
+  [TestFixture]
+  TMaxTimeTests = class
+  public
+    [Test]
+    procedure Overrun_Fails_With_The_Timeout_After_The_Test_Ends;
+    [Test]
+    procedure Overrun_Ending_In_Assert_Pass_Still_Fails;
+    [Test]
+    procedure Within_Its_MaxTime_Passes;
   end;
 {$M-}
 
@@ -210,6 +221,7 @@ uses
   DUnitX.InternalInterfaces,
   DUnitX.Loggers.XML.JUnit,
   DUnitX.Loggers.XML.NUnit,
+  DUnitX.ResStrs,
   DUnitX.RunResults,
   DUnitX.TestResult,
   DUnitX.TestRunner;
@@ -1071,6 +1083,127 @@ begin
   end;
 end;
 
+const
+  //The [MaxTime] of the overrunning tests, and how long they take: well over it, so the result does not depend on timing.
+  MAX_TIME_LIMIT = 50;
+  MAX_TIME_TAKEN = 250;
+  //The [MaxTime] of the test that should pass: far more than it takes, however slow the machine.
+  MAX_TIME_GENEROUS = 10000;
+
+var
+  _MaxTimeTestRanToTheEnd : Boolean;
+
+type
+  //Not a fixture: the class of the fixtures TMaxTimeTests runs through a runner of its own.
+  TMaxTimeClass = class
+  public
+    procedure Overruns;
+    procedure OverrunsThenPasses;
+    procedure Passes;
+  end;
+
+  TMaxTimeTest = (mttOverruns, mttOverrunsThenPasses, mttPasses);
+
+{ TMaxTimeClass }
+
+procedure TMaxTimeClass.Overruns;
+begin
+  Sleep(MAX_TIME_TAKEN);
+  _MaxTimeTestRanToTheEnd := True;
+end;
+
+procedure TMaxTimeClass.OverrunsThenPasses;
+begin
+  Sleep(MAX_TIME_TAKEN);
+  _MaxTimeTestRanToTheEnd := True;
+  Assert.Pass;
+end;
+
+procedure TMaxTimeClass.Passes;
+begin
+  _MaxTimeTestRanToTheEnd := True;
+end;
+
+//A fixture of the one test, with the given [MaxTime].
+function CreateMaxTimeFixture(const ATest : TMaxTimeTest; const AMaxTime : cardinal) : ITestFixture;
+var
+  rttiContext : TRttiContext;
+  rttiType : TRttiType;
+  instance : TMaxTimeClass;
+begin
+  _MaxTimeTestRanToTheEnd := False;
+  rttiContext := TRttiContext.Create;
+  rttiType := rttiContext.GetType(TMaxTimeClass);
+  result := TDUnitXTestFixture.Create('AMaxTimeFixture', '', TMaxTimeClass, 'AUnit') as ITestFixture;
+  instance := result.FixtureInstance as TMaxTimeClass;
+  case ATest of
+    mttOverruns :
+      result.AddTest('Overruns', instance.Overruns, 'Overruns', '', rttiType.GetMethod('Overruns'), True, False, '', AMaxTime);
+    mttOverrunsThenPasses :
+      result.AddTest('OverrunsThenPasses', instance.OverrunsThenPasses, 'OverrunsThenPasses', '', rttiType.GetMethod('OverrunsThenPasses'), True,
+        False, '', AMaxTime);
+    mttPasses :
+      result.AddTest('Passes', instance.Passes, 'Passes', '', rttiType.GetMethod('Passes'), True, False, '', AMaxTime);
+  end;
+end;
+
+//Checks that AResults holds the one test, failed with the timeout (not errored, as an access violation would be), that
+//it ran to the end rather than being interrupted, and that the test records it timed out.
+procedure CheckReportedTimedOut(const AFixture : ITestFixture; const AResults : IRunResults);
+var
+  testResult : ITestResult;
+  resultMessage : string;
+begin
+  resultMessage := '';
+  for testResult in AResults.GetAllTestResults do
+    resultMessage := testResult.Message;
+  Assert.AreEqual(1, AResults.TestCount, 'the number of tests');
+  Assert.AreEqual(0, AResults.ErrorCount, 'the overrun errored: ' + resultMessage);
+  Assert.AreEqual(0, AResults.PassCount, 'the overrun passed');
+  Assert.AreEqual(1, AResults.FailureCount, 'the overrun did not fail');
+  Assert.AreEqual(SOperationTimedOut, resultMessage, false, 'the failure is not the timeout');
+  Assert.IsTrue(_MaxTimeTestRanToTheEnd, 'the test was interrupted instead of running to the end');
+  Assert.IsTrue(AFixture.Tests[0].TimedOut, 'the test does not record that it timed out');
+end;
+
+{ TMaxTimeTests }
+
+procedure TMaxTimeTests.Overrun_Fails_With_The_Timeout_After_The_Test_Ends;
+var
+  fixture : ITestFixture;
+  results : IRunResults;
+  testNames : string;
+begin
+  fixture := CreateMaxTimeFixture(mttOverruns, MAX_TIME_LIMIT);
+  results := RunFixtureOnItsOwnThread(fixture, testNames);
+  CheckReportedTimedOut(fixture, results);
+end;
+
+procedure TMaxTimeTests.Overrun_Ending_In_Assert_Pass_Still_Fails;
+var
+  fixture : ITestFixture;
+  results : IRunResults;
+  testNames : string;
+begin
+  fixture := CreateMaxTimeFixture(mttOverrunsThenPasses, MAX_TIME_LIMIT);
+  results := RunFixtureOnItsOwnThread(fixture, testNames);
+  CheckReportedTimedOut(fixture, results);
+end;
+
+procedure TMaxTimeTests.Within_Its_MaxTime_Passes;
+var
+  fixture : ITestFixture;
+  results : IRunResults;
+  testNames : string;
+begin
+  fixture := CreateMaxTimeFixture(mttPasses, MAX_TIME_GENEROUS);
+  results := RunFixtureOnItsOwnThread(fixture, testNames);
+  Assert.AreEqual(1, results.TestCount, 'the number of tests');
+  Assert.AreEqual(1, results.PassCount, 'a test within its [MaxTime] did not pass');
+  Assert.IsTrue(_MaxTimeTestRanToTheEnd, 'the test did not run');
+  Assert.IsFalse(fixture.Tests[0].TimedOut, 'a test within its [MaxTime] records that it timed out');
+end;
+
 initialization
   TDUnitX.RegisterTestFixture(TTestClassWithNonPublicSetup);
   TDUnitX.RegisterTestFixture(TTestClassWithTestSource);
@@ -1080,6 +1213,7 @@ initialization
   TDUnitX.RegisterTestFixture(TTearDownFixtureFailureTests);
   TDUnitX.RegisterTestFixture(TFixtureResultDurationTests);
   TDUnitX.RegisterTestFixture(TRuntimeIgnoreTests);
+  TDUnitX.RegisterTestFixture(TMaxTimeTests);
 
 end.
 
