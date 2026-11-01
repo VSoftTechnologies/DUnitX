@@ -984,6 +984,7 @@ procedure InitAssert;
 begin
   Assert.TestFailure := ETestFailure;
   Assert.TestPass := ETestPass;
+  Assert.TestIgnored := ETestIgnored;
 end;
 
 {$IFNDEF DELPHI_XE3}

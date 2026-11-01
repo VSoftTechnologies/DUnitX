@@ -58,6 +58,7 @@ procedure InitAssert;
 begin
   DUnitX.TestFramework.Assert.TestFailure := ETestFailure;
   DUnitX.TestFramework.Assert.TestPass := ETestPass;
+  DUnitX.TestFramework.Assert.TestIgnored := ETestIgnored;
 end;
 
 initialization

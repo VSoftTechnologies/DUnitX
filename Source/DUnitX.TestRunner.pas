@@ -722,7 +722,7 @@ end;
 function TDUnitXTestRunner.ExecuteIgnoredResult(const context : ITestExecuteContext; const threadId : TThreadID; const test : ITest; const ignoreReason :
   string) : ITestResult;
 begin
-  result := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Ignored, ignoreReason);
+  result := TDUnitXTestResult.Create(test as ITestInfo, TTestResultType.Ignored, ignoreReason, FLogMessagesEx);
 end;
 
 function TDUnitXTestRunner.ExecuteSetupFixtureMethod(const context : ITestExecuteContext; const threadId : TThreadID; const fixture : ITestFixture; const
@@ -738,10 +738,14 @@ begin
     on e : Exception do
     begin
       result := false;
-      // Log error into each test
+      // Log error (or the ignore) into each test
       InvalidateTestsInFixture(fixture, context, threadId, e, fixtureResult);
-      Log(TLogLevel.Error, Format(SFixtureSetupError, [fixture.Name, e.Message]));
-      Log(TLogLevel.Error, SSkippingFixture);
+      //A fixture setup that ignores the fixture (Assert.Ignore) is not an error: each test is reported ignored.
+      if not (e is ETestIgnored) then
+      begin
+        Log(TLogLevel.Error, Format(SFixtureSetupError, [fixture.Name, e.Message]));
+        Log(TLogLevel.Error, SSkippingFixture);
+      end;
 
     end;
   end;
@@ -875,7 +879,7 @@ begin
       except
         //Handle the results which are raised in the test.
         on e : ETestIgnored do
-          testResult := ExecuteIgnoredResult(context, threadId, test, test.IgnoreReason);
+          testResult := ExecuteIgnoredResult(context, threadId, test, e.Message);
         on e : ETestPass do
           testResult := ExecuteSuccessfulResult(context, threadId, test, e.Message, FLogMessagesEx);
         on e : ETestFailure do
@@ -887,11 +891,12 @@ begin
       end;
 
       //If the tear down fails then we need to show this as the test result, unless the setup or the test has already
-      //failed: that failure is the one to diagnose, so it is kept and the tear down error is logged.
+      //failed: that failure is the one to diagnose, so it is kept and the tear down error is logged. A test ignored at
+      //run time has nothing to diagnose, so the tear down error replaces it, as it does a pass.
       if Assigned(fixture.TearDownMethod) and (not test.Ignored) then
         if not (ExecuteTestTearDown(context, threadId, fixture, test, tearDownResult, memoryAllocationProvider)) then
         begin
-          if testResult.ResultType = TTestResultType.Pass then
+          if testResult.ResultType in [TTestResultType.Pass, TTestResultType.Ignored] then
             testResult := tearDownResult
           else
             Log(TLogLevel.Error, Format(STearDownErrorAfterFailure, [test.Name, tearDownResult.Message]));
@@ -928,6 +933,9 @@ begin
       Self.Loggers_EndSetupTest(threadId, test as ITestInfo);
       Result := True;
     except
+      //A setup that ignores the test (Assert.Ignore) ignores it, rather than erroring it.
+      on e : ETestIgnored do
+        errorResult := ExecuteIgnoredResult(context, threadId, test, e.Message);
       on e : {$IFDEF USE_NS}System.SysUtils.{$ENDIF}Exception do
       begin
         errorResult := ExecuteErrorResult(context, threadId, test, e, FLogMessagesEx);
@@ -985,7 +993,10 @@ begin
       Continue;
 
     Self.Loggers_BeginTest(aThreadId, lTest as ITestInfo);
-    lTestResult := ExecuteErrorResult(aContext, aThreadId, lTest, aException, FLogMessagesEx);
+    if aException is ETestIgnored then
+      lTestResult := ExecuteIgnoredResult(aContext, aThreadId, lTest, aException.Message)
+    else
+      lTestResult := ExecuteErrorResult(aContext, aThreadId, lTest, aException, FLogMessagesEx);
     RecordResult(aContext, aThreadId, aFixtureResult, lTestResult);
     Self.Loggers_EndTest(aThreadId, lTestResult);
   end;

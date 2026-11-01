@@ -132,6 +132,29 @@ type
     [Test]
     procedure Duration_Of_A_Fixture_With_Children_Includes_Its_Own_Tests;
   end;
+
+  [TestFixture]
+  TRuntimeIgnoreTests = class
+  public
+    [Test]
+    procedure Ignored_At_Run_Time_Is_Reported_Ignored_With_Its_Reason;
+    [Test]
+    procedure Assert_Ignore_Is_Reported_Ignored_With_Its_Reason;
+    [Test]
+    procedure Ignored_At_Run_Time_Keeps_What_The_Test_Logged;
+    [Test]
+    procedure Ignored_In_Setup_Is_Reported_Ignored_And_The_Test_Does_Not_Run;
+    [Test]
+    procedure Ignored_In_SetupFixture_Is_Reported_Ignored_For_Every_Test;
+    [Test]
+    procedure TearDown_Error_After_A_Runtime_Ignore_Is_Reported;
+    [Test]
+    procedure Ignored_In_A_WillRaise_Test_Is_Reported_Ignored;
+    [Test]
+    procedure Ignored_In_A_WillRaise_Descendant_Test_Is_Reported_Ignored;
+    [Test]
+    procedure Ignored_At_Run_Time_Is_Written_As_Ignored_By_The_XML_Loggers;
+  end;
 {$M-}
 
   TRaisingDestructorClass = class
@@ -185,6 +208,8 @@ uses
   DUnitX.Extensibility,
   DUnitX.FixtureResult,
   DUnitX.InternalInterfaces,
+  DUnitX.Loggers.XML.JUnit,
+  DUnitX.Loggers.XML.NUnit,
   DUnitX.RunResults,
   DUnitX.TestResult,
   DUnitX.TestRunner;
@@ -724,6 +749,328 @@ begin
   Assert.IsTrue(parentResult.FinishTime >= childResult.FinishTime, 'the fixture finishes after its children');
 end;
 
+const
+  RUNTIME_IGNORE_REASON = 'the resource this test needs is not available';
+  RUNTIME_IGNORE_LOGGED = 'logged before the test ignored itself';
+
+var
+  _RuntimeIgnoreSetupRan : Boolean;
+  _RuntimeIgnoreTestRan : Boolean;
+  _RuntimeIgnoreCodeAfterIgnoreRan : Boolean;
+  _RuntimeIgnoreTearDownRan : Boolean;
+  _RuntimeIgnoreTearDownFixtureRan : Boolean;
+
+type
+  //Not a fixture: the class of the fixtures the tests below run through a runner of their own.
+  TRuntimeIgnoreClass = class
+  public
+    procedure SetupFixtureIgnores;
+    procedure TearDownFixture;
+    procedure Setup;
+    procedure SetupIgnores;
+    procedure TearDown;
+    procedure TearDownRaises;
+    procedure IgnoresItself;
+    procedure IgnoresItselfInsideWillRaise;
+    procedure IgnoresAfterLogging;
+    procedure IgnoresWithAssertIgnore;
+    procedure Passes;
+  end;
+
+  ERuntimeIgnoreExpected = class(Exception);
+
+  TRuntimeIgnoreTest = (ritIgnoresItself, ritIgnoresItselfInsideWillRaise, ritIgnoresItselfInsideWillRaiseDescendant,
+    ritIgnoresAfterLogging, ritIgnoresWithAssertIgnore, ritPasses);
+
+  TRuntimeIgnoreOption = (rioSetupIgnores, rioTearDownRaises, rioSetupFixtureIgnores);
+  TRuntimeIgnoreOptions = set of TRuntimeIgnoreOption;
+
+//Skips the test the way a test does when it finds at run time that it cannot run.
+procedure IgnoreThisTest(const reason : string);
+begin
+  raise ETestIgnored.Create(reason);
+end;
+
+{ TRuntimeIgnoreClass }
+
+procedure TRuntimeIgnoreClass.SetupFixtureIgnores;
+begin
+  IgnoreThisTest(RUNTIME_IGNORE_REASON);
+end;
+
+procedure TRuntimeIgnoreClass.TearDownFixture;
+begin
+  _RuntimeIgnoreTearDownFixtureRan := True;
+end;
+
+procedure TRuntimeIgnoreClass.Setup;
+begin
+  _RuntimeIgnoreSetupRan := True;
+end;
+
+procedure TRuntimeIgnoreClass.SetupIgnores;
+begin
+  _RuntimeIgnoreSetupRan := True;
+  IgnoreThisTest(RUNTIME_IGNORE_REASON);
+end;
+
+procedure TRuntimeIgnoreClass.TearDown;
+begin
+  _RuntimeIgnoreTearDownRan := True;
+end;
+
+procedure TRuntimeIgnoreClass.TearDownRaises;
+begin
+  _RuntimeIgnoreTearDownRan := True;
+  raise EInvalidOpException.Create('TearDown failed');
+end;
+
+procedure TRuntimeIgnoreClass.IgnoresItself;
+begin
+  _RuntimeIgnoreTestRan := True;
+  IgnoreThisTest(RUNTIME_IGNORE_REASON);
+  _RuntimeIgnoreCodeAfterIgnoreRan := True;
+end;
+
+procedure TRuntimeIgnoreClass.IgnoresItselfInsideWillRaise;
+begin
+  _RuntimeIgnoreTestRan := True;
+  IgnoreThisTest(RUNTIME_IGNORE_REASON);
+  raise ERuntimeIgnoreExpected.Create('the exception the test is expected to raise');
+end;
+
+procedure TRuntimeIgnoreClass.IgnoresAfterLogging;
+begin
+  _RuntimeIgnoreTestRan := True;
+  TDUnitX.CurrentRunner.Log(TLogLevel.Warning, RUNTIME_IGNORE_LOGGED);
+  IgnoreThisTest(RUNTIME_IGNORE_REASON);
+end;
+
+procedure TRuntimeIgnoreClass.IgnoresWithAssertIgnore;
+begin
+  _RuntimeIgnoreTestRan := True;
+  Assert.Ignore(RUNTIME_IGNORE_REASON);
+  _RuntimeIgnoreCodeAfterIgnoreRan := True;
+end;
+
+procedure TRuntimeIgnoreClass.Passes;
+begin
+  _RuntimeIgnoreTestRan := True;
+end;
+
+procedure AddRuntimeIgnoreTest(const AFixture : ITestFixture; const ARttiType : TRttiType; const ATest : TRuntimeIgnoreTest);
+var
+  instance : TRuntimeIgnoreClass;
+begin
+  instance := AFixture.FixtureInstance as TRuntimeIgnoreClass;
+  case ATest of
+    ritIgnoresItself :
+      AFixture.AddTest('IgnoresItself', instance.IgnoresItself, 'IgnoresItself', '', ARttiType.GetMethod('IgnoresItself'));
+    ritIgnoresItselfInsideWillRaise :
+      AFixture.AddTest('IgnoresItselfInsideWillRaise', instance.IgnoresItselfInsideWillRaise, 'IgnoresItselfInsideWillRaise', '',
+        ARttiType.GetMethod('IgnoresItselfInsideWillRaise'), True, False, '', 0, ERuntimeIgnoreExpected);
+    ritIgnoresItselfInsideWillRaiseDescendant :
+      AFixture.AddTest('IgnoresItselfInsideWillRaise', instance.IgnoresItselfInsideWillRaise, 'IgnoresItselfInsideWillRaise', '',
+        ARttiType.GetMethod('IgnoresItselfInsideWillRaise'), True, False, '', 0, ERuntimeIgnoreExpected, exDescendant);
+    ritIgnoresAfterLogging :
+      AFixture.AddTest('IgnoresAfterLogging', instance.IgnoresAfterLogging, 'IgnoresAfterLogging', '', ARttiType.GetMethod('IgnoresAfterLogging'));
+    ritIgnoresWithAssertIgnore :
+      AFixture.AddTest('IgnoresWithAssertIgnore', instance.IgnoresWithAssertIgnore, 'IgnoresWithAssertIgnore', '',
+        ARttiType.GetMethod('IgnoresWithAssertIgnore'));
+    ritPasses :
+      AFixture.AddTest('Passes', instance.Passes, 'Passes', '', ARttiType.GetMethod('Passes'));
+  end;
+end;
+
+//A fixture of the given tests, with a setup and a tear down (each of which can ignore or raise, as AOptions says).
+function CreateRuntimeIgnoreFixture(const ATests : array of TRuntimeIgnoreTest; const AOptions : TRuntimeIgnoreOptions) : ITestFixture;
+var
+  rttiContext : TRttiContext;
+  rttiType : TRttiType;
+  instance : TRuntimeIgnoreClass;
+  i : integer;
+begin
+  _RuntimeIgnoreSetupRan := False;
+  _RuntimeIgnoreTestRan := False;
+  _RuntimeIgnoreCodeAfterIgnoreRan := False;
+  _RuntimeIgnoreTearDownRan := False;
+  _RuntimeIgnoreTearDownFixtureRan := False;
+  rttiContext := TRttiContext.Create;
+  rttiType := rttiContext.GetType(TRuntimeIgnoreClass);
+  result := TDUnitXTestFixture.Create('ARuntimeIgnoreFixture', '', TRuntimeIgnoreClass, 'AUnit') as ITestFixture;
+  instance := result.FixtureInstance as TRuntimeIgnoreClass;
+  if rioSetupFixtureIgnores in AOptions then
+  begin
+    result.SetSetupFixtureMethod('SetupFixtureIgnores', instance.SetupFixtureIgnores);
+    result.SetTearDownFixtureMethod('TearDownFixture', instance.TearDownFixture, false);
+  end;
+  if rioSetupIgnores in AOptions then
+    result.SetSetupTestMethod('SetupIgnores', instance.SetupIgnores)
+  else
+    result.SetSetupTestMethod('Setup', instance.Setup);
+  if rioTearDownRaises in AOptions then
+    result.SetTearDownTestMethod('TearDownRaises', instance.TearDownRaises)
+  else
+    result.SetTearDownTestMethod('TearDown', instance.TearDown);
+  for i := Low(ATests) to High(ATests) do
+    AddRuntimeIgnoreTest(result, rttiType, ATests[i]);
+end;
+
+//Checks that AResults holds ACount results, each an ignored one carrying RUNTIME_IGNORE_REASON, and returns the last.
+function CheckReportedIgnored(const AResults : IRunResults; const ACount : integer = 1) : ITestResult;
+var
+  testResult : ITestResult;
+begin
+  Assert.AreEqual(ACount, AResults.TestCount, 'the number of tests');
+  Assert.AreEqual(ACount, AResults.IgnoredCount, 'the tests are ignored');
+  Assert.AreEqual(0, AResults.PassCount, 'a test is passed');
+  Assert.AreEqual(0, AResults.FailureCount, 'a test is failed');
+  Assert.AreEqual(0, AResults.ErrorCount, 'a test is errored');
+  result := nil;
+  for testResult in AResults.GetAllTestResults do
+  begin
+    Assert.AreEqual(Ord(TTestResultType.Ignored), Ord(testResult.ResultType), 'the result type');
+    Assert.AreEqual(RUNTIME_IGNORE_REASON, testResult.Message, false, 'the result does not carry the reason the test was ignored');
+    result := testResult;
+  end;
+  Assert.IsNotNull(result, 'no result');
+end;
+
+{ TRuntimeIgnoreTests }
+
+procedure TRuntimeIgnoreTests.Ignored_At_Run_Time_Is_Reported_Ignored_With_Its_Reason;
+var
+  results : IRunResults;
+  testNames : string;
+begin
+  results := RunFixtureOnItsOwnThread(CreateRuntimeIgnoreFixture([ritIgnoresItself], []), testNames);
+  CheckReportedIgnored(results);
+  Assert.IsTrue(_RuntimeIgnoreSetupRan, 'the setup ran');
+  Assert.IsTrue(_RuntimeIgnoreTestRan, 'the test ran up to the ignore');
+  Assert.IsFalse(_RuntimeIgnoreCodeAfterIgnoreRan, 'the test ran on after it was ignored');
+  Assert.IsTrue(_RuntimeIgnoreTearDownRan, 'the tear down still runs for a test ignored at run time');
+end;
+
+procedure TRuntimeIgnoreTests.Assert_Ignore_Is_Reported_Ignored_With_Its_Reason;
+var
+  results : IRunResults;
+  testNames : string;
+begin
+  results := RunFixtureOnItsOwnThread(CreateRuntimeIgnoreFixture([ritIgnoresWithAssertIgnore], []), testNames);
+  CheckReportedIgnored(results);
+  Assert.IsTrue(_RuntimeIgnoreTestRan, 'the test ran up to Assert.Ignore');
+  Assert.IsFalse(_RuntimeIgnoreCodeAfterIgnoreRan, 'the test ran on after Assert.Ignore');
+  Assert.IsTrue(_RuntimeIgnoreTearDownRan, 'the tear down still runs after Assert.Ignore');
+end;
+
+procedure TRuntimeIgnoreTests.Ignored_At_Run_Time_Keeps_What_The_Test_Logged;
+var
+  results : IRunResults;
+  testNames : string;
+  testResult : ITestResult;
+  logMessages : TLogMessageArray;
+  found : boolean;
+  i : integer;
+begin
+  results := RunFixtureOnItsOwnThread(CreateRuntimeIgnoreFixture([ritIgnoresAfterLogging], []), testNames);
+  testResult := CheckReportedIgnored(results);
+  logMessages := testResult.LogMessages;
+  found := false;
+  for i := 0 to High(logMessages) do
+    if logMessages[i].Msg = RUNTIME_IGNORE_LOGGED then
+      found := true;
+  Assert.IsTrue(found, 'the result lost what the test logged before it ignored itself');
+end;
+
+procedure TRuntimeIgnoreTests.Ignored_In_Setup_Is_Reported_Ignored_And_The_Test_Does_Not_Run;
+var
+  results : IRunResults;
+  testNames : string;
+begin
+  results := RunFixtureOnItsOwnThread(CreateRuntimeIgnoreFixture([ritPasses], [rioSetupIgnores]), testNames);
+  CheckReportedIgnored(results);
+  Assert.IsTrue(_RuntimeIgnoreSetupRan, 'the setup ran');
+  Assert.IsFalse(_RuntimeIgnoreTestRan, 'the test ran although its setup ignored it');
+  Assert.IsTrue(_RuntimeIgnoreTearDownRan, 'the tear down still runs after the setup ignored the test');
+end;
+
+procedure TRuntimeIgnoreTests.Ignored_In_SetupFixture_Is_Reported_Ignored_For_Every_Test;
+var
+  results : IRunResults;
+  testNames : string;
+begin
+  results := RunFixtureOnItsOwnThread(CreateRuntimeIgnoreFixture([ritPasses, ritIgnoresItself], [rioSetupFixtureIgnores]), testNames);
+  CheckReportedIgnored(results, 2);
+  Assert.IsFalse(_RuntimeIgnoreSetupRan, 'a test''s setup ran although the fixture setup ignored the fixture');
+  Assert.IsFalse(_RuntimeIgnoreTestRan, 'a test ran although the fixture setup ignored the fixture');
+  //As after a fixture setup that errors.
+  Assert.IsFalse(_RuntimeIgnoreTearDownFixtureRan, 'the fixture tear down ran although the fixture setup did not finish');
+end;
+
+procedure TRuntimeIgnoreTests.TearDown_Error_After_A_Runtime_Ignore_Is_Reported;
+var
+  results : IRunResults;
+  testNames : string;
+  testResult : ITestResult;
+begin
+  //The ignore is not a failure to diagnose, so the tear down error is not hidden behind it.
+  results := RunFixtureOnItsOwnThread(CreateRuntimeIgnoreFixture([ritIgnoresItself], [rioTearDownRaises]), testNames);
+  Assert.IsTrue(_RuntimeIgnoreTearDownRan, 'the tear down ran');
+  Assert.AreEqual(1, results.TestCount, 'one test ran');
+  Assert.AreEqual(1, results.ErrorCount, 'the tear down error is reported');
+  Assert.AreEqual(0, results.IgnoredCount, 'the tear down error is hidden behind the ignore');
+  for testResult in results.GetAllTestResults do
+    Assert.Contains(testResult.Message, 'TearDown failed', false, 'the result is not the tear down error');
+end;
+
+procedure TRuntimeIgnoreTests.Ignored_In_A_WillRaise_Test_Is_Reported_Ignored;
+var
+  results : IRunResults;
+  testNames : string;
+begin
+  //The ignore is the test's outcome, not an exception of the wrong class.
+  results := RunFixtureOnItsOwnThread(CreateRuntimeIgnoreFixture([ritIgnoresItselfInsideWillRaise], []), testNames);
+  CheckReportedIgnored(results);
+  Assert.IsTrue(_RuntimeIgnoreTearDownRan, 'the tear down ran');
+end;
+
+procedure TRuntimeIgnoreTests.Ignored_In_A_WillRaise_Descendant_Test_Is_Reported_Ignored;
+var
+  results : IRunResults;
+  testNames : string;
+begin
+  results := RunFixtureOnItsOwnThread(CreateRuntimeIgnoreFixture([ritIgnoresItselfInsideWillRaiseDescendant], []), testNames);
+  CheckReportedIgnored(results);
+end;
+
+procedure TRuntimeIgnoreTests.Ignored_At_Run_Time_Is_Written_As_Ignored_By_The_XML_Loggers;
+var
+  results : IRunResults;
+  testNames : string;
+  nunitStream : TStringStream;
+  junitStream : TStringStream;
+  logger : ITestLogger;
+begin
+  results := RunFixtureOnItsOwnThread(CreateRuntimeIgnoreFixture([ritIgnoresItself], []), testNames);
+  junitStream := nil;
+  nunitStream := TStringStream.Create('', TEncoding.UTF8);
+  try
+    junitStream := TStringStream.Create('', TEncoding.UTF8);
+    logger := TDUnitXXMLNUnitLogger.Create(nunitStream);
+    logger.OnTestingEnds(results);
+    logger := TDUnitXXMLJUnitLogger.Create(junitStream);
+    logger.OnTestingEnds(results);
+    logger := nil;
+    Assert.Contains(nunitStream.DataString, 'name="IgnoresItself" executed="False" result="Ignored"', false, 'the NUnit XML');
+    Assert.Contains(nunitStream.DataString, RUNTIME_IGNORE_REASON, false, 'the NUnit XML does not carry the reason');
+    Assert.Contains(junitStream.DataString, '<skipped/>', false, 'the JUnit XML');
+  finally
+    logger := nil;
+    junitStream.Free;
+    nunitStream.Free;
+  end;
+end;
+
 initialization
   TDUnitX.RegisterTestFixture(TTestClassWithNonPublicSetup);
   TDUnitX.RegisterTestFixture(TTestClassWithTestSource);
@@ -732,6 +1079,7 @@ initialization
   TDUnitX.RegisterTestFixture(TDUnitXTestFixtureTests);
   TDUnitX.RegisterTestFixture(TTearDownFixtureFailureTests);
   TDUnitX.RegisterTestFixture(TFixtureResultDurationTests);
+  TDUnitX.RegisterTestFixture(TRuntimeIgnoreTests);
 
 end.
 
