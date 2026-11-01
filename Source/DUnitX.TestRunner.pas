@@ -44,28 +44,31 @@ uses
   DUnitX.Exceptions;
 
 type
-  ///  What the runner keeps for the test that a thread is running.  When fixtures run in parallel, each fixture has its
-  ///  own, so that tests on different threads never share a log.
-  TDUnitXTestThreadState = class
-  public
-    LogMessages : TStringList;
-    LogMessagesEx : TLogMessageArray;
-    CurrentTestName : string;
-    //The results recorded while a fixture runs in parallel, in the order they were recorded; nil otherwise.
-    Results : TList<ITestResult>;
-    constructor Create(const ACollectResults : boolean);
-    destructor Destroy; override;
-  end;
-
   ///  Note - we rely on the fact that there will only ever be 1 testrunner
   ///  per thread, if this changes then handling of WriteLn will need to change
   TDUnitXTestRunner = class(TWeakReferencedObject, ITestRunner)
   private
     class var
       FRttiContext : TRttiContext;
+      //The number of runs whose fixtures are running in parallel, in any runner.
+      FParallelRuns : integer;
   public
     class var
       FActiveRunners : TDictionary<TThreadID, IWeakReference<ITestRunner>>;
+  private
+    type
+      //What the runner keeps for the test that a thread is running.  When fixtures run in parallel, each fixture has
+      //its own, so that tests on different threads never share a log.
+      TThreadState = class
+      public
+        LogMessages : TStringList;
+        LogMessagesEx : TLogMessageArray;
+        CurrentTestName : string;
+        //The results recorded while a fixture runs in parallel, in the order they were recorded; nil otherwise.
+        Results : TList<ITestResult>;
+        constructor Create(const ACollectResults : boolean);
+        destructor Destroy; override;
+      end;
   private
     FLoggers : TList<ITestLogger>;
     FUseRTTI : boolean;
@@ -79,11 +82,13 @@ type
 
     FUseThreadPool : boolean;
     FMaxThreads : integer;
-    //True while fixtures are running in parallel.
+{$IFDEF PARALLEL_FIXTURES}
+    //True while this runner's fixtures are running in parallel.
     FRunningInParallel : boolean;
     //While fixtures run in parallel, the fixtures to run (a TList<TParallelFixture>) and the index of the last one taken.
     FParallelFixtures : TObject;
     FLastParallelFixture : integer;
+{$ENDIF}
     //The state of the test running on the runner's own thread; see State.
     FMainState : TObject;
     //Serialises the calls to the loggers, so that a logger is never called from two threads at once.
@@ -93,7 +98,10 @@ type
   protected
     //The log and test name of the test running on the calling thread.  The runner's own thread uses FMainState; a
     //worker thread uses the state of the fixture it is running.
-    function State : TDUnitXTestThreadState;
+    function State : TThreadState;
+    //True while fixtures run in parallel in any runner.  A leak monitor measures the whole process, so it cannot tell a
+    //test's allocations from those of the tests running alongside it, in this runner or in another.
+    class function LeakChecksSuspended : boolean;
     procedure CountAndFilterTests(const fixtureList : ITestFixtureList; var count, active : Cardinal);
     //Logger calls - sequence ordered
     procedure Loggers_TestingStarts(const threadId : TThreadID; testCount, testActiveCount : Cardinal);
@@ -240,9 +248,9 @@ threadvar
   WorkerThreadRunner : Pointer;
   WorkerThreadState : Pointer;
 
-{ TDUnitXTestThreadState }
+{ TDUnitXTestRunner.TThreadState }
 
-constructor TDUnitXTestThreadState.Create(const ACollectResults : boolean);
+constructor TDUnitXTestRunner.TThreadState.Create(const ACollectResults : boolean);
 begin
   inherited Create;
   LogMessages := TStringList.Create;
@@ -250,7 +258,7 @@ begin
     Results := TList<ITestResult>.Create;
 end;
 
-destructor TDUnitXTestThreadState.Destroy;
+destructor TDUnitXTestRunner.TThreadState.Destroy;
 begin
   Results.Free;
   LogMessages.Free;
@@ -417,7 +425,7 @@ end;
 
 procedure TDUnitXTestRunner.ClearLogMessages;
 var
-  threadState : TDUnitXTestThreadState;
+  threadState : TDUnitXTestRunner.TThreadState;
 begin
   threadState := State;
   threadState.LogMessages.Clear;
@@ -430,7 +438,7 @@ begin
   FLoggers := TList<ITestLogger>.Create;
   FFixtureClasses := TDictionary<TClass, string>.Create;
   FUseRTTI := False;
-  FMainState := TDUnitXTestThreadState.Create(false);
+  FMainState := TDUnitXTestRunner.TThreadState.Create(false);
   FLoggersLock := TObject.Create;
   FResultsLock := TObject.Create;
   FTearDownFixtureTests := TList<ITest>.Create;
@@ -875,7 +883,7 @@ type
   TParallelFixture = record
     Fixture : ITestFixture;
     FixtureResult : IFixtureResult;
-    State : TDUnitXTestThreadState;
+    State : TDUnitXTestRunner.TThreadState;
   end;
 
 //Walks the fixtures as ExecuteFixtures does, creating their results in the same order.  A fixture with no tests of its
@@ -910,7 +918,7 @@ begin
     end
     else
     begin
-      item.State := TDUnitXTestThreadState.Create(true);
+      item.State := TDUnitXTestRunner.TThreadState.Create(true);
       AUnits.Add(item);
     end;
   end;
@@ -944,6 +952,7 @@ begin
         FParallelFixtures := units;
         FLastParallelFixture := -1;
         FRunningInParallel := True;
+        TInterlocked.Increment(FParallelRuns);
         workers := TList<TThread>.Create;
         try
           //Each worker takes the next fixture not yet taken until none are left, so at most MaxThreads run at once.
@@ -966,6 +975,7 @@ begin
           for worker in workers do
             worker.Free;
           workers.Free;
+          TInterlocked.Decrement(FParallelRuns);
           FRunningInParallel := False;
           FParallelFixtures := nil;
         end;
@@ -1243,9 +1253,8 @@ begin
             Log(TLogLevel.Error, Format(STearDownErrorAfterFailure, [test.Name, tearDownResult.Message]));
         end;
 
-      //A leak monitor measures the whole process, so it cannot tell a test's allocations from those of the tests running
-      //alongside it: leaks are not checked while fixtures run in parallel.
-      if (testResult.ResultType = TTestResultType.Pass) and (not FRunningInParallel) then
+      //Leaks are not checked while fixtures run in parallel, in this runner or another (see LeakChecksSuspended).
+      if (testResult.ResultType = TTestResultType.Pass) and (not LeakChecksSuspended) then
         if (not CheckMemoryAllocations(test, memoryAllocationResult, memoryAllocationProvider)) then
           testResult := memoryAllocationResult;
     finally
@@ -1350,12 +1359,17 @@ begin
   FFailsOnNoAsserts := value;
 end;
 
-function TDUnitXTestRunner.State : TDUnitXTestThreadState;
+class function TDUnitXTestRunner.LeakChecksSuspended : boolean;
+begin
+  result := TInterlocked.CompareExchange(FParallelRuns, 0, 0) <> 0;
+end;
+
+function TDUnitXTestRunner.State : TDUnitXTestRunner.TThreadState;
 begin
   if (WorkerThreadRunner <> nil) and (WorkerThreadRunner = Pointer(Self)) then
-    result := TDUnitXTestThreadState(WorkerThreadState)
+    result := TDUnitXTestRunner.TThreadState(WorkerThreadState)
   else
-    result := TDUnitXTestThreadState(FMainState);
+    result := TDUnitXTestRunner.TThreadState(FMainState);
 end;
 
 function TDUnitXTestRunner.GetUseThreadPool : boolean;
@@ -1506,19 +1520,20 @@ procedure TDUnitXTestRunner.Log(const logType : TLogLevel; const msg : string);
 var
   logger : ITestLogger;
   NewIdx : integer;
-  threadState : TDUnitXTestThreadState;
+  threadState : TDUnitXTestRunner.TThreadState;
 begin
   if logType >= TDUnitX.Options.LogLevel then
   begin
     //TODO : Need to get this to the current test result.
     threadState := State;
-    threadState.LogMessages.Add(msg);
-    NewIdx := Length(threadState.LogMessagesEx);
-    SetLength(threadState.LogMessagesEx, NewIdx + 1);
-    threadState.LogMessagesEx[NewIdx].Level := logType;
-    threadState.LogMessagesEx[NewIdx].Msg := msg;
+    //Under the lock: a test's own threads log to the runner's thread's state.
     MonitorEnter(FLoggersLock);
     try
+      threadState.LogMessages.Add(msg);
+      NewIdx := Length(threadState.LogMessagesEx);
+      SetLength(threadState.LogMessagesEx, NewIdx + 1);
+      threadState.LogMessagesEx[NewIdx].Level := logType;
+      threadState.LogMessagesEx[NewIdx].Msg := msg;
       for logger in FLoggers do
         logger.OnLog(logType, msg);
     finally
