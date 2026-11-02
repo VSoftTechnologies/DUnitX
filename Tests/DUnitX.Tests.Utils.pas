@@ -47,7 +47,6 @@ type
     [NamedTestCase('EN-GB iso8601 format', 'EN-GB,2020-06-22')]
     [NamedTestCase('DE local format', 'DE,22.06.2020')]
     [NamedTestCase('DE local format, no leading zeroes', 'DE,22.6.2020')]
-    [NamedTestCase('DE local format, no explicit century', 'DE,22.06.20')]
     [NamedTestCase('DE iso8601 format', 'DE,2020-06-22')]
     procedure TestDateConversion(const locale : string; const text : string);
 
@@ -71,7 +70,7 @@ type
     [NamedTestCase('EN-GB iso8601 format', 'EN-GB,2020-06-22 18:36')]
     [NamedTestCase('EN-GB iso8601 format, verbose', 'EN-GB,2020-06-22T18:36:00+00')]
     [NamedTestCase('DE local format, verbose', 'DE,22.06.2020 18:36:00.000')]
-    [NamedTestCase('DE local format, short', 'DE,22.6.20 18:36')]
+    [NamedTestCase('DE local format, short', 'DE,22.6.2020 18:36')]
     [NamedTestCase('DE iso8601 format', 'DE,2020-06-22 18:36:00')]
     procedure TestDateTimeConversion(const locale : string; const text : string);
 
@@ -93,7 +92,10 @@ type
     [NamedTestCase('EN-GB 22/06/2020, only the locale reads it', 'EN-GB,22/06/2020,2020,6,22')]
     [NamedTestCase('DE 01/02/2020, only the invariant format reads it', 'DE,01/02/2020,2020,1,2')]
     [NamedTestCase('DE 22.06.2020', 'DE,22.06.2020,2020,6,22')]
-    [NamedTestCase('NL 22-06-20 is not ISO 8601', 'nl-NL,22-06-20,2020,6,22')]
+    [NamedTestCase('NL 22-06-20, a two-digit year: 22 June 2020 or 20 June 2022', 'nl-NL,22-06-20,0,0,0')]
+    [NamedTestCase('EN-US 6/22/20, a two-digit year', 'EN-US,6/22/20,0,0,0')]
+    [NamedTestCase('DE 22.06.20, a two-digit year', 'DE,22.06.20,0,0,0')]
+    [NamedTestCase('NL 22-06-2020, a four-digit year in the locale order', 'nl-NL,22-06-2020,2020,6,22')]
     [NamedTestCase('NL iso8601 format', 'nl-NL,2020-06-22,2020,6,22')]
     [NamedTestCase('JA 22/06/2020, not in the locale order', 'ja-JP,22/06/2020,0,0,0')]
     procedure Date_Converts_Only_When_Its_Meaning_Is_Unambiguous(const locale : string; const text : string;
@@ -102,7 +104,11 @@ type
     [Test]
     [NamedTestCase('EN-US 01/02/2020 10:30, both readings agree', 'EN-US,01/02/2020 10:30,2020,1,2')]
     [NamedTestCase('EN-GB 01/02/2020 10:30, the readings disagree', 'EN-GB,01/02/2020 10:30,0,0,0')]
-    [NamedTestCase('NL 22-06-20 10:30 is not ISO 8601', 'nl-NL,22-06-20 10:30,2020,6,22')]
+    [NamedTestCase('NL 22-06-20 10:30, a two-digit year', 'nl-NL,22-06-20 10:30,0,0,0')]
+    [NamedTestCase('NL 22-06-2020 10:30, a four-digit year in the locale order', 'nl-NL,22-06-2020 10:30,2020,6,22')]
+    [NamedTestCase('FI 22.06.20, a two-digit year that also reads as a time', 'fi-FI,22.06.20,0,0,0')]
+    [NamedTestCase('EN-US 6/22/20 10:30:00.0123, a two-digit year beside four other digits', 'EN-US,6/22/20 10:30:00.0123,0,0,0')]
+    [NamedTestCase('EN-US 6/22 10:30, no year', 'EN-US,6/22 10:30,0,0,0')]
     [NamedTestCase('NL iso8601 format, verbose', 'nl-NL,2020-06-22T10:30:00Z,2020,6,22')]
     [NamedTestCase('DE iso8601 format, verbose', 'DE,2020-06-22T10:30:00.000Z,2020,6,22')]
     [NamedTestCase('EN-GB iso8601, zone hh:mm', 'EN-GB,2020-06-22T10:30+02:00,2020,6,22')]
@@ -481,6 +487,9 @@ begin
   expected := EncodeDateTime(2020, 6, 22, 18, 36, 0, 0);
   setFormatSettings(locale);
   try
+    //A user who picked a two-digit year for the machine's locale writes dates that, by design, do not read back
+    if Pos('YYYY', UpperCase(FormatSettings.ShortDateFormat)) = 0 then
+      FormatSettings.ShortDateFormat := StringReplace(FormatSettings.ShortDateFormat, 'yy', 'yyyy', [rfIgnoreCase]);
     Assert.IsTrue(TValue.From(DateTimeToStr(expected)).TryConvert<TDateTime>(asTValue), DateTimeToStr(expected));
     Assert.IsSameDateTime(expected, asTValue.AsType<TDateTime>(), DateTimeToStr(expected));
     Assert.IsTrue(TValue.From(DateToStr(expected)).TryConvert<TDate>(asTValue), DateToStr(expected));

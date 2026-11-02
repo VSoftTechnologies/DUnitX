@@ -40,6 +40,7 @@ Until now, a `[TestCase]` value that could not be converted to its parameter's t
   - A value neither reads errors the case.
   - A `TDateTime` whose year would be taken for an hour (on a year-first locale, '22/06/2020 10:30') errors instead of becoming 20 June 2022 at 20:00.
   - A date that only the locale reads ('22/06/2020' on a UK machine, '22.06.2020' on a German one) reads as before.
+  - A date whose year is not written in full errors (#543): '22-06-20' is 22 June 2020 read day first and 20 June 2022 read year first, and nothing in the text says which, so '22.06.20' and '6/22/20' error on every machine too.  Write the year with four digits, or better, write the date as ISO 8601 (`2020-06-22`), which the error message suggests.  A date with no year at all ('6/22', '22.06') errors as well: it used to take the current year, so the test meant something different every year.  A time on its own has no year and still converts, except where the locale also reads it as a date (under fi-FI '10.06' is 10 June, not 10:06), which errors; write such a time as ISO 8601 (`10:06`).
 
 ### `Assert.WillNotRaise` lets another exception through (#526)
 

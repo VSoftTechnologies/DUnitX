@@ -227,6 +227,9 @@ type
     [NamedTestCase('Named', 'abc')]
     procedure NamedNotAnInteger(const value : integer);
     [Test]
+    [TestCase('6/22/20')]
+    procedure DateWithTwoDigitYear(const value : TDate);
+    [Test]
     [NamedTestCase('Named', '1,2')]
     procedure NamedTooManyValues(const value : integer);
   end;
@@ -759,6 +762,10 @@ procedure TAutoNamedCases.TooManyValues(const value : integer);
 begin
 end;
 
+procedure TAutoNamedCases.DateWithTwoDigitYear(const value : TDate);
+begin
+end;
+
 procedure TAutoNamedCases.TooFewValues(const a, b : integer);
 begin
 end;
@@ -1067,6 +1074,8 @@ begin
   CheckErrors(fixture, 'TooManyValues(1,2)', 'Too many values: 2 values for 1 parameter (does a value contain the separator?)');
   CheckErrors(fixture, 'TooFewValues(1)', 'Too few values: 1 value for 2 parameters');
   CheckErrors(fixture, 'NamedNotAnInteger.Named', 'Cannot convert ''abc'' to Integer for parameter value');
+  CheckErrors(fixture, 'DateWithTwoDigitYear(6/22/20)',
+    'Cannot convert ''6/22/20'' to TDate for parameter value (write a date as ISO 8601 yyyy-mm-dd, as in 2020-06-22)');
   CheckErrors(fixture, 'NamedTooManyValues.Named', 'Too many values: 2 values for 1 parameter (does a value contain the separator?)');
 end;
 

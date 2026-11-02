@@ -1232,6 +1232,48 @@ begin
   end;
 end;
 
+//True when the year ADate was read as is written in full in AValue, as a group of exactly four digits.  A two-digit
+//year cannot be told from a day or a month: '22-06-20' is 22 June 2020 read day first and 20 June 2022 read year first.
+//Asking for the year that was read, rather than for any four digits, also refuses '6/22/20 10:30:00.0123', and still
+//accepts a locale that writes spaces inside its dates ('22. 6. 2020').  A fraction of a second cannot pass for the year:
+//a two-digit year reads as 1950 or later, and the RTL refuses a fraction of 1000 ms or more.
+function YearWrittenInFull(const AValue : string; const ADate : TDateTime) : Boolean;
+var
+  year : Word;
+  month : Word;
+  day : Word;
+  yearText : string;
+  i : Integer;
+  start : Integer;
+begin
+  DecodeDate(ADate, year, month, day);
+  yearText := Format('%.4d', [year]);
+  Result := False;
+  start := 0;
+  for i := 1 to Length(AValue) + 1 do
+    if (i <= Length(AValue)) and CharInSet(AValue[i], ['0'..'9']) then
+    begin
+      if start = 0 then
+        start := i;
+    end
+    else if start > 0 then
+    begin
+      if Copy(AValue, start, i - start) = yearText then
+        Exit(True);
+      start := 0;
+    end;
+end;
+
+//True when AValue is a time and nothing else: it reads as a time and not as a date, in the invariant format or the
+//locale.  Under fi-FI '22.06.20' reads as both 22:06:20 and a date, so it is a date with a two-digit year, not a time.
+function IsTimeOnly(const AValue : string) : Boolean;
+var
+  value : TDateTime;
+begin
+  Result := (TryStrToTime(AValue, value, TFormatSettings.Invariant()) or TryStrToTime(AValue, value))
+    and not TryStrToDate(AValue, value, TFormatSettings.Invariant()) and not TryStrToDate(AValue, value);
+end;
+
 function Str2DateTimeValue(const ASource : string; out AResult : TValue) : Boolean;
 var
   dateTime : TDateTime;
@@ -1246,6 +1288,9 @@ begin
     invariantRead := TryStrToDateTimeExactly(ASource, invariantDateTime, TFormatSettings.Invariant());
     localeRead := TryStrToDateTimeExactly(ASource, localeDateTime, FormatSettings);
     Result := ChooseUnambiguous(invariantRead, invariantDateTime, localeRead, localeDateTime, dateTime);
+    //A date needs its year in full; a time on its own has no year to write
+    if Result and not IsTimeOnly(ASource) then
+      Result := YearWrittenInFull(ASource, dateTime);
   end;
   if Result then
     AResult := TValue.From<TDateTime>(dateTime);
@@ -1284,6 +1329,9 @@ begin
     invariantRead := TryStrToDate(ASource, invariantDate, TFormatSettings.Invariant());
     localeRead := TryStrToDate(ASource, localeDate);
     Result := ChooseUnambiguous(invariantRead, invariantDate, localeRead, localeDate, date);
+    //A date needs its year in full
+    if Result then
+      Result := YearWrittenInFull(ASource, date);
   end;
   if Result then
     AResult := TValue.From<TDate>(date);
