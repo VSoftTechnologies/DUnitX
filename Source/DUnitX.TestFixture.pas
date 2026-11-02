@@ -63,6 +63,9 @@ type
     FTearDownMethod : TTestMethod;
     FTearDownFixtureMethod : TTestMethod;
     FFixtureInstance : TObject;
+    //What the fixture's constructor raised when the fixture was built, until InitFixtureInstance raises it.
+    FCreateError : Exception;
+    FCreateErrorAddress : Pointer;
     FTestInOwnThread : boolean;
     FSetupFixtureMethodName : string;
     FSetupMethodName : string;
@@ -217,11 +220,22 @@ begin
     FIgnoredReason := IgnoredAttrib.Reason;
   end;
 
-  InternalInitFixtureInstance(true);
+  //A constructor that raises must not stop the other fixtures being built.  The fixture is left without an instance,
+  //and InitFixtureInstance raises the exception when the fixture runs, so the runner reports it against the tests.
+  try
+    InternalInitFixtureInstance(true);
+  except
+    on Exception do
+    begin
+      FCreateErrorAddress := ExceptAddr;
+      FCreateError := Exception(AcquireExceptionObject);
+    end;
+  end;
 end;
 
 destructor TDUnitXTestFixture.Destroy;
 begin
+  FCreateError.Free;
   if FFixtureInstance <> nil then
     FFixtureInstance.Free;
   if FChildren <> nil then
@@ -439,7 +453,16 @@ begin
 end;
 
 procedure TDUnitXTestFixture.InitFixtureInstance;
+var
+  createError : Exception;
 begin
+  //The constructor raised when the fixture was built: raise that, once, rather than construct the fixture again.
+  if FCreateError <> nil then
+  begin
+    createError := FCreateError;
+    FCreateError := nil;
+    raise createError at FCreateErrorAddress;
+  end;
   InternalInitFixtureInstance(false);
 end;
 
@@ -475,6 +498,16 @@ begin
       //The fixture instance has changed, need to update the tests to run on the new instance.
       for test in FTests do
         (test as ITestExecute).UpdateInstance(FFixtureInstance);
+      //So do the setup and teardown methods, which were bound to the previous instance, or to none when the
+      //constructor raised.
+      if Assigned(FSetupMethod) then
+        TMethod(FSetupMethod).Data := FFixtureInstance;
+      if Assigned(FTearDownMethod) then
+        TMethod(FTearDownMethod).Data := FFixtureInstance;
+      if Assigned(FSetupFixtureMethod) then
+        TMethod(FSetupFixtureMethod).Data := FFixtureInstance;
+      if Assigned(FTearDownFixtureMethod) then
+        TMethod(FTearDownFixtureMethod).Data := FFixtureInstance;
     end;
   end;
 end;

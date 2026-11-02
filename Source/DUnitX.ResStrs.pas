@@ -165,6 +165,7 @@ resourcestring
   SOnEndSetupTestLogError = 'unable to log error in OnEndSetupTest event : ';
   SNoFixturesFound  = 'No Test Fixtures found';
   SFixtureSetupError = 'Error in Fixture Setup. Fixture: %s Error: %s';
+  SFixtureCreateError = 'Error in Fixture Constructor. Fixture: %s Error: %s';
   SSkippingFixture  = 'Skipping Fixture.';
   SFixtureTeardownError = 'Error in Fixture TearDown. Fixture: %s Error: %s';
   STearDownErrorAfterFailure = 'Error in TearDown after the test had failed. Test: %s Error: %s';

@@ -874,10 +874,28 @@ begin
   Self.Loggers_StartTestFixture(threadId, fixture as ITestFixtureInfo);
   try
     //Initialize the fixture as it may have been destroyed in a previous run (when using gui runner).
+    //A constructor that raises fails this fixture's tests, and its setup, tests and teardown do not run.  A fixture
+    //none of whose tests will run does not need an instance, and reports its tests as it would have.
     if fixture.HasTests or runsFixtureSetup then
+    try
       fixture.InitFixtureInstance;
+    except
+      on e : Exception do
+      if HasTestsToRun(fixture) then
+      begin
+        setupOk := false;
+        ClearLogMessages;
+        InvalidateTestsInFixture(fixture, context, threadId, e, fixtureResult);
+        //A constructor that ignores the fixture (Assert.Ignore) is not an error: each test is reported ignored.
+        if not (e is ETestIgnored) then
+        begin
+          Log(TLogLevel.Error, Format(SFixtureCreateError, [fixture.Name, e.Message]));
+          Log(TLogLevel.Error, SSkippingFixture);
+        end;
+      end;
+    end;
     //only run the setup method if a test will execute
-    if runsFixtureSetup and Assigned(fixture.SetupFixtureMethod) then
+    if setupOk and runsFixtureSetup and Assigned(fixture.SetupFixtureMethod) then
       //returns false if an exception happens in the setup.
       setupOk := ExecuteSetupFixtureMethod(context, threadId, fixture, fixtureResult);
 
