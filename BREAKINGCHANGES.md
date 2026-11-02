@@ -63,7 +63,7 @@ When `[MaxTime]` interrupts a test, the test fails with `ETimedOut` even if the 
 
 ### Fixtures can run in parallel (#532)
 
-The new option `TDUnitX.Options.MaxDegreeOfParallelism`, set on the command line with `-m:x` (`--mdof:x`), runs up to x fixtures at once, each on a worker thread.  It defaults to 0, and 0 or 1 runs the fixtures one at a time on the runner's thread exactly as before.  It needs Delphi 11 or later; earlier compilers ignore it.
+The new option `TDUnitX.Options.MaxDegreeOfParallelism`, set on the command line with `-m:x` (`--mdop:x`), runs up to x fixtures at once, each on a worker thread.  It defaults to 0, and 0 or 1 runs the fixtures one at a time on the runner's thread exactly as before.  It needs Delphi 11 or later; earlier compilers ignore it.
 
 - **`ITestRunner` has new members:** `UseThreadPool` and `MaxThreads`, with their `Get`/`Set` methods.  `UseThreadPool` means "run the fixtures on worker threads" (the threads are not a `TThreadPool`).  A class of your own that implements `ITestRunner` no longer compiles until it adds them.  A suite that only uses the runner `TDUnitX.CreateRunner` returns is not affected.
 - **Every runner reads the option when it is created.**  `TDUnitXTestRunner` takes `MaxThreads` from `TDUnitX.Options.MaxDegreeOfParallelism` in its constructor, so the option must be set before the runner is created, and with `-m:x` a runner created by a GUI or IDE runner, or inside a test, runs its fixtures in parallel too.  Set its `UseThreadPool` to false to keep one serial.
