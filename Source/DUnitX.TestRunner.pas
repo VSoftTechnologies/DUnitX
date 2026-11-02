@@ -1745,6 +1745,7 @@ var
   logger : ITestLogger;
   NewIdx : integer;
   threadState : TDUnitXTestRunner.TThreadState;
+  logMsg : string;
 begin
   if logType >= TDUnitX.Options.LogLevel then
   begin
@@ -1753,13 +1754,22 @@ begin
     //Under the lock: a test's own threads log to the runner's thread's state.
     MonitorEnter(FLoggersLock);
     try
-      threadState.LogMessages.Add(msg);
-      NewIdx := Length(threadState.LogMessagesEx);
-      SetLength(threadState.LogMessagesEx, NewIdx + 1);
-      threadState.LogMessagesEx[NewIdx].Level := logType;
-      threadState.LogMessagesEx[NewIdx].Msg := msg;
-      for logger in FLoggers do
-        logger.OnLog(logType, msg);
+      //What the log and the loggers keep is the runner's, not the test's.  The log keeps its own copy of the message,
+      //so the caller's string is freed when the caller lets it go.
+      BeginRunnerAllocation;
+      try
+        logMsg := msg;
+        UniqueString(logMsg);
+        threadState.LogMessages.Add(logMsg);
+        NewIdx := Length(threadState.LogMessagesEx);
+        SetLength(threadState.LogMessagesEx, NewIdx + 1);
+        threadState.LogMessagesEx[NewIdx].Level := logType;
+        threadState.LogMessagesEx[NewIdx].Msg := logMsg;
+        for logger in FLoggers do
+          logger.OnLog(logType, logMsg);
+      finally
+        EndRunnerAllocation;
+      end;
     finally
       MonitorExit(FLoggersLock);
     end;

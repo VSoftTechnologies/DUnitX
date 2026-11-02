@@ -71,6 +71,9 @@ type
     //what it frees is its own, so it cannot hide a real leak.
     [Test]
     procedure Logger_State_Is_Not_A_Leak;
+    //What Log, Status and WriteLn keep, in the runner's log and in the loggers, is not the test's.
+    [Test]
+    procedure Logging_Is_Not_A_Leak;
   end;
 
 implementation
@@ -154,6 +157,7 @@ type
     procedure TearDown;
     procedure Passes;
     procedure LeaksForReal;
+    procedure LogsWhileRunning;
   end;
 
   //Frees what TLeakRunFixture's setup allocated as the test starts, and what the test allocated as teardown starts.
@@ -161,6 +165,12 @@ type
   protected
     procedure OnExecuteTest(const threadId : TThreadID; const Test : ITestInfo); override;
     procedure OnTeardownTest(const threadId : TThreadID; const Test : ITestInfo); override;
+  end;
+
+  //Keeps 50 bytes for each message logged.
+  TMessageKeepingLogger = class(TDUnitXNullLogger)
+  protected
+    procedure OnLog(const logType : TLogLevel; const msg : string); override;
   end;
 
   //Keeps 40 bytes as setup ends, and 40 more as the test starts, which it frees as teardown starts.
@@ -322,6 +332,19 @@ procedure TLeakRunFixture.LeaksForReal;
 begin
   Inc(GCounted, 32);
   Assert.IsTrue(true);
+end;
+
+procedure TLeakRunFixture.LogsWhileRunning;
+begin
+  TDUnitX.CurrentRunner.Status('a status line');
+  Assert.IsTrue(true);
+end;
+
+{ TMessageKeepingLogger }
+
+procedure TMessageKeepingLogger.OnLog(const logType : TLogLevel; const msg : string);
+begin
+  Inc(GCounted, 50);
 end;
 
 { TGapFreeingLogger }
@@ -534,6 +557,16 @@ begin
   outcome := RunLeakFixture(['Passes', 'LeaksForReal'], true, TStateKeepingLogger.Create);
   Assert.AreEqual('Passes=Pass: ' + sLineBreak + 'LeaksForReal=MemoryLeak: 32 bytes were leaked in the test method' +
     sLineBreak, outcome);
+end;
+
+procedure TTestsLeakCheck.Logging_Is_Not_A_Leak;
+var
+  outcome : string;
+begin
+  ResetLeakRun(0, 0, 0, 0);
+  outcome := RunLeakFixture(['LogsWhileRunning', 'LeaksForReal'], true, TMessageKeepingLogger.Create);
+  Assert.AreEqual('LogsWhileRunning=Pass: a status line' + sLineBreak + sLineBreak +
+    'LeaksForReal=MemoryLeak: 32 bytes were leaked in the test method' + sLineBreak, outcome);
 end;
 
 initialization
