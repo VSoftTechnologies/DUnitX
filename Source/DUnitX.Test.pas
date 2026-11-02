@@ -90,6 +90,12 @@ type
     //ISetTestResult
     procedure SetResult(const value : ITestResult);
 
+    //Runs AMethod under the test's [MaxTime], timing it
+    procedure ExecuteTimed(const AMethod : TTestMethod);
+    //Runs AMethod as ExecuteTimed does, expecting it to raise AExpectedException as [WillRaise] does
+    procedure ExecuteExpecting(const AMethod : TTestMethod; const AExpectedException : ExceptClass;
+      const AExceptionInheritance : TExceptionInheritance);
+
     //ITestExecute
     procedure Execute(const context : ITestExecuteContext); virtual;
     procedure UpdateInstance(const fixtureInstance : TObject); virtual;
@@ -103,16 +109,13 @@ type
   private
     FExpectedException : ExceptClass;
     FExceptionInheritance : TExceptionInheritance;
-    FRaiseContext : ITestExecuteContext;
   protected
-    procedure RaiseMethod;
     procedure Execute(const context : ITestExecuteContext); override;
   public
     constructor Create(const AFixture : ITestFixture; const AMethodName : string; const AName : string; const ACategory : string;
       const AMethod : TTestMethod; const AEnabled : boolean; const AIgnored : boolean = false;
       const AIgnoreReason : string = ''; const AMaxTime : Cardinal = 0;
       const AExpectedException : ExceptClass = nil; const AExceptionInheritance : TExceptionInheritance = exExact);
-    destructor Destroy; override;
   end;
 
   TDUnitXTestCase = class(TDUnitXTest, ITestExecute)
@@ -192,6 +195,11 @@ begin
 end;
 
 procedure TDUnitXTest.Execute(const context : ITestExecuteContext);
+begin
+  ExecuteTimed(FMethod);
+end;
+
+procedure TDUnitXTest.ExecuteTimed(const AMethod : TTestMethod);
 {$IFDEF MSWINDOWS}
 var
   timeout : ITimeout;
@@ -207,7 +215,7 @@ begin
     begin
       try
         try
-          FMethod();
+          AMethod();
         finally
           //Stop it here, not when it is released: once stopped it cannot interrupt the test.
           timeout.Stop;
@@ -233,12 +241,45 @@ begin
     end
     else
 {$ENDIF}
-      FMethod();
+      AMethod();
   finally
     FEndTime := Now();
 
     FDuration := TTimeSpan.Subtract(FEndTime, FStartTime);
   end;
+end;
+
+procedure TDUnitXTest.ExecuteExpecting(const AMethod : TTestMethod; const AExpectedException : ExceptClass;
+  const AExceptionInheritance : TExceptionInheritance);
+var
+  timedMethod : TTestLocalMethod;
+begin
+  timedMethod :=
+    procedure
+    begin
+      ExecuteTimed(AMethod);
+    end;
+{$IFDEF MSWINDOWS}
+  try
+{$ENDIF}
+    if AExceptionInheritance = exDescendant then
+      Assert.WillRaiseDescendant(timedMethod, AExpectedException)
+    else
+      Assert.WillRaise(timedMethod, AExpectedException);
+{$IFDEF MSWINDOWS}
+  except
+    //The expected-exception check replaces the timeout with "expected X, got ETimedOut".
+    on E : Exception do
+      if FTimedOut and not (E is ETimedOut) and not (E is ETestIgnored) then
+        RaiseTimedOut
+      else
+        raise;
+  end;
+  //Or takes it for the expected exception, as [WillRaise(Exception, exDescendant)] does.  [WillRaise(ETimedOut)]
+  //expects the timeout, so it passes.
+  if FTimedOut and not AExpectedException.InheritsFrom(ETimedOut) then
+    RaiseTimedOut;
+{$ENDIF}
 end;
 
 function TDUnitXTest.GetActive : boolean;
@@ -436,22 +477,23 @@ end;
 
 procedure TDUnitXTestCase.Execute(const context : ITestExecuteContext);
 begin
-  FStartTime := Now();
-  try
-    //Raised before [WillRaise] is applied, so an expected exception cannot hide it
-    if FArgsError <> '' then
+  //Raised before [WillRaise] is applied, so an expected exception cannot hide it
+  if FArgsError <> '' then
+  begin
+    FStartTime := Now();
+    try
       raise ETestFrameworkException.Create(FArgsError);
-
-    if FExpectedException = nil then
-      InvokeMethod
-    else if FExceptionInheritance = exDescendant then
-      Assert.WillRaiseDescendant(InvokeMethod, FExpectedException)
-    else
-      Assert.WillRaise(InvokeMethod, FExpectedException);
-  finally
-    FEndTime := Now();
-    FDuration := TTimeSpan.Subtract(FEndTime, FStartTime);
+    finally
+      FEndTime := Now();
+      FDuration := TTimeSpan.Subtract(FEndTime, FStartTime);
+    end;
   end;
+
+  //Run as any other test is, so the case's [MaxTime] applies
+  if FExpectedException = nil then
+    ExecuteTimed(InvokeMethod)
+  else
+    ExecuteExpecting(InvokeMethod, FExpectedException, FExceptionInheritance);
 end;
 
 function TDUnitXTestCase.GetIsTestCase : boolean;
@@ -496,46 +538,9 @@ begin
   FExceptionInheritance := AExceptionInheritance;
 end;
 
-destructor TDUnitXExceptionTest.Destroy;
-begin
-  FRaiseContext := nil;
-  inherited;
-end;
-
 procedure TDUnitXExceptionTest.Execute(const context : ITestExecuteContext);
 begin
-  FRaiseContext := context;
-  try
-{$IFDEF MSWINDOWS}
-    try
-{$ENDIF}
-      if FExceptionInheritance = exDescendant then
-        Assert.WillRaiseDescendant(RaiseMethod, FExpectedException)
-      else
-        Assert.WillRaise(RaiseMethod, FExpectedException);
-{$IFDEF MSWINDOWS}
-    except
-      //The expected-exception check replaces the timeout with "expected X, got ETimedOut".
-      on E : Exception do
-        if FTimedOut and not (E is ETimedOut) and not (E is ETestIgnored) then
-          RaiseTimedOut
-        else
-          raise;
-    end;
-    //Or takes it for the expected exception, as [WillRaise(Exception, exDescendant)] does.  [WillRaise(ETimedOut)]
-    //expects the timeout, so it passes.
-    if FTimedOut and not FExpectedException.InheritsFrom(ETimedOut) then
-      RaiseTimedOut;
-{$ENDIF}
-  finally
-    //Only RaiseMethod needs it; keeping it would hold the run's results, and through them this test, alive.
-    FRaiseContext := nil;
-  end;
-end;
-
-procedure TDUnitXExceptionTest.RaiseMethod;
-begin
-  inherited Execute(FRaiseContext);
+  ExecuteExpecting(FMethod, FExpectedException, FExceptionInheritance);
 end;
 
 end.

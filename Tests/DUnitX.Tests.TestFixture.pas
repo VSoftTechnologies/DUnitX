@@ -192,6 +192,12 @@ type
     procedure Within_Its_MaxTime_Passes;
     [Test]
     procedure A_Caught_Interruption_Is_Followed_By_Another;
+    [Test]
+    procedure A_TestCase_Overrun_Is_Interrupted_And_Fails;
+    [Test]
+    procedure An_Interrupted_WillRaise_TestCase_Is_Reported_As_The_Timeout;
+    [Test]
+    procedure An_Interrupted_TestCase_That_Expects_ETimedOut_Passes;
   end;
 {$M-}
 {$ENDIF}
@@ -241,6 +247,7 @@ uses
   DUnitX.Types,
   DUnitX.Exceptions,
   DUnitX.Extensibility,
+  DUnitX.FixtureProvider,
   DUnitX.FixtureResult,
   DUnitX.InternalInterfaces,
   DUnitX.Loggers.XML.JUnit,
@@ -1143,6 +1150,35 @@ type
     procedure CatchesTheInterruptionAndIgnores;
   end;
 
+  //Not fixtures: each holds one [TestCase] that loops until it is interrupted, generated as a suite's would be.
+  TMaxTimeCaseClass = class
+  public
+    [Test]
+    [TestCase('1')]
+    [MaxTime(MAX_TIME_LIMIT)]
+    procedure BusyLoop(const AValue : Integer);
+  end;
+
+  TMaxTimeWillRaiseCaseClass = class
+  public
+    [Test]
+    [TestCase('1')]
+    [MaxTime(MAX_TIME_LIMIT)]
+    [WillRaise(EConvertError)]
+    procedure BusyLoop(const AValue : Integer);
+  end;
+
+  TMaxTimeExpectsTimeoutCaseClass = class
+  public
+    [Test]
+    [TestCase('1')]
+    [MaxTime(MAX_TIME_LIMIT)]
+    [WillRaise(ETimedOut)]
+    procedure BusyLoop(const AValue : Integer);
+  end;
+
+  TMaxTimeFixtureProviderAccess = class(TDUnitXFixtureProvider);
+
 { TMaxTimeClass }
 
 //Stores its parameter in its home slot, at the top of the caller's stack.
@@ -1363,6 +1399,40 @@ begin
     [AElapsed, MAX_TIME_LIMIT]));
 end;
 
+procedure TMaxTimeCaseClass.BusyLoop(const AValue : Integer);
+begin
+  while not _MaxTimeStopBusyLoop do
+    ;
+  _MaxTimeTestRanToTheEnd := True;
+end;
+
+procedure TMaxTimeWillRaiseCaseClass.BusyLoop(const AValue : Integer);
+begin
+  while not _MaxTimeStopBusyLoop do
+    ;
+  _MaxTimeTestRanToTheEnd := True;
+end;
+
+procedure TMaxTimeExpectsTimeoutCaseClass.BusyLoop(const AValue : Integer);
+begin
+  while not _MaxTimeStopBusyLoop do
+    ;
+  _MaxTimeTestRanToTheEnd := True;
+end;
+
+//A fixture of AClass's tests, generated from their attributes by the fixture provider, as a suite's are.
+function GenerateMaxTimeFixture(const AClass : TClass) : ITestFixture;
+var
+  provider : TDUnitXFixtureProvider;
+  providerIntf : IFixtureProvider;
+begin
+  _MaxTimeTestRanToTheEnd := False;
+  result := TDUnitXTestFixture.Create(AClass.ClassName, '', AClass, 'AUnit') as ITestFixture;
+  provider := TDUnitXFixtureProvider.Create;
+  providerIntf := provider;
+  TMaxTimeFixtureProviderAccess(provider).GenerateTests(nil, result);
+end;
+
 { TMaxTimeTests }
 
 procedure TMaxTimeTests.Overrun_In_A_Busy_Loop_Is_Interrupted_And_Fails;
@@ -1534,6 +1604,40 @@ begin
   Assert.AreEqual(1, _MaxTimeInterruptionsCaught, 'the test did not catch the first interruption');
   //Interrupted again about a second after the first: well before the safety net ends the loop.
   CheckInterrupted(results, elapsed, MAX_TIME_UNINTERRUPTED - 500);
+end;
+
+procedure TMaxTimeTests.A_TestCase_Overrun_Is_Interrupted_And_Fails;
+var
+  results : IRunResults;
+  testNames : string;
+  elapsed : Cardinal;
+begin
+  elapsed := RunMaxTimeFixture(GenerateMaxTimeFixture(TMaxTimeCaseClass), results, testNames);
+  CheckInterrupted(results, elapsed);
+end;
+
+procedure TMaxTimeTests.An_Interrupted_WillRaise_TestCase_Is_Reported_As_The_Timeout;
+var
+  results : IRunResults;
+  testNames : string;
+  elapsed : Cardinal;
+begin
+  elapsed := RunMaxTimeFixture(GenerateMaxTimeFixture(TMaxTimeWillRaiseCaseClass), results, testNames);
+  CheckInterrupted(results, elapsed);
+end;
+
+procedure TMaxTimeTests.An_Interrupted_TestCase_That_Expects_ETimedOut_Passes;
+var
+  results : IRunResults;
+  testNames : string;
+  elapsed : Cardinal;
+begin
+  elapsed := RunMaxTimeFixture(GenerateMaxTimeFixture(TMaxTimeExpectsTimeoutCaseClass), results, testNames);
+  Assert.AreEqual(1, results.TestCount, 'the number of tests');
+  Assert.AreEqual(1, results.PassCount, 'a case that expects the timeout did not pass');
+  Assert.IsFalse(_MaxTimeTestRanToTheEnd, 'the case ran to its end instead of being interrupted');
+  Assert.IsTrue(elapsed < MAX_TIME_UNINTERRUPTED div 2, Format('the case was stopped after %d ms, not soon after its ' +
+    '[MaxTime] of %d ms', [elapsed, MAX_TIME_LIMIT]));
 end;
 {$ENDIF}
 
