@@ -415,9 +415,15 @@ begin
         if args[index].TryConvert(parameters[index].ParamType.Handle, tmp) then
           FArgs[index] := tmp
         else if FArgsError = '' then
+        begin
           //Reported when the case runs, so only this case errors
           FArgsError := Format('Cannot convert ''%s'' to %s for parameter %s',
             [args[index].ToString, parameters[index].ParamType.Name, parameters[index].Name]);
+          //A date that does not convert is nearly always one that could be misread: say how to write it
+          if (parameters[index].ParamType.Handle = TypeInfo(TDate)) or
+            (parameters[index].ParamType.Handle = TypeInfo(TDateTime)) then
+            FArgsError := FArgsError + ' (write a date as ISO 8601 yyyy-mm-dd, as in 2020-06-22)';
+        end;
       end;
   end;
 end;
