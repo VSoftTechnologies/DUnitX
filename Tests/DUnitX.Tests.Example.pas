@@ -31,6 +31,7 @@ interface
 {$I ..\Source\DUnitX.inc}
 
 uses
+  DUnitX.Exceptions,
   DUnitX.TestFramework,
   System.SysUtils;
 
@@ -109,6 +110,7 @@ type
 
     [Test]
     [MaxTime(1000)]
+    [WillRaise(ETimedOut)]
     procedure TestMaxTime;
 
     //Disabled test
@@ -181,7 +183,6 @@ implementation
 
 uses
   DUnitX.DUnitCompatibility,
-  DUnitX.Exceptions,
   System.Diagnostics,
   System.DateUtils;
 
@@ -262,21 +263,13 @@ begin
   stopwatch := TStopWatch.Create;
   stopwatch.Reset;
   stopwatch.Start;
-  try
-    repeat
-      //Give some time back to the system to process the test.
-      Sleep(20);
+  repeat
+    //Give some time back to the system to process the test.
+    Sleep(20);
 
-      elapsedTime := stopwatch.ElapsedMilliseconds;
-    until (elapsedTime >= 2000);
-    Assert.Fail('Timeout did not work');
-  except
-    on e : ETimedOut do
-    begin
-      Assert.Pass('timed out as expected');
-
-    end;
-  end;
+    elapsedTime := stopwatch.ElapsedMilliseconds;
+  until (elapsedTime >= 2000);
+  Assert.Fail('Timeout did not work');
 end;
 
 procedure TMyExampleTests.TestMeAnyway;

@@ -39,9 +39,13 @@ type
   ITimeout = interface(IUnknown)
     ['{0A380F7B-9CEE-4FD7-9D86-60CE05B97C1A}']
     procedure Stop;
+    //True once the watchdog has interrupted the test.  Final once Stop has returned.
+    function Interrupted : Boolean;
   end;
 
 function InitialiseTimeout(const ATime : cardinal) : ITimeout;
+//Raises the ETimedOut the watchdog interrupts a test with.
+procedure RaiseTimedOut;
 
 implementation
 
@@ -87,6 +91,7 @@ type
     constructor Create(const ATimeout : Cardinal; AThreadHandle : THandle);
     destructor Destroy; override;
     procedure Stop;
+    function Interrupted : Boolean;
   end;
 
   TCancelSynchronousIo = function(hThread : THandle) : BOOL; stdcall;
@@ -113,6 +118,11 @@ begin
   Result := Timeout;
   //Only now: had it fired before Result was set, nothing would have freed the timeout.
   Timeout.FTimeoutThread.Start;
+end;
+
+procedure RaiseTimedOut;
+begin
+  raise ETimedOut.Create(SOperationTimedOut);
 end;
 
 {$IFDEF CPUX86}
@@ -234,6 +244,12 @@ procedure TTimeout.Stop;
 begin
   InterlockedExchange(FTimeoutThread.State, TIMEOUT_STOPPED);
   FTimeoutThread.Terminate;
+end;
+
+function TTimeout.Interrupted : Boolean;
+begin
+  //Set only while the test thread is suspended, so the test reads it settled once it has stopped the timeout.
+  Result := FTimeoutThread.Interrupted;
 end;
 
 constructor TTimeout.Create(const ATimeout : Cardinal; AThreadHandle : THandle);

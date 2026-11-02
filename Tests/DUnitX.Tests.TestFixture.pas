@@ -173,6 +173,22 @@ type
     [Test]
     procedure The_Next_Test_Runs_And_Its_Alertable_Wait_Is_Not_Cut_Short;
     [Test]
+    procedure A_Caught_Interruption_Replaced_By_A_Failure_Is_Reported_As_The_Timeout;
+    [Test]
+    procedure A_Caught_Interruption_Replaced_By_A_Pass_Is_Reported_As_The_Timeout;
+    [Test]
+    procedure A_Caught_Interruption_The_Test_Returns_From_Is_Reported_As_The_Timeout;
+    [Test]
+    procedure An_Interrupted_WillRaise_Test_Is_Reported_As_The_Timeout;
+    [Test]
+    procedure An_Interrupted_WillRaise_Descendant_Test_Is_Reported_As_The_Timeout;
+    [Test]
+    procedure An_Interrupted_Test_That_Expects_ETimedOut_Passes;
+    [Test]
+    procedure An_Interruption_Caught_By_Assert_WillRaise_Is_Reported_As_The_Timeout;
+    [Test]
+    procedure A_Caught_Interruption_The_Test_Ignores_Is_Ignored;
+    [Test]
     procedure Within_Its_MaxTime_Passes;
     [Test]
     procedure A_Caught_Interruption_Is_Followed_By_Another;
@@ -1120,6 +1136,11 @@ type
     procedure WaitsAlertably;
     procedure Passes;
     procedure CatchesTheInterruptionThenHangsAgain;
+    procedure CatchesTheInterruptionAndFails;
+    procedure CatchesTheInterruptionAndPasses;
+    procedure CatchesTheInterruptionAndReturns;
+    procedure CatchesTheInterruptionWithAssertWillRaise;
+    procedure CatchesTheInterruptionAndIgnores;
   end;
 
 { TMaxTimeClass }
@@ -1204,8 +1225,59 @@ begin
   _MaxTimeTestRanToTheEnd := True;
 end;
 
+//Catches the interruption and fails with a message of its own.
+procedure TMaxTimeClass.CatchesTheInterruptionAndFails;
+begin
+  try
+    LoopUntilStopped;
+  except
+    on ETimedOut do
+      Assert.Fail('the test failed itself');
+  end;
+end;
+
+//Catches the interruption and passes.
+procedure TMaxTimeClass.CatchesTheInterruptionAndPasses;
+begin
+  try
+    LoopUntilStopped;
+  except
+    on ETimedOut do
+      Assert.Pass;
+  end;
+end;
+
+//Lets Assert.WillRaiseDescendant catch the interruption, which it takes for the expected exception.
+procedure TMaxTimeClass.CatchesTheInterruptionWithAssertWillRaise;
+begin
+  Assert.WillRaiseDescendant(LoopUntilStopped, Exception);
+end;
+
+//Catches the interruption and ignores itself.
+procedure TMaxTimeClass.CatchesTheInterruptionAndIgnores;
+begin
+  try
+    LoopUntilStopped;
+  except
+    on ETimedOut do
+      Assert.Ignore('too slow here');
+  end;
+end;
+
+//Catches the interruption and returns as if nothing had happened.
+procedure TMaxTimeClass.CatchesTheInterruptionAndReturns;
+begin
+  try
+    LoopUntilStopped;
+  except
+    on ETimedOut do
+      ;
+  end;
+end;
+
 //A fixture of the named tests of TMaxTimeClass, in order, each with the [MaxTime] at the same index.
-function CreateMaxTimeFixture(const ATestNames : array of string; const AMaxTimes : array of cardinal) : ITestFixture;
+function CreateMaxTimeFixture(const ATestNames : array of string; const AMaxTimes : array of cardinal;
+  const AExpectedException : ExceptClass = nil; const AExceptionInheritance : TExceptionInheritance = exExact) : ITestFixture;
 var
   rttiContext : TRttiContext;
   rttiType : TRttiType;
@@ -1224,7 +1296,8 @@ begin
     rttiMethod := rttiType.GetMethod(ATestNames[i]);
     method.Code := rttiMethod.CodeAddress;
     method.Data := instance;
-    result.AddTest(ATestNames[i], TTestMethod(method), ATestNames[i], '', rttiMethod, True, False, '', AMaxTimes[i]);
+    result.AddTest(ATestNames[i], TTestMethod(method), ATestNames[i], '', rttiMethod, True, False, '', AMaxTimes[i],
+      AExpectedException, AExceptionInheritance);
   end;
 end;
 
@@ -1343,6 +1416,99 @@ begin
   Assert.AreEqual(1, results.FailureCount, 'the interrupted test did not fail');
   Assert.AreEqual(1, results.PassCount, 'the test after the interrupted one did not pass');
   Assert.AreEqual(Cardinal(0), _MaxTimeAlertableWaitResult, 'SleepEx in the next test ended early (WAIT_IO_COMPLETION is 192)');
+end;
+
+procedure TMaxTimeTests.A_Caught_Interruption_Replaced_By_A_Failure_Is_Reported_As_The_Timeout;
+var
+  results : IRunResults;
+  testNames : string;
+  elapsed : Cardinal;
+begin
+  elapsed := RunMaxTimeFixture(CreateMaxTimeFixture(['CatchesTheInterruptionAndFails'], [MAX_TIME_LIMIT]), results,
+    testNames);
+  CheckInterrupted(results, elapsed);
+end;
+
+procedure TMaxTimeTests.A_Caught_Interruption_Replaced_By_A_Pass_Is_Reported_As_The_Timeout;
+var
+  results : IRunResults;
+  testNames : string;
+  elapsed : Cardinal;
+begin
+  elapsed := RunMaxTimeFixture(CreateMaxTimeFixture(['CatchesTheInterruptionAndPasses'], [MAX_TIME_LIMIT]), results,
+    testNames);
+  CheckInterrupted(results, elapsed);
+end;
+
+procedure TMaxTimeTests.A_Caught_Interruption_The_Test_Returns_From_Is_Reported_As_The_Timeout;
+var
+  results : IRunResults;
+  testNames : string;
+  elapsed : Cardinal;
+begin
+  elapsed := RunMaxTimeFixture(CreateMaxTimeFixture(['CatchesTheInterruptionAndReturns'], [MAX_TIME_LIMIT]), results,
+    testNames);
+  CheckInterrupted(results, elapsed);
+end;
+
+//The expected-exception check catches the interruption and replaces it with "expected EConvertError, got ETimedOut".
+procedure TMaxTimeTests.An_Interrupted_WillRaise_Test_Is_Reported_As_The_Timeout;
+var
+  results : IRunResults;
+  testNames : string;
+  elapsed : Cardinal;
+begin
+  elapsed := RunMaxTimeFixture(CreateMaxTimeFixture(['BusyLoop'], [MAX_TIME_LIMIT], EConvertError), results, testNames);
+  CheckInterrupted(results, elapsed);
+end;
+
+//ETimedOut is an Exception, so [WillRaise(Exception, exDescendant)] takes the interruption for the expected exception.
+procedure TMaxTimeTests.An_Interrupted_WillRaise_Descendant_Test_Is_Reported_As_The_Timeout;
+var
+  results : IRunResults;
+  testNames : string;
+  elapsed : Cardinal;
+begin
+  elapsed := RunMaxTimeFixture(CreateMaxTimeFixture(['BusyLoop'], [MAX_TIME_LIMIT], Exception, exDescendant), results,
+    testNames);
+  CheckInterrupted(results, elapsed);
+end;
+
+procedure TMaxTimeTests.An_Interrupted_Test_That_Expects_ETimedOut_Passes;
+var
+  results : IRunResults;
+  testNames : string;
+  elapsed : Cardinal;
+begin
+  elapsed := RunMaxTimeFixture(CreateMaxTimeFixture(['BusyLoop'], [MAX_TIME_LIMIT], ETimedOut), results, testNames);
+  Assert.AreEqual(1, results.TestCount, 'the number of tests');
+  Assert.AreEqual(1, results.PassCount, 'a test that expects the timeout did not pass');
+  Assert.IsFalse(_MaxTimeTestRanToTheEnd, 'the test ran to its end instead of being interrupted');
+  Assert.IsTrue(elapsed < MAX_TIME_UNINTERRUPTED div 2, Format('the test was stopped after %d ms, not soon after its ' +
+    '[MaxTime] of %d ms', [elapsed, MAX_TIME_LIMIT]));
+end;
+
+procedure TMaxTimeTests.An_Interruption_Caught_By_Assert_WillRaise_Is_Reported_As_The_Timeout;
+var
+  results : IRunResults;
+  testNames : string;
+  elapsed : Cardinal;
+begin
+  elapsed := RunMaxTimeFixture(CreateMaxTimeFixture(['CatchesTheInterruptionWithAssertWillRaise'], [MAX_TIME_LIMIT]),
+    results, testNames);
+  CheckInterrupted(results, elapsed);
+end;
+
+//Assert.Ignore is the test's own choice, so it is not replaced by the timeout.
+procedure TMaxTimeTests.A_Caught_Interruption_The_Test_Ignores_Is_Ignored;
+var
+  results : IRunResults;
+  testNames : string;
+begin
+  RunMaxTimeFixture(CreateMaxTimeFixture(['CatchesTheInterruptionAndIgnores'], [MAX_TIME_LIMIT]), results, testNames);
+  Assert.AreEqual(1, results.TestCount, 'the number of tests');
+  Assert.AreEqual(1, results.IgnoredCount, 'a test that ignored itself was not reported ignored');
+  Assert.AreEqual(0, results.FailureCount, 'a test that ignored itself was reported as failing');
 end;
 
 procedure TMaxTimeTests.Within_Its_MaxTime_Passes;
