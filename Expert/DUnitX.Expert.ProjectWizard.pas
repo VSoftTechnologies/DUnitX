@@ -72,6 +72,7 @@ uses
   DccStrs,
   Controls,
   Forms,
+  SysUtils,
   Windows;
 
 { TNewBatchJobWizard }
@@ -93,23 +94,26 @@ var
   WizardForm     : TfrmDunitXNewProject;
   ModuleServices : IOTAModuleServices;
   Project        : IOTAProject;
-  Config         : IOTABuildConfiguration;
+  Configs        : IOTAProjectOptionsConfigurations;
   TestUnit       : IOTAModule;
 begin
   WizardForm := TfrmDunitXNewProject.Create(Application);
   try
     if WizardForm.ShowModal = mrOk then
     begin
+      ModuleServices := (BorlandIDEServices as IOTAModuleServices);
       if not WizardForm.AddToProjectGroup then
       begin
-        (BorlandIDEServices as IOTAModuleServices).CloseAll;
+        // CloseAll returns False when the user cancels its save prompt: stop here rather than
+        // add the new project to the group the user meant to close.
+        if not ModuleServices.CloseAll then
+          Exit;
       end;
-      ModuleServices := (BorlandIDEServices as IOTAModuleServices);
       // Create Project Source
       ModuleServices.CreateModule(TTestProjectFile.Create(WizardForm.ReportLeakOption));
       Project :=  GetActiveProject;
-      Config := (Project.ProjectOptions as IOTAProjectOptionsConfigurations).BaseConfiguration;
-      Config.SetValue(sUnitSearchPath,'$(DUnitX)');
+      if (Project <> nil) and Supports(Project.ProjectOptions, IOTAProjectOptionsConfigurations, Configs) then
+        Configs.BaseConfiguration.SetValue(sUnitSearchPath,'$(DUnitX)');
       // Create Test Unit
       if WizardForm.CreateTestUnit then
       begin
@@ -117,7 +121,8 @@ begin
                        TNewTestUnit.Create(WizardForm.CreateSetupTearDownMethods,
                                            WizardForm.CreateSampleMethods,
                                            WizardForm.TestFixtureClasaName ));
-         Project.AddFile(TestUnit.FileName, true);
+         if Project <> nil then
+           Project.AddFile(TestUnit.FileName, true);
       end;
 
 
