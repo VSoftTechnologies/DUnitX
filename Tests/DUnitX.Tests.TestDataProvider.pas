@@ -90,6 +90,19 @@ type
     //silently giving it no cases
     [Test]
     procedure TestCaseSource_That_Cannot_Be_Used_Errors_The_Test;
+    //A [TestCaseProvider] name that is misspelt or not registered errors the test, naming the provider, instead of
+    //silently giving the method no tests
+    [Test]
+    procedure TestCaseProvider_Name_Not_Registered_Errors_The_Test;
+    //A [TestCaseProvider] class that is not registered errors the test, naming the class
+    [Test]
+    procedure TestCaseProvider_Class_Not_Registered_Errors_The_Test;
+    //A registered provider that has no cases for the method errors the test, as a [TestCaseSource] with no rows does
+    [Test]
+    procedure TestCaseProvider_With_No_Cases_Errors_The_Test;
+    //A [TestCaseProvider] class that is registered supplies its cases
+    [Test]
+    procedure TestCaseProvider_Class_Registered_Supplies_The_Cases;
     //A source's rows are checked for count and conversion as [TestCase] values are
     [Test]
     procedure TestCaseSource_Values_Are_Checked;
@@ -342,6 +355,39 @@ type
     procedure TwoBadSources(const value : integer);
   end;
 
+  //A provider with no cases, registered as 'EmptyProvider'
+  TEmptyProvider = class(TTestDataProvider)
+  public
+    constructor Create; override;
+    function GetCaseCount(const methodName : string) : Integer; override;
+    function GetCaseName(const methodName : string; const caseNumber : integer) : string; override;
+    function GetCaseParams(const methodName : string; const caseNumber : integer) : TValuearray; override;
+  end;
+
+  //A provider that is never registered
+  TUnregisteredProvider = class(TEmptyProvider);
+
+  //Not a fixture: the tests below generate its tests and run them themselves.
+  TProviderCases = class
+  public
+    [Test]
+    [TestCaseProvider('Sampleprovidr')]
+    procedure MisspeltProvider(const value1, value2 : integer; expected : boolean);
+    [Test]
+    [TestCaseProvider(TUnregisteredProvider)]
+    procedure UnregisteredProviderClass(const value1, value2 : integer; expected : boolean);
+    [Test]
+    [TestCaseProvider('EmptyProvider')]
+    procedure ProviderWithNoCases(const value1, value2 : integer; expected : boolean);
+    [Test]
+    [TestCaseProvider(TSampleProvider)]
+    procedure RegisteredProviderClass(const value1, value2 : integer; expected : boolean);
+    [Test]
+    [RepeatTest(2)]
+    [TestCaseProvider('Sampleprovidr')]
+    procedure RepeatedMisspelt(const value1, value2 : integer; expected : boolean);
+  end;
+
 //Generates the tests of a class that is not registered as a fixture, as the runner would
 function GenerateCases(const AClass : TClass) : ITestFixture;
 var
@@ -367,6 +413,18 @@ begin
         Result := Result + '|';
       Result := Result + test.Name;
     end;
+end;
+
+//The child fixture a [RepeatTest] method's tests are added to
+function RepeatChild(const AFixture : ITestFixture; const AMethodName : string) : ITestFixture;
+var
+  child : ITestFixture;
+begin
+  for child in AFixture.Children do
+    if child.FullName = AFixture.FullName + '.' + AMethodName then
+      exit(child);
+  Result := nil;
+  Assert.Fail('no child fixture for ' + AMethodName);
 end;
 
 function FindTest(const AFixture : ITestFixture; const AName : string) : ITestExecute;
@@ -975,6 +1033,51 @@ procedure TCaseSourceCases.AddBadValue(const a, b, expected : integer);
 begin
 end;
 
+{ TEmptyProvider }
+
+constructor TEmptyProvider.Create;
+begin
+  inherited;
+end;
+
+function TEmptyProvider.GetCaseCount(const methodName : string) : Integer;
+begin
+  Result := 0;
+end;
+
+function TEmptyProvider.GetCaseName(const methodName : string; const caseNumber : integer) : string;
+begin
+  Result := '';
+end;
+
+function TEmptyProvider.GetCaseParams(const methodName : string; const caseNumber : integer) : TValuearray;
+begin
+  SetLength(Result, 0);
+end;
+
+{ TProviderCases }
+
+procedure TProviderCases.MisspeltProvider(const value1, value2 : integer; expected : boolean);
+begin
+end;
+
+procedure TProviderCases.UnregisteredProviderClass(const value1, value2 : integer; expected : boolean);
+begin
+end;
+
+procedure TProviderCases.ProviderWithNoCases(const value1, value2 : integer; expected : boolean);
+begin
+end;
+
+procedure TProviderCases.RepeatedMisspelt(const value1, value2 : integer; expected : boolean);
+begin
+end;
+
+procedure TProviderCases.RegisteredProviderClass(const value1, value2 : integer; expected : boolean);
+begin
+  Assert.AreEqual(expected, value1 = value2);
+end;
+
 { TTestCaseAttributeTests }
 
 procedure TTestCaseAttributeTests.TestCase_Names_Each_Case_From_Its_Values;
@@ -1050,6 +1153,45 @@ begin
   CheckRuns(fixture, 'FromOverload(7)');
 end;
 
+procedure TTestCaseAttributeTests.TestCaseProvider_Name_Not_Registered_Errors_The_Test;
+var
+  fixture : ITestFixture;
+begin
+  fixture := GenerateCases(TProviderCases);
+  Assert.AreEqual('MisspeltProvider.Sampleprovidr', TestNames(fixture, 'MisspeltProvider'));
+  CheckErrors(fixture, 'MisspeltProvider.Sampleprovidr', 'No TestCaseProvider registered as ''Sampleprovidr'' (names are case-sensitive)');
+  //Each repeat of the method errors
+  Assert.AreEqual('RepeatedMisspelt-1-of-2.Sampleprovidr|RepeatedMisspelt-2-of-2.Sampleprovidr', TestNames(RepeatChild(fixture, 'RepeatedMisspelt'), 'RepeatedMisspelt'));
+end;
+
+procedure TTestCaseAttributeTests.TestCaseProvider_Class_Not_Registered_Errors_The_Test;
+var
+  fixture : ITestFixture;
+begin
+  fixture := GenerateCases(TProviderCases);
+  Assert.AreEqual('UnregisteredProviderClass.TUnregisteredProvider', TestNames(fixture, 'UnregisteredProviderClass'));
+  CheckErrors(fixture, 'UnregisteredProviderClass.TUnregisteredProvider',
+    'TestCaseProvider class TUnregisteredProvider is not registered (register it with TestDataProviderManager.RegisterProvider)');
+end;
+
+procedure TTestCaseAttributeTests.TestCaseProvider_With_No_Cases_Errors_The_Test;
+var
+  fixture : ITestFixture;
+begin
+  fixture := GenerateCases(TProviderCases);
+  Assert.AreEqual('ProviderWithNoCases.EmptyProvider', TestNames(fixture, 'ProviderWithNoCases'));
+  CheckErrors(fixture, 'ProviderWithNoCases.EmptyProvider', 'TestCaseProvider ''EmptyProvider'' returned no cases for ProviderWithNoCases');
+end;
+
+procedure TTestCaseAttributeTests.TestCaseProvider_Class_Registered_Supplies_The_Cases;
+var
+  fixture : ITestFixture;
+begin
+  fixture := GenerateCases(TProviderCases);
+  Assert.StartsWith('RegisteredProviderClass.Comparetest (00)|', TestNames(fixture, 'RegisteredProviderClass'));
+  CheckRuns(fixture, 'RegisteredProviderClass.Comparetest (00)');
+end;
+
 procedure TTestCaseAttributeTests.TestCaseSource_Values_Are_Checked;
 var
   fixture : ITestFixture;
@@ -1107,6 +1249,7 @@ end;
 
 initialization
   TestDataProviderManager.RegisterProvider('Sampleprovider', TSampleProvider);
+  TestDataProviderManager.RegisterProvider('EmptyProvider', TEmptyProvider);
   TDUnitX.RegisterTestFixture(TestFixtureProviderTest);
   TDUnitX.RegisterTestFixture(TWillRaiseTestCaseTests);
   TDUnitX.RegisterTestFixture(TEnumTestCaseConversionTests);
