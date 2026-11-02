@@ -63,6 +63,20 @@ type
   public
     [Test]
     procedure Memory_Freed_By_A_Test_Is_Not_A_Leak;
+    //Memory a test's setup or the test allocates and something frees between the phases (another thread, say) is
+    //not a leak.  Here a logger frees it, from the callbacks that come between the phases.
+    [Test]
+    procedure Memory_Freed_Between_Phases_Is_Not_A_Leak;
+    //What a logger keeps from the callbacks that come between a test's phases is the logger's, not the test's, and
+    //what it frees is its own, so it cannot hide a real leak.
+    [Test]
+    procedure Logger_State_Is_Not_A_Leak;
+    //What Log, Status and WriteLn keep, in the runner's log and in the loggers, is not the test's.
+    [Test]
+    procedure Logging_Is_Not_A_Leak;
+    //The exception Assert.Pass raises is gone by the time the test's memory is measured, and its message is kept.
+    [Test]
+    procedure Assert_Pass_Is_Not_A_Leak;
   end;
 
 implementation
@@ -71,9 +85,26 @@ uses
   System.SysUtils,
   System.Classes,
   System.Rtti,
+  System.TypInfo,
+  DUnitX.Exceptions,
   DUnitX.Extensibility,
+  DUnitX.InternalInterfaces,
+  DUnitX.Loggers.Null,
+  DUnitX.MemoryLeakMonitor.Default,
+  DUnitX.RunResults,
+  DUnitX.ServiceLocator,
   DUnitX.TestFixture,
   DUnitX.TestRunner;
+
+var
+  //The heap that TCountingMonitor measures, so a test can say exactly what is allocated and when.
+  GCounted : Int64;
+  //What TLeakRunFixture's setup and its Passes test allocate.
+  GSetupAllocates : Int64;
+  GTestAllocates : Int64;
+  //What TGapFreeingLogger frees between the phases.
+  GFreeBeforeTest : Int64;
+  GFreeBeforeTearDown : Int64;
 
 type
   TLeakCheckRunnerAccess = class(TDUnitXTestRunner);
@@ -100,6 +131,66 @@ type
   TLeakCheckClass = class
   public
     procedure Method;
+  end;
+
+  //Measures GCounted instead of the heap.
+  TCountingMonitor = class(TInterfacedObject, IMemoryLeakMonitor)
+  private
+    FPreSetup : Int64;
+    FPostSetup : Int64;
+    FPreTest : Int64;
+    FPostTest : Int64;
+    FPreTearDown : Int64;
+    FPostTearDown : Int64;
+  public
+    procedure PreSetup;
+    procedure PostSetUp;
+    procedure PreTest;
+    procedure PostTest;
+    procedure PreTearDown;
+    procedure PostTearDown;
+    function SetUpMemoryAllocated : Int64;
+    function TearDownMemoryAllocated : Int64;
+    function TestMemoryAllocated : Int64;
+  end;
+
+  //Run by the leak check tests, measured by TCountingMonitor.
+  TLeakRunFixture = class
+  public
+    procedure Setup;
+    procedure TearDown;
+    procedure Passes;
+    procedure LeaksForReal;
+    procedure LogsWhileRunning;
+    procedure PassesWithAssertPass;
+  end;
+
+  //Stands for the exception Assert.Pass raises, with 100 bytes of its own.
+  ECountedTestPass = class(ETestPass)
+  public
+    constructor Create(const AMessage : string);
+    destructor Destroy; override;
+  end;
+
+  //Frees what TLeakRunFixture's setup allocated as the test starts, and what the test allocated as teardown starts.
+  TGapFreeingLogger = class(TDUnitXNullLogger)
+  protected
+    procedure OnExecuteTest(const threadId : TThreadID; const Test : ITestInfo); override;
+    procedure OnTeardownTest(const threadId : TThreadID; const Test : ITestInfo); override;
+  end;
+
+  //Keeps 50 bytes for each message logged.
+  TMessageKeepingLogger = class(TDUnitXNullLogger)
+  protected
+    procedure OnLog(const logType : TLogLevel; const msg : string); override;
+  end;
+
+  //Keeps 40 bytes as setup ends, and 40 more as the test starts, which it frees as teardown starts.
+  TStateKeepingLogger = class(TDUnitXNullLogger)
+  protected
+    procedure OnEndSetupTest(const threadId : TThreadID; const Test : ITestInfo); override;
+    procedure OnExecuteTest(const threadId : TThreadID; const Test : ITestInfo); override;
+    procedure OnTeardownTest(const threadId : TThreadID; const Test : ITestInfo); override;
   end;
 
 { TTestsNoMemoryLeaksReported }
@@ -185,6 +276,234 @@ procedure TLeakCheckClass.Method;
 begin
 end;
 
+{ TCountingMonitor }
+
+procedure TCountingMonitor.PreSetup;
+begin
+  FPreSetup := GCounted;
+end;
+
+procedure TCountingMonitor.PostSetUp;
+begin
+  FPostSetup := GCounted;
+end;
+
+procedure TCountingMonitor.PreTest;
+begin
+  FPreTest := GCounted;
+end;
+
+procedure TCountingMonitor.PostTest;
+begin
+  FPostTest := GCounted;
+end;
+
+procedure TCountingMonitor.PreTearDown;
+begin
+  FPreTearDown := GCounted;
+end;
+
+procedure TCountingMonitor.PostTearDown;
+begin
+  FPostTearDown := GCounted;
+end;
+
+function TCountingMonitor.SetUpMemoryAllocated : Int64;
+begin
+  result := FPostSetup - FPreSetup;
+end;
+
+function TCountingMonitor.TearDownMemoryAllocated : Int64;
+begin
+  result := FPostTearDown - FPreTearDown;
+end;
+
+function TCountingMonitor.TestMemoryAllocated : Int64;
+begin
+  result := FPostTest - FPreTest;
+end;
+
+{ TLeakRunFixture }
+
+procedure TLeakRunFixture.Setup;
+begin
+  Inc(GCounted, GSetupAllocates);
+end;
+
+procedure TLeakRunFixture.TearDown;
+begin
+end;
+
+procedure TLeakRunFixture.Passes;
+begin
+  Inc(GCounted, GTestAllocates);
+  Assert.IsTrue(true);
+end;
+
+procedure TLeakRunFixture.LeaksForReal;
+begin
+  Inc(GCounted, 32);
+  Assert.IsTrue(true);
+end;
+
+procedure TLeakRunFixture.LogsWhileRunning;
+begin
+  TDUnitX.CurrentRunner.Status('a status line');
+  Assert.IsTrue(true);
+end;
+
+procedure TLeakRunFixture.PassesWithAssertPass;
+begin
+  raise ECountedTestPass.Create('passed with a message');
+end;
+
+{ ECountedTestPass }
+
+constructor ECountedTestPass.Create(const AMessage : string);
+begin
+  inherited Create(AMessage);
+  Inc(GCounted, 100);
+end;
+
+destructor ECountedTestPass.Destroy;
+begin
+  Dec(GCounted, 100);
+  inherited;
+end;
+
+{ TMessageKeepingLogger }
+
+procedure TMessageKeepingLogger.OnLog(const logType : TLogLevel; const msg : string);
+begin
+  Inc(GCounted, 50);
+end;
+
+{ TGapFreeingLogger }
+
+procedure TGapFreeingLogger.OnExecuteTest(const threadId : TThreadID; const Test : ITestInfo);
+begin
+  Dec(GCounted, GFreeBeforeTest);
+end;
+
+procedure TGapFreeingLogger.OnTeardownTest(const threadId : TThreadID; const Test : ITestInfo);
+begin
+  Dec(GCounted, GFreeBeforeTearDown);
+end;
+
+{ TStateKeepingLogger }
+
+procedure TStateKeepingLogger.OnEndSetupTest(const threadId : TThreadID; const Test : ITestInfo);
+begin
+  Inc(GCounted, 40);
+end;
+
+procedure TStateKeepingLogger.OnExecuteTest(const threadId : TThreadID; const Test : ITestInfo);
+begin
+  Inc(GCounted, 40);
+end;
+
+procedure TStateKeepingLogger.OnTeardownTest(const threadId : TThreadID; const Test : ITestInfo);
+begin
+  Dec(GCounted, 40);
+end;
+
+//Runs the named tests of TLeakRunFixture, with its setup and teardown when AWithSetup, measured by TCountingMonitor,
+//and returns '<test>=<result>: <message>' for each, one per line.
+function RunLeakFixture(const ATests : array of string; const AWithSetup : boolean; const ALogger : ITestLogger) : string;
+var
+  thread : TThread;
+  testNames : TArray<string>;
+  i : integer;
+  outcome : string;
+  failure : string;
+begin
+  SetLength(testNames, Length(ATests));
+  for i := 0 to High(ATests) do
+    testNames[i] := ATests[i];
+  outcome := '';
+  failure := '';
+  //The registration is replaced and then restored to the default, so a suite built with another monitor skips this.
+  if not (TDUnitXServiceLocator.DefaultContainer.Resolve<IMemoryLeakMonitor>() as TObject is TDUnitXDefaultMemoryLeakMonitor) then
+    Assert.Ignore('Needs the default memory leak monitor');
+  TDUnitXServiceLocator.DefaultContainer.RegisterType<IMemoryLeakMonitor>(
+    function : IMemoryLeakMonitor
+    begin
+      result := TCountingMonitor.Create;
+    end);
+  try
+    thread := TThread.CreateAnonymousThread(
+      procedure
+      var
+        runner : TDUnitXTestRunner;
+        runnerIntf : ITestRunner;
+        rttiContext : TRttiContext;
+        rttiType : TRttiType;
+        fixture : ITestFixture;
+        instance : TLeakRunFixture;
+        fixtures : ITestFixtureList;
+        results : IRunResults;
+        context : ITestExecuteContext;
+        testResult : ITestResult;
+        testName : string;
+        method : TMethod;
+      begin
+        try
+          runner := TDUnitXTestRunner.Create;
+          runnerIntf := runner;
+          runnerIntf.AddLogger(ALogger);
+          rttiContext := TRttiContext.Create;
+          rttiType := rttiContext.GetType(TLeakRunFixture);
+          fixture := TDUnitXTestFixture.Create('ALeakRunFixture', '', TLeakRunFixture, 'AUnit') as ITestFixture;
+          instance := fixture.FixtureInstance as TLeakRunFixture;
+          if AWithSetup then
+          begin
+            fixture.SetSetupTestMethod('Setup', instance.Setup);
+            fixture.SetTearDownTestMethod('TearDown', instance.TearDown);
+          end;
+          for testName in testNames do
+          begin
+            method.Code := rttiType.GetMethod(testName).CodeAddress;
+            method.Data := instance;
+            fixture.AddTest(testName, TTestMethod(method), testName, '', rttiType.GetMethod(testName));
+          end;
+          fixtures := TTestFixtureList.Create;
+          fixtures.Add(fixture);
+          results := TDUnitXRunResults.Create;
+          context := results as ITestExecuteContext;
+          TLeakCheckRunnerAccess(runner).ExecuteFixtures(nil, context, TThread.CurrentThread.ThreadID, fixtures);
+          for testResult in results.GetAllTestResults do
+            outcome := outcome + testResult.Test.Name + '=' + GetEnumName(TypeInfo(TTestResultType), Ord(testResult.ResultType)) + ': ' +
+              testResult.Message + sLineBreak;
+        except
+          on e : Exception do
+            failure := e.ClassName + ': ' + e.Message;
+        end;
+      end);
+    thread.FreeOnTerminate := false;
+    try
+      thread.Start;
+      thread.WaitFor;
+    finally
+      thread.Free;
+    end;
+  finally
+    //The suite runs with the default monitor; put it back.
+    DUnitX.MemoryLeakMonitor.Default.RegisterDefaultProvider;
+  end;
+  Assert.AreEqual('', failure, 'the run itself raised');
+  result := outcome;
+end;
+
+//Resets what TLeakRunFixture and the loggers allocate and free.
+procedure ResetLeakRun(const ASetupAllocates, ATestAllocates, AFreeBeforeTest, AFreeBeforeTearDown : Int64);
+begin
+  GCounted := 0;
+  GSetupAllocates := ASetupAllocates;
+  GTestAllocates := ATestAllocates;
+  GFreeBeforeTest := AFreeBeforeTest;
+  GFreeBeforeTearDown := AFreeBeforeTearDown;
+end;
+
 { TTestsLeakCheck }
 
 //Runs the runner's leak check for the given growth. A runner registers itself for its thread, so it gets a thread of its own.
@@ -245,6 +564,51 @@ begin
   Assert.IsTrue(LeakCheckPasses(64, -64, 0, msg), 'the test freed what its setup allocated: ' + msg);
   Assert.IsFalse(LeakCheckPasses(0, 64, 0, msg), 'a test that keeps 64 bytes still leaks');
   Assert.IsFalse(LeakCheckPasses(-64, 128, 0, msg), 'a net growth of 64 bytes still leaks');
+end;
+
+procedure TTestsLeakCheck.Memory_Freed_Between_Phases_Is_Not_A_Leak;
+var
+  outcome : string;
+begin
+  //Setup allocates 500, freed before the test starts; the test allocates 1000, freed before teardown starts.
+  ResetLeakRun(500, 1000, 500, 1000);
+  outcome := RunLeakFixture(['Passes'], true, TGapFreeingLogger.Create);
+  Assert.AreEqual('Passes=Pass: ' + sLineBreak, outcome);
+  //Setup's 500, freed before the test starts, is not part of a real leak.
+  ResetLeakRun(500, 0, 500, 0);
+  outcome := RunLeakFixture(['LeaksForReal'], true, TGapFreeingLogger.Create);
+  Assert.StartsWith('LeaksForReal=MemoryLeak: 32 bytes were leaked', outcome);
+end;
+
+procedure TTestsLeakCheck.Logger_State_Is_Not_A_Leak;
+var
+  outcome : string;
+begin
+  ResetLeakRun(0, 0, 0, 0);
+  outcome := RunLeakFixture(['Passes', 'LeaksForReal'], true, TStateKeepingLogger.Create);
+  Assert.AreEqual('Passes=Pass: ' + sLineBreak + 'LeaksForReal=MemoryLeak: 32 bytes were leaked in the test method' +
+    sLineBreak, outcome);
+end;
+
+procedure TTestsLeakCheck.Logging_Is_Not_A_Leak;
+var
+  outcome : string;
+begin
+  ResetLeakRun(0, 0, 0, 0);
+  outcome := RunLeakFixture(['LogsWhileRunning', 'LeaksForReal'], true, TMessageKeepingLogger.Create);
+  Assert.AreEqual('LogsWhileRunning=Pass: a status line' + sLineBreak + sLineBreak +
+    'LeaksForReal=MemoryLeak: 32 bytes were leaked in the test method' + sLineBreak, outcome);
+end;
+
+procedure TTestsLeakCheck.Assert_Pass_Is_Not_A_Leak;
+var
+  outcome : string;
+begin
+  ResetLeakRun(0, 0, 0, 0);
+  //Without a teardown: the test's measurement is the last.
+  outcome := RunLeakFixture(['PassesWithAssertPass', 'LeaksForReal'], false, TDUnitXNullLogger.Create);
+  Assert.AreEqual('PassesWithAssertPass=Pass: passed with a message' + sLineBreak +
+    'LeaksForReal=MemoryLeak: 32 bytes were leaked in the test method' + sLineBreak, outcome);
 end;
 
 initialization
