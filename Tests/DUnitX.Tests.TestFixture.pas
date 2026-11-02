@@ -231,6 +231,14 @@ type
     procedure WillRaiseTest_Releases_The_Context_After_Execute;
     [Test]
     procedure TestError_Of_A_StrCompare_Descendant_Is_Comparable;
+    [Test]
+    procedure NameFilter_Fixture_Name_Does_Not_Select_A_Longer_Fixture_Name;
+    [Test]
+    procedure NameFilter_Test_Name_Does_Not_Select_A_Longer_Test_Name;
+    [Test]
+    procedure NameFilter_Namespace_Selects_Whole_Segments_Only;
+    [Test]
+    procedure NameFilter_Generic_Fixture_Name_Selects_Its_Instances;
   end;
 {$M-}
 
@@ -247,6 +255,7 @@ uses
   DUnitX.Types,
   DUnitX.Exceptions,
   DUnitX.Extensibility,
+  DUnitX.Filters,
   DUnitX.FixtureProvider,
   DUnitX.FixtureResult,
   DUnitX.InternalInterfaces,
@@ -594,6 +603,117 @@ begin
   Assert.IsTrue(error.IsComparable, 'a descendant of ETestFailureStrCompare is not comparable');
   Assert.AreEqual('expected text', error.Expected, false, 'expected value not carried');
   Assert.AreEqual('actual text', error.Actual, false, 'actual value not carried');
+end;
+
+function NameFilterTestMethod(const AContext : TRttiContext) : TRttiMethod;
+begin
+  result := AContext.GetType(TTestCaseAttribute).GetMethod('ProcedureWithUntypedParameter');
+end;
+
+procedure TDUnitXTestFixtureTests.NameFilter_Fixture_Name_Does_Not_Select_A_Longer_Fixture_Name;
+var
+  context : TRttiContext;
+  method : TRttiMethod;
+  foo, fooBar : ITestFixture;
+  fooTest, fooBarTest : ITest;
+  filter : ITestFilter;
+begin
+  context := TRttiContext.Create;
+  method := NameFilterTestMethod(context);
+  foo := TDUnitXTestFixture.Create('Unit.TFoo', '', TTestCaseAttribute, 'AUnit') as ITestFixture;
+  fooBar := TDUnitXTestFixture.Create('Unit.TFooBar', '', TTestCaseAttribute, 'AUnit') as ITestFixture;
+  fooTest := foo.AddTest(method.Name, nil, 'Test1', '', method);
+  fooBarTest := fooBar.AddTest(method.Name, nil, 'Test1', '', method);
+
+  filter := TNameFilter.Create('Unit.TFoo');
+  Assert.IsTrue(filter.Match(fooTest), 'a test of the named fixture');
+  Assert.IsFalse(filter.Match(fooBarTest), 'a test of a fixture whose name only starts with the named one');
+
+  filter := TNameFilter.Create('unit.tfoo');
+  Assert.IsTrue(filter.Match(fooTest), 'names match ignoring case');
+end;
+
+procedure TDUnitXTestFixtureTests.NameFilter_Test_Name_Does_Not_Select_A_Longer_Test_Name;
+var
+  context : TRttiContext;
+  method : TRttiMethod;
+  args : TValueArray;
+  foo, repeated : ITestFixture;
+  test1, test10, namedCase, valuesCase, repeatedTest : ITest;
+  filter : ITestFilter;
+begin
+  context := TRttiContext.Create;
+  method := NameFilterTestMethod(context);
+  SetLength(args, 1);
+  args[0] := 0;
+  foo := TDUnitXTestFixture.Create('Unit.TFoo', '', TTestCaseAttribute, 'AUnit') as ITestFixture;
+  test1 := foo.AddTest(method.Name, nil, 'Test1', '', method);
+  test10 := foo.AddTest(method.Name, nil, 'Test10', '', method);
+  namedCase := foo.AddTestCase(method.Name, 'CaseA', 'Test1', '', method, True, args);
+  valuesCase := foo.AddTestCase(method.Name, '(1,2)', 'Test1', '', method, True, args);
+  //[RepeatTest] puts the repetitions of Test10 in a child fixture named after the method.
+  repeated := foo.AddChildFixture(TTestCaseAttribute, 'Unit.TFoo.Test10', '');
+  repeatedTest := repeated.AddTest(method.Name, nil, 'Test10-1-of-2', '', method);
+
+  filter := TNameFilter.Create('Unit.TFoo.Test1');
+  Assert.IsTrue(filter.Match(test1), 'the named test');
+  Assert.IsFalse(filter.Match(test10), 'a test whose name only starts with the named one');
+  Assert.IsFalse(filter.Match(repeatedTest), 'a repetition of a test whose name only starts with the named one');
+  Assert.IsTrue(filter.Match(namedCase), 'a named test case of the named test');
+  Assert.IsTrue(filter.Match(valuesCase), 'a test case of the named test, named from its values');
+
+  filter := TNameFilter.Create('Unit.TFoo.Test10');
+  Assert.IsTrue(filter.Match(repeatedTest), 'a repetition of the named test');
+
+  filter := TNameFilter.Create('Unit.TFoo.Test1.CaseA');
+  Assert.IsTrue(filter.Match(namedCase), 'the named test case');
+  Assert.IsFalse(filter.Match(valuesCase), 'another test case of the same test');
+end;
+
+procedure TDUnitXTestFixtureTests.NameFilter_Namespace_Selects_Whole_Segments_Only;
+var
+  context : TRttiContext;
+  method : TRttiMethod;
+  fixture : ITestFixture;
+  test : ITest;
+  filter : ITestFilter;
+begin
+  context := TRttiContext.Create;
+  method := NameFilterTestMethod(context);
+  fixture := TDUnitXTestFixture.Create('My.Namespace.TFoo', '', TTestCaseAttribute, 'AUnit') as ITestFixture;
+  test := fixture.AddTest(method.Name, nil, 'Test1', '', method);
+
+  filter := TNameFilter.Create('My');
+  Assert.IsTrue(filter.Match(test), 'the outer namespace');
+  filter := TNameFilter.Create('My.Namespace');
+  Assert.IsTrue(filter.Match(test), 'the whole namespace');
+  filter := TNameFilter.Create('My.Name');
+  Assert.IsFalse(filter.Match(test), 'part of a namespace segment');
+  filter := TNameFilter.Create('Namespace.TFoo');
+  Assert.IsFalse(filter.Match(test), 'a name that does not start the full name');
+end;
+
+procedure TDUnitXTestFixtureTests.NameFilter_Generic_Fixture_Name_Selects_Its_Instances;
+var
+  context : TRttiContext;
+  method : TRttiMethod;
+  foo, fooBar : ITestFixture;
+  fooTest, fooBarTest : ITest;
+  filter : ITestFilter;
+begin
+  context := TRttiContext.Create;
+  method := NameFilterTestMethod(context);
+  //A generic fixture is named from its class name, type arguments included.
+  foo := TDUnitXTestFixture.Create('Unit.TFoo<System.Integer>', '', TTestCaseAttribute, 'AUnit') as ITestFixture;
+  fooBar := TDUnitXTestFixture.Create('Unit.TFooBar<System.Integer>', '', TTestCaseAttribute, 'AUnit') as ITestFixture;
+  fooTest := foo.AddTest(method.Name, nil, 'Test1', '', method);
+  fooBarTest := fooBar.AddTest(method.Name, nil, 'Test1', '', method);
+
+  filter := TNameFilter.Create('Unit.TFoo');
+  Assert.IsTrue(filter.Match(fooTest), 'an instance of the named generic fixture');
+  Assert.IsFalse(filter.Match(fooBarTest), 'an instance of a generic fixture whose name only starts with the named one');
+  filter := TNameFilter.Create('Unit.TFoo<System.Integer>');
+  Assert.IsTrue(filter.Match(fooTest), 'the named instance');
 end;
 
 { TRaiseContextSpy }

@@ -58,6 +58,12 @@ A test can ignore itself at run time with the new `Assert.Ignore(reason)`, or, s
 
 A suite that does not raise `ETestIgnored` is not affected.
 
+### `--run` matches whole name segments (#556)
+
+A name given to `--run` (or `--runlist`, or `TNameFilter`) selects the namespace, fixture, test or test case it names, and everything under it.  It used to select every fixture whose full name merely started with the text, so `--run:Unit.TFoo` also ran `Unit.TFooBar`, `--run:Unit.TFoo.Test1` also ran the repetitions of a `[RepeatTest]` method `Test10`, and `--run:Uni` ran all of `Unit`.  A name now matches only up to a `.`, a `(` (a test case named from its values) or a `<` (a generic fixture's type arguments).
+
+A test's name now also selects its test cases, which it did not before: `--run:Unit.TFoo.Test1` runs `Unit.TFoo.Test1.CaseA` and `Unit.TFoo.Test1(1,2)`.  A command line that relied on a partial name, such as `--run:Unit.TCust` for `Unit.TCustomer` and `Unit.TCustomerOrder`, now selects nothing: give each name in full, separated by commas.
+
 ### A test that catches a `[MaxTime]` interruption is still reported as timed out (#538)
 
 When `[MaxTime]` interrupts a test, the test fails with `ETimedOut` even if the interruption was caught on its way out: by the test's own `except`, by `Assert.WillRaise`, or by `[WillRaise]`.  It used to report whatever replaced the interruption: a pass (`Assert.Pass`, or the test returning), its own failure, an error (its handler raising another exception), or `expected X, got ETimedOut`.  `Assert.Ignore` is still reported as ignored.  A test that expects to time out says so with `[WillRaise(ETimedOut)]`, and passes; `[WillRaise(Exception, exDescendant)]` does not count, as it expects any exception.
