@@ -92,7 +92,9 @@ begin
           WizardForm.Free;
         end;
       end,
-      function : Cardinal
+      // The glyph is an HICON: Delphi 13 declares this callback as TFunc<UInt64> on Win64 and
+      // TFunc<Cardinal> on Win32. NativeUInt matches both.
+      function : NativeUInt
       begin
         Result := LoadIcon(HInstance, 'DUnitXNewUnitIcon');
       end,
