@@ -813,6 +813,26 @@ begin
   Result := TDUnitXTestError.Create(testInfo, TTestResultType.Failure, exception, ExceptAddr, exception.Message, aLogMessages);
 end;
 
+//Whether a test that runs on the fixture's instance will execute, so that its [SetupFixture] and [TearDownFixture] are
+//needed: one of its own tests, or a repetition of one of its [RepeatTest] methods (the tests of a child fixture of the
+//same class).  A test a filter left out does not count, nor does an ignored one.
+function HasTestsToRun(const fixture : ITestFixture) : boolean;
+var
+  test : ITest;
+  child : ITestFixture;
+begin
+  result := false;
+  if fixture.Ignored then
+    exit;
+  for test in fixture.Tests do
+    if test.Enabled and (not test.Ignored) then
+      exit(true);
+  if fixture.HasChildFixtures then
+    for child in fixture.Children do
+      if (child.TestClass = fixture.TestClass) and HasTestsToRun(child) then
+        exit(true);
+end;
+
 procedure TDUnitXTestRunner.ExecuteFixtures(const parentFixtureResult : IFixtureResult; const context : ITestExecuteContext; const threadId : TThreadID; const
   fixtures : ITestFixtureList);
 var
@@ -847,15 +867,17 @@ procedure TDUnitXTestRunner.ExecuteFixture(const context : ITestExecuteContext; 
   fixtureResult : IFixtureResult);
 var
   setupOk : boolean;
+  runsFixtureSetup : boolean;
 begin
   setupOk := True;
+  runsFixtureSetup := (Assigned(fixture.SetupFixtureMethod) or Assigned(fixture.TearDownFixtureMethod)) and HasTestsToRun(fixture);
   Self.Loggers_StartTestFixture(threadId, fixture as ITestFixtureInfo);
   try
     //Initialize the fixture as it may have been destroyed in a previous run (when using gui runner).
-    if fixture.HasTests then
+    if fixture.HasTests or runsFixtureSetup then
       fixture.InitFixtureInstance;
-    //only run the setup method if there are actually tests
-    if fixture.HasActiveTests and Assigned(fixture.SetupFixtureMethod) then
+    //only run the setup method if a test will execute
+    if runsFixtureSetup and Assigned(fixture.SetupFixtureMethod) then
       //returns false if an exception happens in the setup.
       setupOk := ExecuteSetupFixtureMethod(context, threadId, fixture, fixtureResult);
 
@@ -866,7 +888,7 @@ begin
       ExecuteFixtures(fixtureResult, context, threadId, fixture.Children);
 
     // teardown will not run if the fixture setup errored.
-    if setupOk and fixture.HasActiveTests and Assigned(fixture.TearDownFixtureMethod) then
+    if setupOk and runsFixtureSetup and Assigned(fixture.TearDownFixtureMethod) then
       //TODO: Tricker yet each test above us requires errors that occur here
       ExecuteTearDownFixtureMethod(context, threadId, fixture, fixtureResult);
 
@@ -910,7 +932,7 @@ begin
       AContext.RecordFixture(item.FixtureResult);
 
     if (not fixture.HasTests) and fixture.HasChildFixtures and
-      not (fixture.HasActiveTests and (Assigned(fixture.SetupFixtureMethod) or Assigned(fixture.TearDownFixtureMethod))) then
+      not ((Assigned(fixture.SetupFixtureMethod) or Assigned(fixture.TearDownFixtureMethod)) and HasTestsToRun(fixture)) then
     begin
       ARunner.Loggers_StartTestFixture(AThreadId, fixture as ITestFixtureInfo);
       AContainers.Add(item);

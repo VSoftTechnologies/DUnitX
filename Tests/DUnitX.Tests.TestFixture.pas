@@ -126,6 +126,22 @@ type
     procedure TearDownFixture_Failure_Is_Reported_Once;
   end;
 
+  //[SetupFixture] and [TearDownFixture] run only when a test of the fixture will execute.
+  [TestFixture]
+  TFixtureSetupSkipTests = class
+  public
+    [Test]
+    procedure Do_Not_Run_When_Every_Test_Is_Ignored;
+    [Test]
+    procedure Run_For_One_Runnable_Test;
+    [Test]
+    procedure Do_Not_Run_When_The_Runnable_Test_Is_Filtered_Out;
+    [Test]
+    procedure Run_For_A_Repeated_Test_When_The_Others_Are_Ignored;
+    [Test]
+    procedure Run_For_A_Fixture_Whose_Only_Test_Is_Repeated;
+  end;
+
   [TestFixture]
   TFixtureResultDurationTests = class
   public
@@ -882,6 +898,164 @@ begin
   Assert.AreEqual(3, results.TestCount, 'two tests and one TearDownFixture error, no test reported twice');
   Assert.AreEqual(1, tearDownErrors, 'the TearDownFixture failure is reported once');
   Assert.AreEqual(',PassesOne,PassesTwo,TearDownFixture,', testNames, 'the results and their tests');
+end;
+
+type
+  TSetupSkipProviderAccess = class(TDUnitXFixtureProvider);
+
+  //Not fixtures: the tests below generate their tests, run them, and count the fixture setups and teardowns that ran.
+  TCountsFixtureSetup = class
+  public
+    [SetupFixture]
+    procedure SetupFixture;
+    [TearDownFixture]
+    procedure TearDownFixture;
+  end;
+
+  TAllIgnored = class(TCountsFixtureSetup)
+  public
+    [Test]
+    [Ignore('not today')]
+    procedure IgnoredOne;
+    [Test]
+    [Ignore('not today')]
+    procedure IgnoredTwo;
+  end;
+
+  TOneRunnable = class(TCountsFixtureSetup)
+  public
+    [Test]
+    [Ignore('not today')]
+    procedure Ignored;
+    [Test]
+    procedure Runs;
+  end;
+
+  TOnlyARepeatRunnable = class(TCountsFixtureSetup)
+  public
+    [Test]
+    [Ignore('not today')]
+    procedure Ignored;
+    [Test]
+    [RepeatTest(2)]
+    procedure Repeated;
+  end;
+
+  TOnlyARepeat = class(TCountsFixtureSetup)
+  public
+    [Test]
+    [RepeatTest(2)]
+    procedure Repeated;
+  end;
+
+var
+  //The [SetupFixture] and [TearDownFixture] calls of the TCountsFixtureSetup descendants
+  fixtureSetups : integer;
+  fixtureTearDowns : integer;
+
+procedure TCountsFixtureSetup.SetupFixture;
+begin
+  Inc(fixtureSetups);
+end;
+
+procedure TCountsFixtureSetup.TearDownFixture;
+begin
+  Inc(fixtureTearDowns);
+end;
+
+procedure TAllIgnored.IgnoredOne;
+begin
+end;
+
+procedure TAllIgnored.IgnoredTwo;
+begin
+end;
+
+procedure TOneRunnable.Ignored;
+begin
+end;
+
+procedure TOneRunnable.Runs;
+begin
+end;
+
+procedure TOnlyARepeatRunnable.Ignored;
+begin
+end;
+
+procedure TOnlyARepeatRunnable.Repeated;
+begin
+end;
+
+procedure TOnlyARepeat.Repeated;
+begin
+end;
+
+//Generates the tests of AClass in a fixture, disables the tests named in ADisabled (',name,') as a filter that leaves
+//them out does, and runs it.  Returns the fixture setups and teardowns that ran as 'setups/teardowns'.
+function RunCountingFixture(const AClass : TClass; const ADisabled : string; out ATestNames : string) : string;
+var
+  fixture : ITestFixture;
+  provider : TDUnitXFixtureProvider;
+  providerIntf : IFixtureProvider;
+  test : ITest;
+begin
+  fixture := TDUnitXTestFixture.Create(AClass.ClassName, '', AClass, 'AUnit') as ITestFixture;
+  provider := TDUnitXFixtureProvider.Create;
+  providerIntf := provider;
+  TSetupSkipProviderAccess(provider).GenerateTests(nil, fixture);
+  for test in fixture.Tests do
+    if Pos(',' + test.Name + ',', ADisabled) > 0 then
+      test.Enabled := false;
+  fixtureSetups := 0;
+  fixtureTearDowns := 0;
+  RunFixtureOnItsOwnThread(fixture, ATestNames);
+  result := Format('%d/%d', [fixtureSetups, fixtureTearDowns]);
+end;
+
+{ TFixtureSetupSkipTests }
+
+procedure TFixtureSetupSkipTests.Do_Not_Run_When_Every_Test_Is_Ignored;
+var
+  testNames : string;
+begin
+  Assert.AreEqual('0/0', RunCountingFixture(TAllIgnored, '', testNames), 'fixture setups/teardowns');
+  Assert.AreEqual(',IgnoredOne,IgnoredTwo,', testNames, 'the results and their tests');
+end;
+
+procedure TFixtureSetupSkipTests.Run_For_One_Runnable_Test;
+var
+  testNames : string;
+begin
+  Assert.AreEqual('1/1', RunCountingFixture(TOneRunnable, '', testNames), 'fixture setups/teardowns');
+  Assert.AreEqual(',Ignored,Runs,', testNames, 'the results and their tests');
+end;
+
+//The runnable test left out by a filter leaves only an ignored test, so there is nothing to set up for.
+procedure TFixtureSetupSkipTests.Do_Not_Run_When_The_Runnable_Test_Is_Filtered_Out;
+var
+  testNames : string;
+begin
+  Assert.AreEqual('0/0', RunCountingFixture(TOneRunnable, ',Runs,', testNames), 'fixture setups/teardowns');
+  Assert.AreEqual(',Ignored,', testNames, 'the results and their tests');
+end;
+
+//The repetitions are the tests of a child fixture, and run on the fixture's instance, so they need its fixture setup.
+procedure TFixtureSetupSkipTests.Run_For_A_Repeated_Test_When_The_Others_Are_Ignored;
+var
+  testNames : string;
+begin
+  Assert.AreEqual('1/1', RunCountingFixture(TOnlyARepeatRunnable, '', testNames), 'fixture setups/teardowns');
+  Assert.AreEqual(',Ignored,Repeated-1-of-2,Repeated-2-of-2,', testNames, 'the results and their tests');
+end;
+
+//With no test of its own left, the fixture's repetitions still need its fixture setup.
+procedure TFixtureSetupSkipTests.Run_For_A_Fixture_Whose_Only_Test_Is_Repeated;
+var
+  testNames : string;
+begin
+  Assert.AreEqual('1/1', RunCountingFixture(TOnlyARepeat, '', testNames), 'fixture setups/teardowns');
+  Assert.AreEqual(',Repeated-1-of-2,Repeated-2-of-2,', testNames, 'the results and their tests');
 end;
 
 type
@@ -1768,6 +1942,7 @@ initialization
   TDUnitX.RegisterTestFixture(TTestMaxTimeAttribute);
   TDUnitX.RegisterTestFixture(TDUnitXTestFixtureTests);
   TDUnitX.RegisterTestFixture(TTearDownFixtureFailureTests);
+  TDUnitX.RegisterTestFixture(TFixtureSetupSkipTests);
   TDUnitX.RegisterTestFixture(TFixtureResultDurationTests);
   TDUnitX.RegisterTestFixture(TRuntimeIgnoreTests);
 {$IFDEF MSWINDOWS}
