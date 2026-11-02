@@ -142,6 +142,22 @@ type
     procedure Run_For_A_Fixture_Whose_Only_Test_Is_Repeated;
   end;
 
+  //A fixture whose constructor raises fails its own tests, not the whole run.
+  [TestFixture]
+  TFixtureConstructorTests = class
+  public
+    [Test]
+    procedure A_Raising_Constructor_Errors_Its_Own_Tests_And_The_Others_Run;
+    [Test]
+    procedure A_Raising_Constructor_Errors_Its_Own_Tests_With_Fixtures_In_Parallel;
+    [Test]
+    procedure A_Constructor_That_Ignores_Gives_Ignored_Tests;
+    [Test]
+    procedure A_Raising_Constructor_Leaves_Ignored_Tests_Ignored;
+    [Test]
+    procedure The_Fixture_Runs_On_Its_Instance_Once_Its_Constructor_Succeeds;
+  end;
+
   [TestFixture]
   TFixtureResultDurationTests = class
   public
@@ -268,6 +284,7 @@ uses
   System.SysUtils,
   System.Rtti,
   System.Classes,
+  System.TypInfo,
   DUnitX.Types,
   DUnitX.Exceptions,
   DUnitX.Extensibility,
@@ -1056,6 +1073,302 @@ var
 begin
   Assert.AreEqual('1/1', RunCountingFixture(TOnlyARepeat, '', testNames), 'fixture setups/teardowns');
   Assert.AreEqual(',Repeated-1-of-2,Repeated-2-of-2,', testNames, 'the results and their tests');
+end;
+
+const
+  CONSTRUCTOR_FAILURE = 'the fixture constructor failed';
+  CONSTRUCTOR_IGNORE = 'the fixture constructor ignored the fixture';
+
+type
+  EFixtureConstructorFailed = class(Exception);
+
+  //Not fixtures: the tests below build them as the fixture provider does, and run them.
+  TConstructorRaises = class
+  private
+    FCreated : boolean;
+  public
+    constructor Create;
+    [Setup]
+    procedure Setup;
+    [TearDown]
+    procedure TearDown;
+    [TearDownFixture]
+    procedure TearDownFixture;
+    [Test]
+    procedure One;
+    [Test]
+    procedure Two;
+  end;
+
+  //Raises in its constructor as TConstructorRaises does; its only test is ignored.
+  TConstructorRaisesAllIgnored = class(TConstructorRaises)
+  public
+    [Test]
+    [Ignore('not today')]
+    procedure Ignored;
+  end;
+
+  TConstructorIgnores = class
+  public
+    constructor Create;
+    [Test]
+    procedure One;
+  end;
+
+  TConstructorSucceeds = class
+  public
+    [Test]
+    procedure Passes;
+  end;
+
+var
+  //TConstructorRaises raises in its constructor while this is true.
+  _ConstructorRaises : boolean;
+  //What ran of TConstructorRaises: its constructor, and on an instance its [Setup], [TearDown], [TearDownFixture] and tests.
+  _ConstructorCalls : integer;
+  _ConstructorSetups : integer;
+  _ConstructorTearDowns : integer;
+  _ConstructorTearDownFixtures : integer;
+  _ConstructorTestsRun : integer;
+
+constructor TConstructorRaises.Create;
+begin
+  inherited Create;
+  Inc(_ConstructorCalls);
+  if _ConstructorRaises then
+    raise EFixtureConstructorFailed.Create(CONSTRUCTOR_FAILURE);
+  FCreated := true;
+end;
+
+//The methods below read a field, so one bound to no instance fails.
+procedure TConstructorRaises.Setup;
+begin
+  if FCreated then
+    Inc(_ConstructorSetups);
+end;
+
+procedure TConstructorRaises.TearDown;
+begin
+  if FCreated then
+    Inc(_ConstructorTearDowns);
+end;
+
+procedure TConstructorRaises.TearDownFixture;
+begin
+  if FCreated then
+    Inc(_ConstructorTearDownFixtures);
+end;
+
+procedure TConstructorRaises.One;
+begin
+  Inc(_ConstructorTestsRun);
+  Assert.IsTrue(FCreated, 'the test runs on the fixture''s instance');
+end;
+
+procedure TConstructorRaises.Two;
+begin
+  Inc(_ConstructorTestsRun);
+  Assert.IsTrue(FCreated, 'the test runs on the fixture''s instance');
+end;
+
+procedure TConstructorRaisesAllIgnored.Ignored;
+begin
+  Assert.Fail('an ignored test ran');
+end;
+
+constructor TConstructorIgnores.Create;
+begin
+  inherited Create;
+  Assert.Ignore(CONSTRUCTOR_IGNORE);
+end;
+
+procedure TConstructorIgnores.One;
+begin
+  Assert.Pass;
+end;
+
+procedure TConstructorSucceeds.Passes;
+begin
+  Assert.Pass;
+end;
+
+//Builds a fixture of each class, as the fixture provider does, and generates its tests.  The class of a fixture whose
+//build raises is left out, and the exception is named in ABuildFailure.
+function BuildConstructorFixtures(const AClasses : array of TClass; out ABuildFailure : string) : ITestFixtureList;
+var
+  i : integer;
+  fixture : ITestFixture;
+  provider : TDUnitXFixtureProvider;
+  providerIntf : IFixtureProvider;
+begin
+  ABuildFailure := '';
+  result := TTestFixtureList.Create;
+  provider := TDUnitXFixtureProvider.Create;
+  providerIntf := provider;
+  for i := Low(AClasses) to High(AClasses) do
+  begin
+    try
+      fixture := TDUnitXTestFixture.Create(AClasses[i].ClassName, '', AClasses[i], 'AUnit') as ITestFixture;
+      TSetupSkipProviderAccess(provider).GenerateTests(nil, fixture);
+      result.Add(fixture);
+    except
+      on e : Exception do
+        ABuildFailure := ABuildFailure + e.ClassName + ': ' + e.Message + '; ';
+    end;
+  end;
+end;
+
+//Runs the fixtures through a runner of its own, on a thread of its own, with up to AMaxThreads fixtures at once.
+//Returns each result as 'Fixture.Test=Type Exception: Message;', read while the runner is alive.
+function RunConstructorFixtures(const AFixtures : ITestFixtureList; const AMaxThreads : integer; out ARunFailure : string) : string;
+var
+  thread : TThread;
+  failure : string;
+  outcome : string;
+begin
+  _ConstructorSetups := 0;
+  _ConstructorTearDowns := 0;
+  _ConstructorTearDownFixtures := 0;
+  _ConstructorTestsRun := 0;
+  failure := '';
+  outcome := '';
+  thread := TThread.CreateAnonymousThread(
+    procedure
+    var
+      runner : TDUnitXTestRunner;
+      runnerIntf : ITestRunner;
+      results : IRunResults;
+      context : ITestExecuteContext;
+      testResult : ITestResult;
+      testError : ITestError;
+    begin
+      try
+        runner := TDUnitXTestRunner.Create;
+        runnerIntf := runner;
+        runnerIntf.UseThreadPool := AMaxThreads > 1;
+        runnerIntf.MaxThreads := AMaxThreads;
+        results := TDUnitXRunResults.Create;
+        context := results as ITestExecuteContext;
+        TTearDownFixtureRunnerAccess(runner).ExecuteFixtures(nil, context, TThread.CurrentThread.ThreadID, AFixtures);
+        context.RollupResults;
+        for testResult in results.GetAllTestResults do
+        begin
+          outcome := outcome + testResult.Test.Fixture.Name + '.' + testResult.Test.Name + '=' + GetEnumName(TypeInfo(TTestResultType), Ord(testResult.ResultType));
+          if Supports(testResult, ITestError, testError) then
+            outcome := outcome + ' ' + testError.ExceptionClass.ClassName;
+          outcome := outcome + ': ' + testResult.Message + ';';
+        end;
+      except
+        on e : Exception do
+          failure := e.ClassName + ': ' + e.Message;
+      end;
+    end);
+  thread.FreeOnTerminate := false;
+  try
+    thread.Start;
+    thread.WaitFor;
+  finally
+    thread.Free;
+  end;
+  ARunFailure := failure;
+  result := outcome;
+end;
+
+//Runs a fixture whose constructor raises beside one whose constructor does not.
+procedure CheckRaisingConstructorRun(const AMaxThreads : integer);
+var
+  fixtures : ITestFixtureList;
+  buildFailure : string;
+  runFailure : string;
+  outcome : string;
+begin
+  _ConstructorRaises := true;
+  _ConstructorCalls := 0;
+  fixtures := BuildConstructorFixtures([TConstructorRaises, TConstructorSucceeds], buildFailure);
+  Assert.AreEqual('', buildFailure, 'building the fixtures raised');
+  outcome := RunConstructorFixtures(fixtures, AMaxThreads, runFailure);
+  Assert.AreEqual('', runFailure, 'the run itself raised');
+  Assert.AreEqual(
+    'TConstructorRaises.One=Error EFixtureConstructorFailed: ' + CONSTRUCTOR_FAILURE + ';' +
+    'TConstructorRaises.Two=Error EFixtureConstructorFailed: ' + CONSTRUCTOR_FAILURE + ';' +
+    'TConstructorSucceeds.Passes=Pass: ;', outcome, 'the results');
+  Assert.AreEqual(1, _ConstructorCalls, 'the constructor runs once, when the fixture is built');
+  Assert.AreEqual(0, _ConstructorTestsRun, 'the tests of a fixture that has no instance ran');
+  Assert.AreEqual(0, _ConstructorSetups, 'the [Setup] of a fixture that has no instance ran');
+  Assert.AreEqual(0, _ConstructorTearDowns, 'the [TearDown] of a fixture that has no instance ran');
+  Assert.AreEqual(0, _ConstructorTearDownFixtures, 'the [TearDownFixture] of a fixture that has no instance ran');
+end;
+
+{ TFixtureConstructorTests }
+
+procedure TFixtureConstructorTests.A_Raising_Constructor_Errors_Its_Own_Tests_And_The_Others_Run;
+begin
+  CheckRaisingConstructorRun(0);
+end;
+
+//Before Delphi 11 the fixtures run one at a time.
+procedure TFixtureConstructorTests.A_Raising_Constructor_Errors_Its_Own_Tests_With_Fixtures_In_Parallel;
+begin
+  CheckRaisingConstructorRun(4);
+end;
+
+procedure TFixtureConstructorTests.A_Constructor_That_Ignores_Gives_Ignored_Tests;
+var
+  fixtures : ITestFixtureList;
+  buildFailure : string;
+  runFailure : string;
+  outcome : string;
+begin
+  fixtures := BuildConstructorFixtures([TConstructorIgnores, TConstructorSucceeds], buildFailure);
+  Assert.AreEqual('', buildFailure, 'building the fixtures raised');
+  outcome := RunConstructorFixtures(fixtures, 0, runFailure);
+  Assert.AreEqual('', runFailure, 'the run itself raised');
+  Assert.AreEqual('TConstructorIgnores.One=Ignored: ' + CONSTRUCTOR_IGNORE + ';TConstructorSucceeds.Passes=Pass: ;', outcome, 'the results');
+end;
+
+//A fixture none of whose tests will run does not need an instance, so its ignored tests are reported ignored.
+procedure TFixtureConstructorTests.A_Raising_Constructor_Leaves_Ignored_Tests_Ignored;
+var
+  fixtures : ITestFixtureList;
+  buildFailure : string;
+  runFailure : string;
+  outcome : string;
+  test : ITest;
+begin
+  _ConstructorRaises := true;
+  fixtures := BuildConstructorFixtures([TConstructorRaisesAllIgnored, TConstructorSucceeds], buildFailure);
+  Assert.AreEqual('', buildFailure, 'building the fixtures raised');
+  //The inherited tests are left out, as a filter leaves them out.
+  for test in fixtures[0].Tests do
+    if test.Name <> 'Ignored' then
+      test.Enabled := false;
+  outcome := RunConstructorFixtures(fixtures, 0, runFailure);
+  Assert.AreEqual('', runFailure, 'the run itself raised');
+  Assert.AreEqual('TConstructorRaisesAllIgnored.Ignored=Ignored: not today;TConstructorSucceeds.Passes=Pass: ;', outcome, 'the results');
+end;
+
+//A runner that runs the fixtures again (the GUI runner does) constructs the fixture again, and its tests, [Setup] and
+//[TearDownFixture] then run on the new instance.
+procedure TFixtureConstructorTests.The_Fixture_Runs_On_Its_Instance_Once_Its_Constructor_Succeeds;
+var
+  fixtures : ITestFixtureList;
+  buildFailure : string;
+  runFailure : string;
+  outcome : string;
+begin
+  _ConstructorRaises := true;
+  fixtures := BuildConstructorFixtures([TConstructorRaises], buildFailure);
+  Assert.AreEqual('', buildFailure, 'building the fixture raised');
+  RunConstructorFixtures(fixtures, 0, runFailure);
+  Assert.AreEqual('', runFailure, 'the first run itself raised');
+  _ConstructorRaises := false;
+  outcome := RunConstructorFixtures(fixtures, 0, runFailure);
+  Assert.AreEqual('', runFailure, 'the second run itself raised');
+  Assert.AreEqual('TConstructorRaises.One=Pass: ;TConstructorRaises.Two=Pass: ;', outcome, 'the results of the second run');
+  Assert.AreEqual(2, _ConstructorTestsRun, 'the tests that ran');
+  Assert.AreEqual(2, _ConstructorSetups, 'the [Setup]s that ran on an instance');
+  Assert.AreEqual(2, _ConstructorTearDowns, 'the [TearDown]s that ran on an instance');
+  Assert.AreEqual(1, _ConstructorTearDownFixtures, 'the [TearDownFixture]s that ran on an instance');
 end;
 
 type
@@ -1943,6 +2256,7 @@ initialization
   TDUnitX.RegisterTestFixture(TDUnitXTestFixtureTests);
   TDUnitX.RegisterTestFixture(TTearDownFixtureFailureTests);
   TDUnitX.RegisterTestFixture(TFixtureSetupSkipTests);
+  TDUnitX.RegisterTestFixture(TFixtureConstructorTests);
   TDUnitX.RegisterTestFixture(TFixtureResultDurationTests);
   TDUnitX.RegisterTestFixture(TRuntimeIgnoreTests);
 {$IFDEF MSWINDOWS}
