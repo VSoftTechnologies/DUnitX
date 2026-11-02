@@ -34,6 +34,9 @@ interface
 {$I DUnitX.inc}
 
 uses
+{$IFDEF DELPHI_XE103_UP}
+  PlatformConst,
+{$ENDIF}
   PlatformAPI,
   ToolsAPI;
 
@@ -163,13 +166,29 @@ begin
 end;
 
 function TNewProjectEx.GetPlatforms : TArray<string>;
+var
+  Candidates : TArray<string>;
+  PlatformServices : IOTAPlatformServices;
+  PlatformName : string;
 begin
-  if Personality = sDelphiPersonality then
-    Result := TArray<string>.Create(cWin32Platform, cWin64Platform, cOSX32Platform, cAndroidPlatform,
+{$IFDEF DELPHI_XE103_UP}
+  // Every platform the IDE knows, as the gallery registration uses; the filter below keeps the ones it has.
+  Candidates := GetAllPlatforms;
+{$ELSE}
+  if SameText(GetProjectPersonality, sDelphiPersonality) then
+    Candidates := TArray<string>.Create(cWin32Platform, cWin64Platform, cOSX32Platform, cAndroidPlatform,
       ciOSSimulatorPlatform{$IFDEF DELPHI_XE8_UP}, ciOSDevice32Platform, ciOSDevice64Platform{$ENDIF})
   else
-    Result := TArray<string>.Create(cWin32Platform, cWin64Platform, cOSX32Platform, cAndroidPlatform{$IFDEF DELPHI_XE8_UP},
+    Candidates := TArray<string>.Create(cWin32Platform, cWin64Platform, cOSX32Platform, cAndroidPlatform{$IFDEF DELPHI_XE8_UP},
       ciOSDevice32Platform, ciOSDevice64Platform{$ENDIF});
+{$ENDIF}
+  // Offer only the platforms this IDE has for the project's personality.
+  if not Supports(BorlandIDEServices, IOTAPlatformServices, PlatformServices) then
+    Exit(Candidates);
+  Result := nil;
+  for PlatformName in Candidates do
+    if PlatformServices.PlatformAvailable(PlatformName, GetProjectPersonality) then
+      Result := Result + [PlatformName];
 end;
 
 function TNewProjectEx.GetPreferredPlatform : string;
@@ -188,18 +207,24 @@ end;
 procedure TNewProjectEx.SetInitialOptions(const NewProject : IOTAProject);
 var
   LBuildConf : IOTAProjectOptionsConfigurations;
+  PlatformName : string;
+  PlatformConf : IOTABuildConfiguration;
 begin
-  if Supports(NewProject.ProjectOptions, IOTAProjectOptionsConfigurations, LBuildConf) then
+  // Both are C++Builder options: a Delphi project gets neither.
+  if (FPersonality = sCBuilderPersonality) and
+    Supports(NewProject.ProjectOptions, IOTAProjectOptionsConfigurations, LBuildConf) then
   begin
     LBuildConf.BaseConfiguration.AsBoolean['UsingDelphiRTL'] := True;
-    if FPersonality = sCBuilderPersonality then
-    begin
-      LBuildConf.BaseConfiguration.PlatformConfiguration[cAndroidPlatform].AsBoolean['ILINK_LinkwithDUnitXRuntime'] := True;
-      LBuildConf.BaseConfiguration.PlatformConfiguration[ciOSDevice32Platform].AsBoolean['ILINK_LinkwithDUnitXRuntime'] := True;
-      LBuildConf.BaseConfiguration.PlatformConfiguration[ciOSDevice64Platform].AsBoolean['ILINK_LinkwithDUnitXRuntime'] := True;
-    end;
+    // Only the project's own platforms are indexed: one it does not have may have no configuration.
+    for PlatformName in LBuildConf.BaseConfiguration.Platforms do
+      if SameText(PlatformName, cAndroidPlatform) or SameText(PlatformName, ciOSDevice32Platform) or
+        SameText(PlatformName, ciOSDevice64Platform) then
+      begin
+        PlatformConf := LBuildConf.BaseConfiguration.PlatformConfiguration[PlatformName];
+        if PlatformConf <> nil then
+          PlatformConf.AsBoolean['ILINK_LinkwithDUnitXRuntime'] := True;
+      end;
   end;
-
 end;
 {$ENDIF}
 
