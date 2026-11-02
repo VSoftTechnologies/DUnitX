@@ -62,6 +62,10 @@ A suite that does not raise `ETestIgnored` is not affected.
 
 When `[MaxTime]` interrupts a test, the test fails with `ETimedOut` even if the interruption was caught on its way out: by the test's own `except`, by `Assert.WillRaise`, or by `[WillRaise]`.  It used to report whatever replaced the interruption: a pass (`Assert.Pass`, or the test returning), its own failure, an error (its handler raising another exception), or `expected X, got ETimedOut`.  `Assert.Ignore` is still reported as ignored.  A test that expects to time out says so with `[WillRaise(ETimedOut)]`, and passes; `[WillRaise(Exception, exDescendant)]` does not count, as it expects any exception.
 
+### `[MaxTime]` applies to `[TestCase]` tests (#544)
+
+`[MaxTime]` on a method with `[TestCase]`, `[NamedTestCase]`, `[TestCaseSource]`, a test case generator or a `[TestCaseProvider]` had no effect: every case ran for as long as it took.  Each case now has the method's `[MaxTime]`, as a plain test has, so a case that overruns fails with `ETimedOut`, a case still running is interrupted, and the rules above for a caught interruption and `[WillRaise(ETimedOut)]` apply to it.  A case that used to pass only because its limit was ignored now fails: raise the limit or speed the case up.
+
 ### Fixtures can run in parallel (#532)
 
 The new option `TDUnitX.Options.MaxDegreeOfParallelism`, set on the command line with `-m:x` (`--mdop:x`), runs up to x fixtures at once, each on a worker thread.  It defaults to 0, and 0 or 1 runs the fixtures one at a time on the runner's thread exactly as before.  It needs Delphi 11 or later; earlier compilers ignore it.

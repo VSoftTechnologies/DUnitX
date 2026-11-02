@@ -457,6 +457,7 @@ var
       begin
         caseTest := currentFixture.AddTestCase(method.Name, name, FormatTestName(method.Name, n, repeatCount), category, method, testEnabled, nil,
           willRaise, willRaiseInherit);
+        caseTest.MaxTime := maxTime;
         SetArgsError(caseTest, problem);
       end;
       exit;
@@ -473,6 +474,7 @@ var
       begin
         caseTest := currentFixture.AddTestCase(method.Name, name, FormatTestName(method.Name, n, repeatCount), category, method, testEnabled, values,
           willRaise, willRaiseInherit);
+        caseTest.MaxTime := maxTime;
         //A source's rows are written for the method, so a row with a value it has no parameter for is a mistake.  An empty
         //row would otherwise give a single parameter an empty string.
         if Length(values) > Length(parameters) then
@@ -666,6 +668,7 @@ begin
                 begin
                   test := currentFixture.AddTestCase(method.Name, FormatCaseName(caseName, x), FormatTestName(method.Name, i, repeatCount), category,
                     method, testEnabled, params, willRaise, willRaiseInherit);
+                  test.MaxTime := maxTime;
                   CheckNotTooManyValues(test, params, method);
                 end;
               end;
@@ -684,6 +687,7 @@ begin
             begin
               test := currentFixture.AddTestCase(method.Name, caseName, FormatTestName(method.Name, i, repeatCount), category, method,
                 testEnabled, testCaseAttrib.CaseInfo.Values, willRaise, willRaiseInherit);
+              test.MaxTime := maxTime;
               //Values split from text get the separator hint; another kind of test case is checked as a generator is
               if testCaseAttrib is TestCaseAttribute then
               begin
@@ -712,6 +716,7 @@ begin
                   begin
                     test := currentFixture.AddTestCase(method.Name, TestCaseData.Name, FormatTestName(method.Name, i, repeatCount), category, method,
                       testEnabled, TestCaseData.Values, willRaise, willRaiseInherit);
+                    test.MaxTime := maxTime;
                     CheckNotTooManyValues(test, TestCaseData.Values, method);
                   end;
                 end;
