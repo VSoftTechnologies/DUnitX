@@ -148,7 +148,8 @@ type
 
   /// <summary>
   ///   This attribute allows you to specify a test Category which can be used
-  ///   when filtering the tests to run.
+  ///   when filtering the tests to run.  Separate several categories with
+  ///   commas.  On a test method, its categories are added to the fixture's.
   /// </summary>
   CategoryAttribute = class(TCustomAttribute)
   private

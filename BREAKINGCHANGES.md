@@ -46,6 +46,10 @@ Until now, a `[TestCase]` value that could not be converted to its parameter's t
 
 `Assert.WillNotRaise( method, SomeClass )` (and `WillNotRaiseWithMessage`) passed when the method raised an exception of a class it was not asked about, which was swallowed.  That exception now propagates, so the test errors with the real exception's class and message.  A test that relied on the swallowing should either name the class it expects or not raise.
 
+### A method's `[Category]` adds to its fixture's (#554)
+
+A `[Category]` on a test method used to replace the fixture's categories, so `--exclude:Integration` still ran a `[Category('Slow')]` method inside a `[Category('Integration')]` fixture, and `--include:Integration` did not select it.  The method's categories are now added to the fixture's (one the fixture already has, compared without case, is not repeated), so a filter on the fixture's category reaches every test in it, and an expression such as `--include:Integration+Slow` now selects such a test.  Suites that relied on a method category to escape the fixture's exclude now see those tests excluded: move them to another fixture.  The NUnit XML now also lists the fixture's categories in such a test's `<categories>`.
+
 ### A test that ignores itself at run time is reported ignored (#396)
 
 A test can ignore itself at run time with the new `Assert.Ignore(reason)`, or, since #386, by raising `ETestIgnored`.  For a test that raises `ETestIgnored` itself, these things change:
