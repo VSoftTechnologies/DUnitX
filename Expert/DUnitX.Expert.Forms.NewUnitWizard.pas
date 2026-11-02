@@ -52,17 +52,21 @@ type
     chkCreateSetupTearDown : TCheckBox;
     chkCreateSampleMethods : TCheckBox;
     procedure FormCreate(Sender : TObject);
+    procedure FormCloseQuery(Sender : TObject; var CanClose : Boolean);
   private
     function GetCreateSampleMethods : boolean;
     function GetCreateSetupTearDownMethods : boolean;
     function GetTestFixtureClassName : string;
     { Private declarations }
+  private
+    FIsCppBuilder : boolean;
   public
     { Public declarations }
     property TestFixtureClasaName : string read GetTestFixtureClassName;
     property CreateSetupTearDownMethods : boolean read GetCreateSetupTearDownMethods;
     property CreateSampleMethods : boolean read GetCreateSampleMethods;
-
+    // True for the C++Builder personality: the class name is then not checked against Delphi's reserved words.
+    property IsCppBuilder : boolean read FIsCppBuilder write FIsCppBuilder;
   end;
 
 var
@@ -80,6 +84,17 @@ uses
 procedure TfrmDunitXNewUnit.FormCreate(Sender : TObject);
 begin
   edtClassName.TextHint := SDefaultClassName;
+end;
+
+procedure TfrmDunitXNewUnit.FormCloseQuery(Sender : TObject; var CanClose : Boolean);
+begin
+  // Refuse OK while the class name would generate a unit that does not compile.
+  if (ModalResult = mrOk) and not IsValidFixtureClassName(GetTestFixtureClassName, not FIsCppBuilder) then
+  begin
+    MessageDlg(Format(SInvalidFixtureClassName, [GetTestFixtureClassName]), mtError, [mbOK], 0);
+    edtClassName.SetFocus;
+    CanClose := False;
+  end;
 end;
 
 function TfrmDunitXNewUnit.GetCreateSampleMethods : boolean;
