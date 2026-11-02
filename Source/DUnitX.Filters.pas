@@ -270,11 +270,19 @@ end;
 function TNameFilter.Match(const test : ITest) : Boolean;
 var
   name : string;
+  fullName : string;
+  next : string;
 begin
   result := false;
+  //A name selects what it names whole: a namespace, a fixture, a test or the cases of a test.  It matches
+  //only at the end of a name segment, so Unit.TFoo does not select Unit.TFooBar.  A test case named from its
+  //values follows its test's name without a '.', as Unit.TFoo.Test1(1,2), and a generic fixture's type
+  //arguments follow its name, as Unit.TFoo<System.Integer>, so '(' and '<' end a segment too.
+  fullName := test.FullName;
   for name in FNames do
   begin
-    result := StartsText(name, test.Fixture.FullName);
+    next := Copy(fullName, Length(name) + 1, 1);
+    result := ((next = '.') or (next = '(') or (next = '<')) and StartsText(name, fullName);
     if result then
       exit;
   end;
