@@ -40,7 +40,10 @@ procedure RegisterOptions;
 implementation
 
 uses
-  DUnitX.CommandLine.Options;
+  System.SysUtils,
+  DUnitX.CommandLine.Options,
+  DUnitX.Exceptions,
+  DUnitX.ResStrs;
 
 procedure RegisterOptions;
 var
@@ -149,6 +152,10 @@ begin
   def := TOptionsRegistry.RegisterUnNamedOption<string>('',
     procedure(value : string)
     begin
+      //A bare argument names the XML output file.  One that is not an .xml file name is most likely a test name
+      //given without --run:, which would run every test and write a file of that name.
+      if not SameText(Trim(ExtractFileExt(value)), '.xml') then
+        raise ECommandLineError.Create(SBareArgumentNotXmlFile);
       TDUnitX.Options.XMLOutputFile := value;
     end);
   def.Hidden := True;

@@ -109,6 +109,7 @@ resourcestring
   SParameterFileDoesNotExist = 'Parameter File [%s] does not exist';
   SErrorParsingParameterFile = 'Error parsing parameter file [%s] : ';
   SErrorSettingOption = 'Error setting option : %s to %s : ';
+  SBareArgumentNotXmlFile = 'not an .xml output file name, use --run:<name> to select tests';
   SUnknownCommandLineOption = 'Unknown command line option : ';
   SOptionNotSpecified = 'Required option [%s] was not specified';
   SCategoryMissingParenthesis = 'Category expression [%s] has a "(" without its closing ")"';
