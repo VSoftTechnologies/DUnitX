@@ -141,3 +141,9 @@ Fixtures are constructed while the fixture list is built, before the run starts,
 
 - **Custom fixture providers and runners:** after a raising constructor, `ITestFixture.FixtureInstance` is nil while the tests are generated, and the first `InitFixtureInstance` raises the kept exception (later calls construct the fixture again).  Code of your own that dereferences the instance, or calls `InitFixtureInstance` without handling an exception, must allow for that.
 - **Runs repeated in one process (the GUI runner):** a fixture constructed again now has its `[Setup]`, `[TearDown]`, `[SetupFixture]` and `[TearDownFixture]` bound to the new instance, as its own tests already were; they used to stay bound to the previous one.
+
+### `Assert.AreSame` and `Assert.AreNotSame` compare object references (#414)
+
+The `TObject` overloads of `Assert.AreSame` and `Assert.AreNotSame` called `expected.Equals(actual)`, so for a class that overrides `Equals`, two different instances that compare equal counted as the same object.  They now compare the references, as their `IInterface` overloads already did.  `TObject.Equals` itself compares references, so only classes that override `Equals` are affected: a test that passes two different but equal instances to `AreSame` now fails, and one that passes them to `AreNotSame` now passes.  To check that two objects are equal, use `Assert.AreEqual` (which calls `Equals` on current compilers) or `Assert.IsTrue(expected.Equals(actual))`.
+
+A nil `expected`, or a nil `actual` given to `AreSame`, used to raise an access violation (`Equals` or `ToString` called on nil).  Now, for nil object references, `AreSame` passes when both are nil and fails with `nil` in the message when one is, and `AreNotSame` fails when both are nil and passes when one is.

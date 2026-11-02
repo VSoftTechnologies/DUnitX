@@ -356,6 +356,27 @@ type
     procedure Test_AreNotSameOnSameObjectWithDifferentInterfaces_Throws_Exception;
 
     [Test]
+    procedure AreSame_Throws_ETestFailure_When_Different_Objects_Override_Equals;
+
+    [Test]
+    procedure AreNotSame_Throws_No_Exception_When_Different_Objects_Override_Equals;
+
+    [Test]
+    procedure AreSame_Throws_ETestFailure_When_Expected_Is_Nil;
+
+    [Test]
+    procedure AreSame_Throws_ETestFailure_When_Actual_Is_Nil;
+
+    [Test]
+    procedure AreSame_Throws_No_Exception_When_Both_Are_Nil;
+
+    [Test]
+    procedure AreNotSame_Throws_ETestFailure_When_Both_Are_Nil;
+
+    [Test]
+    procedure AreNotSame_Throws_No_Exception_When_One_Is_Nil;
+
+    [Test]
     procedure Contains_ArrayOfT_Throws_No_Exception_When_Value_In_Array;
 
     [Test]
@@ -525,6 +546,12 @@ type
   TMockClassTwo = class(TObject)
   end;
 
+  //Overrides Equals to report every object as equal, so only an identity comparison tells two instances apart
+  TAlwaysEqual = class(TObject)
+  public
+    function Equals(Obj : TObject) : boolean; override;
+  end;
+
   //explicit ordinals, so the compiler emits no RTTI and TypeInfo returns nil
   TEnumWithoutRtti = (ewrFirst = 1, ewrSecond = 5);
 
@@ -540,6 +567,11 @@ type
 
   //Mask to override the default AssertEx in DUnitX.TestFramework
   Assert = class(DUnitX.Assert.Assert);
+
+function TAlwaysEqual.Equals(Obj : TObject) : boolean;
+begin
+  result := true;
+end;
 
 procedure TTestsAssert.Fail_Throws_ETestFailure_Exception;
 begin
@@ -2098,6 +2130,126 @@ begin
     begin
       Assert.AreNotSame(myObject, myObject as IInterface);
     end, ETestFailure);
+end;
+
+procedure TTestsAssert.AreSame_Throws_ETestFailure_When_Different_Objects_Override_Equals;
+var
+  obj1, obj2 : TObject;
+begin
+  obj1 := TAlwaysEqual.Create;
+  obj2 := TAlwaysEqual.Create;
+  try
+    Assert.WillRaise(
+      procedure
+      begin
+        Assert.AreSame(obj1, obj2);
+      end, ETestFailure);
+  finally
+    obj2.Free;
+    obj1.Free;
+  end;
+end;
+
+procedure TTestsAssert.AreNotSame_Throws_No_Exception_When_Different_Objects_Override_Equals;
+var
+  obj1, obj2 : TObject;
+begin
+  obj1 := TAlwaysEqual.Create;
+  obj2 := TAlwaysEqual.Create;
+  try
+    Assert.WillNotRaiseAny(
+      procedure
+      begin
+        Assert.AreNotSame(obj1, obj2);
+      end);
+  finally
+    obj2.Free;
+    obj1.Free;
+  end;
+end;
+
+procedure TTestsAssert.AreSame_Throws_ETestFailure_When_Expected_Is_Nil;
+var
+  nothing, obj : TObject;
+  failureMessage : string;
+begin
+  nothing := nil;
+  obj := TObject.Create;
+  try
+    failureMessage := '';
+    try
+      Assert.AreSame(nothing, obj);
+    except
+      on E : ETestFailure do
+        failureMessage := E.Message;
+    end;
+    Assert.IsTrue(Pos('Object [nil] does not equal object [TObject]', failureMessage) = 1, 'Unexpected failure message: ' + failureMessage);
+  finally
+    obj.Free;
+  end;
+end;
+
+procedure TTestsAssert.AreSame_Throws_ETestFailure_When_Actual_Is_Nil;
+var
+  nothing, obj : TObject;
+  failureMessage : string;
+begin
+  nothing := nil;
+  obj := TObject.Create;
+  try
+    failureMessage := '';
+    try
+      Assert.AreSame(obj, nothing);
+    except
+      on E : ETestFailure do
+        failureMessage := E.Message;
+    end;
+    Assert.IsTrue(Pos('Object [TObject] does not equal object [nil]', failureMessage) = 1, 'Unexpected failure message: ' + failureMessage);
+  finally
+    obj.Free;
+  end;
+end;
+
+procedure TTestsAssert.AreSame_Throws_No_Exception_When_Both_Are_Nil;
+var
+  nothing : TObject;
+begin
+  nothing := nil;
+  Assert.WillNotRaiseAny(
+    procedure
+    begin
+      Assert.AreSame(nothing, nothing);
+    end);
+end;
+
+procedure TTestsAssert.AreNotSame_Throws_ETestFailure_When_Both_Are_Nil;
+var
+  nothing : TObject;
+begin
+  nothing := nil;
+  Assert.WillRaise(
+    procedure
+    begin
+      Assert.AreNotSame(nothing, nothing);
+    end, ETestFailure);
+end;
+
+procedure TTestsAssert.AreNotSame_Throws_No_Exception_When_One_Is_Nil;
+var
+  nothing, obj : TObject;
+begin
+  nothing := nil;
+  obj := TObject.Create;
+  try
+    Assert.WillNotRaiseAny(
+      procedure
+      begin
+        Assert.AreNotSame(nothing, obj);
+        Assert.AreNotSame(obj, nothing);
+      end);
+  finally
+    obj.Free;
+  end;
 end;
 
 procedure TTestsAssert.AreNotEqual_Integer_Throws_No_Exception_When_Values_Are_NotEqual;

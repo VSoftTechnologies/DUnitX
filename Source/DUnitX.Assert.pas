@@ -324,6 +324,14 @@ begin
 end;
 {$ENDIF}
 
+function ObjectToString(const obj : TObject) : string;
+begin
+  if obj = nil then
+    result := 'nil'
+  else
+    result := obj.ToString;
+end;
+
 { Assert }
 
 class procedure Assert.DoAssert;
@@ -608,8 +616,8 @@ end;
 class procedure Assert.AreNotSame(const expected, actual : TObject; const message : string);
 begin
   DoAssert;
-  if expected.Equals(actual) then
-    FailFmt(SEqualsErrorObj, [expected.ToString, actual.ToString, message], ReturnAddress);
+  if expected = actual then
+    FailFmt(SEqualsErrorObj, [ObjectToString(expected), ObjectToString(actual), message], ReturnAddress);
 end;
 
 class procedure Assert.AreNotSame(const expected, actual : IInterface; const message : string);
@@ -629,8 +637,8 @@ end;
 class procedure Assert.AreSame(const expected, actual : TObject; const message : string);
 begin
   DoAssert;
-  if not expected.Equals(actual) then
-    FailFmt(SNotEqualErrorObj, [expected.ToString, actual.ToString, message], ReturnAddress);
+  if expected <> actual then
+    FailFmt(SNotEqualErrorObj, [ObjectToString(expected), ObjectToString(actual), message], ReturnAddress);
 end;
 
 class procedure Assert.Contains<T>(const list : IEnumerable<T>; const value : T; const message : string);
