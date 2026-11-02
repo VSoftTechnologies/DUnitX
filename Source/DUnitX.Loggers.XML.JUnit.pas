@@ -70,6 +70,7 @@ implementation
 
 uses
   DUnitX.Utils.XML,
+  System.StrUtils,
   System.TypInfo;
 
 { TDUnitXXMLJUnitLogger }
@@ -192,7 +193,10 @@ begin
     sExecuted := BoolToStr(fixtureResult.ResultCount > 0, true);
     sExecuted := EscapeForXML(sExecuted);
 
-    sName := StringReplace(fixtureResult.Fixture.FullName, '.' + fixtureResult.Fixture.Name, '', []);
+    //The suite name is the full name without its trailing '.Name' (not the first '.Name' found).
+    sName := fixtureResult.Fixture.FullName;
+    if EndsStr('.' + fixtureResult.Fixture.Name, sName) then
+      SetLength(sName, Length(sName) - Length(fixtureResult.Fixture.Name) - 1);
     sTime := Format('%.3f', [fixtureResult.Duration.TotalSeconds]);
 
     sName := EscapeForXML(sName);
@@ -263,7 +267,7 @@ begin
           Indent;
           WriteXMLLine(Format('<failure message="%s">', [EscapeForXML(testResult.Message)]));
           Indent;
-          WriteXMLLine(Format('<![CDATA[ %s ]]>', [EscapeForXML(testResult.Message, False, True)]));
+          WriteXMLLine(Format('<![CDATA[ %s ]]>', [EscapeForXML(testResult.StackTrace, False, True)]));
           Outdent;
           WriteXMLLine('</failure>');
           Outdent;

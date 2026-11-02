@@ -66,6 +66,10 @@ When `[MaxTime]` interrupts a test, the test fails with `ETimedOut` even if the 
 
 `[MaxTime]` on a method with `[TestCase]`, `[NamedTestCase]`, `[TestCaseSource]`, a test case generator or a `[TestCaseProvider]` had no effect: every case ran for as long as it took.  Each case now has the method's `[MaxTime]`, as a plain test has, so a case that overruns fails with `ETimedOut`, a case still running is interrupted, and the rules above for a caught interruption and `[WillRaise(ETimedOut)]` apply to it.  A case that used to pass only because its limit was ignored now fails: raise the limit or speed the case up.
 
+### JUnit XML: suite names and failure bodies (#547)
+
+The JUnit logger named a suite by deleting the first `.FixtureName` it found in the fixture's full name, so a namespace that contains the fixture's name was mangled: fixture `TFoo` in unit `My.TFooTests` was the suite `MyTests.TFoo`.  It now deletes only the trailing one, and that suite is `My.TFooTests`.  A CI server that keys its test history by suite name sees such a suite as new.  The body of a `<failure>` element now holds the stack trace, as `<error>` does, instead of repeating the `message` attribute.
+
 ### Fixtures can run in parallel (#532)
 
 The new option `TDUnitX.Options.MaxDegreeOfParallelism`, set on the command line with `-m:x` (`--mdop:x`), runs up to x fixtures at once, each on a worker thread.  It defaults to 0, and 0 or 1 runs the fixtures one at a time on the runner's thread exactly as before.  It needs Delphi 11 or later; earlier compilers ignore it.

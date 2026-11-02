@@ -55,6 +55,12 @@ type
     procedure OnTestingEnds_Writes_An_ISO_8601_Timestamp;
     [Test]
     procedure OnTestingEnds_Counts_A_Leak_As_An_Error_In_The_Header;
+    [Test]
+    procedure OnTestingEnds_Names_The_Suite_By_Removing_Only_The_Trailing_Fixture_Name;
+    [Test]
+    procedure OnTestingEnds_Writes_The_Stack_Trace_In_The_Failure_Body;
+  private
+    function LogOneResult(const fixtureName, fixtureNamespace : string; const resultType : TTestResultType) : string;
   end;
 
 implementation
@@ -449,6 +455,80 @@ begin
     stream.Free;
     categories.Free;
   end;
+end;
+
+function TDUnitX_LoggerXMLJUnitTests.LogOneResult(const fixtureName, fixtureNamespace : string; const resultType : TTestResultType) : string;
+var
+  logger : ITestLogger;
+  stream : TStringStream;
+  categories : TList<string>;
+  mockFixture : TMock<ITestFixtureInfo>;
+  mockTest : TMock<ITestInfo>;
+  mockResult : TMock<ITestResult>;
+  runResults : TDUnitXRunResults;
+  runResultsIntf : IRunResults;
+  context : ITestExecuteContext;
+  fixtureResult : IFixtureResult;
+begin
+  categories := TList<string>.Create;
+  stream := TStringStream.Create('', TEncoding.UTF8);
+  try
+    mockFixture := TMock<ITestFixtureInfo>.Create;
+    mockFixture.Setup.WillReturn(fixtureName).When.Name;
+    mockFixture.Setup.WillReturn(fixtureNamespace).When.NameSpace;
+    mockFixture.Setup.WillReturn(fixtureNamespace + '.' + fixtureName).When.FullName;
+    mockFixture.Setup.WillReturn(TValue.From<TClass>(TStringList)).When.TestClass;
+    mockFixture.Setup.WillReturn(TValue.From<TList<string>>(categories)).When.Categories;
+
+    mockTest := TMock<ITestInfo>.Create;
+    mockTest.Setup.WillReturn('ATest').When.Name;
+    mockTest.Setup.WillReturn(fixtureNamespace + '.' + fixtureName + '.ATest').When.FullName;
+    mockTest.Setup.WillReturn(TValue.From<TList<string>>(categories)).When.Categories;
+    mockTest.Setup.WillReturn(mockFixture.InstanceAsValue).When.Fixture;
+
+    mockResult := TMock<ITestResult>.Create;
+    mockResult.Setup.WillReturn(TValue.From<TTestResultType>(resultType)).When.ResultType;
+    mockResult.Setup.WillReturn(mockTest.InstanceAsValue).When.Test;
+    mockResult.Setup.WillReturn(TValue.From<TTimeSpan>(TTimeSpan.FromMilliseconds(0))).When.Duration;
+    mockResult.Setup.WillReturn('result message').When.Message;
+    mockResult.Setup.WillReturn('result stack').When.StackTrace;
+
+    runResults := TDUnitXRunResults.Create;
+    runResultsIntf := runResults;
+    context := runResults;
+    fixtureResult := TDUnitXFixtureResult.Create(nil, mockFixture.Instance);
+    context.RecordFixture(fixtureResult);
+    context.RecordResult(fixtureResult, mockResult.Instance);
+    context.RollupResults;
+
+    logger := TDUnitXXMLJUnitLogger.Create(stream);
+    logger.OnTestingEnds(runResultsIntf);
+    result := stream.DataString;
+  finally
+    logger := nil;
+    stream.Free;
+    categories.Free;
+  end;
+end;
+
+procedure TDUnitX_LoggerXMLJUnitTests.OnTestingEnds_Names_The_Suite_By_Removing_Only_The_Trailing_Fixture_Name;
+var
+  xml : string;
+begin
+  //The namespace contains '.TFoo' too; only the trailing '.TFoo' may be removed from the full name.
+  xml := LogOneResult('TFoo', 'My.TFooTests', TTestResultType.Pass);
+  xml := Copy(xml, Pos('<testsuite ', xml), MaxInt);
+  xml := Copy(xml, 1, Pos('>', xml));
+  Assert.Contains(xml, 'name="My.TFooTests"', false);
+end;
+
+procedure TDUnitX_LoggerXMLJUnitTests.OnTestingEnds_Writes_The_Stack_Trace_In_The_Failure_Body;
+var
+  xml : string;
+begin
+  xml := LogOneResult('AFixture', 'My.Namespace', TTestResultType.Failure);
+  Assert.Contains(xml, '<failure message="result message">', false);
+  Assert.Contains(xml, '<![CDATA[ result stack ]]>', false);
 end;
 
 procedure TDUnitX_LoggerXMLJUnitTests.FileLogger_Accepts_A_Bare_File_Name;
