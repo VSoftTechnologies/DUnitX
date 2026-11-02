@@ -154,7 +154,7 @@ begin
   // Global overview
   // There is only a "disabled" attribute on the top level, but "disabled" and "skipped" on fixture level. Return ignored tests as "disabled"
   WriteXMLLine(Format('<testsuites name="%s" tests="%d" disabled="%d" errors="%d" failures="%d" time="%s">',
-      [sExeName, RunResults.TestCount, RunResults.IgnoredCount, RunResults.ErrorCount + RunResults.MemoryLeakCount, RunResults.FailureCount, sTime]));
+      [EscapeForXML(sExeName), RunResults.TestCount, RunResults.IgnoredCount, RunResults.ErrorCount + RunResults.MemoryLeakCount, RunResults.FailureCount, sTime]));
   //A leaked test is written as <error>, so it is counted as one.
 
   Indent;
@@ -311,7 +311,7 @@ begin
     WriteXMLLine('<categories>');
     Indent;
     for sCategory in ACategoryList do
-      WriteXMLLine(Format('<category name="%s" />', [sCategory]));
+      WriteXMLLine(Format('<category name="%s" />', [EscapeForXML(sCategory)]));
     Outdent;
     WriteXMLLine('</categories>');
     Outdent;
