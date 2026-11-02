@@ -55,6 +55,15 @@ A `[TestCaseProvider]` whose name is misspelt or not registered, or whose provid
 
 A `[Category]` on a test method used to replace the fixture's categories, so `--exclude:Integration` still ran a `[Category('Slow')]` method inside a `[Category('Integration')]` fixture, and `--include:Integration` did not select it.  The method's categories are now added to the fixture's (one the fixture already has, compared without case, is not repeated), so a filter on the fixture's category reaches every test in it, and an expression such as `--include:Integration+Slow` now selects such a test.  Suites that relied on a method category to escape the fixture's exclude now see those tests excluded: move them to another fixture.  The NUnit XML now also lists the fixture's categories in such a test's `<categories>`.
 
+### A 64-bit hex `[TestCase]` value errors for a 32-bit or smaller integer (#564)
+
+A hex value for an `Integer`, a smaller integer type, `Cardinal` or a subrange of one was read as an `Int64`, which takes a value with bit 63 set as a negative number and negates a hex value without checking its sign.  These converted silently, and now error (a sign-flipped one already errors for `Int64`):
+
+- '$FFFFFFFFFFFFFFFF' was -1, and '$FFFFFFFF80000000' was `Low(Integer)`.
+- '-$FFFFFFFFFFFFFFFF' was +1, for signed and unsigned types alike.
+
+Write the value in the type's width ('$FFFFFFFF' is still the `Integer` -1) or in decimal.  A negative hex value such as '-$1' still converts.
+
 ### A test that ignores itself at run time is reported ignored (#396)
 
 A test can ignore itself at run time with the new `Assert.Ignore(reason)`, or, since #386, by raising `ETestIgnored`.  For a test that raises `ETestIgnored` itself, these things change:
