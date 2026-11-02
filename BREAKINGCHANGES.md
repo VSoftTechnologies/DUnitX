@@ -104,6 +104,14 @@ A command line that passes an output file with another extension, or none, must 
 
 The JUnit logger named a suite by deleting the first `.FixtureName` it found in the fixture's full name, so a namespace that contains the fixture's name was mangled: fixture `TFoo` in unit `My.TFooTests` was the suite `MyTests.TFoo`.  It now deletes only the trailing one, and that suite is `My.TFooTests`.  A CI server that keys its test history by suite name sees such a suite as new.  The body of a `<failure>` element now holds the stack trace, as `<error>` does, instead of repeating the `message` attribute.
 
+### The leak check counts only what the test itself kept (#573)
+
+With a leak monitor that measures (FastMM4 or FastMM5), a test is now measured as a whole, from the start of its setup to the end of its teardown, and what the runner keeps in that time is left out: the exception that `Assert.Pass` raises, the messages that `Log`, `Status` and `WriteLn` keep, and what loggers keep from their per-test callbacks.  Memory freed between a test's phases is no longer reported as leaked.  Tests that were reported as leaking for these reasons now pass, and a leak's size is the net growth.  The default monitor measures nothing, so its results do not change.
+
+To do this the runner resolves a second `IMemoryLeakMonitor` for each test and calls its `PreTest` once and its `PostTest` several times (before and after each piece of its own work, and each `Log`), so a test costs about three times as many measurements as before.  A custom monitor registered as a singleton cannot measure twice at once, so with one the phases are still added up as before.
+
+A test that ends with `Assert.Pass` now has its log cleared before its teardown, as a test that simply returns always had.
+
 ### Fixtures can run in parallel (#532)
 
 The new option `TDUnitX.Options.MaxDegreeOfParallelism`, set on the command line with `-m:x` (`--mdop:x`), runs up to x fixtures at once, each on a worker thread.  It defaults to 0, and 0 or 1 runs the fixtures one at a time on the runner's thread exactly as before.  It needs Delphi 11 or later; earlier compilers ignore it.
