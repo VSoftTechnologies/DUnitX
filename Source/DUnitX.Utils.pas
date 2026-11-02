@@ -1376,14 +1376,26 @@ var
   lValue : Int64;
   lTypeData : PTypeData;
   lBits : Integer;
+  lText : string;
 begin
   try
     if ATarget = TypeInfo(TAlphaColor) then
       lValue := StringToAlphaColor(ASource.AsString)
     else if ATarget = TypeInfo(TColor) then
       lValue := StringToColor(ASource.AsString)
-    else if not TryStrToInt64(ASource.AsString, lValue) then
-      Exit(False);
+    else
+    begin
+      if not TryStrToInt64(ASource.AsString, lValue) then
+        Exit(False);
+      //TryStrToInt64 reads a hex value with bit 63 set as a negative bit pattern ('$FFFFFFFFFFFFFFFF' is -1), and
+      //negates a hex value without checking the sign ('-$FFFFFFFFFFFFFFFF' is +1).  Either is 64 bits wide, too wide
+      //for any type converted here, but the result could fit, so it is refused (ConvStr2Ord refuses the sign-flipped one for Int64 too)
+      lText := Trim(ASource.AsString);
+      if (lValue < 0) and IsHexLiteral(lText) then
+        Exit(False);
+      if (lValue > 0) and (lText <> '') and (lText[1] = '-') and IsHexLiteral(Copy(lText, 2, MaxInt)) then
+        Exit(False);
+    end;
   except
     //StringToAlphaColor and StringToColor raise for a value they cannot read
     on EConvertError do
