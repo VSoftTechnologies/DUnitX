@@ -277,7 +277,54 @@ resourcestring
     '  Dunitx::Testframework::Assert::IsTrue(s == "Bonjour"); // This fails for illustrative purposes'#13#10 +
     '}'#13#10;
 
+  // 0 - the rejected class name
+  SInvalidFixtureClassName = '''%0:s'' is not a valid TestFixture class name.'#13#10#13#10 +
+    'Enter an identifier: a letter or underscore, then letters, digits or underscores.  For Delphi it must also not ' +
+    'be a reserved word or a name the generated unit uses (TDUnitX, Integer, TestFixtureAttribute, TestAttribute, ' +
+    'TestCaseAttribute, NamedTestCaseAttribute, SetupAttribute, TearDownAttribute).';
+
+// True when AName can be the generated fixture's class name: a valid identifier and, when ADelphiRules, not a Delphi
+// reserved word and not a name the generated Delphi unit uses unqualified (declaring it would hide the original);
+// those comparisons ignore case.  C++ keywords are not checked.
+function IsValidFixtureClassName(const AName : string; const ADelphiRules : Boolean) : Boolean;
+
 implementation
+
+uses
+  System.SysUtils;
+
+const
+  // Delphi reserved words (directives such as "private" or "message" are legal identifiers).
+  CReservedWords : array[0..64] of string = (
+    'and', 'array', 'as', 'asm', 'begin', 'case', 'class', 'const', 'constructor', 'destructor',
+    'dispinterface', 'div', 'do', 'downto', 'else', 'end', 'except', 'exports', 'file', 'finalization',
+    'finally', 'for', 'function', 'goto', 'if', 'implementation', 'in', 'inherited', 'initialization', 'inline',
+    'interface', 'is', 'label', 'library', 'mod', 'nil', 'not', 'object', 'of', 'or',
+    'packed', 'procedure', 'program', 'property', 'raise', 'record', 'repeat', 'resourcestring', 'set', 'shl',
+    'shr', 'string', 'then', 'threadvar', 'to', 'try', 'type', 'unit', 'until', 'uses',
+    'var', 'while', 'with', 'xor', 'out');
+
+  // Names the generated unit uses unqualified. A fixture class of that name hides the original: TDUnitX breaks the
+  // RegisterTestFixture call, an *Attribute name breaks the matching attribute, and Integer turns the sample Test2
+  // parameters into the fixture class.
+  CHiddenNames : array[0..7] of string = (
+    'TDUnitX', 'Integer', 'TestFixtureAttribute', 'TestAttribute', 'TestCaseAttribute', 'NamedTestCaseAttribute',
+    'SetupAttribute', 'TearDownAttribute');
+
+function IsValidFixtureClassName(const AName : string; const ADelphiRules : Boolean) : Boolean;
+var
+  i : Integer;
+begin
+  result := IsValidIdent(AName);
+  if not (result and ADelphiRules) then
+    Exit;
+  for i := Low(CReservedWords) to High(CReservedWords) do
+    if SameText(AName, CReservedWords[i]) then
+      Exit(False);
+  for i := Low(CHiddenNames) to High(CHiddenNames) do
+    if SameText(AName, CHiddenNames[i]) then
+      Exit(False);
+end;
 
 end.
 

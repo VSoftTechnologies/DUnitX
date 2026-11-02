@@ -14,6 +14,7 @@ object frmDunitXNewProject: TfrmDunitXNewProject
   Font.Style = []
   OldCreateOrder = False
   Position = poMainFormCenter
+  OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   DesignSize = (
     284

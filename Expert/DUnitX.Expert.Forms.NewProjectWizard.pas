@@ -58,6 +58,7 @@ type
     rgReportLeakOptions : TRadioGroup;
     procedure chkCreateTestUnitClick(Sender : TObject);
     procedure FormCreate(Sender : TObject);
+    procedure FormCloseQuery(Sender : TObject; var CanClose : Boolean);
   private
     { Private declarations }
     function GetAddToProjectGroup : boolean;
@@ -66,6 +67,8 @@ type
     function GetCreateTestUnit : boolean;
     function GetTestFixtureClassName : string;
     function GetReportLeakOption : TReportLeakOptions;
+  private
+    FIsCppBuilder : boolean;
   public
     { Public declarations }
     // Read Only Properties to extract values without having to know control values.
@@ -75,6 +78,8 @@ type
     property CreateTestUnit : boolean read GetCreateTestUnit;
     property AddToProjectGroup : boolean read GetAddToProjectGroup;
     property ReportLeakOption : TReportLeakOptions read GetReportLeakOption;
+    // True for the C++Builder personality: the class name is then not checked against Delphi's reserved words.
+    property IsCppBuilder : boolean read FIsCppBuilder write FIsCppBuilder;
   end;
 
 var
@@ -98,6 +103,17 @@ end;
 procedure TfrmDunitXNewProject.FormCreate(Sender : TObject);
 begin
   edtClassName.TextHint := SDefaultClassName;
+end;
+
+procedure TfrmDunitXNewProject.FormCloseQuery(Sender : TObject; var CanClose : Boolean);
+begin
+  // Refuse OK while the class name would generate a unit that does not compile.
+  if (ModalResult = mrOk) and CreateTestUnit and not IsValidFixtureClassName(GetTestFixtureClassName, not FIsCppBuilder) then
+  begin
+    MessageDlg(Format(SInvalidFixtureClassName, [GetTestFixtureClassName]), mtError, [mbOK], 0);
+    edtClassName.SetFocus;
+    CanClose := False;
+  end;
 end;
 
 function TfrmDunitXNewProject.GetAddToProjectGroup : boolean;

@@ -54,6 +54,7 @@ uses
   Controls,
   Forms,
   Windows,
+  SysUtils,
   ExpertsRepository;
 
 resourcestring
@@ -76,6 +77,7 @@ begin
       begin
         WizardForm := TfrmDunitXNewUnit.Create(Application);
         try
+          WizardForm.IsCppBuilder := SameText(APersonality, sCBuilderPersonality);
           if WizardForm.ShowModal = mrOk then
           begin
             ModuleServices := (BorlandIDEServices as IOTAModuleServices);

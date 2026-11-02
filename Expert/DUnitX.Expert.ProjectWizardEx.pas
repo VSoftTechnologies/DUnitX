@@ -80,6 +80,7 @@ begin
       begin
         WizardForm := TfrmDunitXNewProject.Create(Application);
         try
+          WizardForm.IsCppBuilder := SameText(APersonality, sCBuilderPersonality);
           if WizardForm.ShowModal = mrOk then
           begin
             if not WizardForm.AddToProjectGroup then
