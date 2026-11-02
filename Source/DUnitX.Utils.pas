@@ -1414,15 +1414,75 @@ begin
     AResult := TValue.FromOrdinal(ATarget, lValue);
 end;
 
-function ConvStr2Ord(const ASource : TValue; ATarget : PTypeInfo; out AResult : TValue) : Boolean;
+//A decimal UInt64, with leading spaces or a '+', as StrToInt64 reads them.  Not TryStrToUInt64, which older RTLs do
+//not have
+function TryStrToUInt64Decimal(const AText : string; out AValue : UInt64) : Boolean;
+var
+  i : Integer;
+  digit : Cardinal;
 begin
-{$IFDEF DELPHI_XE6_UP}
-  if ATarget = System.TypeInfo(UInt64) then
-    AResult := TValue.FromOrdinal(ATarget, StrToUInt64Def(ASource.AsString, 0))
-  else
-{$ENDIF}
-    AResult := TValue.FromOrdinal(ATarget, StrToInt64Def(ASource.AsString, 0));
+  AValue := 0;
+  i := 1;
+  while (i <= Length(AText)) and (AText[i] = ' ') do
+    Inc(i);
+  if (i <= Length(AText)) and (AText[i] = '+') then
+    Inc(i);
+  if i > Length(AText) then
+    Exit(False);
+  for i := i to Length(AText) do
+  begin
+    if not CharInSet(AText[i], ['0'..'9']) then
+      Exit(False);
+    digit := Ord(AText[i]) - Ord('0');
+    if AValue > (High(UInt64) - digit) div 10 then
+      Exit(False);
+    AValue := AValue * 10 + digit;
+  end;
   Result := True;
+end;
+
+//Int64, UInt64 and their subranges, and NativeInt and NativeUInt on 64-bit targets
+function ConvStr2Ord(const ASource : TValue; ATarget : PTypeInfo; out AResult : TValue) : Boolean;
+var
+  lValue : Int64;
+  lUValue : UInt64;
+  lTypeData : PTypeData;
+  lIsHex : Boolean;
+  lText : string;
+begin
+  lTypeData := GetTypeData(ATarget);
+  lIsHex := IsHexLiteral(ASource.AsString);
+  lText := Trim(ASource.AsString);
+
+  //UInt64 keeps its range in signed fields, so its MinInt64Value is above its MaxInt64Value.  It covers its whole width:
+  //a subrange cannot go above High(Int64)
+  if lTypeData.MinInt64Value > lTypeData.MaxInt64Value then
+  begin
+    //A hex value is its 64-bit pattern, which TryStrToInt64 reads; a decimal one may be above High(Int64)
+    if lIsHex then
+    begin
+      Result := TryStrToInt64(ASource.AsString, lValue);
+      lUValue := UInt64(lValue);
+    end
+    else
+      Result := TryStrToUInt64Decimal(ASource.AsString, lUValue);
+    if Result then
+      AResult := TValue.FromOrdinal(ATarget, Int64(lUValue));
+    Exit;
+  end;
+
+  if not TryStrToInt64(ASource.AsString, lValue) then
+    Exit(False);
+  //TryStrToInt64 negates a hex value without checking the sign: '-$FFFFFFFFFFFFFFFF' comes back as 1
+  if (lValue > 0) and (lText <> '') and (lText[1] = '-') and IsHexLiteral(Copy(lText, 2, MaxInt)) then
+    Exit(False);
+  //TryStrToInt64 reads a hex value above $7FFFFFFFFFFFFFFF as its bit pattern, a negative number.  That is right for
+  //a type that covers the whole width, as in code; for a subrange the value is above its range
+  if lIsHex and (lValue < 0) and ((lTypeData.MinInt64Value <> Low(Int64)) or (lTypeData.MaxInt64Value <> High(Int64))) then
+    Exit(False);
+  Result := (lValue >= lTypeData.MinInt64Value) and (lValue <= lTypeData.MaxInt64Value);
+  if Result then
+    AResult := TValue.FromOrdinal(ATarget, lValue);
 end;
 
 function ConvStr2Set(const ASource : TValue; ATarget : PTypeInfo; out AResult : TValue) : Boolean;
