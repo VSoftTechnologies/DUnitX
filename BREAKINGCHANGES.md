@@ -83,6 +83,10 @@ An argument with no option prefix names the XML output file, as before, but only
 
 A command line that passes an output file with another extension, or none, must use `--xmlfile:<file>` instead.
 
+### `Assert.IsType<T>` always fails (#558)
+
+`Assert.IsType<T>` checked that a value of type `T` was of type `T`, which it always is, so it passed whatever it was given and checked nothing.  It now always fails, with a message pointing to `Assert.InheritsFrom` and `Assert.Implements`, so a test that relied on it no longer passes without checking anything.  It stays deprecated.  Replace each call with `Assert.InheritsFrom(obj.ClassType, TExpected)` for a class, or `Assert.Implements<IExpected>(intf)` for an interface reference.  Its resource string `STypeError` is replaced by `SIsTypeCannotCheck`.
+
 ### `[MaxTime]` applies to `[TestCase]` tests (#544)
 
 `[MaxTime]` on a method with `[TestCase]`, `[NamedTestCase]`, `[TestCaseSource]`, a test case generator or a `[TestCaseProvider]` had no effect: every case ran for as long as it took.  Each case now has the method's `[MaxTime]`, as a plain test has, so a case that overruns fails with `ETimedOut`, a case still running is interrupted, and the rules above for a caught interruption and `[WillRaise(ETimedOut)]` apply to it.  A case that used to pass only because its limit was ignored now fails: raise the limit or speed the case up.
