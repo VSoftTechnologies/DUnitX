@@ -66,6 +66,22 @@ type
         CurrentTestName : string;
         //The results recorded while a fixture runs in parallel, in the order they were recorded; nil otherwise.
         Results : TList<ITestResult>;
+        //The running test's name, read once before its setup: a test case builds its name on every read, which inside
+        //the leak span would be an allocation.
+        TestName : string;
+        //A second instance of the leak monitor, which measures the test as a whole, from the start of its setup to the
+        //end of its teardown, so that memory freed between the phases is not reported as leaked.  nil when leaks are
+        //not checked, or when the monitor is registered as a singleton (then the phases are added up, as before).
+        LeakSpan : IMemoryLeakMonitor;
+        LeakSpanOpen : boolean;
+        //The span's growth, and the runner's own part of it, as the test and then its teardown end.
+        LeakSpanAllocated : Int64;
+        LeakSpanRunnerAllocated : Int64;
+        //What the runner and the loggers allocate, less what they free, inside the span (results, logs): not the
+        //test's.
+        RunnerAllocated : Int64;
+        RunnerAllocationDepth : integer;
+        RunnerAllocationStart : Int64;
         constructor Create(const ACollectResults : boolean);
         destructor Destroy; override;
       end;
@@ -174,6 +190,17 @@ type
       Exception; const aFixtureResult : IFixtureResult);
 
     function CheckMemoryAllocations(const test : ITest; out errorResult : ITestResult; const memoryAllocationProvider : IMemoryLeakMonitor) : boolean;
+    //The leak span (see TThreadState.LeakSpan): prepared for each test, opened as its setup (or the test) starts, read
+    //as the test, and then its teardown, ends, and closed once the leak check is done.
+    procedure ResetLeakSpan(const test : ITest; const memoryAllocationProvider : IMemoryLeakMonitor);
+    procedure StartLeakSpan;
+    procedure MarkLeakSpanEnd;
+    procedure CloseLeakSpan;
+    //Around what the runner does inside the span, so that it is not counted against the test.  Brackets nest.  The
+    //span cannot tell threads apart: what a test's own thread allocates or frees while another is in a bracket is
+    //counted as the runner's.
+    procedure BeginRunnerAllocation;
+    procedure EndRunnerAllocation;
 
     function ExecuteTestTearDown(const context : ITestExecuteContext; const threadId : TThreadID; const fixture : ITestFixture; const test : ITest; out
       errorResult : ITestResult; const memoryAllocationProvider : IMemoryLeakMonitor) : boolean;
@@ -377,6 +404,8 @@ var
   LSetUpMemoryAllocated : Int64;
   LTearDownMemoryAllocated : Int64;
   LTestMemoryAllocated : Int64;
+  LLeaked : Int64;
+  LRunnerAllocated : Int64;
   LMsg : string;
   LMemoryAllocationProvider2 : IMemoryLeakMonitor2;
   testInfo : ITestInfo;
@@ -391,35 +420,162 @@ begin
   LTestMemoryAllocated := memoryAllocationProvider.TestMemoryAllocated;
   LTearDownMemoryAllocated := memoryAllocationProvider.TearDownMemoryAllocated;
 
+  //The span also counts memory freed between the phases, and leaves out what the runner kept.  When the runner freed
+  //more than it kept, it freed the test's memory (a logger can), which is the test's own.  The phases only choose the
+  //wording.
+  if State.LeakSpanOpen then
+  begin
+    LRunnerAllocated := State.LeakSpanRunnerAllocated;
+    if LRunnerAllocated < 0 then
+      LRunnerAllocated := 0;
+    LLeaked := State.LeakSpanAllocated - LRunnerAllocated;
+  end
+  else
+    LLeaked := LSetUpMemoryAllocated + LTestMemoryAllocated + LTearDownMemoryAllocated;
+
   //Only net growth is a leak: a test may free memory that was allocated before it ran.
-  if (LSetUpMemoryAllocated + LTestMemoryAllocated + LTearDownMemoryAllocated <= 0) then
+  if (LLeaked <= 0) then
     Exit(True);
 
   if memoryAllocationProvider.QueryInterface(IMemoryLeakMonitor2, LMemoryAllocationProvider2) = 0 then
     LMsg := LMemoryAllocationProvider2.GetReport;
 
   testInfo := test as ITestInfo;
-  if (LTestMemoryAllocated = 0) then
+  if (LTestMemoryAllocated <= 0) and (LSetUpMemoryAllocated + LTearDownMemoryAllocated > 0) then
   begin
     // The leak occurred in the setup/teardown
     Result := False;
-    LMsg := Format(SSetupTeardownBytesLeaked, [LSetUpMemoryAllocated + LTearDownMemoryAllocated]) + LMsg;
+    LMsg := Format(SSetupTeardownBytesLeaked, [LLeaked]) + LMsg;
 
     errorResult := TDUnitXTestResult.Create(testInfo, TTestResultType.MemoryLeak, LMsg);
   end
-  else if (LSetUpMemoryAllocated + LTearDownMemoryAllocated = 0) then
+  else if (LTestMemoryAllocated > 0) and (LSetUpMemoryAllocated + LTearDownMemoryAllocated <= 0) then
   begin
     // The leak occurred in the test only
     Result := False;
-    LMsg := Format(STestBytesLeaked, [LTestMemoryAllocated]) + LMsg;
+    LMsg := Format(STestBytesLeaked, [LLeaked]) + LMsg;
     errorResult := TDUnitXTestResult.Create(testInfo, TTestResultType.MemoryLeak, LMsg);
   end
   else
   begin
     // The leak occurred in the setup/teardown/test
     Result := False;
-    LMsg := Format(SSetupTestTeardownBytesLeaked, [LSetUpMemoryAllocated + LTestMemoryAllocated + LTearDownMemoryAllocated]) + LMsg;
+    LMsg := Format(SSetupTestTeardownBytesLeaked, [LLeaked]) + LMsg;
     errorResult := TDUnitXTestResult.Create(testInfo, TTestResultType.MemoryLeak, LMsg);
+  end;
+end;
+
+procedure TDUnitXTestRunner.ResetLeakSpan(const test : ITest; const memoryAllocationProvider : IMemoryLeakMonitor);
+var
+  span : IMemoryLeakMonitor;
+  threadState : TDUnitXTestRunner.TThreadState;
+begin
+  span := nil;
+  if (not test.IgnoreMemoryLeaks) and (not LeakChecksSuspended) then
+  begin
+    span := TDUnitXServiceLocator.DefaultContainer.Resolve<IMemoryLeakMonitor>();
+    if span = memoryAllocationProvider then
+      span := nil;
+  end;
+  threadState := State;
+  //Under the lock: a test's own threads log to this state.
+  MonitorEnter(FLoggersLock);
+  try
+    threadState.LeakSpan := span;
+    threadState.LeakSpanOpen := false;
+    threadState.LeakSpanAllocated := 0;
+    threadState.LeakSpanRunnerAllocated := 0;
+    threadState.RunnerAllocated := 0;
+    threadState.RunnerAllocationDepth := 0;
+  finally
+    MonitorExit(FLoggersLock);
+  end;
+end;
+
+procedure TDUnitXTestRunner.StartLeakSpan;
+var
+  threadState : TDUnitXTestRunner.TThreadState;
+begin
+  threadState := State;
+  MonitorEnter(FLoggersLock);
+  try
+    if (threadState.LeakSpan <> nil) and (not threadState.LeakSpanOpen) then
+    begin
+      threadState.LeakSpan.PreTest;
+      threadState.LeakSpanOpen := true;
+    end;
+  finally
+    MonitorExit(FLoggersLock);
+  end;
+end;
+
+procedure TDUnitXTestRunner.MarkLeakSpanEnd;
+var
+  threadState : TDUnitXTestRunner.TThreadState;
+begin
+  threadState := State;
+  MonitorEnter(FLoggersLock);
+  try
+    if threadState.LeakSpanOpen then
+    begin
+      threadState.LeakSpan.PostTest;
+      threadState.LeakSpanAllocated := threadState.LeakSpan.TestMemoryAllocated;
+      threadState.LeakSpanRunnerAllocated := threadState.RunnerAllocated;
+    end;
+  finally
+    MonitorExit(FLoggersLock);
+  end;
+end;
+
+procedure TDUnitXTestRunner.CloseLeakSpan;
+var
+  threadState : TDUnitXTestRunner.TThreadState;
+begin
+  threadState := State;
+  MonitorEnter(FLoggersLock);
+  try
+    threadState.LeakSpanOpen := false;
+    threadState.LeakSpan := nil;
+  finally
+    MonitorExit(FLoggersLock);
+  end;
+end;
+
+procedure TDUnitXTestRunner.BeginRunnerAllocation;
+var
+  threadState : TDUnitXTestRunner.TThreadState;
+begin
+  threadState := State;
+  //Held until EndRunnerAllocation, so that a test's own threads cannot log inside the bracket.
+  MonitorEnter(FLoggersLock);
+  try
+    Inc(threadState.RunnerAllocationDepth);
+    if (threadState.RunnerAllocationDepth = 1) and threadState.LeakSpanOpen then
+    begin
+      threadState.LeakSpan.PostTest;
+      threadState.RunnerAllocationStart := threadState.LeakSpan.TestMemoryAllocated;
+    end;
+  except
+    Dec(threadState.RunnerAllocationDepth);
+    MonitorExit(FLoggersLock);
+    raise;
+  end;
+end;
+
+procedure TDUnitXTestRunner.EndRunnerAllocation;
+var
+  threadState : TDUnitXTestRunner.TThreadState;
+begin
+  threadState := State;
+  try
+    Dec(threadState.RunnerAllocationDepth);
+    if (threadState.RunnerAllocationDepth = 0) and threadState.LeakSpanOpen then
+    begin
+      threadState.LeakSpan.PostTest;
+      Inc(threadState.RunnerAllocated, threadState.LeakSpan.TestMemoryAllocated - threadState.RunnerAllocationStart);
+    end;
+  finally
+    MonitorExit(FLoggersLock);
   end;
 end;
 
@@ -1188,17 +1344,25 @@ var
 begin
   if Supports(test, ITestExecute, testExecute) then
   begin
-    State.CurrentTestName := test.Name;
+    //Read before the setup (see TThreadState.TestName), so this assignment allocates nothing inside the leak span.
+    State.CurrentTestName := State.TestName;
     try
-      Self.Loggers_ExecuteTest(threadId, test as ITestInfo);
+      BeginRunnerAllocation;
+      try
+        Self.Loggers_ExecuteTest(threadId, test as ITestInfo);
+      finally
+        EndRunnerAllocation;
+      end;
       assertBeforeCount := 0;           //to shut the compiler up;
       if FFailsOnNoAsserts then
         assertBeforeCount := TDUnitX.GetAssertCount(threadId);
+      StartLeakSpan;
       memoryAllocationProvider.PreTest;
       try
         testExecute.Execute(context);
       finally
         memoryAllocationProvider.PostTest;
+        MarkLeakSpanEnd;
       end;
 
       if FFailsOnNoAsserts then
@@ -1208,8 +1372,13 @@ begin
           raise ENoAssertionsMade.Create(SNoAssertions);
       end;
 
-      Result := ExecuteSuccessfulResult(context, threadId, test, State.LogMessages.Text, State.LogMessagesEx);
-      ClearLogMessages;
+      BeginRunnerAllocation;
+      try
+        Result := ExecuteSuccessfulResult(context, threadId, test, State.LogMessages.Text, State.LogMessagesEx);
+        ClearLogMessages;
+      finally
+        EndRunnerAllocation;
+      end;
     finally
       State.CurrentTestName := '';
     end;
@@ -1240,6 +1409,8 @@ begin
       System.Continue;
 
     memoryAllocationProvider := TDUnitXServiceLocator.DefaultContainer.Resolve<IMemoryLeakMonitor>();
+    State.TestName := test.Name;
+    ResetLeakSpan(test, memoryAllocationProvider);
 
     //Start a fresh for this test. If we had an exception last execute of the
     //setup or tear down that may have changed this execution. Therefore we try
@@ -1297,6 +1468,7 @@ begin
       if (testResult.ResultType = TTestResultType.Pass) and (not LeakChecksSuspended) then
         if (not CheckMemoryAllocations(test, memoryAllocationResult, memoryAllocationProvider)) then
           testResult := memoryAllocationResult;
+      CloseLeakSpan;
     finally
       RecordResult(context, threadId, fixtureResult, testResult);
       Self.Loggers_EndTest(threadId, testResult);
@@ -1316,13 +1488,19 @@ begin
     try
       Self.Loggers_SetupTest(threadId, test as ITestInfo);
 
+      StartLeakSpan;
       memoryAllocationProvider.PreSetup;
 
       fixture.SetupMethod;
 
       memoryAllocationProvider.PostSetUp;
 
-      Self.Loggers_EndSetupTest(threadId, test as ITestInfo);
+      BeginRunnerAllocation;
+      try
+        Self.Loggers_EndSetupTest(threadId, test as ITestInfo);
+      finally
+        EndRunnerAllocation;
+      end;
       Result := True;
     except
       //A setup that ignores the test (Assert.Ignore) ignores it, rather than erroring it.
@@ -1344,13 +1522,19 @@ begin
   errorResult := nil;
 
   try
-    Self.Loggers_TeardownTest(threadId, test as ITestInfo);
+    BeginRunnerAllocation;
+    try
+      Self.Loggers_TeardownTest(threadId, test as ITestInfo);
+    finally
+      EndRunnerAllocation;
+    end;
 
     memoryAllocationProvider.PreTearDown;
 
     fixture.TearDownMethod;
 
     memoryAllocationProvider.PostTearDown;
+    MarkLeakSpanEnd;
 
     Self.Loggers_EndTeardownTest(threadId, test as ITestInfo);
     result := true;
