@@ -76,7 +76,8 @@ resourcestring
   SObjNotNil        = 'Object is Not Nil when Nil expected. [%s]';
   SPointerNotNil    = 'Pointer is Not Nil when Nil expected. [%s]';
   SIsTrueError      = 'Condition is False when True expected. [%s]';
-  STypeError        = 'value is not of type T';
+  SIsTypeCannotCheck = 'Assert.IsType<T> cannot check anything: a value of type T is always of type T. ' +
+    'Use Assert.InheritsFrom or Assert.Implements. %s';
   SUnexpectedException = 'Method raised [%s] was expecting not to raise Any exception. %s';
   SUnexpectedExceptionAlt = 'Method raised [%s] was expecting not to raise Any exception.';
   SMethodRaisedException = 'Method raised an exception of type : ';

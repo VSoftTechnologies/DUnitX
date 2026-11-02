@@ -270,7 +270,7 @@ begin
   TDUnitX.CurrentRunner.Status('hello world');
 
   x := TStringList.Create;
-  Assert.IsType<TObject>(x); /// a bit pointless since it's strongly typed.
+  Assert.InheritsFrom(x.ClassType, TStrings); /// a bit pointless since it's strongly typed.
   x.Free;
 end;
 
