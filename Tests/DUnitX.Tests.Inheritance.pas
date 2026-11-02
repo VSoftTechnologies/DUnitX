@@ -75,13 +75,29 @@ type
     procedure Overrides_Of_Attributed_Methods_Run_Once;
   end;
 
+  //A method's [Category] adds to its fixture's categories, so a filter on the fixture's category reaches it.
+  [TestFixture]
+  TMethodCategoryTests = class
+  public
+    [Test]
+    procedure A_Method_Category_Adds_To_The_Fixture_Category;
+    [Test]
+    procedure A_Category_Is_Held_Once;
+    [Test]
+    procedure Excluding_The_Fixture_Category_Excludes_A_Method_With_Its_Own;
+    [Test]
+    procedure Including_Either_Category_Selects_A_Method_With_Its_Own;
+  end;
+
 implementation
 
 uses
   DUnitX.Extensibility,
   DUnitX.InternalInterfaces,
   DUnitX.TestFixture,
-  DUnitX.FixtureProvider;
+  DUnitX.FixtureProvider,
+  DUnitX.Filters,
+  DUnitX.CategoryExpression;
 
 type
   TFixtureProviderAccess = class(TDUnitXFixtureProvider);
@@ -262,6 +278,91 @@ begin
   Assert.AreEqual(2, testCount, 'one test for each test method');
 end;
 
+type
+  //Not a fixture: the tests below generate its tests in a fixture whose category is Integration.
+  TCategorisedMethods = class
+  public
+    [Test]
+    [Category('Slow')]
+    procedure Slow;
+    [Test]
+    [Category(' integration ,Slow,, slow')]
+    procedure Repeated;
+  end;
+
+procedure TCategorisedMethods.Slow;
+begin
+end;
+
+procedure TCategorisedMethods.Repeated;
+begin
+end;
+
+//Generates the tests of TCategorisedMethods in a fixture whose category is Integration, and returns the one named AName.
+function CategorisedTest(out AFixture : ITestFixture; const AName : string) : ITest;
+var
+  provider : TDUnitXFixtureProvider;
+  providerIntf : IFixtureProvider;
+  test : ITest;
+begin
+  AFixture := TDUnitXTestFixture.Create(TCategorisedMethods.ClassName, 'Integration', TCategorisedMethods, 'AUnit') as ITestFixture;
+  provider := TDUnitXFixtureProvider.Create;
+  providerIntf := provider;
+  TFixtureProviderAccess(provider).GenerateTests(nil, AFixture);
+  result := nil;
+  for test in AFixture.Tests do
+    if test.Name = AName then
+      result := test;
+  Assert.IsNotNull(result, 'the test ' + AName + ' is generated');
+end;
+
+//A test's categories, in order, each followed by a semicolon
+function CategoryList(const ATest : ITest) : string;
+var
+  category : string;
+begin
+  result := '';
+  for category in ATest.Categories do
+    result := result + category + ';';
+end;
+
+{ TMethodCategoryTests }
+
+procedure TMethodCategoryTests.A_Method_Category_Adds_To_The_Fixture_Category;
+var
+  fixture : ITestFixture;
+begin
+  Assert.AreEqual('Integration;Slow;', CategoryList(CategorisedTest(fixture, 'Slow')), false);
+end;
+
+//Categories are trimmed and compared without case, as filters compare them, so each is held once, as first written.
+procedure TMethodCategoryTests.A_Category_Is_Held_Once;
+var
+  fixture : ITestFixture;
+begin
+  Assert.AreEqual('Integration;Slow;', CategoryList(CategorisedTest(fixture, 'Repeated')), false);
+end;
+
+procedure TMethodCategoryTests.Excluding_The_Fixture_Category_Excludes_A_Method_With_Its_Own;
+var
+  fixture : ITestFixture;
+  filter : ITestFilter;
+begin
+  //As --exclude:Integration builds it
+  filter := TNotFilter.Create(TCategoryExpression.CreateFilter('Integration'));
+  Assert.IsFalse(filter.Match(CategorisedTest(fixture, 'Slow')), 'excluded by its fixture''s category');
+end;
+
+procedure TMethodCategoryTests.Including_Either_Category_Selects_A_Method_With_Its_Own;
+var
+  fixture : ITestFixture;
+  test : ITest;
+begin
+  test := CategorisedTest(fixture, 'Slow');
+  Assert.IsTrue(TCategoryExpression.CreateFilter('Integration').Match(test), 'selected by its fixture''s category');
+  Assert.IsTrue(TCategoryExpression.CreateFilter('Slow').Match(test), 'selected by its own category');
+end;
+
 constructor TMyBaseTestClass.Create;
 begin
   FBlah := 'base';
@@ -311,6 +412,7 @@ initialization
   TDUnitX.RegisterTestFixture(TMyDerivedTest);
   TDUnitX.RegisterTestFixture(TRepeatTestSetupTests);
   TDUnitX.RegisterTestFixture(TOverriddenMethodTests);
+  TDUnitX.RegisterTestFixture(TMethodCategoryTests);
 
 end.
 

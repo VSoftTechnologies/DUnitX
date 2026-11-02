@@ -145,6 +145,42 @@ begin
   Result := Result + ')';
 end;
 
+//A fixture's categories with a method's [Category] added, comma separated.  Each is trimmed, and empty ones and
+//repeats (compared without case, as the category filters compare them) are left out.
+function AddCategories(const AFixtureCategories : TList<string>; const AMethodCategory : string) : string;
+var
+  categories : TList<string>;
+  category : string;
+
+  function IsHeld(const ACategory : string) : boolean;
+  var
+    held : string;
+  begin
+    result := false;
+    for held in categories do
+      if AnsiCompareText(held, ACategory) = 0 then
+        exit(true);
+  end;
+
+  procedure Add(const ACategory : string);
+  begin
+    if (Trim(ACategory) <> '') and (not IsHeld(Trim(ACategory))) then
+      categories.Add(Trim(ACategory));
+  end;
+
+begin
+  categories := TList<string>.Create;
+  try
+    for category in AFixtureCategories do
+      Add(category);
+    for category in TStrUtils.SplitString(AMethodCategory, ',') do
+      Add(category);
+    result := TStrUtils.Join(TListStringUtils.ToArray(categories), ',');
+  finally
+    categories.Free;
+  end;
+end;
+
 { TDUnitXFixtureProvider }
 
 constructor TDUnitXFixtureProvider.Create;
@@ -606,9 +642,9 @@ begin
       meth.Code := PPointer(PByte(fixture.TestClass) + method.VirtualIndex * SizeOf(Pointer))^;
     meth.Data := fixture.FixtureInstance;
 
-    //if the test has a category attribute then we'll use it to override the fixtures's category.
+    //A test's category attribute adds to the fixture's categories, so a filter on the fixture's category reaches it.
     if method.TryGetAttributeOfType<CategoryAttribute>(categoryAttrib) then
-      category := categoryAttrib.Category;
+      category := AddCategories(fixture.Categories, categoryAttrib.Category);
 
     if method.TryGetAttributeOfType<RepeatTestAttribute>(repeatAttrib) then
     begin
