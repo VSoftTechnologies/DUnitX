@@ -347,6 +347,9 @@ type
     procedure Test_Implements_Will_Pass_If_Implemented;
 
     [Test]
+    procedure IsType_Always_Fails_And_Points_To_InheritsFrom_And_Implements;
+
+    [Test]
     procedure Test_AreSameOnSameObjectWithDifferentInterfaces_No_Exception;
 
     [Test]
@@ -746,6 +749,27 @@ begin
       res := Assert.Implements<IAmImplemented>(obj);
     end);
   Assert.IsNotNull(res);
+end;
+
+procedure TTestsAssert.IsType_Always_Fails_And_Points_To_InheritsFrom_And_Implements;
+const
+  CALLER_MSG = 'the caller''s message';
+var
+  failureMsg : string;
+begin
+  //A value of type T is always of type T, so IsType<T> used to pass whatever it was given
+  failureMsg := '(no failure)';
+  try
+{$WARN SYMBOL_DEPRECATED OFF}
+    Assert.IsType<Integer>(5, CALLER_MSG);
+{$WARN SYMBOL_DEPRECATED ON}
+  except
+    on e : ETestFailure do
+      failureMsg := e.Message;
+  end;
+  Assert.Contains(failureMsg, 'Assert.InheritsFrom', false);
+  Assert.Contains(failureMsg, 'Assert.Implements', false);
+  Assert.Contains(failureMsg, CALLER_MSG, false);
 end;
 
 procedure TTestsAssert.WillNotRaiseWithMessage_NilExceptionParam_NoExceptionMessage_WillRaise;

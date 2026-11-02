@@ -257,7 +257,7 @@ type
     class procedure EndsWith(const subString : string; const theString : string; const ignoreCase : boolean; const message : string = ''); overload;
     class procedure EndsWith(const subString : string; const theString : string; const message : string = ''); overload;
     class procedure InheritsFrom(const descendant : TClass; const parent : TClass; const message : string = '');
-    class procedure IsType<T>(const value : T; const message : string = ''); overload; deprecated 'use inheritsfrom - istype is useless';
+    class procedure IsType<T>(const value : T; const message : string = ''); overload; deprecated 'IsType<T> always fails: it cannot check anything. Use InheritsFrom or Implements';
 
     /// <summary>
     ///   Checks that there is no difference between the given strings. If there is a difference, then
@@ -1030,13 +1030,11 @@ begin
 end;
 
 class procedure Assert.IsType<T>(const value : T; const message : string);
-var
-  val : TValue;
 begin
+  //A value of type T is always of type T, so this used to pass whatever was tested.  It fails instead, so a test that
+  //relies on it is not reported as a pass
   DoAssert;
-  val := TValue.From<T>(value);
-  if not val.IsType<T> then
-    Fail(STypeError, ReturnAddress);
+  FailFmt(SIsTypeCannotCheck, [message], ReturnAddress);
 end;
 
 class procedure Assert.WillNotRaise(const AMethod : TTestMethod; const exceptionClass : ExceptClass; const msg : string);
