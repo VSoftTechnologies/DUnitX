@@ -110,6 +110,12 @@ type
     [Test]
     procedure FailOnNoTests_Gives_A_Run_With_No_Tests_A_Non_Zero_Exit_Code;
 
+    [Test]
+    procedure Bare_Argument_That_Is_Not_An_Xml_File_Is_An_Error;
+
+    [Test]
+    procedure Bare_Xml_File_Name_Sets_The_Xml_Output_File;
+
   end;
 
 implementation
@@ -652,6 +658,63 @@ begin
     TOptionsRegistry.Parse(sList);
     sList.Free;
     TDUnitX.Options.ExitMode := oldExitMode;
+  end;
+end;
+
+procedure TCommandLineParserTests.Bare_Argument_That_Is_Not_An_Xml_File_Is_An_Error;
+var
+  sList : TStringList;
+  parseResult : ICommandLineParseResult;
+  oldValue : string;
+begin
+  oldValue := TDUnitX.Options.XMLOutputFile;
+  sList := TStringList.Create;
+  try
+    RegisterOptions;
+
+    //A test name given without --run: used to be taken as the XML output file, so every test ran.
+    TDUnitX.Options.XMLOutputFile := 'before.xml';
+    sList.Add('Unit.TFoo');
+    parseResult := TOptionsRegistry.Parse(sList);
+    Assert.AreEqual('before.xml', TDUnitX.Options.XMLOutputFile, 'a bare test name set the XML output file');
+    Assert.IsTrue(parseResult.HasErrors, 'a bare test name is not reported');
+    Assert.Contains(parseResult.ErrorText, '--run:');
+
+    sList.Clear;
+    sList.Add('results');
+    parseResult := TOptionsRegistry.Parse(sList);
+    Assert.AreEqual('before.xml', TDUnitX.Options.XMLOutputFile, 'a bare name with no extension set the XML output file');
+    Assert.IsTrue(parseResult.HasErrors, 'a bare name with no extension is not reported');
+  finally
+    sList.Free;
+    TDUnitX.Options.XMLOutputFile := oldValue;
+  end;
+end;
+
+procedure TCommandLineParserTests.Bare_Xml_File_Name_Sets_The_Xml_Output_File;
+var
+  sList : TStringList;
+  parseResult : ICommandLineParseResult;
+  oldValue : string;
+begin
+  oldValue := TDUnitX.Options.XMLOutputFile;
+  sList := TStringList.Create;
+  try
+    RegisterOptions;
+
+    sList.Add('Results.XML');
+    parseResult := TOptionsRegistry.Parse(sList);
+    Assert.IsFalse(parseResult.HasErrors, parseResult.ErrorText);
+    Assert.AreEqual('Results.XML', TDUnitX.Options.XMLOutputFile, false);
+
+    //A line of an options file can keep trailing spaces, which Windows drops from a file name.
+    sList.Clear;
+    sList.Add('out.xml  ');
+    parseResult := TOptionsRegistry.Parse(sList);
+    Assert.IsFalse(parseResult.HasErrors, parseResult.ErrorText);
+  finally
+    sList.Free;
+    TDUnitX.Options.XMLOutputFile := oldValue;
   end;
 end;
 

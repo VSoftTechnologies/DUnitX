@@ -62,6 +62,12 @@ A suite that does not raise `ETestIgnored` is not affected.
 
 When `[MaxTime]` interrupts a test, the test fails with `ETimedOut` even if the interruption was caught on its way out: by the test's own `except`, by `Assert.WillRaise`, or by `[WillRaise]`.  It used to report whatever replaced the interruption: a pass (`Assert.Pass`, or the test returning), its own failure, an error (its handler raising another exception), or `expected X, got ETimedOut`.  `Assert.Ignore` is still reported as ignored.  A test that expects to time out says so with `[WillRaise(ETimedOut)]`, and passes; `[WillRaise(Exception, exDescendant)]` does not count, as it expects any exception.
 
+### A bare argument must be an `.xml` file name (#557)
+
+An argument with no option prefix names the XML output file, as before, but only when it ends in `.xml` (in any case).  Any other bare argument is now a command-line error: a console runner shows the error (and the usage, unless `--hidebanner` is given), runs no tests and exits non-zero.  It used to be taken as the output file whatever it was, so `MyTests.exe Unit.TFoo`, meant as `--run:Unit.TFoo`, ran every test and wrote the XML to a file named `Unit.TFoo`.  A test name that itself ends in `.xml`, such as a unit `MyTests.Utils.XML`, is still taken as the output file.
+
+A command line that passes an output file with another extension, or none, must use `--xmlfile:<file>` instead.
+
 ### `[MaxTime]` applies to `[TestCase]` tests (#544)
 
 `[MaxTime]` on a method with `[TestCase]`, `[NamedTestCase]`, `[TestCaseSource]`, a test case generator or a `[TestCaseProvider]` had no effect: every case ran for as long as it took.  Each case now has the method's `[MaxTime]`, as a plain test has, so a case that overruns fails with `ETimedOut`, a case still running is interrupted, and the rules above for a caught interruption and `[WillRaise(ETimedOut)]` apply to it.  A case that used to pass only because its limit was ignored now fails: raise the limit or speed the case up.
