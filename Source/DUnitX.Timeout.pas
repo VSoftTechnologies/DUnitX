@@ -166,6 +166,8 @@ var
   //GetThreadContext needs the context 16-byte aligned on Win64, which a local record is not always.
   CtxBuffer : array [0 .. SizeOf(_CONTEXT) + 15] of Byte;
   Ctx : PTimeoutContext;
+  //True when the thread has not run since an earlier pass redirected it.
+  Pending : Boolean;
 begin
   Ctx := PTimeoutContext((NativeUInt(@CtxBuffer) + 15) and not NativeUInt(15));
   if SuspendThread(ThreadHandle) = Cardinal(-1) then
@@ -178,41 +180,50 @@ begin
     //If the test stopped the timeout first, it finished: leave it alone.  (A fenced read.)
     if InterlockedCompareExchange(State, TIMEOUT_RUNNING, TIMEOUT_RUNNING) <> TIMEOUT_RUNNING then
       exit;
+    //Still blocked where the last interruption left it, so it raises (Win32) or faults (Win64) as soon as it runs:
+    //redirecting it again would stack a second redirect and queue another wake-up.  A synchronous read it is blocked
+    //in is still ended below, as the last cancel may have come before the read was issued.
 {$IFDEF CPUX86}
-    //Still blocked where the last interruption left it: it raises when it runs.
-    if Ctx^.Eip = Cardinal(@RaiseTimeOutException) then
-      exit;
-    Ctx^.Eip := Cardinal(@RaiseTimeOutException);
+    Pending := Ctx^.Eip = Cardinal(@RaiseTimeOutException);
 {$ELSE}
 {$IFDEF CPUX64}
-    //Still blocked where the last interruption left it: it faults when it runs.
-    if Ctx^.Rip = NativeUInt(_TimeoutFaultAddress) then
-      exit;
-    //Making the thread call a raise does not work on Win64: unwinding needs a return address and the stack aligned for
-    //a call, and a thread stopped inside a system call has neither.  Instead it is made to fault, as if it had called
-    //_TimeoutFaultAddress from where it stopped; Windows unwinds from a fault, and TimeoutExceptObjProc makes it
-    //ETimedOut.  A debugger stops on it as a first-chance access violation.
-    if (_TimeoutFaultAddress = nil) or not StackSlotWritable(Ctx^.Rsp - SizeOf(NativeUInt)) then
-      exit;
-    Ctx^.Rsp := Ctx^.Rsp - SizeOf(NativeUInt);
-    PNativeUInt(Ctx^.Rsp)^ := Ctx^.Rip;
-    Ctx^.Rip := NativeUInt(_TimeoutFaultAddress);
+    Pending := Ctx^.Rip = NativeUInt(_TimeoutFaultAddress);
 {$ELSE}
-    exit;
+    Pending := False;
 {$ENDIF}
 {$ENDIF}
-    if not SetThreadContext(ThreadHandle, Ctx^) then
+    if not Pending then
+    begin
+{$IFDEF CPUX86}
+      Ctx^.Eip := Cardinal(@RaiseTimeOutException);
+{$ELSE}
+{$IFDEF CPUX64}
+      //Making the thread call a raise does not work on Win64: unwinding needs a return address and the stack aligned for
+      //a call, and a thread stopped inside a system call has neither.  Instead it is made to fault, as if it had called
+      //_TimeoutFaultAddress from where it stopped; Windows unwinds from a fault, and TimeoutExceptObjProc makes it
+      //ETimedOut.  A debugger stops on it as a first-chance access violation.
+      if (_TimeoutFaultAddress = nil) or not StackSlotWritable(Ctx^.Rsp - SizeOf(NativeUInt)) then
+        exit;
+      Ctx^.Rsp := Ctx^.Rsp - SizeOf(NativeUInt);
+      PNativeUInt(Ctx^.Rsp)^ := Ctx^.Rip;
+      Ctx^.Rip := NativeUInt(_TimeoutFaultAddress);
+{$ELSE}
       exit;
-    Interrupted := True;
-    //A thread blocked in the kernel only reaches the raise when the call returns, so end the call.  The wake-up is
-    //queued while the thread is still suspended, so only a wait it is already in is ended.
-    QueueUserAPC(@WakeAlertableWait, ThreadHandle, 0);
+{$ENDIF}
+{$ENDIF}
+      if not SetThreadContext(ThreadHandle, Ctx^) then
+        exit;
+      Interrupted := True;
+      //A thread blocked in the kernel only reaches the raise when the call returns, so end the call.  The wake-up is
+      //queued while the thread is still suspended, so only a wait it is already in is ended.
+      QueueUserAPC(@WakeAlertableWait, ThreadHandle, 0);
+    end;
   finally
     ResumeThread(ThreadHandle);
   end;
-  //Reached only once the thread is redirected: every exit above skips it.  CancelSynchronousIo waits for the call to
-  //end, so the thread must be running.  It is called at once, so the read or write ended is the one the thread was
-  //blocked in, not one in the code handling the timeout.
+  //Reached only once the thread is redirected, by this pass or an earlier one: every exit above skips it.
+  //CancelSynchronousIo waits for the call to end, so the thread must be running.  It is called at once, so the read
+  //or write ended is the one the thread was blocked in, not one in the code handling the timeout.
   if Assigned(_CancelSynchronousIo) then
     _CancelSynchronousIo(ThreadHandle);
 end;
