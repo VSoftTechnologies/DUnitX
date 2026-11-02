@@ -338,9 +338,6 @@ var
 {$ENDIF}
   tstProviderAttribs : TArray<TestCaseProviderAttribute>;
   tstProviderAttrib : TestCaseProviderAttribute;
-  iProvider : ITestDataProvider;
-  count, x : integer;
-  Params : TValueArray;
   caseName : string;
   test : ITest;
 
@@ -481,6 +478,72 @@ var
           SetArgsError(caseTest, TooManyValuesMessage(Length(values), Length(parameters), false))
         else if (Length(values) = 0) and (Length(parameters) > 0) then
           SetArgsError(caseTest, Format('Too few values: 0 values for %d parameter%s', [Length(parameters), PLURAL_S[Length(parameters) = 1]]));
+      end;
+    end;
+  end;
+
+  //Adds the cases a [TestCaseProvider] supplies, or, when the provider is not registered or has no cases for the
+  //method, a test that errors saying why, so the method does not silently vanish from the run.
+  procedure AddProviderCases(const AProviderAttrib : TestCaseProviderAttribute);
+  var
+    provider : ITestDataProvider;
+    providerName : string;
+    problem : string;
+    caseCount : integer;
+    caseNo : integer;
+    name : string;
+    values : TValueArray;
+    n : Cardinal;
+    caseTest : ITest;
+  begin
+    problem := '';
+    caseCount := 0;
+    if AProviderAttrib.ProviderClass <> nil then
+    begin
+      providerName := AProviderAttrib.ProviderClass.ClassName;
+      provider := TestDataProviderManager.GetProvider(AProviderAttrib.ProviderClass);
+      if provider = nil then
+        problem := Format('TestCaseProvider class %s is not registered (register it with TestDataProviderManager.RegisterProvider)',
+          [providerName]);
+    end
+    else
+    begin
+      providerName := AProviderAttrib.ProviderName;
+      provider := TestDataProviderManager.GetProvider(providerName);
+      if provider = nil then
+        problem := Format('No TestCaseProvider registered as ''%s'' (names are case-sensitive)', [providerName]);
+    end;
+    if provider <> nil then
+    begin
+      caseCount := provider.GetCaseCount(method.Name);
+      if caseCount <= 0 then
+        problem := Format('TestCaseProvider ''%s'' returned no cases for %s', [providerName, method.Name]);
+    end;
+
+    if problem <> '' then
+    begin
+      //Named after the provider, so two providers that cannot be used give two tests
+      name := UniqueCaseName(providerName);
+      for n := 1 to repeatCount do
+      begin
+        caseTest := currentFixture.AddTestCase(method.Name, name, FormatTestName(method.Name, n, repeatCount), category, method, testEnabled, nil,
+          willRaise, willRaiseInherit);
+        caseTest.MaxTime := maxTime;
+        SetArgsError(caseTest, problem);
+      end;
+      exit;
+    end;
+
+    for caseNo := 0 to caseCount - 1 do
+    begin
+      name := provider.GetCaseName(method.Name, caseNo);
+      values := provider.GetCaseParams(method.Name, caseNo);
+      for n := 1 to repeatCount do
+      begin
+        caseTest := currentFixture.AddTestCase(method.Name, FormatCaseName(name, caseNo), FormatTestName(method.Name, n, repeatCount), category,
+          method, testEnabled, values, willRaise, willRaiseInherit);
+        caseTest.MaxTime := maxTime;
+        CheckNotTooManyValues(caseTest, values, method);
       end;
     end;
   end;
@@ -652,29 +715,7 @@ begin
         begin
           //Add the Providertests first
           for tstProviderAttrib in tstProviderAttribs do
-          begin
-            if (tstProviderAttrib.ProviderClass <> nil) then
-              iProvider := TestDataProviderManager.GetProvider(tstProviderAttrib.ProviderClass)
-            else
-              iProvider := TestDataProviderManager.GetProvider(tstProviderAttrib.ProviderName);
-            if (iProvider <> nil) then
-            begin
-              count := iProvider.GetCaseCount(method.name);
-              for x := 0 to count - 1 do
-              begin
-                caseName := iProvider.GetCaseName(method.name, x);
-                params := iProvider.GetCaseParams(method.name, x);
-                for i := 1 to repeatCount do
-                begin
-                  test := currentFixture.AddTestCase(method.Name, FormatCaseName(caseName, x), FormatTestName(method.Name, i, repeatCount), category,
-                    method, testEnabled, params, willRaise, willRaiseInherit);
-                  test.MaxTime := maxTime;
-                  CheckNotTooManyValues(test, params, method);
-                end;
-              end;
-              iProvider := nil;
-            end;
-          end;
+            AddProviderCases(tstProviderAttrib);
           // Add individual test cases
           for testCaseAttrib in testCases do
           begin
