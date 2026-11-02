@@ -1341,6 +1341,8 @@ var
   testExecute : ITestExecute;
   assertBeforeCount : Cardinal;
   assertAfterCount : Cardinal;
+  passed : boolean;
+  passMessage : string;
 begin
   if Supports(test, ITestExecute, testExecute) then
   begin
@@ -1356,16 +1358,33 @@ begin
       assertBeforeCount := 0;           //to shut the compiler up;
       if FFailsOnNoAsserts then
         assertBeforeCount := TDUnitX.GetAssertCount(threadId);
+      passed := false;
       StartLeakSpan;
       memoryAllocationProvider.PreTest;
       try
-        testExecute.Execute(context);
+        try
+          testExecute.Execute(context);
+        except
+          //Assert.Pass is handled here, so that its exception is gone when the test's memory is measured.  Its message
+          //is copied as the runner's.
+          on e : ETestPass do
+          begin
+            passed := true;
+            BeginRunnerAllocation;
+            try
+              passMessage := e.Message;
+              UniqueString(passMessage);
+            finally
+              EndRunnerAllocation;
+            end;
+          end;
+        end;
       finally
         memoryAllocationProvider.PostTest;
         MarkLeakSpanEnd;
       end;
 
-      if FFailsOnNoAsserts then
+      if FFailsOnNoAsserts and (not passed) then
       begin
         assertAfterCount := TDUnitX.GetAssertCount(threadId);
         if (assertBeforeCount = assertAfterCount) then
@@ -1374,7 +1393,10 @@ begin
 
       BeginRunnerAllocation;
       try
-        Result := ExecuteSuccessfulResult(context, threadId, test, State.LogMessages.Text, State.LogMessagesEx);
+        if passed then
+          Result := ExecuteSuccessfulResult(context, threadId, test, passMessage, State.LogMessagesEx)
+        else
+          Result := ExecuteSuccessfulResult(context, threadId, test, State.LogMessages.Text, State.LogMessagesEx);
         ClearLogMessages;
       finally
         EndRunnerAllocation;

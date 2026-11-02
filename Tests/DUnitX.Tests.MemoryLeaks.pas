@@ -74,6 +74,9 @@ type
     //What Log, Status and WriteLn keep, in the runner's log and in the loggers, is not the test's.
     [Test]
     procedure Logging_Is_Not_A_Leak;
+    //The exception Assert.Pass raises is gone by the time the test's memory is measured, and its message is kept.
+    [Test]
+    procedure Assert_Pass_Is_Not_A_Leak;
   end;
 
 implementation
@@ -83,6 +86,7 @@ uses
   System.Classes,
   System.Rtti,
   System.TypInfo,
+  DUnitX.Exceptions,
   DUnitX.Extensibility,
   DUnitX.InternalInterfaces,
   DUnitX.Loggers.Null,
@@ -158,6 +162,14 @@ type
     procedure Passes;
     procedure LeaksForReal;
     procedure LogsWhileRunning;
+    procedure PassesWithAssertPass;
+  end;
+
+  //Stands for the exception Assert.Pass raises, with 100 bytes of its own.
+  ECountedTestPass = class(ETestPass)
+  public
+    constructor Create(const AMessage : string);
+    destructor Destroy; override;
   end;
 
   //Frees what TLeakRunFixture's setup allocated as the test starts, and what the test allocated as teardown starts.
@@ -338,6 +350,25 @@ procedure TLeakRunFixture.LogsWhileRunning;
 begin
   TDUnitX.CurrentRunner.Status('a status line');
   Assert.IsTrue(true);
+end;
+
+procedure TLeakRunFixture.PassesWithAssertPass;
+begin
+  raise ECountedTestPass.Create('passed with a message');
+end;
+
+{ ECountedTestPass }
+
+constructor ECountedTestPass.Create(const AMessage : string);
+begin
+  inherited Create(AMessage);
+  Inc(GCounted, 100);
+end;
+
+destructor ECountedTestPass.Destroy;
+begin
+  Dec(GCounted, 100);
+  inherited;
 end;
 
 { TMessageKeepingLogger }
@@ -566,6 +597,17 @@ begin
   ResetLeakRun(0, 0, 0, 0);
   outcome := RunLeakFixture(['LogsWhileRunning', 'LeaksForReal'], true, TMessageKeepingLogger.Create);
   Assert.AreEqual('LogsWhileRunning=Pass: a status line' + sLineBreak + sLineBreak +
+    'LeaksForReal=MemoryLeak: 32 bytes were leaked in the test method' + sLineBreak, outcome);
+end;
+
+procedure TTestsLeakCheck.Assert_Pass_Is_Not_A_Leak;
+var
+  outcome : string;
+begin
+  ResetLeakRun(0, 0, 0, 0);
+  //Without a teardown: the test's measurement is the last.
+  outcome := RunLeakFixture(['PassesWithAssertPass', 'LeaksForReal'], false, TDUnitXNullLogger.Create);
+  Assert.AreEqual('PassesWithAssertPass=Pass: passed with a message' + sLineBreak +
     'LeaksForReal=MemoryLeak: 32 bytes were leaked in the test method' + sLineBreak, outcome);
 end;
 
