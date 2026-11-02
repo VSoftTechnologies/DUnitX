@@ -83,6 +83,12 @@
 {$IFEND}
 
 
+//Fixtures can run in parallel (TDUnitX.Options.MaxDegreeOfParallelism, -m:x)
+{$IF CompilerVersion >= 35.0 } //11.0 up
+  {$DEFINE PARALLEL_FIXTURES}
+{$IFEND}
+
+
 {$I DUnitX.Stacktrace.inc}
 {$I DUnitX.MemoryLeaks.inc}
 

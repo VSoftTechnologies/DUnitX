@@ -91,6 +91,8 @@ type
     procedure RollUpResults;
   public
     constructor Create(const AParentResult : IFixtureResult; const AFixture : ITestFixtureInfo);
+    //Starts the fixture's clock again.  Fixtures run in parallel have their results made before they start.
+    procedure RestartTiming;
   end;
 
 implementation
@@ -315,6 +317,12 @@ begin
         FChildren.Clear;
     end;
   end;
+end;
+
+procedure TDUnitXFixtureResult.RestartTiming;
+begin
+  FStartTime := Now;
+  FStopWatch := TStopwatch.StartNew;
 end;
 
 procedure TDUnitXFixtureResult.RollUpResults;

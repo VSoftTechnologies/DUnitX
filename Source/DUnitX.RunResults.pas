@@ -85,6 +85,9 @@ type
     constructor Create;
     destructor Destroy; override;
     function ToString : string; override;
+    //Replaces the last results recorded with the same results in the order given.  Fixtures run in parallel record
+    //their results as they finish; the runner then puts them in the order a serial run records them.
+    procedure ReorderLastResults(const AResults : array of ITestResult);
   end;
 
 implementation
@@ -236,6 +239,18 @@ begin
     (fixtureResult as IFixtureResultBuilder).RollUpResults;
 
   //TODO: Make sure the fixture results are unique.
+end;
+
+procedure TDUnitXRunResults.ReorderLastResults(const AResults : array of ITestResult);
+var
+  i : integer;
+  first : integer;
+begin
+  first := FAllTestResults.Count - Length(AResults);
+  if first < 0 then
+    raise EArgumentOutOfRangeException.Create('More results to reorder than were recorded');
+  for i := 0 to High(AResults) do
+    FAllTestResults[first + i] := AResults[i];
 end;
 
 function TDUnitXRunResults.ToString : string;

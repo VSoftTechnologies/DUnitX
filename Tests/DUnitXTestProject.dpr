@@ -35,7 +35,8 @@ uses
   DUnitX.Tests.IgnoreFixture in 'DUnitX.Tests.IgnoreFixture.pas',
   DUnitX.Tests.Utils in 'DUnitX.Tests.Utils.pas',
   DUnitX.Tests.Loggers.XML.JUnit in 'DUnitX.Tests.Loggers.XML.JUnit.pas',
-  DUnitX.Tests.ExitCode in 'DUnitX.Tests.ExitCode.pas';
+  DUnitX.Tests.ExitCode in 'DUnitX.Tests.ExitCode.pas',
+  DUnitX.Tests.ParallelFixtures in 'DUnitX.Tests.ParallelFixtures.pas';
 
 
 {$IFNDEF TESTINSIGHT}
