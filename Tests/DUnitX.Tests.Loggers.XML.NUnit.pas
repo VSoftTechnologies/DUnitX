@@ -206,6 +206,7 @@ var
   context : ITestExecuteContext;
   fixtureResult : IFixtureResult;
   xml : string;
+  invariant : TFormatSettings;
 begin
   categories := TList<string>.Create;
   stream := TStringStream.Create('', TEncoding.UTF8);
@@ -246,7 +247,9 @@ begin
     Assert.IsTrue(xml <> '', stream.DataString);
     sTime := Copy(xml, Pos('time="', xml) + Length('time="'), MaxInt);
     sTime := Copy(sTime, 1, Pos('"', sTime) - 1);
-    Assert.AreEqual(Format('%.3f', [runResultsIntf.Duration.TotalSeconds]), sTime);
+    invariant := TFormatSettings.Create;
+    invariant.DecimalSeparator := '.';
+    Assert.AreEqual(Format('%.3f', [runResultsIntf.Duration.TotalSeconds], invariant), sTime);
   finally
     logger := nil;
     stream.Free;
