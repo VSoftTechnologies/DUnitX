@@ -42,6 +42,8 @@ type
   private
     FConsoleWriter : IDUnitXConsoleWriter;
     FQuietMode : boolean;
+    FQuietModeDotCounter: Integer;
+    FQuietModeMaxRowWidth: Integer;
   strict protected
     procedure SetConsoleDefaultColor(); virtual;
     procedure SetConsoleErrorColor(); virtual;
@@ -84,7 +86,7 @@ type
 
     procedure OnTestingEnds(const RunResults : IRunResults);
   public
-    constructor Create(const quietMode : boolean = false);
+    constructor Create(const quietMode : boolean = false; const AQuietRowWidth : Integer = -1);
     destructor Destroy; override;
   end;
 
@@ -98,9 +100,11 @@ uses
 
 { TDUnitXConsoleLogger }
 
-constructor TDUnitXConsoleLogger.Create(const quietMode : boolean = false);
+constructor TDUnitXConsoleLogger.Create(const quietMode : boolean = false; const AQuietRowWidth : Integer = -1);
 begin
   FQuietMode := quietMode;
+  FQuietModeDotCounter := 0;
+  FQuietModeMaxRowWidth := AQuietRowWidth;
   FConsoleWriter := TDUnitXServiceLocator.DefaultContainer.Resolve<IDUnitXConsoleWriter>();
   if FConsoleWriter = nil then
     raise Exception.Create(SNoConsoleWriterClassRegistered);
@@ -160,10 +164,21 @@ begin
 end;
 
 procedure TDUnitXConsoleLogger.OnExecuteTest(const threadId : TThreadID; const Test : ITestInfo);
+const
+  QUIETMODE_DOT = '.';
 begin
   if FQuietMode then
   begin
-    FConsoleWriter.Write('.');
+    Inc(FQuietModeDotCounter);
+
+    if (FQuietModeDotCounter >= (FQuietModeMaxRowWidth - 1)) and (FQuietModeMaxRowWidth >= 1) then
+    begin
+      FConsoleWriter.WriteLn(QUIETMODE_DOT);
+      FQuietModeDotCounter := 0;
+    end
+    else
+      FConsoleWriter.Write(QUIETMODE_DOT);
+
     exit;
   end;
 
