@@ -44,6 +44,7 @@ type
     FQuietMode : boolean;
     FQuietModeDotCounter: Integer;
     FQuietModeMaxRowWidth: Integer;
+    procedure WriteQuietMark(const AMark : Char);
   strict protected
     procedure SetConsoleDefaultColor(); virtual;
     procedure SetConsoleErrorColor(); virtual;
@@ -116,6 +117,18 @@ begin
   inherited;
 end;
 
+procedure TDUnitXConsoleLogger.WriteQuietMark(const AMark : Char);
+begin
+  //Every mark quiet mode writes is counted, so a row holds exactly FQuietModeMaxRowWidth of them.
+  FConsoleWriter.Write(AMark);
+  Inc(FQuietModeDotCounter);
+  if (FQuietModeMaxRowWidth >= 1) and (FQuietModeDotCounter >= FQuietModeMaxRowWidth) then
+  begin
+    FConsoleWriter.WriteLn;
+    FQuietModeDotCounter := 0;
+  end;
+end;
+
 procedure TDUnitXConsoleLogger.OnEndSetupFixture(const threadId : TThreadID; const fixture : ITestFixtureInfo);
 begin
   if FQuietMode then
@@ -169,16 +182,7 @@ const
 begin
   if FQuietMode then
   begin
-    Inc(FQuietModeDotCounter);
-
-    if (FQuietModeDotCounter >= (FQuietModeMaxRowWidth - 1)) and (FQuietModeMaxRowWidth >= 1) then
-    begin
-      FConsoleWriter.WriteLn(QUIETMODE_DOT);
-      FQuietModeDotCounter := 0;
-    end
-    else
-      FConsoleWriter.Write(QUIETMODE_DOT);
-
+    WriteQuietMark(QUIETMODE_DOT);
     exit;
   end;
 
@@ -193,7 +197,7 @@ procedure TDUnitXConsoleLogger.OnTestError(const threadId : TThreadID; const Err
 begin
   if FQuietMode then
   begin
-    FConsoleWriter.Write('E');
+    WriteQuietMark('E');
     exit;
   end;
 end;
@@ -202,7 +206,7 @@ procedure TDUnitXConsoleLogger.OnTestFailure(const threadId : TThreadID; const F
 begin
   if FQuietMode then
   begin
-    FConsoleWriter.Write('F');
+    WriteQuietMark('F');
     exit;
   end;
 end;
@@ -210,7 +214,7 @@ end;
 procedure TDUnitXConsoleLogger.OnTestIgnored(const threadId : TThreadID; const AIgnored : ITestResult);
 begin
   if FQuietMode then
-    FConsoleWriter.Write('I');
+    WriteQuietMark('I');
 
 end;
 
@@ -285,7 +289,7 @@ var
 begin
   if FQuietMode then
   begin
-    FConsoleWriter.Write('.');
+    WriteQuietMark('.');
     exit;
   end;
   FConsoleWriter.Indent(2);
@@ -326,7 +330,9 @@ var
 begin
   if FQuietMode then
   begin
-    FConsoleWriter.WriteLn;
+    //End the row of marks, unless the row width has just ended it, then leave one blank line.
+    if (FQuietModeMaxRowWidth < 1) or (FQuietModeDotCounter > 0) then
+      FConsoleWriter.WriteLn;
     FConsoleWriter.WriteLn;
   end
   else
@@ -450,7 +456,7 @@ end;
 procedure TDUnitXConsoleLogger.OnTestMemoryLeak(const threadId : TThreadID; const Test : ITestResult);
 begin
   if FQuietMode then
-    FConsoleWriter.Write('M');
+    WriteQuietMark('M');
 end;
 
 procedure TDUnitXConsoleLogger.SetConsoleDefaultColor();
