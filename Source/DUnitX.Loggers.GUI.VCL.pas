@@ -182,6 +182,7 @@ type
     procedure edtFilterKeyPress(Sender : TObject; var Key : Char);
     procedure FormCreate(Sender : TObject);
     procedure FormKeyDown(Sender : TObject; var Key : Word; Shift : TShiftState);
+    procedure FormResize(Sender : TObject);
     procedure FormShow(Sender : TObject);
     procedure tvwTestsCreateNodeClass(Sender : TCustomTreeView; var NodeClass : TTreeNodeClass);
     procedure tvwTestsKeyPress(Sender : TObject; var Key : Char);
@@ -555,9 +556,6 @@ end;
 
 procedure TGUIVCLTestRunner.FormCreate(Sender : TObject);
 begin
-  Width := Screen.WorkAreaWidth;
-  Height := Screen.WorkAreaHeight;
-
   FTestBookmarkList := TTestBookmarkList.Create;
   FTestNodes := TDictionary<string, TTreeNode>.Create;
 
@@ -1009,6 +1007,16 @@ procedure TGUIVCLTestRunner.FormKeyDown(Sender : TObject; var Key : Word; Shift 
 begin
   if (Key = VK_F9) and (Shift = []) then
     actRun.Execute;
+end;
+
+procedure TGUIVCLTestRunner.FormResize(Sender : TObject);
+var
+  MaxResultsWidth : integer;
+begin
+  // Narrow pnlResults rather than squeeze pnlTests below the splitter's MinSize
+  MaxResultsWidth := pnlClient.ClientWidth - splMain.Width - splMain.MinSize;
+  if pnlResults.Width > MaxResultsWidth then
+    pnlResults.Width := Max(MaxResultsWidth, pnlResults.Constraints.MinWidth);
 end;
 
 procedure TGUIVCLTestRunner.FormShow(Sender : TObject);
