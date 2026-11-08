@@ -314,6 +314,14 @@ type
     function IterateParents(const Proc : TGUIVCLTestRunner.TTreeViewIterateProc) : boolean;
   end;
 
+// Test names are used as .ini keys and '=' would end the key: write '=' as '~e',
+// and '~' as '~~' so no two names give the same key
+function TestSetupKey(const TestName : string) : string;
+begin
+  Result := StringReplace(TestName, '~', '~~', [rfReplaceAll]);
+  Result := StringReplace(Result, '=', '~e', [rfReplaceAll]);
+end;
+
 procedure Run;
 begin
   TDUnitX.CheckCommandLine;
@@ -538,14 +546,16 @@ procedure TGUIVCLTestRunner.FormClose(Sender : TObject; var Action : TCloseActio
 var
   IniFile : TMemIniFile;
 begin
+  // Reads an existing ANSI or UTF-8 file (detected by its BOM) and saves as UTF-8
   IniFile := TMemIniFile.Create(ChangeFileExt(ParamStr(0), '.ini'));
+  IniFile.Encoding := TEncoding.UTF8;
   try
     IterateTestNodes(
       procedure(const Node : TTreeNode; var Stop : boolean)
       begin
         if TTestNode(Node).IsFixtureNode then
           Exit;
-        IniFile.WriteBool(cTestSetup, Node.Text, Node.StateIndex = cTestNodeStateChecked);
+        IniFile.WriteBool(cTestSetup, TestSetupKey(Node.Text), Node.StateIndex = cTestNodeStateChecked);
       end);
     IniFile.UpdateFile;
   finally
@@ -939,12 +949,12 @@ var
   Fixture : ITestFixture;
   Test : ITest;
   TestNode : TTreeNode;
-  IniFile : TIniFile;
+  IniFile : TMemIniFile;
   FixtureNode : TTreeNode;
   HasTests : boolean;
   HasChildTests : boolean;
 begin
-  IniFile := TIniFile.Create(ChangeFileExt(ParamStr(0), '.ini'));
+  IniFile := TMemIniFile.Create(ChangeFileExt(ParamStr(0), '.ini')); // ANSI or UTF-8, by BOM
   try
     for Fixture in FixtureList do
     begin
@@ -969,7 +979,7 @@ begin
           TestNode := tvwTests.Items.AddChild(FixtureNode, Test.FullName);
           FTestNodes.TryAdd(Test.FullName, TestNode);
           TestNode.StateIndex := cTestNodeStateUnchecked;
-          if IniFile.ReadBool(cTestSetup, Test.FullName, true) then
+          if IniFile.ReadBool(cTestSetup, TestSetupKey(Test.FullName), true) then
             TTestNode(TestNode).InvertState;
         end;
       end;
