@@ -1117,7 +1117,7 @@ end;
 
 procedure TGUIVCLTestRunner.tvwTestsKeyPress(Sender : TObject; var Key : Char);
 begin
-  if Key = ' ' then
+  if (Key = ' ') and (tvwTests.Selected <> nil) then
   begin
     TTestNode(tvwTests.Selected).InvertState;
     Key := #0;
