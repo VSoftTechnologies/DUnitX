@@ -996,7 +996,13 @@ end;
 
 procedure TGUIVCLTestRunner.edtFilterKeyPress(Sender : TObject; var Key : Char);
 begin
-  if Key = #13 then
+  if Key = #1 then // Ctrl+A
+  begin
+    // Without runtime themes the edit control ignores Ctrl+A
+    edtFilter.SelectAll;
+    Key := #0;
+  end
+  else if Key = #13 then // Enter
   begin
     LoadTests;
     Key := #0;
