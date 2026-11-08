@@ -315,11 +315,11 @@ type
     function IterateParents(const Proc : TGUIVCLTestRunner.TTreeViewIterateProc) : boolean;
   end;
 
-// Test names are used as .ini keys and '=' would end the key: write '=' as '~e',
-// and '~' as '~~' so no two names give the same key
+// Test names are used as .ini keys. Trailing spaces are trimmed when the file is
+// read, and '=' would end the key: write '=' as '~e', and '~' as '~~'
 function TestSetupKey(const TestName : string) : string;
 begin
-  Result := StringReplace(TestName, '~', '~~', [rfReplaceAll]);
+  Result := StringReplace(TrimRight(TestName), '~', '~~', [rfReplaceAll]);
   Result := StringReplace(Result, '=', '~e', [rfReplaceAll]);
 end;
 
