@@ -695,7 +695,7 @@ var
   LogMessageNode : TTreeNode;
   ParentNode : TTreeNode;
 begin
-  if Test.ResultType = TTestResultType.Pass then
+  if (Test.ResultType = TTestResultType.Pass) and (Test.Message = '') then
     ParentNode := ResultNode
   else
   begin
