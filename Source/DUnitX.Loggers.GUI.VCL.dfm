@@ -21,6 +21,7 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
+  OnResize = FormResize
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
@@ -39,6 +40,8 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
       Align = alRight
       Color = clBtnFace
       ParentColor = False
+      AutoSnap = False
+      MinSize = 300
       ResizeStyle = rsUpdate
     end
     object pnlTests: TPanel
@@ -47,7 +50,6 @@ object GUIVCLTestRunner: TGUIVCLTestRunner
       Width = 506
       Height = 533
       Align = alClient
-      Constraints.MinWidth = 300
       TabOrder = 0
       object tvwTests: TTreeView
         Left = 1
