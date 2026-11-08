@@ -78,7 +78,6 @@ type
     Label6 : TLabel;
     FailTestMessage : TMemo;
     Label8 : TLabel;
-    SelectFailedButton : TButton;
     procedure FormCreate(Sender : TObject);
     procedure FormShow(Sender : TObject);
     procedure RunExecute(Sender : TObject);
@@ -86,7 +85,6 @@ type
     procedure FailListItemClick(const Sender : TObject;
       const AItem : TListViewItem);
     procedure TestTreeChangeCheck(Sender : TObject);
-    procedure SelectFailedButtonClick(Sender : TObject);
     procedure FormClose(Sender : TObject; var Action : TCloseAction);
   private
     { Private declarations }
@@ -241,26 +239,6 @@ begin
 
   for I := 0 to TestTree.Count - 1 do
     WriteValues(TestTree.Items[I]);
-end;
-
-procedure TGUIXTestRunner.SelectFailedButtonClick(Sender : TObject);
-
-  procedure SetChecked(Item : TTreeViewItem);
-  var
-    J : Integer;
-  begin
-    if Assigned(TTestNode(Item).Test) then
-      Item.IsChecked := (TTestNode(Item).ResultType = TTestResultType.Failure)
-        or (TTestNode(Item).ResultType = TTestResultType.Error)
-        or (TTestNode(Item).ResultType = TTestResultType.MemoryLeak);
-    for J := 0 to Item.Count - 1 do
-      SetChecked(Item.Items[J]);
-  end;
-var
-  I : Integer;
-begin
-  for I := 0 to TestTree.Count - 1 do
-    SetChecked(TestTree.Items[I]);
 end;
 
 function TGUIXTestRunner.CreateNode(Owner : TComponent; Test : ITest) : TTreeViewItem;
