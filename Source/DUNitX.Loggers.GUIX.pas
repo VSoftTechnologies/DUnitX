@@ -141,6 +141,8 @@ type
     FImage : TImage;
     FTest : ITest;
     FResultType : TTestResultType;
+  protected
+    procedure ApplyStyle; override;
   public
     constructor Create(Owner : TComponent; Test : ITest; Text : string; TestFullName : string); reintroduce;
     destructor Destroy; override;
@@ -547,18 +549,25 @@ begin
   FFullName := TestFullName;
   FTest := Test;
   FImage := TImage.Create(Owner);
-  FImage.Parent := Self;
   FImage.Align := TAlignLayout.Right;
 
   FImage.Bitmap.Create(15, 15);
   FImage.Bitmap.Clear(TAlphaColorRec.Gray);
-  FImage.SendToBack;
 end;
 
 destructor TTestNode.Destroy;
 begin
   FImage.FreeOnRelease;
   inherited;
+end;
+
+procedure TTestNode.ApplyStyle;
+begin
+  inherited;
+  // Parent the image only once the item is styled: as a child before then,
+  // TControl.EndUpdate raises EArgumentOutOfRangeException in 10.3/10.4
+  FImage.Parent := Self;
+  FImage.SendToBack;
 end;
 
 procedure TTestNode.Reload;
