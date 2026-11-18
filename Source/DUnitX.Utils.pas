@@ -1063,12 +1063,29 @@ begin
   end;
 end;
 
+//A TestCase value without the spaces around it: 'True, False' passes ' False' (#596).  Only spaces: a tab still makes
+//the value fail, as it did (#551)
+function TrimPadding(const AText : string) : string;
+var
+  first : Integer;
+  last : Integer;
+begin
+  first := 1;
+  last := Length(AText);
+  while (first <= last) and (AText[first] = ' ') do
+    Inc(first);
+  while (last >= first) and (AText[last] = ' ') do
+    Dec(last);
+  Result := Copy(AText, first, last - first + 1);
+end;
+
 function ConvStr2Enum(const ASource : TValue; ATarget : PTypeInfo; out AResult : TValue) : Boolean;
 var
   value : Integer;
   typeData : PTypeData;
 begin
-  value := GetEnumValue(ATarget, ASource.AsString);
+  //A name has no spaces, so padding is trimmed (#596)
+  value := GetEnumValue(ATarget, TrimPadding(ASource.AsString));
   //GetEnumValue returns -1 for an unknown name, but -1 is also True for LongBool, WordBool and ByteBool
   typeData := GetTypeData(ATarget);
   Result := (value >= typeData.MinValue) and (value <= typeData.MaxValue);
@@ -1342,7 +1359,8 @@ var
   lFloat : Extended;
   lValue : string;
 begin
-  lValue := StringReplace(ASource.AsString, ',', '.', [rfReplaceAll]);
+  //Padding is trimmed, as TryStrToFloat already did for a number; the date readers did not (#596)
+  lValue := StringReplace(TrimPadding(ASource.AsString), ',', '.', [rfReplaceAll]);
 
   if ATarget = TypeInfo(TDate) then
     Exit(Str2DateValue(lValue, AResult))
@@ -1378,19 +1396,20 @@ var
   lBits : Integer;
   lText : string;
 begin
+  //Padding is trimmed on both sides; StrToInt64 skipped only a leading space (#596)
+  lText := TrimPadding(ASource.AsString);
   try
     if ATarget = TypeInfo(TAlphaColor) then
-      lValue := StringToAlphaColor(ASource.AsString)
+      lValue := StringToAlphaColor(lText)
     else if ATarget = TypeInfo(TColor) then
-      lValue := StringToColor(ASource.AsString)
+      lValue := StringToColor(lText)
     else
     begin
-      if not TryStrToInt64(ASource.AsString, lValue) then
+      if not TryStrToInt64(lText, lValue) then
         Exit(False);
       //TryStrToInt64 reads a hex value with bit 63 set as a negative bit pattern ('$FFFFFFFFFFFFFFFF' is -1), and
       //negates a hex value without checking the sign ('-$FFFFFFFFFFFFFFFF' is +1).  Either is 64 bits wide, too wide
       //for any type converted here, but the result could fit, so it is refused (ConvStr2Ord refuses the sign-flipped one for Int64 too)
-      lText := Trim(ASource.AsString);
       if (lValue < 0) and IsHexLiteral(lText) then
         Exit(False);
       if (lValue > 0) and (lText <> '') and (lText[1] = '-') and IsHexLiteral(Copy(lText, 2, MaxInt)) then
@@ -1414,7 +1433,7 @@ begin
     lBits := 0;
   end;
   if (lBits > 0) and (lTypeData.MinValue = -(Int64(1) shl (lBits - 1))) and (lTypeData.MaxValue = (Int64(1) shl (lBits - 1)) - 1)
-    and (lValue > lTypeData.MaxValue) and (lValue < (Int64(1) shl lBits)) and IsHexLiteral(ASource.AsString) then
+    and (lValue > lTypeData.MaxValue) and (lValue < (Int64(1) shl lBits)) and IsHexLiteral(lText) then
     lValue := lValue - (Int64(1) shl lBits);
 
   //FromOrdinal truncates a value outside the type's range ('300' would become the Byte 44)
@@ -1463,8 +1482,9 @@ var
   lText : string;
 begin
   lTypeData := GetTypeData(ATarget);
-  lIsHex := IsHexLiteral(ASource.AsString);
-  lText := Trim(ASource.AsString);
+  //Padding is trimmed on both sides; StrToInt64 skipped only a leading space (#596)
+  lText := TrimPadding(ASource.AsString);
+  lIsHex := IsHexLiteral(lText);
 
   //UInt64 keeps its range in signed fields, so its MinInt64Value is above its MaxInt64Value.  It covers its whole width:
   //a subrange cannot go above High(Int64)
@@ -1473,17 +1493,17 @@ begin
     //A hex value is its 64-bit pattern, which TryStrToInt64 reads; a decimal one may be above High(Int64)
     if lIsHex then
     begin
-      Result := TryStrToInt64(ASource.AsString, lValue);
+      Result := TryStrToInt64(lText, lValue);
       lUValue := UInt64(lValue);
     end
     else
-      Result := TryStrToUInt64Decimal(ASource.AsString, lUValue);
+      Result := TryStrToUInt64Decimal(lText, lUValue);
     if Result then
       AResult := TValue.FromOrdinal(ATarget, Int64(lUValue));
     Exit;
   end;
 
-  if not TryStrToInt64(ASource.AsString, lValue) then
+  if not TryStrToInt64(lText, lValue) then
     Exit(False);
   //TryStrToInt64 negates a hex value without checking the sign: '-$FFFFFFFFFFFFFFFF' comes back as 1
   if (lValue > 0) and (lText <> '') and (lText[1] = '-') and IsHexLiteral(Copy(lText, 2, MaxInt)) then
