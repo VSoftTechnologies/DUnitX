@@ -77,6 +77,15 @@ type
     //The exception Assert.Pass raises is gone by the time the test's memory is measured, and its message is kept.
     [Test]
     procedure Assert_Pass_Is_Not_A_Leak;
+    //A registered monitor that fails a test from its PostTest (#597: one that fails a test which showed a dialog)
+    //fails that test and nothing more, with a teardown too: the run goes on to the next test.
+    [Test]
+    procedure A_Monitor_That_Fails_A_Test_Does_Not_Stop_The_Run;
+    //The span's copy of the monitor watches from the start of setup, so it can see what the monitor itself does not
+    //(here an event as the test starts, in a logger).  What it raises is dropped: the test's result is what the
+    //monitor decides over its own phases, as before #578, and the run goes on.
+    [Test]
+    procedure What_Only_The_Span_Sees_Does_Not_Fail_A_Test;
   end;
 
 implementation
@@ -105,6 +114,8 @@ var
   //What TGapFreeingLogger frees between the phases.
   GFreeBeforeTest : Int64;
   GFreeBeforeTearDown : Int64;
+  //Events TLeakRunFixture's FailsWithAnEvent adds; TEventFailingMonitor fails a test during which one is added.
+  GEvents : Integer;
 
 type
   TLeakCheckRunnerAccess = class(TDUnitXTestRunner);
@@ -154,6 +165,23 @@ type
     function TestMemoryAllocated : Int64;
   end;
 
+  //Fails a test, from PostTest, when GEvents grew during it, as a monitor that fails a test which showed a dialog
+  //would (#597).  It measures no memory.
+  TEventFailingMonitor = class(TInterfacedObject, IMemoryLeakMonitor)
+  private
+    FStart : Integer;
+  public
+    procedure PreSetup;
+    procedure PostSetUp;
+    procedure PreTest;
+    procedure PostTest;
+    procedure PreTearDown;
+    procedure PostTearDown;
+    function SetUpMemoryAllocated : Int64;
+    function TearDownMemoryAllocated : Int64;
+    function TestMemoryAllocated : Int64;
+  end;
+
   //Run by the leak check tests, measured by TCountingMonitor.
   TLeakRunFixture = class
   public
@@ -163,6 +191,7 @@ type
     procedure LeaksForReal;
     procedure LogsWhileRunning;
     procedure PassesWithAssertPass;
+    procedure FailsWithAnEvent;
   end;
 
   //Stands for the exception Assert.Pass raises, with 100 bytes of its own.
@@ -177,6 +206,12 @@ type
   protected
     procedure OnExecuteTest(const threadId : TThreadID; const Test : ITestInfo); override;
     procedure OnTeardownTest(const threadId : TThreadID; const Test : ITestInfo); override;
+  end;
+
+  //Adds an event as each test starts, before the monitor's PreTest.
+  TEventAddingLogger = class(TDUnitXNullLogger)
+  protected
+    procedure OnExecuteTest(const threadId : TThreadID; const Test : ITestInfo); override;
   end;
 
   //Keeps 50 bytes for each message logged.
@@ -357,6 +392,63 @@ begin
   raise ECountedTestPass.Create('passed with a message');
 end;
 
+procedure TLeakRunFixture.FailsWithAnEvent;
+begin
+  Inc(GEvents);
+  Assert.Fail('own failure');
+end;
+
+{ TEventAddingLogger }
+
+procedure TEventAddingLogger.OnExecuteTest(const threadId : TThreadID; const Test : ITestInfo);
+begin
+  Inc(GEvents);
+end;
+
+{ TEventFailingMonitor }
+
+procedure TEventFailingMonitor.PreSetup;
+begin
+end;
+
+procedure TEventFailingMonitor.PostSetUp;
+begin
+end;
+
+procedure TEventFailingMonitor.PreTest;
+begin
+  FStart := GEvents;
+end;
+
+procedure TEventFailingMonitor.PostTest;
+begin
+  if GEvents > FStart then
+    Assert.Fail('an event during the test');
+end;
+
+procedure TEventFailingMonitor.PreTearDown;
+begin
+end;
+
+procedure TEventFailingMonitor.PostTearDown;
+begin
+end;
+
+function TEventFailingMonitor.SetUpMemoryAllocated : Int64;
+begin
+  result := 0;
+end;
+
+function TEventFailingMonitor.TearDownMemoryAllocated : Int64;
+begin
+  result := 0;
+end;
+
+function TEventFailingMonitor.TestMemoryAllocated : Int64;
+begin
+  result := 0;
+end;
+
 { ECountedTestPass }
 
 constructor ECountedTestPass.Create(const AMessage : string);
@@ -407,9 +499,10 @@ begin
   Dec(GCounted, 40);
 end;
 
-//Runs the named tests of TLeakRunFixture, with its setup and teardown when AWithSetup, measured by TCountingMonitor,
-//and returns '<test>=<result>: <message>' for each, one per line.
-function RunLeakFixture(const ATests : array of string; const AWithSetup : boolean; const ALogger : ITestLogger) : string;
+//Runs the named tests of TLeakRunFixture, with its setup and teardown when AWithSetup, measured by TCountingMonitor
+//(or by TEventFailingMonitor when AFailOnEvent), and returns '<test>=<result>: <message>' for each, one per line.
+function RunLeakFixture(const ATests : array of string; const AWithSetup : boolean; const ALogger : ITestLogger;
+  const AFailOnEvent : boolean = false) : string;
 var
   thread : TThread;
   testNames : TArray<string>;
@@ -428,7 +521,10 @@ begin
   TDUnitXServiceLocator.DefaultContainer.RegisterType<IMemoryLeakMonitor>(
     function : IMemoryLeakMonitor
     begin
-      result := TCountingMonitor.Create;
+      if AFailOnEvent then
+        result := TEventFailingMonitor.Create
+      else
+        result := TCountingMonitor.Create;
     end);
   try
     thread := TThread.CreateAnonymousThread(
@@ -609,6 +705,28 @@ begin
   outcome := RunLeakFixture(['PassesWithAssertPass', 'LeaksForReal'], false, TDUnitXNullLogger.Create);
   Assert.AreEqual('PassesWithAssertPass=Pass: passed with a message' + sLineBreak +
     'LeaksForReal=MemoryLeak: 32 bytes were leaked in the test method' + sLineBreak, outcome);
+end;
+
+procedure TTestsLeakCheck.A_Monitor_That_Fails_A_Test_Does_Not_Stop_The_Run;
+var
+  outcome : string;
+begin
+  ResetLeakRun(0, 0, 0, 0);
+  GEvents := 0;
+  //With a teardown, the case that let the monitor's exception leave the run.
+  outcome := RunLeakFixture(['FailsWithAnEvent', 'Passes'], true, TDUnitXNullLogger.Create, true);
+  //The monitor's PostTest runs in a finally after the test, so its failure replaces the test's own, as before #578.
+  Assert.AreEqual('FailsWithAnEvent=Failure: an event during the test' + sLineBreak + 'Passes=Pass: ' + sLineBreak, outcome);
+end;
+
+procedure TTestsLeakCheck.What_Only_The_Span_Sees_Does_Not_Fail_A_Test;
+var
+  outcome : string;
+begin
+  ResetLeakRun(0, 0, 0, 0);
+  GEvents := 0;
+  outcome := RunLeakFixture(['Passes'], true, TEventAddingLogger.Create, true);
+  Assert.AreEqual('Passes=Pass: ' + sLineBreak, outcome);
 end;
 
 initialization

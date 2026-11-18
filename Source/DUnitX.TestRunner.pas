@@ -196,6 +196,12 @@ type
     procedure StartLeakSpan;
     procedure MarkLeakSpanEnd;
     procedure CloseLeakSpan;
+    //Drops the span for the rest of the test when its monitor raises, which a registered monitor may do to fail a test
+    //(#597).  The span only measures memory, and it is called where an exception would leave the run (Log,
+    //RecordResult).  Whether the test fails is decided, as before #578, by the test's own monitor, which the runner
+    //calls inside its exception handling over the monitor's own phases; what only the span saw (it watches from the
+    //start of setup) does not fail it.  The leak check then adds up the phases, as without a span.
+    procedure AbandonLeakSpan(const threadState : TDUnitXTestRunner.TThreadState);
     //Around what the runner does inside the span, so that it is not counted against the test.  Brackets nest.  The
     //span cannot tell threads apart: what a test's own thread allocates or frees while another is in a bracket is
     //counted as the runner's.
@@ -501,8 +507,13 @@ begin
   try
     if (threadState.LeakSpan <> nil) and (not threadState.LeakSpanOpen) then
     begin
-      threadState.LeakSpan.PreTest;
-      threadState.LeakSpanOpen := true;
+      try
+        threadState.LeakSpan.PreTest;
+        threadState.LeakSpanOpen := true;
+      except
+        on Exception do
+          AbandonLeakSpan(threadState);
+      end;
     end;
   finally
     MonitorExit(FLoggersLock);
@@ -518,13 +529,24 @@ begin
   try
     if threadState.LeakSpanOpen then
     begin
-      threadState.LeakSpan.PostTest;
-      threadState.LeakSpanAllocated := threadState.LeakSpan.TestMemoryAllocated;
-      threadState.LeakSpanRunnerAllocated := threadState.RunnerAllocated;
+      try
+        threadState.LeakSpan.PostTest;
+        threadState.LeakSpanAllocated := threadState.LeakSpan.TestMemoryAllocated;
+        threadState.LeakSpanRunnerAllocated := threadState.RunnerAllocated;
+      except
+        on Exception do
+          AbandonLeakSpan(threadState);
+      end;
     end;
   finally
     MonitorExit(FLoggersLock);
   end;
+end;
+
+procedure TDUnitXTestRunner.AbandonLeakSpan(const threadState : TDUnitXTestRunner.TThreadState);
+begin
+  threadState.LeakSpanOpen := false;
+  threadState.LeakSpan := nil;
 end;
 
 procedure TDUnitXTestRunner.CloseLeakSpan;
@@ -552,8 +574,13 @@ begin
     Inc(threadState.RunnerAllocationDepth);
     if (threadState.RunnerAllocationDepth = 1) and threadState.LeakSpanOpen then
     begin
-      threadState.LeakSpan.PostTest;
-      threadState.RunnerAllocationStart := threadState.LeakSpan.TestMemoryAllocated;
+      try
+        threadState.LeakSpan.PostTest;
+        threadState.RunnerAllocationStart := threadState.LeakSpan.TestMemoryAllocated;
+      except
+        on Exception do
+          AbandonLeakSpan(threadState);
+      end;
     end;
   except
     Dec(threadState.RunnerAllocationDepth);
@@ -571,8 +598,13 @@ begin
     Dec(threadState.RunnerAllocationDepth);
     if (threadState.RunnerAllocationDepth = 0) and threadState.LeakSpanOpen then
     begin
-      threadState.LeakSpan.PostTest;
-      Inc(threadState.RunnerAllocated, threadState.LeakSpan.TestMemoryAllocated - threadState.RunnerAllocationStart);
+      try
+        threadState.LeakSpan.PostTest;
+        Inc(threadState.RunnerAllocated, threadState.LeakSpan.TestMemoryAllocated - threadState.RunnerAllocationStart);
+      except
+        on Exception do
+          AbandonLeakSpan(threadState);
+      end;
     end;
   finally
     MonitorExit(FLoggersLock);
