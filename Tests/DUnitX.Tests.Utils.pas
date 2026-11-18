@@ -208,6 +208,20 @@ type
     [Test]
     procedure Hex_Integer_Wider_Than_The_Type_Or_Sign_Flipped_Does_Not_Convert;
 
+    //#596: a padded value converts to a non-string type as the bare value does, whatever side the spaces are on.
+    //Before, Boolean, enum, TColor and ISO date and date-time failed with any padding, and the integer types with a
+    //trailing space.  Only spaces: a tab still fails (#551)
+    [Test]
+    procedure Padded_Value_Converts_For_A_Non_String_Type;
+
+    //#596: string and Char values keep their spaces; a padded Char is two characters, not a Char
+    [Test]
+    procedure String_And_Char_Values_Keep_Their_Spaces;
+
+    //#596 as reported: the values of [TestCase('True, False')] reach the test
+    [TestCase('True, False')]
+    procedure Padded_TestCase_Values_Reach_The_Test(const A, B : Boolean);
+
     [Test]
     procedure Unparseable_Or_Out_Of_Range_Int64_Does_Not_Convert;
 
@@ -233,6 +247,7 @@ uses
 
   System.DateUtils,
   System.Rtti,
+  System.TypInfo,
   WinApi.Windows,
   DUnitX.Generics,
   DUnitX.Utils;
@@ -391,6 +406,69 @@ begin
   //A subrange does not cover its type's width, so its hex values are only range-checked
   Assert.IsTrue(TValue.From<string>('$A').TryConvert<TSignedSubrange>(asTValue), '''$A'' to -10..10');
   Assert.AreEqual(10, asTValue.AsInteger, '''$A'' to -10..10');
+end;
+
+procedure TValueHelperTests.Padded_Value_Converts_For_A_Non_String_Type;
+var
+  wrong : string;
+  converted : TValue;
+
+  procedure Check(const bare : string; const expected : string; const target : PTypeInfo);
+  var
+    texts : array[0..3] of string;
+    text : string;
+    value : TValue;
+  begin
+    //A static array, not an array literal, which needs XE7
+    texts[0] := bare;
+    texts[1] := ' ' + bare;
+    texts[2] := bare + ' ';
+    texts[3] := '  ' + bare + '  ';
+    for text in texts do
+      if not TValue.From<string>(text).TryConvert(target, value) then
+        wrong := wrong + Format('[%s] -> %s did not convert; ', [text, string(target.Name)])
+      else if value.ToString <> expected then
+        wrong := wrong + Format('[%s] -> %s gave %s, not %s; ', [text, string(target.Name), value.ToString, expected]);
+  end;
+
+begin
+  wrong := '';
+  Check('False', 'False', TypeInfo(Boolean));
+  Check('True', 'True', TypeInfo(Boolean));
+  Check('mtError', 'mtError', TypeInfo(TMsgDlgType));
+  Check('12', '12', TypeInfo(Integer));
+  Check('-12', '-12', TypeInfo(Integer));
+  Check('$FF', '255', TypeInfo(Integer));
+  Check('200', '200', TypeInfo(Byte));
+  Check('12', '12', TypeInfo(Cardinal));
+  Check('12', '12', TypeInfo(Int64));
+  Check('12', '12', TypeInfo(UInt64));
+  Check('clRed', '255', TypeInfo(TColor));
+  //ToString writes the machine's decimal separator and date format, so those expected values are built the same way
+  Check('1.5', FloatToStr(1.5), TypeInfo(Double));
+  Check('2026-01-02', DateToStr(EncodeDate(2026, 1, 2)), TypeInfo(TDate));
+  Check('2026-01-02', DateToStr(EncodeDate(2026, 1, 2)), TypeInfo(TDateTime));
+  Check('2026-01-02T10:30:00', DateTimeToStr(EncodeDate(2026, 1, 2) + EncodeTime(10, 30, 0, 0)), TypeInfo(TDateTime));
+  Assert.AreEqual('', wrong, False);
+  //Only spaces are padding
+  Assert.IsFalse(TValue.From<string>(#9'False').TryConvert(TypeInfo(Boolean), converted), '#9''False'' to Boolean');
+  Assert.IsFalse(TValue.From<string>('12'#9).TryConvert(TypeInfo(Integer), converted), '''12''#9 to Integer');
+end;
+
+procedure TValueHelperTests.String_And_Char_Values_Keep_Their_Spaces;
+var
+  converted : TValue;
+begin
+  Assert.IsTrue(TValue.From<string>(' abc ').TryConvert(TypeInfo(string), converted), 'string converts');
+  Assert.AreEqual(' abc ', converted.AsString, False, 'string keeps its spaces');
+  Assert.IsFalse(TValue.From<string>(' x').TryConvert(TypeInfo(Char), converted), ''' x'' is two characters, not a Char');
+  Assert.IsFalse(TValue.From<string>('x ').TryConvert(TypeInfo(Char), converted), '''x '' is two characters, not a Char');
+end;
+
+procedure TValueHelperTests.Padded_TestCase_Values_Reach_The_Test(const A, B : Boolean);
+begin
+  Assert.IsTrue(A, 'A');
+  Assert.IsFalse(B, 'B');
 end;
 
 procedure TValueHelperTests.Hex_Integer_Wider_Than_The_Type_Or_Sign_Flipped_Does_Not_Convert;
