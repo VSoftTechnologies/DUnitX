@@ -110,6 +110,8 @@ With a leak monitor that measures (FastMM4 or FastMM5), a test is now measured a
 
 To do this the runner resolves a second `IMemoryLeakMonitor` for each test and calls its `PreTest` once and its `PostTest` several times (before and after each piece of its own work, and each `Log`), so a test costs about three times as many measurements as before.  A custom monitor registered as a singleton cannot measure twice at once, so with one the phases are still added up as before.
 
+A custom monitor may raise from `PreTest` or `PostTest` to fail a test (#597).  Only its own calls around the test decide that, as before: if the second instance raises, it is dropped for the rest of that test, which is then measured by adding up its phases, and what only the second instance saw (it watches from the start of setup) does not fail the test.
+
 A test that ends with `Assert.Pass` now has its log cleared before its teardown, as a test that simply returns always had.
 
 ### Fixtures can run in parallel (#532)
