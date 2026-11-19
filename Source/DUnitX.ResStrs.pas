@@ -40,6 +40,7 @@ resourcestring
   SUnexpectedErrorGUID = 'Expected [%s] but got [%s] %s';
   SUnexpectedErrorStream = 'Streams are not equal %s';
   SNotEqualErrorStr = 'Expected [%s] but got [%s] %s';
+  SNotEqualAtErrorStr = 'Expected [%s] but got [%s] at %s %s';
   SMemoryValuesNotEqual = 'Memory values are not equal. ';
   SFileDoesNotExist = 'File [%s] does not exist';
   SFileDoesExist    = 'File [%s] does exist';

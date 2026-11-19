@@ -55,6 +55,12 @@ type
     class procedure CheckExceptionClassDescendant(E : Exception; const exceptionClass : ExceptClass; const msg : string);
     class function IsUnrequestedTestOutcome(E : Exception; const exceptionClass : ExceptClass) : boolean;
     class function ValuesEqual<T>(const left, right : T) : boolean;
+    //Compares two values of one record or static array type member by member: a record field by field, an array
+    //element by element, a string by its text, a float by its bits or its value.  So equal strings in different heap
+    //blocks, and padding bytes between fields, do not make two records differ, as they did when the default comparer
+    //compared their bytes (#167).  A class, interface or pointer member is compared by identity, as before.  On a
+    //difference, path names the member (.Field[2].Inner) and leftText/rightText hold its values
+    class function StructuredEquals(typeInfo : Pointer; left, right : Pointer; out path, leftText, rightText : string) : boolean;
   protected
     class function StreamsEqual(const stream1, stream2 : TStream) : boolean;
     class function AddLineBreak(const msg : string) : string;
@@ -373,11 +379,154 @@ begin
   end;
 end;
 
+class function Assert.StructuredEquals(typeInfo : Pointer; left, right : Pointer; out path, leftText, rightText : string) : boolean;
+var
+  differPath, differLeft, differRight : string;
+
+  //Records the member that differs, and its two values
+  procedure Differ(const a, b : TValue; const at : string);
+  begin
+    differPath := at;
+    differLeft := a.ToString;
+    differRight := b.ToString;
+  end;
+
+  //The values' bytes, as the default comparer compares them
+  function SameBytes(const a, b : TValue; const at : string) : boolean;
+  begin
+    result := (a.DataSize = b.DataSize) and CompareMem(a.GetReferenceToRawData, b.GetReferenceToRawData, a.DataSize);
+    if not result then
+      Differ(a, b, at);
+  end;
+
+  function Same(const a, b : TValue; const at : string) : boolean;
+  var
+    ctx : TRttiContext;
+    rttiType : TRttiType;
+    fields : TArray<TRttiField>;
+    field : TRttiField;
+    elementType : TRttiType;
+    i : integer;
+  begin
+    case a.Kind of
+      tkRecord{$IF CompilerVersion >= 34.0}, tkMRecord{$IFEND} :
+        begin
+          rttiType := ctx.GetType(a.TypeInfo);
+          fields := rttiType.GetFields;
+          //A record whose fields RTTI does not list ({$RTTI EXPLICIT FIELDS([])}), or with a field whose type has no
+          //RTTI or cannot be boxed, cannot be compared member by member: compare its bytes, as before.  A field that
+          //{$RTTI} hides while others stay listed cannot be detected, so it is not compared
+          if (Length(fields) = 0) and (a.DataSize > 0) then
+            Exit(SameBytes(a, b, at));
+          for field in fields do
+            if (field.FieldType = nil) or (field.FieldType.TypeKind = tkUnknown) then
+              Exit(SameBytes(a, b, at));
+          for field in fields do
+            if not Same(field.GetValue(a.GetReferenceToRawData), field.GetValue(b.GetReferenceToRawData), at + '.' + field.Name) then
+              Exit(false);
+          result := true;
+        end;
+      tkArray :
+        begin
+          //A static array of plain values, or of a type without RTTI, is one block of bytes
+          elementType := (ctx.GetType(a.TypeInfo) as TRttiArrayType).ElementType;
+          if (elementType = nil) or (elementType.TypeKind in [tkInteger, tkChar, tkWChar, tkEnumeration, tkInt64, tkSet, tkPointer]) then
+          begin
+            if (a.DataSize = b.DataSize) and CompareMem(a.GetReferenceToRawData, b.GetReferenceToRawData, a.DataSize) then
+              Exit(true);
+            //The bytes differ: name the first element that differs, when the element type is known
+            if elementType <> nil then
+              for i := 0 to a.GetArrayLength - 1 do
+                if not SameBytes(a.GetArrayElement(i), b.GetArrayElement(i), Format('%s[%d]', [at, i])) then
+                  Exit(false);
+            Exit(SameBytes(a, b, at));
+          end;
+          for i := 0 to a.GetArrayLength - 1 do
+            if not Same(a.GetArrayElement(i), b.GetArrayElement(i), Format('%s[%d]', [at, i])) then
+              Exit(false);
+          result := true;
+        end;
+      tkDynArray :
+        begin
+          if a.GetArrayLength <> b.GetArrayLength then
+          begin
+            differPath := at;
+            differLeft := Format('length %d', [a.GetArrayLength]);
+            differRight := Format('length %d', [b.GetArrayLength]);
+            Exit(false);
+          end;
+          for i := 0 to a.GetArrayLength - 1 do
+            if not Same(a.GetArrayElement(i), b.GetArrayElement(i), Format('%s[%d]', [at, i])) then
+              Exit(false);
+          result := true;
+        end;
+      tkString, tkLString, tkWString, tkUString :
+        begin
+          result := a.AsString = b.AsString;
+          if not result then
+            Differ(a, b, at);
+        end;
+      tkFloat :
+        begin
+          //Bit-identical first: a NaN equals itself, as the record's bytes did; then by value, so 0 equals -0 (a NaN
+          //against a number is simply unequal; measured on Win32 and Win64, no EInvalidOp)
+          result := (a.DataSize = b.DataSize) and CompareMem(a.GetReferenceToRawData, b.GetReferenceToRawData, a.DataSize);
+          if not result then
+            result := a.AsExtended = b.AsExtended;
+          if not result then
+            Differ(a, b, at);
+        end;
+      tkVariant :
+        begin
+          try
+            //The same variant type as well as the same value: '1' is not 1
+            result := (VarType(a.AsVariant) = VarType(b.AsVariant)) and VarSameValue(a.AsVariant, b.AsVariant);
+          except
+            //Variants that cannot be compared (a string against an array) are not equal
+            on EVariantError do
+              result := false;
+          end;
+          if not result then
+            Differ(a, b, at);
+        end;
+      tkUnknown :
+        result := true;
+    else
+      result := SameBytes(a, b, at);
+    end;
+  end;
+
+var
+  leftValue, rightValue : TValue;
+begin
+  differPath := '';
+  differLeft := '';
+  differRight := '';
+  TValue.Make(left, PTypeInfo(typeInfo), leftValue);
+  TValue.Make(right, PTypeInfo(typeInfo), rightValue);
+  result := Same(leftValue, rightValue, '');
+  path := differPath;
+  leftText := differLeft;
+  rightText := differRight;
+  //A difference in the value as a whole (a record compared by its bytes) is named by its type
+  if (not result) and (path = '') then
+  begin
+    path := string(PTypeInfo(typeInfo).Name);
+    if path = '' then
+      path := '(the value)';
+  end;
+end;
+
 class function Assert.ValuesEqual<T>(const left, right : T) : boolean;
+var
+  path, leftText, rightText : string;
 begin
   //TComparer<T> returns 0 for floats when either value is NaN, the equality comparer uses =
   //TypeInfo is nil for types without RTTI (e.g. enums with explicit ordinals); float types always have it
-  if (TypeInfo(T) <> nil) and (PTypeInfo(TypeInfo(T))^.Kind = tkFloat) then
+  //A record or static array is compared member by member (#167)
+  if (TypeInfo(T) <> nil) and (PTypeInfo(TypeInfo(T))^.Kind in [tkRecord{$IF CompilerVersion >= 34.0}, tkMRecord{$IFEND}, tkArray]) then
+    result := StructuredEquals(TypeInfo(T), @left, @right, path, leftText, rightText)
+  else if (TypeInfo(T) <> nil) and (PTypeInfo(TypeInfo(T))^.Kind = tkFloat) then
     result := TEqualityComparer<T>.Default.Equals(left, right)
   else
     result := TComparer<T>.Default.Compare(left, right) = 0;
@@ -386,9 +535,16 @@ end;
 class procedure Assert.AreEqual<T>(const expected, actual : T; const message : string);
 var
   expectedValue, actualValue : TValue;
+  path, expectedText, actualText : string;
 begin
   DoAssert;
-  if not ValuesEqual<T>(actual, expected) then
+  if (TypeInfo(T) <> nil) and (PTypeInfo(TypeInfo(T))^.Kind in [tkRecord{$IF CompilerVersion >= 34.0}, tkMRecord{$IFEND}, tkArray]) then
+  begin
+    //The member that differs is named, rather than '(record)' against '(record)'
+    if not StructuredEquals(TypeInfo(T), @expected, @actual, path, expectedText, actualText) then
+      FailFmt(SNotEqualAtErrorStr, [expectedText, actualText, path, message], ReturnAddress);
+  end
+  else if not ValuesEqual<T>(actual, expected) then
   begin
     expectedValue := TValue.From<T>(expected);
     actualValue := TValue.From<T>(actual);
