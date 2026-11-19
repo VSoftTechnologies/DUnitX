@@ -431,7 +431,16 @@ var
           //A static array of plain values, or of a type without RTTI, is one block of bytes
           elementType := (ctx.GetType(a.TypeInfo) as TRttiArrayType).ElementType;
           if (elementType = nil) or (elementType.TypeKind in [tkInteger, tkChar, tkWChar, tkEnumeration, tkInt64, tkSet, tkPointer]) then
+          begin
+            if (a.DataSize = b.DataSize) and CompareMem(a.GetReferenceToRawData, b.GetReferenceToRawData, a.DataSize) then
+              Exit(true);
+            //The bytes differ: name the first element that differs, when the element type is known
+            if elementType <> nil then
+              for i := 0 to a.GetArrayLength - 1 do
+                if not SameBytes(a.GetArrayElement(i), b.GetArrayElement(i), Format('%s[%d]', [at, i])) then
+                  Exit(false);
             Exit(SameBytes(a, b, at));
+          end;
           for i := 0 to a.GetArrayLength - 1 do
             if not Same(a.GetArrayElement(i), b.GetArrayElement(i), Format('%s[%d]', [at, i])) then
               Exit(false);
